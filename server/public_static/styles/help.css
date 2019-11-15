@@ -1,0 +1,26 @@
+/*-------------------------------------------------------------------
+ * styling for instructor communication flow tool
+ *------------------------------------------------------------------*/
+
+body {
+	color: black;
+	background-color: #eee;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.title-container {
+  background-color: #093c44;/*#333;*/
+}
+
+.title {
+  display: inline-block;
+  color: white;
+  font-size: 1.1em;
+  border: 1px solid white;
+  border-radius: 6px;
+  margin: 4px;
+  padding-left: 3px;
+  padding-right: 3px;  
+}
+

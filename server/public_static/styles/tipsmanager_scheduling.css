@@ -1,0 +1,55 @@
+/*-------------------------------------------------------------------
+ * styling for TipScheduling class
+ *------------------------------------------------------------------*/
+.tipschedule-icon {
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
+.tipschedule-content {
+  width: 60%;
+}
+
+/*-----------------------
+ * weekly tip boxes
+ *-----------------------*/
+ .weeklytip {
+   margin-bottom: 5px;
+ }
+ 
+ .weeklytip-collapse-icon {
+  font-size: 1.2em;
+  cursor: pointer;
+  padding-left: 2px;
+  width: 14px;   
+}
+ 
+.weeklytip-label {
+  color: white;
+  background-color: #093c44;
+}
+
+.weeklytip-label-text {
+  font-weight: bold;
+}
+
+.weeklytip-contents {
+  background-color: white;
+  border: 1px solid #9999;
+  padding-left: 4px;
+}
+
+.weeklytip-icon {
+  cursor: pointer;
+  padding-right: 10px;
+}
+
+.weeklytip-singletip {
+  display: inline-block;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.hide-weeklytip-contents {
+  display: none;
+}

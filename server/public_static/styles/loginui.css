@@ -1,0 +1,31 @@
+/*------------------------------------------------------------------
+ * AboutBox
+ *------------------------------------------------------------------*/
+.loginui {
+  display: inline-block;
+  background-color: #ddd;
+  border: 1px solid black;
+  border-radius: 2px;
+  margin: 4px;
+  padding: 4px 4px;
+}
+
+.loginui-title {
+  font-weight: bold;
+  padding-bottom: 4px;
+}
+
+.loginui-select {
+  margin-top: 4px;
+}
+
+.loginui-icon {
+  font-size: 1.4em;
+  padding-top: 4px;
+  float: right;
+  cursor: pointer;
+}
+
+.loginui-hide {
+  display: none !important;
+}

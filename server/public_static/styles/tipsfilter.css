@@ -1,0 +1,13 @@
+/*-------------------------------------------------------------------
+ * styling for TipManagerFilter class
+ *------------------------------------------------------------------*/
+
+.tipfilter {
+  border: 1px solid #aaa;
+  padding: 2px 0px;
+  margin-bottom: 14px;
+}
+
+.tipmanagerfilter-hide {
+  display: none;
+}

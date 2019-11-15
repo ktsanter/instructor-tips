@@ -1,0 +1,57 @@
+/*-------------------------------------------------------------------
+ * styling for Tips Manager tool
+ *------------------------------------------------------------------*/
+
+body {
+	color: black;
+	background-color: #eee;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+#mainContainer.bump-down {
+  margin-top: 38px;
+}
+
+.tipmanager-hide {
+  display: none;
+}
+
+.tipmanager-title {
+  margin-bottom: 10px;
+}
+
+.tipmanager-titletext {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.tipmanager-icon {
+  cursor: pointer;
+  padding-left: 4px;
+}
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/
