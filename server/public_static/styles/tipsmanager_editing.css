@@ -85,3 +85,7 @@
   font-size: 1.5em;
   padding-right: 6px;
 }
+
+.dbadmin-addcontent {
+  max-width: 60%;
+}

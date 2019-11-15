@@ -6,7 +6,7 @@
 //---------------------------------------------------------------
 const internal = {};
 
-module.exports = internal.ssDBUpdateInterface = class {
+module.exports = internal.dbAdminUpdate = class {
   constructor(mariadb, dbName) {
     this._mariadb = mariadb
     
@@ -49,12 +49,6 @@ module.exports = internal.ssDBUpdateInterface = class {
       
     } else if (params.queryName == 'tipstatuses') {
       dbResult = await this._updateTipStatuses(params, postData);
-      
-    } else if (params.queryName == 'singletipstatus') {
-      dbResult = await this._updateSingleTipStatus(params, postData, userInfo);
-      
-    } else if (params.queryName == 'tip') {
-      dbResult = await this._updateTip(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -272,93 +266,4 @@ module.exports = internal.ssDBUpdateInterface = class {
     
     return result;
   }
-
-  async _updateSingleTipStatus(params, postData, userInfo) {
-    var result = this._queryFailureResult();
-
-    var query;
-    var queryResults;
-    
-    if (postData.tipstatusname == null) {
-      queryResults = await this._deleteSingleTipStatus(params, postData, userInfo);
-   
-    } else {
-      var tipStatusId = await this._getTipStatusId(postData.tipstatusname);
-      
-      if (postData.usertipstatusid == null) {
-        query =
-          'insert into usertipstatus (generaltipid, coursetipid, userid, tipstatusid) ' +
-          'values (' +
-            postData.generaltipid + ', ' +
-            postData.coursetipid + ', ' +
-            userInfo.userId + ', ' +
-            tipStatusId + 
-          ')';
-          queryResults = await this._dbQuery(query);
-      
-      } else {
-        query =
-          'update usertipstatus ' +
-          'set tipstatusid = ' + tipStatusId + ' ' +
-          'where usertipstatusid = ' + postData.usertipstatusid;
-        queryResults = await this._dbQuery(query);
-      }
-    }
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _deleteSingleTipStatus(params, postData, userInfo) {
-    var query =
-      'delete from usertipstatus ' +
-      'where usertipstatusid = ' + postData.usertipstatusid;
-    
-    return await this._dbQuery(query);
-  }
-  
-  async _getTipStatusId(tipstatusname) {
-    var tipStatusId = null;
-    
-    var query = 
-      'select tipstatusid ' +
-      'from tipstatus ' +
-      'where tipstatusname = "' + tipstatusname + '" ';
-    
-    var queryResults = await this._dbQuery(query);
-    if (queryResults.success) {
-      tipStatusId = queryResults.data[0].tipstatusid;
-    }
-
-    return tipStatusId;
-  }
-  
-  async _updateTip(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'update tip ' +
-                'set ' +
-                  'tiptext = "' + postData.tiptext + '", ' +
-                  'userid = ' + postData.userid + ' ' +
-                'where tipid = ' + postData.tipid;
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }  
 }

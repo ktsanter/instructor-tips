@@ -11,19 +11,23 @@ const mariadb = require('mariadb')
 
 const userManagementClass = require('./classes/usermanagement')
 const userManagement = new userManagementClass(mariadb, 'instructortips');
+
 /* temporary */ userManagement.setUser({userShortName: 'ksanter'});
 
-const dbQueryInterfaceClass = require('./classes/ssdbqueryinterface')
-const dbQuery = new dbQueryInterfaceClass(mariadb, 'instructortips');
+const dbAdminQueryClass = require('./classes/dbadmin_query')
+const dbAdminQuery = new dbAdminQueryClass(mariadb, 'instructortips');
 
-const dbInsertInterfaceClass = require('./classes/ssdbinsertinterface')
-const dbInsert = new dbInsertInterfaceClass(mariadb, 'instructortips');
+const dbAdminInsertClass = require('./classes/dbadmin_insert')
+const dbAdminInsert = new dbAdminInsertClass(mariadb, 'instructortips');
 
-const dbUpdateInterfaceClass = require('./classes/ssdbupdateinterface')
-const dbUpdate = new dbUpdateInterfaceClass(mariadb, 'instructortips');
+const dbAdminUpdateClass = require('./classes/dbadmin_update')
+const dbAdminUpdate = new dbAdminUpdateClass(mariadb, 'instructortips');
 
-const dbDeleteInterfaceClass = require('./classes/ssdbdeleteinterface')
-const dbDelete = new dbDeleteInterfaceClass(mariadb, 'instructortips');
+const dbAdminDeleteClass = require('./classes/dbadmin_delete')
+const dbAdminDelete = new dbAdminDeleteClass(mariadb, 'instructortips');
+
+const dbTipManagerClass = require('./classes/tipmanager')
+const dbTipManager = new dbTipManagerClass(mariadb, 'instructortips');
 
 const dbTipFilterClass = require('./classes/tipfilter')
 const dbTipFilter = new dbTipFilterClass(mariadb, 'instructortips');
@@ -34,7 +38,7 @@ app.use('/public', express.static('public_static'))
 // GET requests
 //------------------------------------------------------
 app.get('/admin/query/:queryName',  async function (req, res) {
-  var dbResult = await dbQuery.doQuery(req.params);
+  var dbResult = await dbAdminQuery.doQuery(req.params);
   res.send(dbResult);
 })
 
@@ -62,37 +66,37 @@ app.get('/tipmanager/filter/query/:queryName', async function (req, res) {
 // POST requests
 //------------------------------------------------------
 app.post('/admin/insert/:queryName', async function (req, res) {
-  var dbResult = await dbInsert.doInsert(req.params, req.body, userManagement.getFullUserInfo().data);
+  var dbResult = await dbAdminInsert.doInsert(req.params, req.body, userManagement.getFullUserInfo().data);
   res.send(dbResult);
 })
 
 app.post('/admin/update/:queryName', async function (req, res) {
-  var dbResult = await dbUpdate.doUpdate(req.params, req.body, userManagement.getFullUserInfo().data);
+  var dbResult = await dbAdminUpdate.doUpdate(req.params, req.body, userManagement.getFullUserInfo().data);
   res.send(dbResult);
 })
 
 app.post('/admin/delete/:queryName', async function (req, res) {
-  var dbResult = await dbDelete.doDelete(req.params, req.body, userManagement.getFullUserInfo().data);
+  var dbResult = await dbAdminDelete.doDelete(req.params, req.body, userManagement.getFullUserInfo().data);
   res.send(dbResult);
 })
 
 app.post('/tipmanager/query/:queryName', async function (req, res) {
-  var dbResult = await dbQuery.doQuery(req.params, req.body, userManagement.getFullUserInfo().data);
+  var dbResult = await dbTipManager.doQuery(req.params, req.body, userManagement.getFullUserInfo().data);
   res.send(dbResult);
 })
 
 app.post('/tipmanager/insert/:queryName', async function (req, res) {
-  var dbResult = await dbInsert.doInsert(req.params, req.body, userManagement.getFullUserInfo().data);
+  var dbResult = await dbTipManager.doInsert(req.params, req.body, userManagement.getFullUserInfo().data);
   res.send(dbResult);
 })
 
 app.post('/tipmanager/update/:queryName', async function (req, res) {
-  var dbResult = await dbUpdate.doUpdate(req.params, req.body, userManagement.getFullUserInfo().data);
+  var dbResult = await dbTipManager.doUpdate(req.params, req.body, userManagement.getFullUserInfo().data);
   res.send(dbResult);
 })
 
 app.post('/tipmanager/delete/:queryName', async function (req, res) {
-  var dbResult = await dbDelete.doDelete(req.params, req.body, userManagement.getFullUserInfo().data);
+  var dbResult = await dbTipManager.doDelete(req.params, req.body, userManagement.getFullUserInfo().data);
   res.send(dbResult);
 })
 

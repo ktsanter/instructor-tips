@@ -1,12 +1,12 @@
 "use strict";
 //---------------------------------------------------------------
-// server-side DB insert interface
+// server-side DB delete interface
 //---------------------------------------------------------------
-// TODO: 
+// TODO:
 //---------------------------------------------------------------
 const internal = {};
 
-module.exports = internal.ssDBInsertInterface = class {
+module.exports = internal.dbAdminDelete = class {
   constructor(mariadb, dbName) {
     this._mariadb = mariadb
     
@@ -23,35 +23,32 @@ module.exports = internal.ssDBInsertInterface = class {
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
-  async doInsert(params, postData, userInfo) {
+  async doDelete(params, postData) {
     var dbResult = this._queryFailureResult();
     
     if (params.queryName == 'privileges') {
-      dbResult = await this._insertPrivilege(params, postData);
+      dbResult = await this._deletePrivilege(params, postData);
       
     } else if (params.queryName == 'users') {
-      dbResult = await this._insertUser(params, postData);
+      dbResult = await this._deleteUser(params, postData);
       
     } else if (params.queryName == 'userprivileges') {
-      dbResult = await this._insertUserPrivilege(params, postData);
+      dbResult = await this._deleteUserPrivilege(params, postData);
       
     } else if (params.queryName == 'termgroups') {
-      dbResult = await this._insertTermGroup(params, postData);
+      dbResult = await this._deleteTermGroup(params, postData);
       
     } else if (params.queryName == 'terms') {
-      dbResult = await this._insertTerm(params, postData);
+      dbResult = await this._deleteTerm(params, postData);
       
     } else if (params.queryName == 'courses') {
-      dbResult = await this._insertCourse(params, postData);
+      dbResult = await this._deleteCourse(params, postData);
       
     } else if (params.queryName == 'courseterms') {
-      dbResult = await this._insertCourseTerm(params, postData);
+      dbResult = await this._deleteCourseTerm(params, postData);
       
     } else if (params.queryName == 'tipstatuses') {
-      dbResult = await this._insertTipStatuses(params, postData);
-      
-    } else if (params.queryName == 'tip') {
-      dbResult = await this._insertTip(params, postData, userInfo);
+      dbResult = await this._deleteTipStatuses(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -66,7 +63,7 @@ module.exports = internal.ssDBInsertInterface = class {
   _queryFailureResult() {
     return {success: false, details: 'db insert failed', data: null};
   }
-      
+
   async _dbQuery(sql) {
     var conn;
     var dbResult = this._queryFailureResult();
@@ -92,19 +89,113 @@ module.exports = internal.ssDBInsertInterface = class {
 //---------------------------------------------------------------
 // specific query functions
 //---------------------------------------------------------------
-  async _insertPrivilege(params, postData) {
+  async _deletePrivilege(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into privilege (privilegename) ' +
-                'values (' +
-                  '"' + postData.privilegename + '"' + 
-                ')';
+    var query = 'delete from privilege ' +
+                'where privilegeid = ' + postData.privilegeid;
     
     var queryResults = await this._dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
-      result.details = 'insert succeeded';
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+      
+    
+    return result;
+  }
+  
+  async _deleteUser(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'delete from user ' +
+                'where userid = ' + postData.userid;
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+    
+  async _deleteUserPrivilege(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'delete from userprivilege ' +
+                'where userprivilegeid = ' + postData.userprivilegeid;
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+  async _deleteTermGroup(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from termgroup ' +
+                'where termgroupid = ' + postData.termgroupid;
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+  async _deleteTerm(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from term ' +
+                'where termid = ' + postData.termid;
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+  async _deleteCourse(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'delete from course ' + 
+                'where courseid = ' + postData.courseid;
+                
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
       result.data = null;
     } else {
       result.details = queryResults.details;
@@ -113,42 +204,17 @@ module.exports = internal.ssDBInsertInterface = class {
     return result;
   }
   
-  async _insertUser(params, postData) {
+  async _deleteCourseTerm(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into user (usershortname, username) ' +
-                'values (' +
-                  '"' + postData.usershortname + '", ' + 
-                  '"' + postData.username + '"' + 
-                ')';
-    
+    var query = 'delete from courseterm ' +
+                'where coursetermid = ' + postData.coursetermid;
+                
     var queryResults = await this._dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-    
-  async _insertUserPrivilege(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into userprivilege (userid, privilegeid) ' +
-                'values (' +
-                  '"' + postData.userid + '", ' + 
-                  '"' + postData.privilegeid + '"' + 
-                ')';
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
+      result.details = 'delete succeeded';
       result.data = null;
     } else {
       result.details = queryResults.details;
@@ -157,20 +223,17 @@ module.exports = internal.ssDBInsertInterface = class {
     return result;
   }
 
-  async _insertTermGroup(params, postData) {
+  async _deleteTipStatuses(params, postData) {
     var result = this._queryFailureResult();
-    
-    var query = 'insert into termgroup (termgroupname, termlength) ' +
-                'values (' +
-                  '"' + postData.termgroupname + '", ' + 
-                  '"' + postData.termlength + '"' + 
-                ')';
+
+    var query = 'delete from tipstatus ' +
+                'where tipstatusid = ' + postData.tipstatusid;
 
     var queryResults = await this._dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
-      result.details = 'insert succeeded';
+      result.details = 'delete succeeded';
       result.data = null;
     } else {
       result.details = queryResults.details;
@@ -178,113 +241,4 @@ module.exports = internal.ssDBInsertInterface = class {
     
     return result;
   }
-
-  async _insertTerm(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into term (termname, termgroupid) ' +
-                'values (' +
-                  '"' + postData.termname + '", ' + 
-                  '"' + postData.termgroupid + '"' + 
-                ')';
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _insertCourse(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into course (coursename, ap) ' +
-                'values (' +
-                  '"' + postData.coursename + '", ' + 
-                  '' + postData.ap + '' + 
-                ')';
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _insertCourseTerm(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into courseterm (courseid, termgroupid) ' +
-                'values (' +
-                  '' + postData.courseid + ', ' + 
-                  '' + postData.termgroupid + '' + 
-                ')';
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _insertTipStatuses(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into tipstatus (tipstatusname) ' +
-                'values (' +
-                  '"' + postData.tipstatusname + '"' + 
-                ')';
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _insertTip(params, postData, userInfo) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into tip (tiptext, userid) ' +
-                'values (' +
-                  '"' + postData.tiptext + '", ' + 
-                  postData.userid + ' ' + 
-                ')';
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }  
 }
