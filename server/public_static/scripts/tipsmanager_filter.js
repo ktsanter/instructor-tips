@@ -18,8 +18,8 @@ class TipManagerFilter {
     this._tipFilter = null;
     this._filterQueryResults = null;
     
-    this._filterUITypes = ['general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'coursename', 'termname', 'user', 'username', 'searchtext'];
-    this._checkBoxes = new Set(['general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'user']);
+    this._filterUITypes = ['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'coursename', 'termname', 'user', 'username', 'searchtext'];
+    this._checkBoxes = new Set(['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'user']);
   }
   
   //--------------------------------------------------------------
@@ -99,7 +99,9 @@ class TipManagerFilter {
     var className = 'tipfilter-item tipfilter-' + fieldName;
     var handler = () => {return this._updateFiltering();};
 
-    if (fieldName == 'general') {
+    if (fieldName == 'unmapped') {
+      elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'unmapped', false, handler);
+    } else if (fieldName == 'general') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'general', false, handler);
     } else if (fieldName == 'coursespecific') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, '', false, handler);

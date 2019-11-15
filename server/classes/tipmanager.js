@@ -33,6 +33,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tipedit') {
       dbResult = await this._getTipEditData(params, postData, userInfo);
       
+    } else if (params.queryName == 'tipmap') {
+      dbResult = await this._getTipMapData(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -353,6 +356,93 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
+  async _getTipMapData(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var queryList = {};
+    
+    var constraint = this._buildTipMappingConstraints(postData);
+    
+    queryList.alltips = 
+      'SELECT tipid, generaltipid, coursetipid, tiptext, termgroupname, week, username, coursename ' + 
+      'FROM alltipmapping ' +
+      constraint + ' ';
+    
+    console.log('\n');
+    console.log(queryList.alltips);
+          
+    queryList.users = 
+      'SELECT userid, username ' +
+      'FROM user ' +
+      'ORDER BY username ';
+      
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {   
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data.alltips;
+      result.users = queryResults.data.users;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  _buildTipMappingConstraints(postData) {
+    var generalConstraint = '';
+    if (postData.unmapped) generalConstraint = ' (generaltipid IS NULL and coursetipid IS NULL) ';
+    if (postData.general != '') {
+      if (generalConstraint) generalConstraint += ' OR ';
+      generalConstraint += ' (generaltipid IS NOT NULL) ';
+    }
+    if (postData.coursespecific) {
+      if (generalConstraint != '') generalConstraint += ' OR ';
+      generalConstraint += ' (coursename = "' + postData.coursename + '" ) ';
+    }
+    if (!postData.unmapped && !postData.general && !postData.coursespecific) {
+      generalConstraint = ' (FALSE) ';
+    }
+    if (generalConstraint != '') generalConstraint = ' (' + generalConstraint + ') ';
+    
+    var privateConstraint = '';
+    if (postData.shared) privateConstraint = ' (username IS NULL) ';
+    if (postData.personal) {
+      if (privateConstraint != '') privateConstraint += ' OR ';
+      privateConstraint += ' (username IS NOT NULL) ';
+    }
+    if (privateConstraint != '') privateConstraint = ' (' + privateConstraint + ') ';
+    
+    var userConstraint = '';
+    if (postData.user) userConstraint = ' (username = "' + postData.username + '") ';
+    
+    var searchConstraint = ' (tiptext like "%' + postData.searchtext + '%") ';
+
+    var constraint = '';
+    if (generalConstraint != '') constraint += generalConstraint;
+    if (privateConstraint != '') {
+      if (constraint != '') constraint += ' AND ';
+      constraint += privateConstraint;
+    }
+    if (userConstraint != '') {
+      if (constraint != '') constraint += ' AND ';
+      constraint += userConstraint;
+    }
+    if (searchConstraint != '') {
+      if (constraint != '') constraint += ' AND ';
+      constraint += searchConstraint;
+    }
+    if (constraint != '') constraint = 'WHERE ' + constraint;
+    
+    console.log('\n-------------------------------------------------');
+    console.log(postData);
+    console.log('\n');
+    console.log(constraint);
+    
+    return constraint;
+  }
+
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------

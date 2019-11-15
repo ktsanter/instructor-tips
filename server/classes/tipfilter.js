@@ -271,6 +271,7 @@ module.exports = internal.TipFilter = class {
     var result = this._queryFailureResult();
 
     var filter = {
+      unmapped: true,
       general: true,
       coursespecific: true,
       coursename: '',
@@ -282,7 +283,7 @@ module.exports = internal.TipFilter = class {
     };
     
     var tipUIConfig = {
-      generalOrCourseGroup: ['general', 'coursespecific', 'coursename'],    
+      generalOrCourseGroup: ['unmapped', 'general', 'coursespecific', 'coursename'],    
       publicOrPrivateGroup: ['shared', 'personal'],
       userGroup: ['user', 'username'],
       searchGroup: ['searchtext'],

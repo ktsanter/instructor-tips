@@ -193,3 +193,55 @@ AND courseterm.termgroupid = termgroup.termgroupid
 AND courseterm.courseid = course.courseid
 AND tip.userid IS NOT NULL
 AND user.userid = tip.userid;
+
+CREATE VIEW mappedtips AS
+SELECT 
+  tipid, tiptext, 
+  termgroupid, termgroupname, termlength, week, 
+  userid, username, 
+  NULL AS generaltipid, coursetipid,
+  courseid, coursename
+FROM coursetip_shared
+UNION
+SELECT 
+  tipid, tiptext, 
+  termgroupid, termgroupname, termlength, week, 
+  userid, username, 
+  NULL AS generaltipid, coursetipid,
+  courseid, coursename
+from coursetip_personal
+UNION
+SELECT 
+  tipid, tiptext, 
+  termgroupid, termgroupname, termlength, week, 
+  userid, username, 
+  generaltipid, NULL AS coursetipid,
+  NULL AS courseid, NULL AS coursename
+FROM generaltip_shared
+UNION
+SELECT 
+  tipid, tiptext, 
+  termgroupid, termgroupname, termlength, week, 
+  userid, username, 
+  generaltipid, NULL AS coursetipid,
+  NULL AS courseid, NULL AS coursename
+FROM generaltip_personal;
+
+CREATE VIEW alltipmapping as
+SELECT
+  tip.tipid, tiptext, 
+  a.termgroupname, a.termlength, a.week,
+  a.username,
+  a.generaltipid, a.coursetipid,
+  a.coursename  
+FROM tip
+LEFT OUTER JOIN (
+  SELECT
+    tipid,  
+    termgroupname, termlength, week,
+    username,
+    generaltipid, coursetipid,
+    coursename  
+  FROM mappedtips
+) AS a
+ON tip.tipid = a.tipid;

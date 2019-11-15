@@ -42,13 +42,11 @@ class TipMapping {
     this._prepContainerForUpdate();    
     this._container.appendChild(await this._tipFilter.render(this._notice));
 
-    /*
-    var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipedit', this._tipFilter.getFilter());
+    var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipmap', this._tipFilter.getFilter());
 
     if (tipsQuery.success) {
-      this._container.appendChild(this._showTips(tipsQuery));
+      this._container.appendChild(this._showTips(tipsQuery.data, null, 2));
     } 
-    */    
   }
   
   async userchange() {
@@ -66,37 +64,20 @@ class TipMapping {
     this._container.appendChild(titleContainer);
     titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
     titleContainer.appendChild(CreateElement.createIcon(null, 'tipmanager-icon fas fa-caret-down', 'show/hide filter', (e) => {return this._toggleFilterCollapse(e);}));
-
   }
   
   _showTips(tipsInfo) {
     var contentContainer = CreateElement.createDiv(null, 'tipmapping-content');
-    /*
-    var colgroupInfo = [
-      'width: 1%',
-      'width: 1%',
-      'width: 30%',
-      'width: 15%',
-      'width: *'
-    ];
-    this._tableEditor = new DBAdminTableEdit(tipsInfo, this._packageCallbacks(), colgroupInfo);
-    contentContainer.appendChild(this._tableEditor.render());
-    */
+
+    var msg = '';
+    for (var i = 0; i < tipsInfo.length; i++) {
+      msg += JSON.stringify(tipsInfo[i]) + '<br>';
+    }
+    contentContainer.innerHTML = msg;
 
     return contentContainer;
   }
   
-  /*
-  _packageCallbacks() {
-    console.log('TipMapping._packageCallbacks()');
-    return {
-      "requery": (dbData) => {return this._doRequery(dbData);},
-      "insert": (dbData) => {return this._doInsert(dbData);},
-      "update": (dbData) => {return this._doUpdate(dbData);},
-      "delete": (dbData) => {return this._doDelete(dbData);}
-    }
-  }
-*/
   _toggleFilterCollapse(e) {
     var elemIcon = e.target;
     var elemFilter = this._container.getElementsByClassName('tipfilter')[0];
@@ -111,24 +92,7 @@ class TipMapping {
       elem.removeChild(elem.firstChild);
     }
   }
-  /*
-  async _doRequery() {
-    var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipedit', this._tipFilter.getFilter());
-    return tipsQuery;
-  }
-  
-  async _doInsert(queryData) {
-    await this._doPostQuery('tipmanager/insert', 'tip', queryData);
-  }
-  
-  async _doUpdate(queryData) {
-    await this._doPostQuery('tipmanager/update', 'tip', queryData);
-  }
-  
-  async _doDelete(queryData) {
-    await this._doPostQuery('tipmanager/delete', 'tip', queryData);
-  }
-    */
+
   //--------------------------------------------------------------
   // db functions
   //--------------------------------------------------------------     
