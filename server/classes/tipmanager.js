@@ -273,6 +273,7 @@ module.exports = internal.TipManager = class {
     return result;
   }  
 
+//----------------------------------------------------------
   async _getTipEditData(params, postData, userInfo) {
     var result = this._queryFailureResult();
     var queryList = {};
@@ -314,7 +315,7 @@ module.exports = internal.TipManager = class {
           'ORDER BY tiptext, a.username; ';
       }
     }
-          
+    
     queryList.users = 
       'SELECT userid, username ' +
       'FROM user ' +
@@ -356,6 +357,7 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
+//----------------------------------------------------------
   async _getTipMapData(params, postData, userInfo) {
     var result = this._queryFailureResult();
     var queryList = {};
@@ -366,10 +368,7 @@ module.exports = internal.TipManager = class {
       'SELECT tipid, generaltipid, coursetipid, tiptext, termgroupname, week, username, coursename ' + 
       'FROM alltipmapping ' +
       constraint + ' ';
-    
-    console.log('\n');
-    console.log(queryList.alltips);
-          
+     
     queryList.users = 
       'SELECT userid, username ' +
       'FROM user ' +
@@ -380,7 +379,9 @@ module.exports = internal.TipManager = class {
     if (queryResults.success) {   
       result.success = true;
       result.details = 'query succeeded';
-      result.data = queryResults.data.alltips;
+      var processedData = this._processMapResults(queryResults.data.alltips);
+      result.tips = processedData.tips;
+      result.mapping = processedData.mapping;
       result.users = queryResults.data.users;
 
     } else {
@@ -412,6 +413,9 @@ module.exports = internal.TipManager = class {
       if (privateConstraint != '') privateConstraint += ' OR ';
       privateConstraint += ' (username IS NOT NULL) ';
     }
+    if (!postData.shared && !postData.personal) {
+      privateConstraint = ' (FALSE) ';
+    }
     if (privateConstraint != '') privateConstraint = ' (' + privateConstraint + ') ';
     
     var userConstraint = '';
@@ -435,12 +439,40 @@ module.exports = internal.TipManager = class {
     }
     if (constraint != '') constraint = 'WHERE ' + constraint;
     
-    console.log('\n-------------------------------------------------');
-    console.log(postData);
-    console.log('\n');
-    console.log(constraint);
-    
     return constraint;
+  }
+  
+  _processMapResults(mapData) {
+    var tips = [];
+    var mapping = {};
+    
+    for (var i = 0; i < mapData.length; i++) {
+      var tip = mapData[i];
+      
+      tips.push({tipid: tip.tipid, tiptext: tip.tiptext});
+      
+      if (!mapping.hasOwnProperty(tip.tipid)) {
+        mapping[tip.tipid] = {};
+      }
+      var mapEntry = mapping[tip.tipid];
+      
+      var termgroupName = tip.termgroupname;
+      if (!mapEntry.hasOwnProperty(termgroupName)) {
+        mapEntry[termgroupName] = {};
+      }
+      var mapTermEntry = mapEntry[termgroupName];
+      
+      mapTermEntry = {
+        week: tip.week,
+        generaltipid: tip.generaltipid,
+        coursetipid: tip.coursetipid,
+        coursename: tip.coursename
+      }
+      mapEntry[termgroupName] = mapTermEntry;
+      mapping[tip.tipid] = mapEntry;
+    }
+    
+    return {"tips": tips, "mapping": mapping};
   }
 
 //---------------------------------------------------------------

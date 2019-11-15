@@ -45,7 +45,7 @@ class TipMapping {
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipmap', this._tipFilter.getFilter());
 
     if (tipsQuery.success) {
-      this._container.appendChild(this._showTips(tipsQuery.data, null, 2));
+      this._container.appendChild(this._showTips(tipsQuery));
     } 
   }
   
@@ -68,11 +68,20 @@ class TipMapping {
   
   _showTips(tipsInfo) {
     var contentContainer = CreateElement.createDiv(null, 'tipmapping-content');
-
+    console.log(tipsInfo);  
     var msg = '';
-    for (var i = 0; i < tipsInfo.length; i++) {
-      msg += JSON.stringify(tipsInfo[i]) + '<br>';
+    for (var i = 0; i < tipsInfo.tips.length; i++) {
+      msg += JSON.stringify(tipsInfo.tips[i]) + '<br>';
     }
+    msg += '<br>';
+    for (var key in tipsInfo.mapping) {
+      msg += key + ': ' + JSON.stringify(tipsInfo.mapping[key]) + '<br>';
+    }
+    msg += '<br>';
+    for (var i = 0; i < tipsInfo.users.length; i++) {
+      msg += JSON.stringify(tipsInfo.users[i]) + '<br>';
+    }
+
     contentContainer.innerHTML = msg;
 
     return contentContainer;
