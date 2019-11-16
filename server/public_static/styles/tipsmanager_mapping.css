@@ -1,5 +1,31 @@
 /*-------------------------------------------------------------------
  * styling for TipMapping class
  *------------------------------------------------------------------*/
-.tipemapping-content {
+.tipmapping-content {
+}
+
+.tipmapping-content table {
+  border-collapse: collapse;
+}
+
+.tipmapping-content th {
+  background-color: #093c44;
+  color: white;
+  font-weight: normal;
+  border-style: none;
+  text-align: left;
+  padding-right: 12px;
+}
+
+.tipmapping-content tr {
+  border-width: 1px;
+  border-top-style: none;
+  border-bottom-style: solid;
+  border-right-style: solid;
+  border-left-style: solid;
+  border-color: #093c44;
+}
+
+.tipmapping-termcontent {
+  text-align: center;
 }

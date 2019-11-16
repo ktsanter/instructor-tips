@@ -369,10 +369,10 @@ module.exports = internal.TipManager = class {
       'FROM alltipmapping ' +
       constraint + ' ';
      
-    queryList.users = 
-      'SELECT userid, username ' +
-      'FROM user ' +
-      'ORDER BY username ';
+    queryList.termgroups = 
+      'SELECT termgroupname, termlength ' +
+      'FROM termgroup ' +
+      'ORDER BY termgroupid ';
       
     var queryResults = await this._dbQueries(queryList);
     
@@ -382,7 +382,7 @@ module.exports = internal.TipManager = class {
       var processedData = this._processMapResults(queryResults.data.alltips);
       result.tips = processedData.tips;
       result.mapping = processedData.mapping;
-      result.users = queryResults.data.users;
+      result.termgroups = queryResults.data.termgroups;
 
     } else {
       result.details = queryResults.details;
@@ -449,30 +449,45 @@ module.exports = internal.TipManager = class {
     for (var i = 0; i < mapData.length; i++) {
       var tip = mapData[i];
       
-      tips.push({tipid: tip.tipid, tiptext: tip.tiptext});
-      
-      if (!mapping.hasOwnProperty(tip.tipid)) {
-        mapping[tip.tipid] = {};
+      if (!this._tipInArray(tip.tipid, tips)) {
+        tips.push({tipid: tip.tipid, tiptext: tip.tiptext});
       }
-      var mapEntry = mapping[tip.tipid];
       
       var termgroupName = tip.termgroupname;
-      if (!mapEntry.hasOwnProperty(termgroupName)) {
-        mapEntry[termgroupName] = {};
-      }
-      var mapTermEntry = mapEntry[termgroupName];
+
+      if (termgroupName != null) {
+        if (!mapping.hasOwnProperty(tip.tipid)) {
+          mapping[tip.tipid] = {};
+        }
+        var mapEntry = mapping[tip.tipid];
       
-      mapTermEntry = {
-        week: tip.week,
-        generaltipid: tip.generaltipid,
-        coursetipid: tip.coursetipid,
-        coursename: tip.coursename
+        if (!mapEntry.hasOwnProperty(termgroupName)) {
+          mapEntry[termgroupName] = {};
+        }
+        var mapTermEntry = mapEntry[termgroupName];
+        
+        mapTermEntry = {
+          week: tip.week,
+          generaltipid: tip.generaltipid,
+          coursetipid: tip.coursetipid,
+          coursename: tip.coursename
+        }
+        mapEntry[termgroupName] = mapTermEntry;
+        mapping[tip.tipid] = mapEntry;
       }
-      mapEntry[termgroupName] = mapTermEntry;
-      mapping[tip.tipid] = mapEntry;
     }
     
     return {"tips": tips, "mapping": mapping};
+  }
+  
+  _tipInArray(tipId, arr) {
+    var inArray = false;
+    
+    for (var i = 0; i < arr.length && !inArray; i++) {
+      inArray = (tipId == arr[i].tipid);
+    }
+    
+    return inArray;
   }
 
 //---------------------------------------------------------------

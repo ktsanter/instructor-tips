@@ -68,23 +68,66 @@ class TipMapping {
   
   _showTips(tipsInfo) {
     var contentContainer = CreateElement.createDiv(null, 'tipmapping-content');
-    console.log(tipsInfo);  
-    var msg = '';
-    for (var i = 0; i < tipsInfo.tips.length; i++) {
-      msg += JSON.stringify(tipsInfo.tips[i]) + '<br>';
+    console.log(tipsInfo);
+    
+    var tips = tipsInfo.tips;
+    var mapping = tipsInfo.mapping;
+    var termgroups = tipsInfo.termgroups;
+    
+    var headers = ['tip text', 'course'];
+    var colgroupInfo = ['width: 40%', 'width: 10%'];
+    for (var i = 0; i < termgroups.length; i++) {
+      headers.push(termgroups[i].termgroupname);
+      colgroupInfo.push('width: 4%');
     }
-    msg += '<br>';
-    for (var key in tipsInfo.mapping) {
-      msg += key + ': ' + JSON.stringify(tipsInfo.mapping[key]) + '<br>';
-    }
-    msg += '<br>';
-    for (var i = 0; i < tipsInfo.users.length; i++) {
-      msg += JSON.stringify(tipsInfo.users[i]) + '<br>';
-    }
+    headers.push('  ');
+    colgroupInfo.push('width: *');
 
-    contentContainer.innerHTML = msg;
+    var tipTable = CreateElement.createTable(null, null, headers, null, null, null, colgroupInfo);
+    contentContainer.appendChild(tipTable);
+    
+    for (var i = 0; i < tips.length; i++) {
+      var tip = tips[i];
+      var singleMap = null;
+      if (mapping.hasOwnProperty(tip.tipid)) singleMap = mapping[tip.tipid];
+      
+      this._showSingleTip(tipTable, tip, singleMap, termgroups);
+    }
 
     return contentContainer;
+  }
+  
+  _showSingleTip(tipTable, tip, singleMap, termgroups) {
+    var tipRow = CreateElement.createTableRow(null, null, tipTable);
+    tipRow.tipid = tip.tipid;
+    
+    CreateElement.createTableCell(null, null, tip.tiptext, false, tipRow);
+    
+    var courseCell = CreateElement.createTableCell(null, null, '', false, tipRow);
+      var coursename = 'none';
+    
+    for (var i = 0; i < termgroups.length; i++) {
+      var termCell = CreateElement.createTableCell(null, 'tipmapping-termcontent', '', false, tipRow);
+;
+      var termgroupName = termgroups[i].termgroupname;
+      var termLength = termgroups[i].termlength;
+      
+      var week = '?';
+      if (singleMap && singleMap.hasOwnProperty(termgroupName)) {
+        week = singleMap[termgroupName].week;
+        termCell.generaltipid = singleMap[termgroupName].generaltipid;
+        termCell.coursetipid = singleMap[termgroupName].coursetipid;
+        if (singleMap[termgroupName].coursetipid) {
+          coursename = singleMap[termgroupName].coursename;
+        } else {
+          coursename = 'all';
+        }
+      }
+      termCell.innerHTML = week;
+    }
+    
+    courseCell.innerHTML = coursename;
+    console.log('what if different terms are matched with different courses???');
   }
   
   _toggleFilterCollapse(e) {
