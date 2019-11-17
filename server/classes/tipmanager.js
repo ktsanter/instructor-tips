@@ -362,11 +362,17 @@ module.exports = internal.TipManager = class {
     var result = this._queryFailureResult();
     var queryList = {};
     
-    var constraint = this._buildTipMappingConstraints(postData);
-    
+    var constraint = this._buildTipMappingConstraints_orig(postData);  
+/*    
     queryList.alltips = 
       'SELECT tipid, generaltipid, coursetipid, tiptext, termgroupname, week, username, coursename ' + 
-      'FROM alltipmapping ' +
+      'FROM alltipmapping_orig ' +
+      constraint + ' ';
+  */    
+    var constraint = this._buildTipMappingConstraints(postData);
+    queryList.tips = 
+      'SELECT tipid, tiptext, termgroupname, week, username, coursename ' +
+      'from viewmappedtip ' +
       constraint + ' ';
      
     queryList.termgroups = 
@@ -374,12 +380,15 @@ module.exports = internal.TipManager = class {
       'FROM termgroup ' +
       'ORDER BY termgroupid ';
       
+    console.log(queryList);
     var queryResults = await this._dbQueries(queryList);
+    console.log(queryResults);
     
     if (queryResults.success) {   
       result.success = true;
       result.details = 'query succeeded';
-      var processedData = this._processMapResults(queryResults.data.alltips);
+      //var processedData = this._processMapResults(queryResults.data.alltips);
+      var processedData = this._processMapResults(queryResults.data.tips);
       result.tips = processedData.tips;
       result.mapping = processedData.mapping;
       result.termgroups = queryResults.data.termgroups;
@@ -391,7 +400,7 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  _buildTipMappingConstraints(postData) {
+  _buildTipMappingConstraints_orig(postData) {
     var generalConstraint = '';
     if (postData.unmapped) generalConstraint = ' (generaltipid IS NULL and coursetipid IS NULL) ';
     if (postData.general != '') {
@@ -438,6 +447,65 @@ module.exports = internal.TipManager = class {
       constraint += searchConstraint;
     }
     if (constraint != '') constraint = 'WHERE ' + constraint;
+    
+    return constraint;
+  }
+  
+  _buildTipMappingConstraints(postData) {
+    console.log('build...');
+    console.log(postData);
+    
+    var generalConstraint = '';
+    if (postData.unmapped) generalConstraint = ' (mappedtipid IS NULL) ';
+    if (postData.general != '') {
+      if (generalConstraint) generalConstraint += ' OR ';
+      generalConstraint += ' (courseid IS NULL) ';
+    }
+    if (postData.coursespecific) {
+      if (generalConstraint != '') generalConstraint += ' OR ';
+      generalConstraint += ' (coursename = "' + postData.coursename + '" ) ';
+    }
+    if (!postData.unmapped && !postData.general && !postData.coursespecific) {
+      generalConstraint = ' (FALSE) ';
+    }
+    if (generalConstraint != '') generalConstraint = ' (' + generalConstraint + ') ';
+    console.log('generalConstraint: ' + generalConstraint);
+    
+    var privateConstraint = '';
+    if (postData.shared) privateConstraint = ' (username IS NULL) ';
+    if (postData.personal) {
+      if (privateConstraint != '') privateConstraint += ' OR ';
+      privateConstraint += ' (username IS NOT NULL) ';
+    }
+    if (!postData.shared && !postData.personal) {
+      privateConstraint = ' (FALSE) ';
+    }
+    if (privateConstraint != '') privateConstraint = ' (' + privateConstraint + ') ';
+    console.log('privateConstraint: ' + privateConstraint);
+     
+    var userConstraint = '';
+    if (postData.user) userConstraint = ' (username = "' + postData.username + '") ';
+    console.log('userConstraint: ' + userConstraint);
+    
+    var searchConstraint = ' (tiptext like "%' + postData.searchtext + '%") ';
+    console.log('searchConstraint: ' + searchConstraint);
+
+    var constraint = '';
+    if (generalConstraint != '') constraint += generalConstraint;
+    if (privateConstraint != '') {
+      if (constraint != '') constraint += ' AND ';
+      constraint += privateConstraint;
+    }
+    if (userConstraint != '') {
+      if (constraint != '') constraint += ' AND ';
+      constraint += userConstraint;
+    }
+    if (searchConstraint != '') {
+      if (constraint != '') constraint += ' AND ';
+      constraint += searchConstraint;
+    }
+    if (constraint != '') constraint = 'WHERE ' + constraint;
+    console.log('constraint: ' + constraint);
     
     return constraint;
   }

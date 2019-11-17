@@ -76,31 +76,19 @@ CREATE TABLE course
   CONSTRAINT UNIQUE(coursename)
 );
 
-CREATE TABLE courseterm
+CREATE TABLE usercourse
 (
-  coursetermid           int unsigned NOT NULL AUTO_INCREMENT ,
-  courseid               int unsigned NOT NULL ,
-  termgroupid            int unsigned NOT NULL ,
+  usercourseid           int unsigned NOT NULL AUTO_INCREMENT ,
+  userid                 int unsigned NULL,
+  courseid               int unsigned NULL,
+  termgroupid            int unsigned NOT NULL,
 
-  PRIMARY KEY (coursetermid),
-  CONSTRAINT UNIQUE (courseid, termgroupid),
-  CONSTRAINT FOREIGN KEY (courseid) REFERENCES Course (courseid) ON DELETE CASCADE,
+  PRIMARY KEY (usercourseid),
+  CONSTRAINT UNIQUE (userid, courseid, termgroupid),
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE,  
+  CONSTRAINT FOREIGN KEY (courseid) REFERENCES course (courseid) ON DELETE CASCADE,
   CONSTRAINT FOREIGN KEY (termgroupid) REFERENCES termgroup (termgroupid) ON DELETE CASCADE
 );
-
-DELIMITER //
-
-CREATE TRIGGER load_course_terms
-AFTER INSERT ON course
-FOR EACH ROW
-BEGIN
-  IF NEW.ap = 0 THEN
-    INSERT INTO courseterm(courseid, termgroupid) 
-      SELECT NEW.courseid, termgroupid FROM termgroup;
-  END IF;
-END; //
-
-DELIMITER ;
 
 CREATE TABLE tip
 (
@@ -112,28 +100,17 @@ CREATE TABLE tip
   CONSTRAINT FOREIGN KEY (userid) REFERENCES User (userid) ON DELETE CASCADE
 );
 
-CREATE TABLE generaltip
+CREATE TABLE mappedtip
 (
-  generaltipid     int unsigned NOT NULL AUTO_INCREMENT ,
+  mappedtipid      int unsigned NOT NULL AUTO_INCREMENT,
+  usercourseid     int unsigned NULL,
   tipid            int unsigned NOT NULL ,
-  termgroupid      int unsigned NOT NULL ,
   week             int unsigned NOT NULL ,
-
-  PRIMARY KEY (generaltipid),
-  CONSTRAINT FOREIGN KEY (tipid) REFERENCES Tip (tipid) ON DELETE CASCADE,
-  CONSTRAINT FOREIGN KEY (termgroupid) REFERENCES termgroup (termgroupid) ON DELETE CASCADE
-);
-
-CREATE TABLE coursetip
-(
-  coursetipid            int unsigned NOT NULL AUTO_INCREMENT ,
-  tipid                  int unsigned NOT NULL ,
-  week                   int NOT NULL ,
-  coursetermid           int unsigned NOT NULL ,
-
-  PRIMARY KEY (coursetipid),
-  CONSTRAINT FOREIGN KEY (tipid) REFERENCES Tip (tipid) ON DELETE CASCADE,
-  CONSTRAINT FOREIGN KEY (coursetermid) REFERENCES CourseTerm (coursetermid) ON DELETE CASCADE
+  
+  PRIMARY KEY (mappedtipid),
+  CONSTRAINT UNIQUE (usercourseid, tipid, week),
+  CONSTRAINT FOREIGN KEY (usercourseid) REFERENCES usercourse (usercourseid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip (tipid) ON DELETE CASCADE
 );
 
 CREATE TABLE tipstatus
@@ -148,52 +125,87 @@ CREATE TABLE tipstatus
 CREATE TABLE usertipstatus
 (
   usertipstatusid int unsigned NOT NULL AUTO_INCREMENT ,
-  generaltipid    int unsigned NULL ,
-  coursetipid     int unsigned NULL ,
-  userid          int unsigned NOT NULL ,
+  mappedtipid     int unsigned NULL ,
   tipstatusid     int unsigned NOT NULL ,
 
   PRIMARY KEY (usertipstatusid),
-  CONSTRAINT FOREIGN KEY (generaltipid) REFERENCES GeneralTip (generaltipid) ON DELETE CASCADE,
-  CONSTRAINT FOREIGN KEY (coursetipid) REFERENCES CourseTip (coursetipid) ON DELETE CASCADE,
-  CONSTRAINT FOREIGN KEY (userid) REFERENCES User (userid) ON DELETE CASCADE,
+  CONSTRAINT UNIQUE (mappedtipid, tipstatusid),
+  CONSTRAINT FOREIGN KEY (mappedtipid) REFERENCES mappedtip (mappedtipid) ON DELETE CASCADE,
   CONSTRAINT FOREIGN KEY (tipstatusid) REFERENCES TipStatus (tipstatusid) ON DELETE CASCADE
 );
 
-CREATE VIEW generaltip_shared AS
-SELECT tiptext, week, termgroup.termgroupname, NULL AS userid, NULL AS username, NULL AS usershortname, generaltipid, generaltip.tipid, termgroup.termgroupid, termgroup.termlength
-FROM generaltip, tip, termgroup
-WHERE generaltip.tipid = tip.tipid
-AND tip.userid IS NULL
-AND termgroup.termgroupid = generaltip.termgroupid;
+#--------------------------------------------------------------------------
+CREATE VIEW viewmappedtip AS
+  select mappedtipid, username, coursename, termgroupname, tiptext, week 
+  from mappedtip, usercourse, termgroup, course, tip, user
+  where mappedtip.usercourseid = usercourse.usercourseid
+  and usercourse.termgroupid = termgroup.termgroupid 
+  and mappedtip.tipid = tip.tipid
+  and usercourse.userid = user.userid
+  and usercourse.courseid = course.courseid
 
-CREATE VIEW generaltip_personal AS
-SELECT tiptext, week, termgroup.termgroupname, user.userid, user.username, user.usershortname, generaltipid, generaltip.tipid, termgroup.termgroupid, termgroup.termlength
-FROM generaltip, tip, termgroup, user
-WHERE generaltip.tipid = tip.tipid
-AND tip.userid IS NOT NULL
-AND tip.userid = user.userid
-AND termgroup.termgroupid = generaltip.termgroupid;
+  UNION
 
-CREATE VIEW coursetip_shared AS
-SELECT tiptext, week, termgroup.termgroupname, NULL AS userid, NULL AS username, NULL AS usershortname, coursetipid, coursetip.tipid, termgroup.termgroupid, termgroup.termlength, course.courseid, course.coursename
-FROM coursetip, tip, courseterm, termgroup, course
-WHERE coursetip.tipid = tip.tipid
-AND coursetip.coursetermid = courseterm.coursetermid
-AND courseterm.termgroupid = termgroup.termgroupid
-and courseterm.courseid = course.courseid
-AND tip.userid IS NULL;
+  select mappedtipid, NULL AS username, coursename, termgroupname, tiptext, week 
+  from mappedtip, usercourse, termgroup, course, tip
+  where mappedtip.usercourseid = usercourse.usercourseid
+  and usercourse.termgroupid = termgroup.termgroupid 
+  and mappedtip.tipid = tip.tipid
+  and usercourse.userid IS NULL
+  and usercourse.courseid = course.courseid
 
-CREATE VIEW coursetip_personal AS
-SELECT tiptext, week, termgroup.termgroupname, user.userid, user.username, user.usershortname, coursetipid, coursetip.tipid, termgroup.termgroupid, termgroup.termlength, course.courseid, course.coursename
-FROM coursetip, tip, courseterm, termgroup, course, user
-WHERE coursetip.tipid = tip.tipid
-AND coursetip.coursetermid = courseterm.coursetermid
-AND courseterm.termgroupid = termgroup.termgroupid
-AND courseterm.courseid = course.courseid
-AND tip.userid IS NOT NULL
-AND user.userid = tip.userid;
+  UNION
 
+  select mappedtipid, username, NULL AS coursename, termgroupname, tiptext, week 
+  from mappedtip, usercourse, termgroup, tip, user
+  where mappedtip.usercourseid = usercourse.usercourseid
+  and usercourse.termgroupid = termgroup.termgroupid 
+  and mappedtip.tipid = tip.tipid
+  and usercourse.userid = user.userid
+  and usercourse.courseid IS NULL
+
+  UNION
+
+  select mappedtipid, NULL AS username, NULL AS coursename, termgroupname, tiptext, week 
+  from mappedtip, usercourse, termgroup, tip
+  where mappedtip.usercourseid = usercourse.usercourseid
+  and usercourse.termgroupid = termgroup.termgroupid 
+  and mappedtip.tipid = tip.tipid
+  and usercourse.userid IS NULL
+  and usercourse.courseid IS NULL;
+  
+#--------------------------------------------------------------------------
+CREATE VIEW viewusercourse as
+  select usercourseid, NULL AS courseid, NULL AS coursename, NULL AS ap, termgroup.termgroupid, termgroupname, NULL AS userid, NULL AS username  
+  from usercourse, termgroup  
+  where usercourse.courseid IS NULL
+    and usercourse.termgroupid = termgroup.termgroupid  
+    and usercourse.userid IS NULL
+
+  union
+  select usercourseid, course.courseid, coursename, ap, termgroup.termgroupid, termgroupname, NULL AS userid, NULL AS username  
+  from usercourse, course, termgroup
+  where usercourse.courseid = course.courseid
+    and usercourse.termgroupid = termgroup.termgroupid  
+    and usercourse.userid IS NULL
+
+  union
+  select usercourseid, NULL AS courseid, NULL AS coursename, NULL AS ap, termgroup.termgroupid, termgroupname, user.userid, user.username  
+  from usercourse, termgroup, user  
+  where usercourse.courseid IS NULL
+    and usercourse.termgroupid = termgroup.termgroupid  
+    and usercourse.userid = user.userid
+
+  union
+  select usercourseid, course.courseid, coursename, ap, termgroup.termgroupid, termgroupname, user.userid, user.username  
+  from usercourse, course, termgroup, user  
+  where usercourse.courseid = course.courseid
+    and usercourse.termgroupid = termgroup.termgroupid  
+    and usercourse.userid = user.userid;
+  
+
+#--------------------------------------------------------------------------
+/*
 CREATE VIEW mappedtips AS
 SELECT 
   tipid, tiptext, 
@@ -227,21 +239,95 @@ SELECT
   NULL AS courseid, NULL AS coursename
 FROM generaltip_personal;
 
-CREATE VIEW alltipmapping as
-SELECT
-  tip.tipid, tiptext, 
-  a.termgroupname, a.termlength, a.week,
-  a.username,
-  a.generaltipid, a.coursetipid,
-  a.coursename  
-FROM tip
-LEFT OUTER JOIN (
+#--------------------------------------------------------------------------
+CREATE VIEW viewuser AS
+  SELECT distinct a.userid, a.username 
+  FROM tip
+  LEFT OUTER JOIN (
+    SELECT userid, username
+    FROM user
+  ) AS a
+  ON (tip.userid = a.userid);
+  
+#--------------------------------------------------------------------------
+CREATE VIEW viewmappedtip AS
+  #-- unmapped tips
+  SELECT 
+    'unmapped' as maptype,
+    NULL AS mappedtipid, NULL as week, NULL as userid, NULL as username
+    tipid, tiptext,
+    NULL as termgroupid, NULL AS termgroupname,
+    NULL AS courseid, NULL as coursename,
+    tip.userid, a.username
+  FROM tip
+    LEFT OUTER JOIN (
+    ) AS a
+    ON (tip.userid = a.userid)
+  WHERE tipid NOT IN (
+    SELECT tipid from mappedtip
+  )
+
+  UNION
+  
+  #-- all courses, public
   SELECT
-    tipid,  
-    termgroupname, termlength, week,
-    username,
-    generaltipid, coursetipid,
-    coursename  
-  FROM mappedtips
-) AS a
-ON tip.tipid = a.tipid;
+    'all courses, public' as maptype,
+    mappedtip.mappedtipid, mappedtip.week, userid
+    tip.tipid, tip.tiptext,
+    termgroup.termgroupid, termgroup.termgroupname, 
+    NULL AS courseid, NULL as coursename,
+    NULL AS userid, NULL AS username
+  FROM mappedtip, tip, termgroup
+  WHERE mappedtip.tipid = tip.tipid
+    AND mappedtip.termgroupid = termgroup.termgroupid
+    AND mappedtip.courseid IS NULL
+    AND tip.userid IS NULL
+    
+  UNION
+
+  #-- all courses, private
+  SELECT
+    'all courses, private' as maptype,
+    mappedtip.mappedtipid, mappedtip.week,
+    tip.tipid, tip.tiptext,
+    termgroup.termgroupid, termgroup.termgroupname, 
+    NULL AS courseid, NULL as coursename,
+    user.userid, user.username
+  FROM mappedtip, tip, termgroup, user
+  WHERE mappedtip.tipid = tip.tipid
+    AND mappedtip.termgroupid = termgroup.termgroupid
+    AND mappedtip.courseid IS NULL
+    AND tip.userid = user.userid
+
+  UNION
+
+  #-- coursespecific, public
+  SELECT
+    'coursespecific, public' as maptype,
+    mappedtip.mappedtipid, mappedtip.week,
+    tip.tipid, tip.tiptext,
+    termgroup.termgroupid, termgroup.termgroupname, 
+    course.courseid, course.coursename,
+    NULL AS userid, NULL AS username
+  FROM mappedtip, tip, termgroup, course
+  WHERE mappedtip.tipid = tip.tipid
+    AND mappedtip.termgroupid = termgroup.termgroupid
+    AND mappedtip.courseid = course.courseid
+    AND tip.userid IS NULL
+
+  UNION
+
+  #-- coursespecific, private
+  SELECT
+    'coursespecific, private as maptype',
+    mappedtip.mappedtipid, mappedtip.week,
+    tip.tipid, tip.tiptext,
+    termgroup.termgroupid, termgroup.termgroupname, 
+    course.courseid, course.coursename,
+    user.userid, user.username
+  FROM mappedtip, tip, termgroup, course, user
+  WHERE mappedtip.tipid = tip.tipid
+    AND mappedtip.termgroupid = termgroup.termgroupid
+    AND mappedtip.courseid = course.courseid
+    AND tip.userid = user.userid;
+*/

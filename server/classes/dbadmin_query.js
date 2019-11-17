@@ -45,8 +45,8 @@ module.exports = internal.dbAdminQuery = class {
     } else if (params.queryName == 'courses') {
       dbResult = await this._getCourses(params);
       
-    } else if (params.queryName == 'courseterms') {
-      dbResult = await this._getCourseTerms(params);
+    } else if (params.queryName == 'usercourses') {
+      dbResult = await this._getUserCourse(params);
       
     } else if (params.queryName == 'tipstatuses') {
       dbResult = await this._getTipStatuses(params);
@@ -320,16 +320,15 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
   
-  async _getCourseTerms(params) {
+  async _getUserCourse(params) {
     var result = this._queryFailureResult();
     
     var queryList = {
-      courseterms: 
-        'select coursetermid, course.courseid, coursename, ap, termgroup.termgroupid, termgroupname ' +
-        'from courseterm, course, termgroup ' +
-        'where courseterm.courseid = course.courseid ' +
-        'and courseterm.termgroupid = termgroup.termgroupid ' +
-        'order by coursename, termgroupname',
+      usercourses: 
+        'select usercourseid, courseid, coursename, ap, termgroupid, termgroupname, userid, username ' +
+        'from viewusercourse ' +
+        'order by username, coursename, termgroupname ',
+
       courses: 
         'select courseid, coursename, ap ' +
         'from course ' +
@@ -337,7 +336,11 @@ module.exports = internal.dbAdminQuery = class {
       termgroups: 
         'select termgroupid, termgroupname, termlength ' +
         'from termgroup ' +
-        'order by termgroupname'
+        'order by termgroupname',
+      users:
+        'select userid, username ' +
+        'from user ' +
+        'order by username'
     };
     
     var queryResults = await this._dbQueries(queryList);
@@ -345,20 +348,23 @@ module.exports = internal.dbAdminQuery = class {
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.primaryKey = 'coursetermid',
+      result.primaryKey = 'usercourseid',
       result.insertUpdateFields = [
         {courseid: 'foreignkey'},
+        {userid: 'foreignkey'},
         {termgroupid: 'foreignkey'}
       ],
-      result.displayFields = ['coursename', 'termgroupname'];
-      result.data = queryResults.data.courseterms,
+      result.displayFields = ['username', 'coursename', 'termgroupname'];
+      result.data = queryResults.data.usercourses,
       result.constraints = {
         foreignKeys: {
-          courseid: {data: 'courses', displayField: 'coursename'},
+          courseid: {data: 'courses', displayField: 'coursename', allownull: true},
+          userid: {data: 'users', displayField: 'username', allownull: true},
           termgroupid: {data: 'termgroups', displayField: 'termgroupname'}
         },
         courses: queryResults.data.courses,
-        termgroups: queryResults.data.termgroups
+        termgroups: queryResults.data.termgroups,
+        users: queryResults.data.users
       };
     } else {
       result.details = queryResults.details;

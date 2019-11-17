@@ -1,17 +1,12 @@
 USE instructortips;
 
+DELETE FROM usertipfilter;
 DELETE FROM tipstatus;
-DELETE FROM generaltip;
-DELETE FROM coursetip;
-DELETE FROM tip;
-
 DELETE FROM userprivilege;
 DELETE FROM privilege;
 DELETE FROM user;
-
-DELETE FROM courseterm;
+DELETE FROM usercourse;
 DELETE FROM course;
-
 DELETE FROM term;
 DELETE FROM termgroup;
 
@@ -58,17 +53,35 @@ INSERT INTO course set coursename='AP Computer Science Principles (S2)', ap = tr
 INSERT INTO course set coursename='Java Programming A', ap = false;
 INSERT INTO course set coursename='Basic Web Design: HTML & CSS', ap = false;
 
-INSERT INTO courseterm (courseid, termgroupid)
-SELECT courseid, termgroupid
-FROM course, termgroup
-WHERE course.coursename = 'AP Computer Science Principles (S1)'
-AND termgroup.termgroupname = 'semester';
+#--- all courses, public, all terms
+INSERT INTO usercourse (userid, courseid, termgroupid) 
+SELECT NULL as userid, NULL as courseid, termgroupid
+FROM termgroup;
 
-INSERT INTO courseterm (courseid, termgroupid)
-SELECT courseid, termgroupid
-FROM course, termgroup
-WHERE course.coursename = 'AP Computer Science Principles (S2)'
-AND termgroup.termgroupname = 'semester';
+#--- all courses, private, all terms
+INSERT INTO usercourse (userid, courseid, termgroupid) 
+SELECT userid, NULL AS courseid, termgroupid
+FROM termgroup, user;
 
+#--- specific courses, public, all terms
+INSERT INTO usercourse (userid, courseid, termgroupid) 
+SELECT NULL as userid, courseid, termgroupid
+FROM course, termgroup;
+
+#-- specific courses, specific users, specific terms
+INSERT INTO usercourse (userid, courseid, termgroupid) 
+SELECT userid, courseid, termgroupid
+FROM user, course, termgroup
+WHERE user.usershortname = 'ksanter'
+  AND course.coursename in ('Java Programming A', 'Basic Web Design: HTML & CSS')
+  AND termgroup.termgroupname in ('semester', 'trimester');
+  
+INSERT INTO usercourse (userid, courseid, termgroupid) 
+SELECT userid, courseid, termgroupid
+FROM user, course, termgroup
+WHERE user.usershortname = 'carlos'
+  AND course.coursename in ('Java Programming A', 'Basic Web Design: HTML & CSS')
+  AND termgroup.termgroupname in ('semester');
+  
 INSERT INTO tipstatus (tipstatusname) VALUES ('scheduled');
 INSERT INTO tipstatus (tipstatusname) VALUES ('completed');

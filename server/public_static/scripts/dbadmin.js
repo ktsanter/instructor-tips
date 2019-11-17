@@ -15,7 +15,7 @@ const app = function () {
 	const page = {};
   
 	const settings = {
-    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'courseterms', 'tipstatuses']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tipstatuses']
   };
   
 	//---------------------------------------
@@ -51,7 +51,7 @@ const app = function () {
         {label: 'TermGroups', callback: _makeNavCallback('termgroups')  , subitems: null, rightjustify: false},
         {label: 'Terms', callback: _makeNavCallback('terms')  , subitems: null, rightjustify: false},
         {label: 'Courses', callback: _makeNavCallback('courses')  , subitems: null, rightjustify: false},
-        {label: 'CourseTerms', callback: _makeNavCallback('courseterms')  , subitems: null, rightjustify: false},
+        {label: 'UserCourses', callback: _makeNavCallback('usercourses')  , subitems: null, rightjustify: false},
         {label: 'TipStatus', callback: _makeNavCallback('tipstatuses')  , subitems: null, rightjustify: false}
       ],
       
