@@ -37,7 +37,7 @@ class TipSchedulingEdit {
     }
   }
   
-  async update(tipsData) {    
+  update(tipsData) {    
     var tipValues = [];
     for (var i = 0; i < tipsData.length; i++) {
       var tip = tipsData[i];
@@ -71,6 +71,8 @@ class TipSchedulingEdit {
     controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-check-square', 'save', finalizeAddHandler));
     controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-window-close', 'cancel', cancelAddHandler));
   }
+  
+  
   
   _prepContainerForUpdate() {
     this._removeChildren(this._container);

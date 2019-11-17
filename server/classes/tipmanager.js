@@ -154,6 +154,13 @@ module.exports = internal.TipManager = class {
     var queryList = {};
     
     var tipstatusCondition = this._buildTipSchedulingConstraints(postData);
+    queryList.usercourse =
+      'SELECT usercourseid ' +
+      'FROM usercourse ' +
+      'WHERE userid IN (SELECT userid FROM user WHERE username = "' + postData.username + '") ' +
+        'AND courseid IN (SELECT courseid FROM course WHERE coursename = "' + postData.coursename + '") ' +
+        'AND termgroupid IN (SELECT termgroupid FROM termgroup WHERE termgroupname = "' + postData.termgroupname + '") ';
+        
     queryList.tips = 
       'select ' +
         'v.mappedtipid, v.userid, v.username, v.courseid, v.coursename, v.termgroupid, v.termgroupname, v.week, v.tiptext, ' +
@@ -181,18 +188,13 @@ module.exports = internal.TipManager = class {
     var queryResults = await this._dbQueries(queryList);
     
     if (queryResults.success) {
-      var combinedRows = [];
-      for (var key in queryResults.data) {
-        if (key != 'termlength') {
-          var qdata = queryResults.data[key];
-          for (var i = 0; i < qdata.length; i++) {
-            combinedRows.push(qdata[i]);
-          }
-        }
-      }
       result.success = true;
       result.details = 'query succeeded';
-      result.data = combinedRows;
+      if (queryResults.data.usercourse.length > 0) {
+        result.data = queryResults.data.tips;
+      } else {
+        result.data = [];
+      }
       result.termlength = queryResults.data.termlength[0].termlength;
 
     } else {
@@ -311,6 +313,8 @@ module.exports = internal.TipManager = class {
           'and termgroupid in (select termgroupid from termgroup where termgroupname = "' + filter.termgroupname + '") ';
         
       queryResults = await this._dbQuery(query);
+      console.log(query);
+      console.log(queryResults);
       
       if (queryResults.success) {   
         result.success = true;
