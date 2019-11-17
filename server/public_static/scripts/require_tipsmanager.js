@@ -3,6 +3,7 @@ define(function (require) {
   require('tipsmanager_filter');
   require('tipsmanager_courses');
   require('tipsmanager_scheduling');
+  require('tipsmanager_schedulingedit');
   require('tipsmanager_editing');
   require('tipsmanager_mapping');
   require('dbadmincontainer');

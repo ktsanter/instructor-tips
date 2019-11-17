@@ -3,6 +3,7 @@
 //-----------------------------------------------------------------------------------
 // TODO: add calendar info to week labels
 // TODO: build UI to add tip to current schedule 
+// TODO: disable other editing choices when one is in-progress
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {
@@ -13,14 +14,24 @@ class TipScheduling {
     this._HIDE_CLASS = 'tipmanager-hide';
     
     this._container = null;
+    this._tipAddContainer = null;
 
     this._tipFilter = new TipManagerFilter('scheduling', () => {return this.update();});
+    this._tipAddEditor = new TipSchedulingEdit({
+      editType: 'add tip',
+      callbacks: {
+        cancelChange: () => {return this._cancelEditChange();} ,
+        finishAdd:  (dbData) => {return this._doFinishAdd(dbData);} ,
+        finishEdit:  (dbData) => {return this._doFinishEdit(dbData);} ,
+        finishDelete:  (dbData) => {return this._doFinishDelete(dbData);} ,
+      }
+    });
     
     this._tipStatusClass = {
       null: 'far fa-square',
       scheduled: 'fas fa-exclamation-circle',
       completed: 'fas fa-check-circle'
-    }      
+    };
   }
  
   //--------------------------------------------------------------
@@ -28,6 +39,7 @@ class TipScheduling {
   //--------------------------------------------------------------
   render() {
     this._container = CreateElement.createDiv(null, 'tipschedule ' + this._HIDE_CLASS);
+    this._tipAddContainer = this._tipAddEditor.render();
     
     return this._container;
   }
@@ -104,11 +116,13 @@ class TipScheduling {
   
   _renderTipsForWeek(weekNumber, tipsForWeek) {
     var container = CreateElement.createDiv(null, 'weeklytip');
+    container.tipscheduleweek = weekNumber;
     
     var label = CreateElement.createDiv(null, 'weeklytip-label');
     container.appendChild(label);
     label.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', null, this._toggleWeeklyBoxCollapse));
     label.appendChild(CreateElement.createSpan(null, 'weeklytip-label-text', 'week ' + weekNumber));
+    label.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-add far fa-plus-square', 'add tip to week', (e) => {return this._startAddTipUI(e);}));
     
     var contents = CreateElement.createDiv(null, 'weeklytip-contents');
     container.appendChild(contents); 
@@ -200,6 +214,60 @@ class TipScheduling {
     tipInformation.tipstatusname = tipStatusName;
     var queryResults = await this._doPostQuery('tipmanager/update', 'singletipstatus', tipInformation);
 
+    this.update();
+  }
+  
+  //------------------------------------------------------------------------------------------------
+  // add/edit/delete tip
+  //------------------------------------------------------------------------------------------------
+  async _startAddTipUI(e) {
+    var weekContainer = e.target.parentNode.parentNode;
+    var weekContents = weekContainer.getElementsByClassName('weeklytip-contents')[0];
+    var weekNumber = weekContainer.tipscheduleweek;   
+    
+    if (this._tipAddContainer.parentNode) {
+      this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
+    }
+    weekContents.insertBefore(this._tipAddContainer, weekContents.firstChild);
+    
+    var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule-tiplist', this._tipFilter.getFilter());
+    if (tipsQuery.success) {
+      this._tipAddEditor.update(tipsQuery.data);
+      this._tipAddEditor.show(true);
+    }
+  }
+  
+  async _cancelEditChange() {
+    console.log('cancel edit change');
+    this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
+  }
+
+  async _doFinishAdd(dbData) {
+    console.log(dbData);
+    console.log(this._tipAddContainer.parentNode.parentNode.tipscheduleweek);
+    var postData = {
+      filter: this._tipFilter.getFilter(),
+      addData: dbData,
+      week: this._tipAddContainer.parentNode.parentNode.tipscheduleweek
+    };
+    console.log(postData);
+    
+    var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule-addtip', postData);
+    if (tipsQuery.success) {
+      this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
+      this.update();
+    }
+  }
+
+  async _doFinishEdit(dbData) {
+    console.log(dbData);
+    this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
+    this.update();
+  }
+
+  async _doFinishDelete(dbData) {
+    console.log(dbData);
+    this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
     this.update();
   }
   

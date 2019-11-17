@@ -30,6 +30,12 @@ module.exports = internal.TipManager = class {
     if (params.queryName == 'tipschedule') {
       dbResult = await this._getTipSchedule(params, postData, userInfo);
       
+    } else if (params.queryName == 'tipschedule-tiplist') {
+      dbResult = await this._getTipScheduleTipList(params, postData, userInfo);
+      
+    } else if (params.queryName == 'tipschedule-addtip') {
+      dbResult = await this._addTipToSchedule(params, postData, userInfo);
+      
     } else if (params.queryName == 'tipedit') {
       dbResult = await this._getTipEditData(params, postData, userInfo);
       
@@ -227,6 +233,96 @@ module.exports = internal.TipManager = class {
     tipstatusCondition = ' AND ' + tipstatusCondition;
     
     return tipstatusCondition;
+  }
+  
+//----------------------------------------------------------
+  async _getTipScheduleTipList(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var queryList = {};
+    
+    queryList.tips = 
+      'SELECT tipid, tiptext ' +
+      'FROM tip, user ' +
+      'WHERE tip.userid = user.userid ' + 
+        'AND user.username = "' + postData.username + '" ' + 
+      'ORDER BY tiptext ';
+      
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {   
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data.tips;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+//----------------------------------------------------------
+  async _addTipToSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var query;
+    var queryResults;
+    
+    var filter = postData.filter;
+    var weekNumber = postData.week;
+
+    var tipId;
+    if (postData.addData.addType == 'existing') {
+      tipId = postData.addData.addValue;
+      
+    } else {
+      var tipText = postData.addData.addValue;
+      query = 
+        'INSERT INTO tip (tiptext, userid) ' +
+        'SELECT ' + 
+          '"' + tipText + '", ' +
+          'userid ' +
+          'FROM user ' +
+          'WHERE username = "' + filter.username + '" '
+          
+      queryResults = await this._dbQuery(query);    
+      
+      if (queryResults.success) {
+        query =
+          'SELECT tipid ' +
+          'FROM tip, user ' +
+          'WHERE tiptext = "' + tipText + '" ' +
+            'AND username = "' + filter.username + '" ' +
+            'AND tip.userid = user.userid ';
+
+        queryResults = await this._dbQuery(query);
+        if (queryResults.success) {
+          tipId = queryResults.data[0].tipid;
+        }          
+      }        
+    }
+
+    if (tipId) {    
+      query = 
+        'INSERT INTO mappedtip (usercourseid, tipid, week) ' +
+          'SELECT usercourseid, ' + tipId + ', ' + weekNumber + ' ' +
+          'from usercourse ' +
+          'where courseid in (select courseid from course where coursename = "' + filter.coursename + '") ' +
+          'and userid in (select userid from user where username = "' + filter.username + '") ' +
+          'and termgroupid in (select termgroupid from termgroup where termgroupname = "' + filter.termgroupname + '") ';
+        
+      queryResults = await this._dbQuery(query);
+      
+      if (queryResults.success) {   
+        result.success = true;
+        result.details = 'query succeeded';
+        result.data = queryResults.data.tips;
+
+      } else {
+        result.details = queryResults.details;
+      }
+    }
+    
+    return result;
   }
   
 //----------------------------------------------------------

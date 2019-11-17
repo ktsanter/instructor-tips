@@ -6,6 +6,11 @@
   cursor: pointer;
 }
 
+.tipschedule-icon-add {
+  float:right;
+  padding-right: 2px;
+}
+
 .tipschedule-content {
   width: 60%;
 }
@@ -52,4 +57,41 @@
 
 .hide-weeklytip-contents {
   display: none;
+}
+
+/*-----------------------
+ * add/edit/update 
+ *-----------------------*/
+.tipschedule-icon-add {
+  float:right;
+  padding-right: 2px;
+}
+
+.tipschedule-edit {
+  background-color: #ccc;
+  border: 1px solid #093c44;
+  margin-left: -5px;
+}
+
+.tipschedule-edit-container {
+  margin-top: 2px;
+  margin-bottom: 2px;
+}
+
+.tipschedule-add-text {
+  width: 90%;
+}
+
+.tipschedule-add-select {
+  width: 90%;
+}
+
+.tipschedule-add-choice {
+  vertical-align: top;
+}
+
+.tipschedule-editicon {
+  cursor: pointer;
+  font-size: 1.5em;
+  padding-right: 6px;  
 }
