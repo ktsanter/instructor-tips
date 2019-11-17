@@ -44,8 +44,8 @@ module.exports = internal.dbAdminUpdate = class {
     } else if (params.queryName == 'courses') {
       dbResult = await this._updateCourse(params, postData);
       
-    } else if (params.queryName == 'courseterms') {
-      dbResult = await this._updateCourseTerm(params, postData);
+    } else if (params.queryName == 'usercourses') {
+      dbResult = await this._updateUserCourse(params, postData);
       
     } else if (params.queryName == 'tipstatuses') {
       dbResult = await this._updateTipStatuses(params, postData);
@@ -224,11 +224,12 @@ module.exports = internal.dbAdminUpdate = class {
     return result;
   }
   
-  async _updateCourseTerm(params, postData) {
+  async _updateUserCourse(params, postData) {
     var result = this._queryFailureResult();
 
-    var query = 'update courseterm ' +
+    var query = 'update usercourse ' +
                 'set ' +
+                  'userid = ' + postData.userid + ', ' + 
                   'courseid = ' + postData.courseid + ', ' +
                   'termgroupid = ' + postData.termgroupid + ' ' +
                 'where coursetermid = ' + postData.coursetermid;

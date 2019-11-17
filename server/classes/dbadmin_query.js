@@ -350,16 +350,16 @@ module.exports = internal.dbAdminQuery = class {
       result.details = 'query succeeded';
       result.primaryKey = 'usercourseid',
       result.insertUpdateFields = [
-        {courseid: 'foreignkey'},
         {userid: 'foreignkey'},
+        {courseid: 'foreignkey'},
         {termgroupid: 'foreignkey'}
       ],
       result.displayFields = ['username', 'coursename', 'termgroupname'];
       result.data = queryResults.data.usercourses,
       result.constraints = {
         foreignKeys: {
-          courseid: {data: 'courses', displayField: 'coursename', allownull: true},
           userid: {data: 'users', displayField: 'username', allownull: true},
+          courseid: {data: 'courses', displayField: 'coursename', allownull: true},
           termgroupid: {data: 'termgroups', displayField: 'termgroupname'}
         },
         courses: queryResults.data.courses,

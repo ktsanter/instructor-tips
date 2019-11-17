@@ -44,8 +44,8 @@ module.exports = internal.dbAdminInsert = class {
     } else if (params.queryName == 'courses') {
       dbResult = await this._insertCourse(params, postData);
       
-    } else if (params.queryName == 'courseterms') {
-      dbResult = await this._insertCourseTerm(params, postData);
+    } else if (params.queryName == 'usercourses') {
+      dbResult = await this._insertUserCourse(params, postData);
       
     } else if (params.queryName == 'tipstatuses') {
       dbResult = await this._insertTipStatuses(params, postData);
@@ -220,11 +220,12 @@ module.exports = internal.dbAdminInsert = class {
     return result;
   }
   
-  async _insertCourseTerm(params, postData) {
+  async _insertUserCourse(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into courseterm (courseid, termgroupid) ' +
+    var query = 'insert into usercourse (userid, courseid, termgroupid) ' +
                 'values (' +
+                  '' + postData.userid + ', ' +
                   '' + postData.courseid + ', ' + 
                   '' + postData.termgroupid + '' + 
                 ')';

@@ -59,7 +59,7 @@ class DBAdminTableEdit {
       headers.push(CreateElement.createSpan(null, null, displayFields[i]));
     }
     headers.push(CreateElement.createSpan(null, 'dbadmin-editcell'));
-    console.log(this._dbData);
+
     var primaryData = this._dbData.data;
     for (var i = 0; i < primaryData.length; i++) {
       contents[i] = [];

@@ -44,8 +44,8 @@ module.exports = internal.dbAdminDelete = class {
     } else if (params.queryName == 'courses') {
       dbResult = await this._deleteCourse(params, postData);
       
-    } else if (params.queryName == 'courseterms') {
-      dbResult = await this._deleteCourseTerm(params, postData);
+    } else if (params.queryName == 'usercourses') {
+      dbResult = await this._deleteUserCourse(params, postData);
       
     } else if (params.queryName == 'tipstatuses') {
       dbResult = await this._deleteTipStatuses(params, postData);
@@ -204,11 +204,11 @@ module.exports = internal.dbAdminDelete = class {
     return result;
   }
   
-  async _deleteCourseTerm(params, postData) {
+  async _deleteUserCourse(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'delete from courseterm ' +
-                'where coursetermid = ' + postData.coursetermid;
+    var query = 'delete from usercourse ' +
+                'where usercourseid = ' + postData.usercourseid;
                 
     var queryResults = await this._dbQuery(query);
 
