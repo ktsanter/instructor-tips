@@ -48,12 +48,13 @@ class TipScheduling {
     this._prepContainerForUpdate();
     this._container.appendChild(await this._tipFilter.render(this._notice));
     
+
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
     
     if (tipsQuery.success) {
       var organizedTips = this._organizeByWeek(tipsQuery.data, tipsQuery.termlength);
       this._container.appendChild(this._showTips(organizedTips, tipsQuery.termlength));
-    }  
+    }    
   }
   
   async userchange() {

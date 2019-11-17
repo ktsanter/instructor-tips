@@ -143,112 +143,35 @@ module.exports = internal.TipManager = class {
 // specific query methods
 //---------------------------------------------------------------
   async _getTipSchedule(params, postData, userInfo) {
-    var result = this._queryFailureResult();
-   
-    var statusA = '';
-    var statusB = '';
-    if (postData.unspecified) {
-      statusA = 'a.tipstatusname is null ';      
-    }
-    if (postData.scheduled || postData.completed) {
-      statusB = 'a.tipstatusname in (';
-      if (postData.scheduled && postData.completed) {
-        statusB += '"scheduled", "completed" ';
-      } else if (postData.scheduled) {
-        statusB += '"scheduled"';
-      } else if (postData.completed) {
-        statusB += '"completed"';
-      }
-      statusB += ') ';
-    }
-    
-    var tipstatusCondition = ''
-    if (statusA != '' && statusB != '') {
-      tipstatusCondition = '(' + statusA + ' OR ' + statusB + ')';
-    } else if (statusA != '') {
-      tipstatusCondition = statusA;
-    } else if (statusB != '') {
-      tipstatusCondition = statusB;
-    }
+    var result = this._queryFailureResult();   
 
     var queryList = {};
-    if (postData.general) {
-      if (postData.shared) {
-        queryList.generaltip_shared = 
-          'select tiptext, termgroupname, week, a.tipstatusname, a.usertipstatusid, generaltip_shared.generaltipid, NULL as coursetipid ' + 
-          'from generaltip_shared ' + 
-          'left outer join (' +
-            'SELECT usertipstatusid, generaltipid, tipstatusname, user.userid, user.usershortname ' +
-            'FROM usertipstatus, tipstatus, user  ' +
-            'WHERE usertipstatus.tipstatusid = tipstatus.tipstatusid ' +
-              'AND user.userid = ' + userInfo.userId + ' ' +
-              'AND user.userid = usertipstatus.userid ' +
-            ') AS a ' +
-          'ON generaltip_shared.generaltipid = a.generaltipid ' + 
-          'where generaltip_shared.termgroupname = "' + postData.termgroupname + '" ' + 
-          'and ' + tipstatusCondition; 
-       
-      }
-      if (postData.personal) {
-        queryList.generaltip_personal = 
-          'SELECT tiptext, termgroupname, week, a.tipstatusname, a.usertipstatusid, generaltip_personal.generaltipid, NULL as coursetipid ' +
-          'FROM generaltip_personal ' +
-          'LEFT OUTER JOIN ( ' +
-            'SELECT usertipstatusid, generaltipid, tipstatusname, user.userid, user.usershortname ' +
-            'FROM usertipstatus, tipstatus, user ' +
-            'WHERE usertipstatus.tipstatusid = tipstatus.tipstatusid ' +
-              'AND user.userid = ' + userInfo.userId + ' ' +
-              'AND user.userid = usertipstatus.userid ' +
-            ') AS a ' +
-          'ON generaltip_personal.generaltipid = a.generaltipid ' +
-          'WHERE generaltip_personal.userid = ' + userInfo.userId + ' ' +
-            'AND generaltip_personal.termgroupname = "' + postData.termgroupname + '" ' +
-            'and ' + tipstatusCondition;
-      }
-    }
     
-    if (postData.coursespecific) {
-      if (postData.shared) {
-        queryList.coursetip_shared =
-          'SELECT tiptext, termgroupname, week, a.tipstatusname, a.usertipstatusid, NULL AS generaltipid, coursetip_shared.coursetipid ' +
-          'FROM coursetip_shared ' +
-          'LEFT OUTER JOIN ( ' +
-            'SELECT usertipstatusid, coursetipid, tipstatusname, user.userid, user.usershortname ' +
-            'FROM usertipstatus, tipstatus, user ' +
-            'WHERE usertipstatus.tipstatusid = tipstatus.tipstatusid ' +
-              'AND user.userid = ' + userInfo.userId + ' ' +
-              'AND user.userid = usertipstatus.userid ' +
-            ') AS a ' +
-          'ON coursetip_shared.coursetipid = a.coursetipid ' +
-          'WHERE coursetip_shared.termgroupname = "' + postData.termgroupname + '" ' + 
-            'AND coursetip_shared.coursename = "' + postData.coursename + '" ' +
-            'AND ' + tipstatusCondition;
-         
-      }
-      if (postData.personal) {
-        queryList.coursetip_personal = 
-          'SELECT tiptext, termgroupname, week, a.tipstatusname, a.usertipstatusid, NULL AS generaltipid, coursetip_personal.coursetipid ' +
-          'FROM coursetip_personal ' +
-          'LEFT OUTER JOIN ( ' +
-            'SELECT usertipstatusid, coursetipid, tipstatusname, user.userid, user.usershortname ' +
-            'FROM usertipstatus, tipstatus, user ' +
-            'WHERE usertipstatus.tipstatusid = tipstatus.tipstatusid ' +
-              'AND user.userid = ' + userInfo.userId + ' ' +
-              'AND user.userid = usertipstatus.userid ' +
-            ') AS a ' +
-          'ON coursetip_personal.coursetipid = a.coursetipid ' +
-          'WHERE coursetip_personal.userid = ' + userInfo.userId + ' ' + 
-            'AND coursetip_personal.termgroupname = "' + postData.termgroupname + '" ' + 
-            'AND coursetip_personal.coursename = "' + postData.coursename + '" ' +
-            'AND ' + tipstatusCondition;
-      }
-    }
-    
+    var tipstatusCondition = this._buildTipSchedulingConstraints(postData);
+    queryList.tips = 
+      'select ' +
+        'v.mappedtipid, v.userid, v.username, v.courseid, v.coursename, v.termgroupid, v.termgroupname, v.week, v.tiptext, ' +
+        'uts.usertipstatusid, uts.tipstatusid, uts.userid, uts.tipstatusname ' +
+      'from viewmappedtip as v ' +
+      'left outer join ( ' +
+        'select usertipstatusid, mappedtipid, tipstatus.tipstatusid, userid, tipstatus.tipstatusname ' +
+        'from usertipstatus, tipstatus ' +
+        'where usertipstatus.tipstatusid = tipstatus.tipstatusid ' +
+      ') as uts ' +
+      'on ( ' +
+        'v.mappedtipid = uts.mappedtipid  ' +
+        'and uts.userid in (select userid from user where username = "' + postData.username + '" ) ' +
+      ') ' +
+      'where (v.userid IS NULL OR v.username = "' + postData.username + '" ) ' + 
+        'and (v.courseid IS NULL OR v.coursename = "' + postData.coursename + '" ) ' +
+        'and v.termgroupname = "' + postData.termgroupname + '" ' +
+        tipstatusCondition + ' ';
+
     queryList.termlength = 
       'select termlength ' +
       'from termgroup ' +
       'where termgroupname = "' + postData.termgroupname + '" ';
-      
+    
     var queryResults = await this._dbQueries(queryList);
     
     if (queryResults.success) {
@@ -271,8 +194,41 @@ module.exports = internal.TipManager = class {
     }
     
     return result;
-  }  
+  }
 
+  _buildTipSchedulingConstraints(postData) {
+    var statusA = '';
+    var statusB = '';
+    if (postData.unspecified) {
+      statusA = 'uts.tipstatusname is null ';      
+    }
+    if (postData.scheduled || postData.completed) {
+      statusB = 'uts.tipstatusname in (';
+      if (postData.scheduled && postData.completed) {
+        statusB += '"scheduled", "completed" ';
+      } else if (postData.scheduled) {
+        statusB += '"scheduled"';
+      } else if (postData.completed) {
+        statusB += '"completed"';
+      }
+      statusB += ') ';
+    }
+    
+    var tipstatusCondition = ''
+    if (statusA != '' && statusB != '') {
+      tipstatusCondition = '(' + statusA + ' OR ' + statusB + ')';
+    } else if (statusA != '') {
+      tipstatusCondition = statusA;
+    } else if (statusB != '') {
+      tipstatusCondition = statusB;
+    }
+    
+    if (tipstatusCondition == '') tipstatusCondition = '(FALSE) ';
+    tipstatusCondition = ' AND ' + tipstatusCondition;
+    
+    return tipstatusCondition;
+  }
+  
 //----------------------------------------------------------
   async _getTipEditData(params, postData, userInfo) {
     var result = this._queryFailureResult();
@@ -380,9 +336,7 @@ module.exports = internal.TipManager = class {
       'FROM termgroup ' +
       'ORDER BY termgroupid ';
       
-    console.log(queryList);
     var queryResults = await this._dbQueries(queryList);
-    console.log(queryResults);
     
     if (queryResults.success) {   
       result.success = true;
@@ -622,13 +576,12 @@ module.exports = internal.TipManager = class {
       
       if (postData.usertipstatusid == null) {
         query =
-          'insert into usertipstatus (generaltipid, coursetipid, userid, tipstatusid) ' +
+          'insert into usertipstatus (mappedtipid, userid, tipstatusid) ' +
           'values (' +
-            postData.generaltipid + ', ' +
-            postData.coursetipid + ', ' +
+            postData.mappedtipid + ', ' + 
             userInfo.userId + ', ' +
-            tipStatusId + 
-          ')';
+            tipStatusId +
+          ') ';
           queryResults = await this._dbQuery(query);
       
       } else {
@@ -639,6 +592,7 @@ module.exports = internal.TipManager = class {
         queryResults = await this._dbQuery(query);
       }
     }
+    
     
     if (queryResults.success) {
       result.success = true;

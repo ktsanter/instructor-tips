@@ -2,10 +2,9 @@
 //---------------------------------------------------------------
 // tip filter DB interface
 //---------------------------------------------------------------
-// TODO: move update here
-// TODO: remove original get from ssdbquery
-// TODO: add UI config info
+// TODO: addlogic based on user privileges
 //---------------------------------------------------------------
+
 const internal = {};
 
 module.exports = internal.TipFilter = class {
@@ -162,25 +161,27 @@ module.exports = internal.TipFilter = class {
     var result = this._queryFailureResult();
 
     var filter = {
-      general: true,
-      coursespecific: false,
+      coursespecific: true,
       coursename: '',
       termgroupname: 'semester',
       termname: 'Sem 1',
-      shared: true,
-      personal: true,
+      user: true,
+      username: userInfo.userName,
       unspecified: true,
       completed: true,
       scheduled: true
     };
     
     var tipUIConfig = {
-      termGroup: ['termname'],
-      generalOrCourseGroup: ['general', 'coursespecific', 'coursename'],
-      publicOrPrivateGroup: ['shared', 'personal'],
+      courseTermGroup: ['coursename', 'termname'],
       tipstatusGroup: ['unspecified', 'scheduled', 'completed'],
-      groupOrder: ['termGroup', 'generalOrCourseGroup', 'publicOrPrivateGroup', 'tipstatusGroup']
+      userGroup: ['username'],
+      groupOrder: ['courseTermGroup', 'tipstatusGroup']
      };
+     
+     if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
+       tipUIConfig.groupOrder = ['courseTermGroup', 'userGroup', 'tipstatusGroup'];
+     }
 
     var queryResultForFilter = await this._getFilter(userInfo, 'scheduling', filter);
     if (!queryResultForFilter.success) {
@@ -193,6 +194,11 @@ module.exports = internal.TipFilter = class {
           'from course ' + 
           'order by coursename ',
             
+        users:
+          'select username ' +
+          'from user ' +
+          'order by username ',
+          
         terms:
           'select termname, termgroupname ' +
           'from term, termgroup ' +
@@ -207,6 +213,7 @@ module.exports = internal.TipFilter = class {
         result.details = 'query succeeded';
         result.tipfilter = queryResultForFilter.tipfilter;
         result.courses = queryResults.data.courses;
+        result.users = queryResults.data.users;
         result.terms = queryResults.data.terms;
         result.uiconfig = tipUIConfig;
         

@@ -47,7 +47,7 @@ INSERT INTO tip (tiptext, userid) SELECT 'carlos Java A tip 002', user.userid FR
 INSERT INTO tip (tiptext, userid) SELECT 'carlos Web Design tip 001', user.userid FROM user WHERE user.usershortname = 'carlos';
 INSERT INTO tip (tiptext, userid) SELECT 'carlos Web Design tip 002', user.userid FROM user WHERE user.usershortname = 'carlos';
 
-#--------------------------------------------------
+#-----------------------------------------------------------------------
 #--- tip mapping
 #-----------------------------------------------------------------------
 
@@ -109,51 +109,65 @@ UPDATE mappedtip, tip SET week = 1 WHERE mappedtip.tipid = tip.tipid AND tiptext
 UPDATE mappedtip, tip SET week = 2 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%002';
 UPDATE mappedtip, tip SET week = 3 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%003';
 
-/*  
-#--- course specific tip mapping
-INSERT INTO mappedtip (tipid, usercourseid, week) 
-  SELECT tipid, usercourseid, 0
-  FROM tip, usercourse, termgroup
-  WHERE usercourse.termgroupid = termgroup.termgroupid
-    AND termgroupname in ('semester', 'trimester')
-    AND tip.tiptext like '%java%';
-    
-INSERT INTO mappedtip (tipid, usercourseid, week) 
-  SELECT tipid, usercourseid, 0
-  FROM tip, usercourse, termgroup
-  WHERE usercourse.termgroupid = termgroup.termgroupid
-    AND termgroupname in ('semester')
-    AND tip.tiptext like '%web design%';
-    
-UPDATE mappedtip, tip SET week = 1 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%001';
-UPDATE mappedtip, tip SET week = 2 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%002';
-UPDATE mappedtip, tip SET week = 3 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%003';
-/*
+#-----------------------------------------------------------------------
+#--- usertipstatus
+#-----------------------------------------------------------------------
+INSERT INTO usertipstatus(tipstatusid, mappedtipid, userid)
+select tipstatusid, mappedtipid, user.userid
+from viewmappedtip, tipstatus, user
+where viewmappedtip.coursename like '%java%'
+and viewmappedtip.username like '%kevin%'
+and viewmappedtip.week = 1
+and viewmappedtip.termgroupname = 'semester'
+and tipstatusname = 'scheduled'
+and user.userid in (SELECT userid FROM user WHERE usershortname = 'ksanter');
 
-#---- add all course tips
-INSERT INTO mappedtip (tipid, userid, termgroupid, courseid, week)
-  SELECT tipid, userid, termgroupid, courseid, 0
-  FROM tip, termgroup, course
-  WHERE termgroupname = 'semester'
-    AND coursename LIKE '%java%'
-    AND tip.tiptext LIKE '%java%';
+INSERT INTO usertipstatus(tipstatusid, mappedtipid, userid)
+select tipstatusid, mappedtipid, user.userid
+from viewmappedtip, tipstatus, user
+where viewmappedtip.coursename like '%java%'
+and viewmappedtip.username like '%kevin%'
+and viewmappedtip.week = 2
+and viewmappedtip.termgroupname = 'semester'
+and tipstatusname = 'completed'
+and user.userid in (SELECT userid FROM user WHERE usershortname = 'ksanter');
 
-INSERT INTO mappedtip (tipid, userid, termgroupid, courseid, week)
-  SELECT tipid, userid, termgroupid, courseid, 0
-  FROM tip, termgroup, course
-  WHERE termgroupname = 'trimester'
-    AND coursename LIKE '%java%'
-    AND tip.tiptext LIKE '%java%';
+INSERT INTO usertipstatus(tipstatusid, mappedtipid, userid)
+select tipstatusid, mappedtipid, user.userid
+from viewmappedtip, tipstatus, user
+where viewmappedtip.coursename IS NULL
+and viewmappedtip.username like '%kevin%'
+and viewmappedtip.week = 1
+and viewmappedtip.termgroupname = 'semester'
+and tipstatusname = 'scheduled'
+and user.userid in (SELECT userid FROM user WHERE usershortname = 'ksanter');
 
-INSERT INTO mappedtip (tipid, userid, termgroupid, courseid, week)
-  SELECT tipid, userid, termgroupid, courseid, 0
-  FROM tip, termgroup, course
-  WHERE termgroupname = 'semester'
-    AND coursename LIKE '%web design%'
-    AND tip.tiptext LIKE '%web design%';
+INSERT INTO usertipstatus(tipstatusid, mappedtipid, userid)
+select tipstatusid, mappedtipid, user.userid
+from viewmappedtip, tipstatus, user
+where viewmappedtip.coursename like '%java%'
+and viewmappedtip.username is NULL
+and viewmappedtip.week = 2
+and viewmappedtip.termgroupname = 'semester'
+and tipstatusname = 'completed'
+and user.userid in (SELECT userid FROM user WHERE usershortname = 'ksanter');
 
-UPDATE mappedtip, tip SET week = 1 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%001';
-UPDATE mappedtip, tip SET week = 2 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%002';
-UPDATE mappedtip, tip SET week = 3 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%003';
-UPDATE mappedtip, tip SET week = 4 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%004';
-*/
+INSERT INTO usertipstatus(tipstatusid, mappedtipid, userid)
+select tipstatusid, mappedtipid, user.userid
+from viewmappedtip, tipstatus, user
+where viewmappedtip.coursename IS NULL
+and viewmappedtip.username is NULL
+and viewmappedtip.week = 1
+and viewmappedtip.termgroupname = 'semester'
+and tipstatusname = 'completed'
+and user.userid in (SELECT userid FROM user WHERE usershortname = 'ksanter');
+
+INSERT INTO usertipstatus(tipstatusid, mappedtipid, userid)
+select tipstatusid, mappedtipid, user.userid
+from viewmappedtip, tipstatus, user
+where viewmappedtip.coursename like '%java%'
+and viewmappedtip.username like '%charles%'
+and viewmappedtip.week = 2
+and viewmappedtip.termgroupname = 'semester'
+and tipstatusname = 'completed'
+and user.userid in (SELECT userid FROM user WHERE usershortname = 'carlos');
