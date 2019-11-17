@@ -2,6 +2,7 @@
 // TipScheduling class
 //-----------------------------------------------------------------------------------
 // TODO: add calendar info to week labels
+// TODO: build UI to add tip to current schedule 
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {

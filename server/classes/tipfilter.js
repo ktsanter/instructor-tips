@@ -2,7 +2,7 @@
 //---------------------------------------------------------------
 // tip filter DB interface
 //---------------------------------------------------------------
-// TODO: addlogic based on user privileges
+// TODO: add logic based on user privileges
 //---------------------------------------------------------------
 
 const internal = {};
@@ -230,10 +230,10 @@ module.exports = internal.TipFilter = class {
     var result = this._queryFailureResult();
 
     var filter = {
-      shared: true,
+      shared: false,
       personal: true,
-      user: false,
-      username: '',
+      user: true,
+      username: userInfo.userName,
       searchtext: ''
     };
     
@@ -241,8 +241,14 @@ module.exports = internal.TipFilter = class {
       publicOrPrivateGroup: ['shared', 'personal'],
       userGroup: ['user', 'username'],
       searchGroup: ['searchtext'],
-      groupOrder: ['publicOrPrivateGroup', 'userGroup', 'searchGroup']
+      groupOrder: ['searchGroup']
      };
+     
+     if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
+       filter.shared = true;
+       filter.user = false;
+       tipUIConfig.groupOrder = ['publicOrPrivateGroup', 'userGroup', 'searchGroup'];
+     }
 
     var queryResultForFilter = await this._getFilter(userInfo, 'editing', filter);
     if (!queryResultForFilter.success) {

@@ -2,7 +2,7 @@
 //---------------------------------------------------------------
 // tip management DB interface
 //---------------------------------------------------------------
-// TODO: 
+// TODO: add logic based on user privileges
 //---------------------------------------------------------------
 const internal = {};
 
@@ -299,6 +299,7 @@ module.exports = internal.TipManager = class {
       ]
       result.displayFields = ['tiptext', 'username'];
       result.data = combinedRows;
+      
       result.constraints = {
         foreignKeys: {
           userid: {data: 'users', displayField: 'username', allownull: true}
