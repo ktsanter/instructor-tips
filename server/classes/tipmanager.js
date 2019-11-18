@@ -163,8 +163,8 @@ module.exports = internal.TipManager = class {
         
     queryList.tips = 
       'select ' +
-        'v.mappedtipid, v.userid, v.username, v.courseid, v.coursename, v.termgroupid, v.termgroupname, v.week, v.tiptext, ' +
-        'uts.usertipstatusid, uts.tipstatusid, uts.userid, uts.tipstatusname ' +
+        'v.mappedtipid, v.userid as tip_userid, v.username as tip_username, v.courseid, v.coursename, v.termgroupid, v.termgroupname, v.week, v.tiptext, ' +
+        'uts.usertipstatusid, uts.tipstatusid, uts.userid as tipstatus_userid, uts.tipstatusname ' +
       'from viewmappedtip as v ' +
       'left outer join ( ' +
         'select usertipstatusid, mappedtipid, tipstatus.tipstatusid, userid, tipstatus.tipstatusname ' +
@@ -186,11 +186,14 @@ module.exports = internal.TipManager = class {
       'where termgroupname = "' + postData.termgroupname + '" ';
     
     var queryResults = await this._dbQueries(queryList);
-    
+    console.log(queryList);
+    console.log(JSON.stringify(queryResults.data.tips, null, 2));
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      if (queryResults.data.usercourse.length > 0) {
+
+      result.usercourseexists = (queryResults.data.usercourse.length > 0);
+      if (result.usercourseexists) {
         result.data = queryResults.data.tips;
       } else {
         result.data = [];

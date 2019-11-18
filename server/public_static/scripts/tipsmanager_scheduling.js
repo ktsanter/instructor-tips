@@ -21,8 +21,22 @@ class TipScheduling {
       editType: 'add tip',
       callbacks: {
         cancelChange: () => {return this._cancelEditChange();} ,
-        finishAdd:  (dbData) => {return this._doFinishAdd(dbData);} ,
-        finishEdit:  (dbData) => {return this._doFinishEdit(dbData);} ,
+        finishAdd:  (dbData) => {return this._doFinishAdd(dbData);}
+      }
+    });
+
+    this._tipEditEditor = new TipSchedulingEdit({
+      editType: 'edit tip',
+      callbacks: {
+        cancelChange: () => {return this._cancelEditChange();} ,
+        finishEdit:  (dbData) => {return this._doFinishEdit(dbData);}
+      }
+    });
+    
+    this._tipUnmapEditor = new TipSchedulingEdit({
+      editType: 'unmap tip',
+      callbacks: {
+        cancelChange: () => {return this._cancelEditChange();} ,
         finishDelete:  (dbData) => {return this._doFinishDelete(dbData);} ,
       }
     });
@@ -40,6 +54,8 @@ class TipScheduling {
   render() {
     this._container = CreateElement.createDiv(null, 'tipschedule ' + this._HIDE_CLASS);
     this._tipAddContainer = this._tipAddEditor.render();
+    this._tipEditContainer = this._tipEditEditor.render();
+    this._tipUnmapContainer = this._tipUnmapEditor.render();
     
     return this._container;
   }
@@ -65,8 +81,13 @@ class TipScheduling {
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
     
     if (tipsQuery.success) {
-      var organizedTips = this._organizeByWeek(tipsQuery.data, tipsQuery.termlength);
-      this._container.appendChild(this._showTips(organizedTips, tipsQuery.termlength));
+      if (tipsQuery.usercourseexists) {
+        var organizedTips = this._organizeByWeek(tipsQuery.data, tipsQuery.termlength);
+        this._container.appendChild(this._showTips(organizedTips, tipsQuery.termlength));
+      
+      } else {
+        this._container.appendChild(CreateElement.createDiv(null, null, 'There is no schedule for this user/course/termgroup combination'));
+      }
     }    
   }
   
@@ -122,7 +143,7 @@ class TipScheduling {
     container.appendChild(label);
     label.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', null, this._toggleWeeklyBoxCollapse));
     label.appendChild(CreateElement.createSpan(null, 'weeklytip-label-text', 'week ' + weekNumber));
-    label.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-add far fa-plus-square', 'add tip to week', (e) => {return this._startAddTipUI(e);}));
+    label.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-add far fa-calendar-plus', 'add tip to week', (e) => {return this._startAddTipUI(e);}));
     
     var contents = CreateElement.createDiv(null, 'weeklytip-contents');
     container.appendChild(contents); 
@@ -131,6 +152,8 @@ class TipScheduling {
     
     for (var i = 0; i < tipsForWeek.length; i++) {
       var tip = tipsForWeek[i];
+      var allowEdit = (tip.tip_userid != null);
+      var allowUnmap = (tip.tip_userid != null && tip.courseid != null);
       var renderedMarkdown = MarkdownToHTML.convert(tip.tiptext);
       
       var singleTipContainer = CreateElement.createDiv(null, null);
@@ -138,7 +161,18 @@ class TipScheduling {
       var iconClassList = 'weeklytip-icon ' + this._tipStatusClass[tip.tipstatusname];
       singleTipContainer.appendChild(CreateElement.createIcon(null, iconClassList, null, tipIconHandler));
       singleTipContainer.appendChild(CreateElement.createDiv(null, 'weeklytip-singletip', renderedMarkdown));
-      singleTipContainer.lastChild.tipInformation = tip;
+      
+      if (allowEdit || allowUnmap) {
+        var controlContainer = CreateElement.createDiv(null, 'tipschedule-controls');
+        singleTipContainer.appendChild(controlContainer);
+        if (allowEdit) {
+          controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-icon fas fa-edit', 'edit tip', (e) => {return this._startEditTipUI(e);}));
+        }
+        if (allowUnmap) {
+          controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-icon far fa-calendar-minus', 'remove tip from week', (e) => {return this._startUnmapTipUI(e);}));
+        }
+      }
+      singleTipContainer.tipInformation = tip;
     }
     
     return container;
@@ -223,7 +257,6 @@ class TipScheduling {
   async _startAddTipUI(e) {
     var weekContainer = e.target.parentNode.parentNode;
     var weekContents = weekContainer.getElementsByClassName('weeklytip-contents')[0];
-    var weekNumber = weekContainer.tipscheduleweek;   
     
     if (this._tipAddContainer.parentNode) {
       this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
@@ -237,20 +270,37 @@ class TipScheduling {
     }
   }
   
-  async _cancelEditChange() {
-    console.log('cancel edit change');
-    this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
+  async _startEditTipUI(e) {
+    console.log('start edit');
+    var tipContainer = e.target.parentNode.parentNode;
+    var tipInfo = tipContainer.tipInformation;
+    
+    if (this._tipEditContainer.parentNode) {
+      this._tipEditContainer.parentNode.removeChild(this._tipEditContainer);
+    }
+    
+    this._insertAfter(this._tipEditContainer, tipContainer);
+    //tipContainer.insertBefore(this._tipEditContainer, tipContainer.nextSibling);
+    
+    //var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule-tiplist', this._tipFilter.getFilter());
+    //if (tipsQuery.success) {
+    //  this._tipAddEditor.update(tipsQuery.data);
+      this._tipEditEditor.update('some stuff');
+      this._tipEditEditor.show(true);
+    //}
+    
+  }
+  
+  _insertAfter(el, referenceNode) {
+    referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
   }
 
   async _doFinishAdd(dbData) {
-    console.log(dbData);
-    console.log(this._tipAddContainer.parentNode.parentNode.tipscheduleweek);
     var postData = {
       filter: this._tipFilter.getFilter(),
       addData: dbData,
       week: this._tipAddContainer.parentNode.parentNode.tipscheduleweek
     };
-    console.log(postData);
     
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule-addtip', postData);
     if (tipsQuery.success) {
@@ -260,15 +310,23 @@ class TipScheduling {
   }
 
   async _doFinishEdit(dbData) {
+    console.log('finish edit');
     console.log(dbData);
-    this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
+    this._tipEditContainer.parentNode.removeChild(this._tipEditContainer);
     this.update();
   }
 
   async _doFinishDelete(dbData) {
     console.log(dbData);
-    this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
+    this._tipUnmapContainer.parentNode.removeChild(this._tipUnmapContainer);
     this.update();
+  }
+  
+  async _cancelEditChange() {
+    console.log('cancel edit change');
+    if (this._tipAddContainer.parentNode) this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
+    if (this._tipEditContainer.parentNode) this._tipEditContainer.parentNode.removeChild(this._tipEditContainer);
+    if (this._tipUnmapContainer.parentNode) this._tipUnmapContainer.parentNode.removeChild(this._tipUnmapContainer);
   }
   
   //--------------------------------------------------------------

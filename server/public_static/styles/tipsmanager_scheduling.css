@@ -95,3 +95,8 @@
   font-size: 1.5em;
   padding-right: 6px;  
 }
+
+.tipschedule-controls {
+  display: inline-block;
+  float: right;
+}

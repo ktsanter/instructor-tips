@@ -37,7 +37,15 @@ class TipSchedulingEdit {
     }
   }
   
-  update(tipsData) {    
+  update(tipsData) {
+    if (this._config.editType == 'add tip') {
+      this._updateForAdd(tipsData);
+    } else if (this._config.editType == 'edit tip') {
+      this._updateForEdit(tipsData);
+    }
+  }
+  
+  _updateForAdd(tipsData) {
     var tipValues = [];
     for (var i = 0; i < tipsData.length; i++) {
       var tip = tipsData[i];
@@ -56,7 +64,7 @@ class TipSchedulingEdit {
 
     var optionChangeHandler = (e) => {return this._optionChangeAdd(e);};
     var finalizeAddHandler =  (e) => {return this._finalizeAdd(e);};
-    var cancelAddHandler = (e) => {return this._cancelAdd(e);};
+    var cancelHandler = (e) => {return this._cancelOperation(e);};
     
     inputContainer.appendChild(CreateElement.createRadio(null, 'tipschedule-add-choice', 'add-choice', 'new', '', true, optionChangeHandler));
     var tipTextArea = CreateElement.createTextArea(null, 'tipschedule-add-text');
@@ -69,10 +77,22 @@ class TipSchedulingEdit {
     elemSelect.disabled = true;
     
     controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-check-square', 'save', finalizeAddHandler));
-    controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-window-close', 'cancel', cancelAddHandler));
+    controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-window-close', 'cancel', cancelHandler));
   }
   
-  
+  _updateForEdit(tipsData) {
+    this._prepContainerForUpdate();
+    
+    var controlContainer = CreateElement.createDiv(null, 'tipschedule-edit-container');
+
+    this._container.appendChild(controlContainer);
+
+    var finalizeEditHandler =  (e) => {return this._finalizeEdit(e);};
+    var cancelHandler = (e) => {return this._cancelOperation(e);};
+
+    controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-check-square', 'save', finalizeEditHandler));
+    controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-window-close', 'cancel', cancelHandler));
+  }
   
   _prepContainerForUpdate() {
     this._removeChildren(this._container);
@@ -113,7 +133,38 @@ class TipSchedulingEdit {
     this._config.callbacks.finishAdd(addData);
   }
 
-  _cancelAdd(e) {
+  _finalizeEdit(e) {
+    var editData = null;
+    
+    editData = 'here is the edit data';
+
+/*
+    var optionList = this._container.getElementsByClassName('tipschedule-add-choice');
+    var optionSelected = null;
+    for (var i = 0; i < optionList.length; i++) {
+      if (optionList[i].type == 'radio' && optionList[i].checked) {
+        optionSelected = optionList[i].value;
+      }
+    }
+    
+    if (optionSelected == 'new') {
+      var dataElement = this._container.getElementsByClassName('tipschedule-add-text')[0];
+      
+    } else {
+      var dataElement = this._container.getElementsByClassName('tipschedule-add-select')[0];
+      dataElement = dataElement[dataElement.selectedIndex]
+    }
+    
+    addData = {
+      addType: optionSelected,
+      addValue: dataElement.value
+    }
+    */
+    
+    this._config.callbacks.finishEdit(editData);
+  }
+
+  _cancelOperation(e) {
     this._config.callbacks.cancelChange();
   }
 
