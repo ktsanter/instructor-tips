@@ -12,6 +12,7 @@ class TipScheduling {
     this._title = 'Scheduling';
     
     this._HIDE_CLASS = 'tipmanager-hide';
+    this._HIGHLIGHT_CLASS = 'tipschedule-highlight';
     
     this._container = null;
     this._tipAddContainer = null;
@@ -33,14 +34,6 @@ class TipScheduling {
       }
     });
     
-    this._tipUnmapEditor = new TipSchedulingEdit({
-      editType: 'unmap tip',
-      callbacks: {
-        cancelChange: () => {return this._cancelEditChange();} ,
-        finishDelete:  (dbData) => {return this._doFinishDelete(dbData);} ,
-      }
-    });
-    
     this._tipStatusClass = {
       null: 'far fa-square',
       scheduled: 'fas fa-exclamation-circle',
@@ -55,7 +48,6 @@ class TipScheduling {
     this._container = CreateElement.createDiv(null, 'tipschedule ' + this._HIDE_CLASS);
     this._tipAddContainer = this._tipAddEditor.render();
     this._tipEditContainer = this._tipEditEditor.render();
-    this._tipUnmapContainer = this._tipUnmapEditor.render();
     
     return this._container;
   }
@@ -166,10 +158,10 @@ class TipScheduling {
         var controlContainer = CreateElement.createDiv(null, 'tipschedule-controls');
         singleTipContainer.appendChild(controlContainer);
         if (allowEdit) {
-          controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-icon fas fa-edit', 'edit tip', (e) => {return this._startEditTipUI(e);}));
+          controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-edit fas fa-pencil-alt', 'edit tip', (e) => {return this._startEditTipUI(e);}));
         }
         if (allowUnmap) {
-          controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-icon far fa-calendar-minus', 'remove tip from week', (e) => {return this._startUnmapTipUI(e);}));
+          controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-edit far fa-calendar-minus', 'remove tip from week', (e) => {return this._startUnmapTipUI(e);}));
         }
       }
       singleTipContainer.tipInformation = tip;
@@ -228,8 +220,7 @@ class TipScheduling {
   
   async _tipStatusChange(e) {
     var elemIcon = e.target;
-    var elemTip = elemIcon.parentNode.getElementsByClassName('weeklytip-singletip')[0];
-    var tipInformation = elemTip.tipInformation;
+    var tipInformation = elemIcon.parentNode.tipInformation;
     var tipStatusName = tipInformation.tipstatusname;
     
     var classListArray = this._tipStatusClass[tipStatusName].split(' ');
@@ -271,30 +262,40 @@ class TipScheduling {
   }
   
   async _startEditTipUI(e) {
-    console.log('start edit');
     var tipContainer = e.target.parentNode.parentNode;
     var tipInfo = tipContainer.tipInformation;
+    
+    this._highlight(tipContainer, true);
     
     if (this._tipEditContainer.parentNode) {
       this._tipEditContainer.parentNode.removeChild(this._tipEditContainer);
     }
     
     this._insertAfter(this._tipEditContainer, tipContainer);
-    //tipContainer.insertBefore(this._tipEditContainer, tipContainer.nextSibling);
     
-    //var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule-tiplist', this._tipFilter.getFilter());
-    //if (tipsQuery.success) {
-    //  this._tipAddEditor.update(tipsQuery.data);
-      this._tipEditEditor.update('some stuff');
-      this._tipEditEditor.show(true);
-    //}
-    
-  }
-  
-  _insertAfter(el, referenceNode) {
-    referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
+    this._tipEditEditor.update(tipInfo);
+    this._tipEditEditor.show(true);    
   }
 
+  async _startUnmapTipUI(e) {
+    var tipContainer = e.target.parentNode.parentNode;
+    this._highlight(tipContainer, true);
+
+    setTimeout( () => { return this._confirmUnmap(this, tipContainer); }, 1);
+  }
+  
+  async _confirmUnmap(me, tipContainer) {
+    if (confirm('Are you sure you want to remove this item from your schedule?')) {
+      var tipInfo = tipContainer.tipInformation;
+      console.log('finish unmap - do DB stuff');
+      console.log(tipInfo);
+      this.update();
+      
+    } else {
+      this._highlight(tipContainer, false);
+    }
+  }
+  
   async _doFinishAdd(dbData) {
     var postData = {
       filter: this._tipFilter.getFilter(),
@@ -310,24 +311,43 @@ class TipScheduling {
   }
 
   async _doFinishEdit(dbData) {
-    console.log('finish edit');
-    console.log(dbData);
     this._tipEditContainer.parentNode.removeChild(this._tipEditContainer);
-    this.update();
+    var tipsQuery = await this._doPostQuery('tipmanager/update', 'tipschedule-updatetiptext', dbData);
+    if (tipsQuery.success) {
+      this.update();
+    }
   }
 
-  async _doFinishDelete(dbData) {
-    console.log(dbData);
-    this._tipUnmapContainer.parentNode.removeChild(this._tipUnmapContainer);
-    this.update();
-  }
-  
   async _cancelEditChange() {
-    console.log('cancel edit change');
     if (this._tipAddContainer.parentNode) this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
     if (this._tipEditContainer.parentNode) this._tipEditContainer.parentNode.removeChild(this._tipEditContainer);
-    if (this._tipUnmapContainer.parentNode) this._tipUnmapContainer.parentNode.removeChild(this._tipUnmapContainer);
+    this._removeAllHighlight();
   }
+
+  //--------------------------------------------------------------
+  // utility methods
+  //--------------------------------------------------------------     
+  _insertAfter(el, referenceNode) {
+    referenceNode.parentNode.insertBefore(el, referenceNode.nextSibling);
+  }
+
+  _highlight(elem, makeHighlight) {
+    if (!makeHighlight) {
+        if (elem.classList.contains(this._HIGHLIGHT_CLASS)) {
+          elem.classList.remove(this._HIGHLIGHT_CLASS);
+        }
+        
+    } else {
+      elem.classList.add(this._HIGHLIGHT_CLASS);
+    }
+  }  
+  
+  _removeAllHighlight() {
+    var elemList = this._container.getElementsByClassName(this._HIGHLIGHT_CLASS);
+    for (var i = 0; i < elemList.length; i++) {
+      this._highlight(elemList[i], false);
+    }
+  }  
   
   //--------------------------------------------------------------
   // db functions

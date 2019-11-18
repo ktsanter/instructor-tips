@@ -71,6 +71,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'singletipstatus') {
       dbResult = await this._updateSingleTipStatus(params, postData, userInfo);
             
+    }if (params.queryName == 'tipschedule-updatetiptext') {
+      dbResult = await this._updateTiptext(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -186,8 +189,6 @@ module.exports = internal.TipManager = class {
       'where termgroupname = "' + postData.termgroupname + '" ';
     
     var queryResults = await this._dbQueries(queryList);
-    console.log(queryList);
-    console.log(JSON.stringify(queryResults.data.tips, null, 2));
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -316,8 +317,6 @@ module.exports = internal.TipManager = class {
           'and termgroupid in (select termgroupid from termgroup where termgroupname = "' + filter.termgroupname + '") ';
         
       queryResults = await this._dbQuery(query);
-      console.log(query);
-      console.log(queryResults);
       
       if (queryResults.success) {   
         result.success = true;
@@ -510,9 +509,6 @@ module.exports = internal.TipManager = class {
   }
   
   _buildTipMappingConstraints(postData) {
-    console.log('build...');
-    console.log(postData);
-    
     var generalConstraint = '';
     if (postData.unmapped) generalConstraint = ' (mappedtipid IS NULL) ';
     if (postData.general != '') {
@@ -527,7 +523,6 @@ module.exports = internal.TipManager = class {
       generalConstraint = ' (FALSE) ';
     }
     if (generalConstraint != '') generalConstraint = ' (' + generalConstraint + ') ';
-    console.log('generalConstraint: ' + generalConstraint);
     
     var privateConstraint = '';
     if (postData.shared) privateConstraint = ' (username IS NULL) ';
@@ -539,14 +534,11 @@ module.exports = internal.TipManager = class {
       privateConstraint = ' (FALSE) ';
     }
     if (privateConstraint != '') privateConstraint = ' (' + privateConstraint + ') ';
-    console.log('privateConstraint: ' + privateConstraint);
      
     var userConstraint = '';
     if (postData.user) userConstraint = ' (username = "' + postData.username + '") ';
-    console.log('userConstraint: ' + userConstraint);
     
     var searchConstraint = ' (tiptext like "%' + postData.searchtext + '%") ';
-    console.log('searchConstraint: ' + searchConstraint);
 
     var constraint = '';
     if (generalConstraint != '') constraint += generalConstraint;
@@ -563,7 +555,6 @@ module.exports = internal.TipManager = class {
       constraint += searchConstraint;
     }
     if (constraint != '') constraint = 'WHERE ' + constraint;
-    console.log('constraint: ' + constraint);
     
     return constraint;
   }
@@ -709,6 +700,59 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
+  async _updateTiptext(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var query;
+    var queryResults;
+    
+    query =
+      'update tip ' +
+      'set tiptext = "' + postData.tiptext + '" ' +
+      'where tipid in ( ' +
+        'select tipid ' +
+        'from mappedtip ' +
+        'where mappedtipid = ' + postData.mappedtipid + ' ' +
+      ') ';
+
+    queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;    
+  }
+    
+//---------------------------------------------------------------
+// specific delete methods
+//---------------------------------------------------------------
+  async _deleteTip(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from tip ' +
+                'where tipid = ' + postData.tipid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+//---------------------------------------------------------------
+// other support methods
+//---------------------------------------------------------------
   async _deleteSingleTipStatus(params, postData, userInfo) {
     var query =
       'delete from usertipstatus ' +
@@ -732,26 +776,4 @@ module.exports = internal.TipManager = class {
 
     return tipStatusId;
   }
-  
-//---------------------------------------------------------------
-// specific delete methods
-//---------------------------------------------------------------
-  async _deleteTip(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'delete from tip ' +
-                'where tipid = ' + postData.tipid;
-
-    var queryResults = await this._dbQuery(query);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }  
 }

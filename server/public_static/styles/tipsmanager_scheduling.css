@@ -2,13 +2,8 @@
  * styling for TipScheduling class
  *------------------------------------------------------------------*/
 .tipschedule-icon {
-  font-size: 1.2em;
+  font-size: 1.1em;
   cursor: pointer;
-}
-
-.tipschedule-icon-add {
-  float:right;
-  padding-right: 2px;
 }
 
 .tipschedule-content {
@@ -32,6 +27,8 @@
 .weeklytip-label {
   color: white;
   background-color: #093c44;
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .weeklytip-label-text {
@@ -64,6 +61,11 @@
  *-----------------------*/
 .tipschedule-icon-add {
   float:right;
+  padding-right: 3px;
+}
+
+.tipschedule-icon-edit {
+  padding-left: 2px;
   padding-right: 2px;
 }
 
@@ -99,4 +101,8 @@
 .tipschedule-controls {
   display: inline-block;
   float: right;
+}
+
+.tipschedule-highlight {
+  background-color: #ccc; /*#6C75FF;*/
 }

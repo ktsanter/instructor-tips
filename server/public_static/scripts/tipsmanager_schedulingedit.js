@@ -83,13 +83,21 @@ class TipSchedulingEdit {
   _updateForEdit(tipsData) {
     this._prepContainerForUpdate();
     
+    var inputContainer = CreateElement.createDiv(null, 'tipschedule-edit-container');
     var controlContainer = CreateElement.createDiv(null, 'tipschedule-edit-container');
 
+    this._container.appendChild(inputContainer);
     this._container.appendChild(controlContainer);
 
     var finalizeEditHandler =  (e) => {return this._finalizeEdit(e);};
     var cancelHandler = (e) => {return this._cancelOperation(e);};
 
+    this._editedTipInfo = tipsData;
+    var tipTextArea = CreateElement.createTextArea(null, 'tipschedule-add-text');
+    tipTextArea.value = tipsData.tiptext;
+    tipTextArea.rows = 8;
+    inputContainer.appendChild(tipTextArea);
+    
     controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-check-square', 'save', finalizeEditHandler));
     controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-window-close', 'cancel', cancelHandler));
   }
@@ -134,34 +142,10 @@ class TipSchedulingEdit {
   }
 
   _finalizeEdit(e) {
-    var editData = null;
+    var dataElement = this._container.getElementsByClassName('tipschedule-add-text')[0];    
+    this._editedTipInfo.tiptext = dataElement.value;
     
-    editData = 'here is the edit data';
-
-/*
-    var optionList = this._container.getElementsByClassName('tipschedule-add-choice');
-    var optionSelected = null;
-    for (var i = 0; i < optionList.length; i++) {
-      if (optionList[i].type == 'radio' && optionList[i].checked) {
-        optionSelected = optionList[i].value;
-      }
-    }
-    
-    if (optionSelected == 'new') {
-      var dataElement = this._container.getElementsByClassName('tipschedule-add-text')[0];
-      
-    } else {
-      var dataElement = this._container.getElementsByClassName('tipschedule-add-select')[0];
-      dataElement = dataElement[dataElement.selectedIndex]
-    }
-    
-    addData = {
-      addType: optionSelected,
-      addValue: dataElement.value
-    }
-    */
-    
-    this._config.callbacks.finishEdit(editData);
+    this._config.callbacks.finishEdit(this._editedTipInfo);
   }
 
   _cancelOperation(e) {
