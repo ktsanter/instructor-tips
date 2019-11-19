@@ -16,7 +16,10 @@ const app = function () {
   
 	const settings = {
     helpURL: 'help.html',
-    navOptions: ['courses', 'scheduling', 'editing', 'mapping']
+    navOptions: [
+      'courses', 'scheduling', 'editing',
+      'mapping', 'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tiptatus'
+    ]
   };
   
 	//---------------------------------------
@@ -50,7 +53,19 @@ const app = function () {
         {label: 'Courses', callback: () => {return _navDispatch('courses');}, subitems: null, rightjustify: false},
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
-        {label: 'Mapping', callback: () => {return _navDispatch('mapping');}, subitems: null, rightjustify: false}
+        {label: 'Admin', callback: null, 
+          subitems: [
+            {label: 'Mapping', callback: () => {return _navDispatch('mapping');}},
+            {label: 'Privileges', callback: () => {return _navDispatch('privileges');}},
+            {label: 'Users', callback: () => {return _navDispatch('users');}},
+            {label: 'UserPrivileges', callback: () => {return _navDispatch('userprivileges');}},
+            {label: 'TermGroups', callback: () => {return _navDispatch('termgroups');}},
+            {label: 'Terms', callback: () => {return _navDispatch('terms');}},
+            {label: 'Courses', callback: () => {return _navDispatch('courses');}},
+            {label: 'UserCourses', callback: () => {return _navDispatch('usercourses');}},
+            {label: 'TipStatus', callback: () => {return _navDispatch('tipstatus');}}
+          ]
+        }
       ],
       
       hamburgeritems: [
@@ -97,7 +112,11 @@ const app = function () {
   async function _navDispatch(arg) {
     for (var i = 0; i < settings.navOptions.length; i++) {
       var opt = settings.navOptions[i];
-      settings[opt].show(false);
+      if (settings[opt]) {
+        settings[opt].show(false);
+      } else {
+        console.log(opt + ' not valid');
+      }
     }
     settings[arg].show(true);
     await settings[arg].update();  
