@@ -19,7 +19,8 @@ const app = function () {
     navOptions: [
       'courses', 'scheduling', 'editing',
       'mapping', 'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tiptatus'
-    ]
+    ],
+    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tipstatuses']
   };
   
 	//---------------------------------------
@@ -63,7 +64,7 @@ const app = function () {
             {label: 'Terms', callback: () => {return _navDispatch('terms');}},
             {label: 'Courses', callback: () => {return _navDispatch('courses');}},
             {label: 'UserCourses', callback: () => {return _navDispatch('usercourses');}},
-            {label: 'TipStatus', callback: () => {return _navDispatch('tipstatus');}}
+            {label: 'TipStatus', callback: () => {return _navDispatch('tipstatuses');}}
           ]
         }
       ],
@@ -103,6 +104,12 @@ const app = function () {
     settings.mapping = new TipMapping();
     container.appendChild(settings.mapping.render());
 
+    for (var i = 0; i < settings.adminTypes.length; i++) {
+      var type = settings.adminTypes[i];
+      settings[type] = new DBAdminContainer(type);
+      container.appendChild(settings[type].render());
+    }
+    
     return container;
   }
 
