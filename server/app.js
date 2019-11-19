@@ -62,6 +62,11 @@ app.get('/tipmanager/filter/query/:queryName', async function (req, res) {
   res.send(dbResult);
 })
 
+app.get('/tipmanager/query/:queryName', async function (req, res) {
+  var dbResult = await dbTipManager.doQuery(req.params, req.body, userManagement.getFullUserInfo().data);
+  res.send(dbResult);
+})
+
 //------------------------------------------------------
 // POST requests
 //------------------------------------------------------

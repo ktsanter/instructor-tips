@@ -18,7 +18,7 @@ class TipManagerFilter {
     this._tipFilter = null;
     this._filterQueryResults = null;
     
-    this._filterUITypes = ['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'coursename', 'termname', 'user', 'username', 'searchtext'];
+    this._filterUITypes = ['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'coursename', 'termgroupname', 'user', 'username', 'searchtext'];
     this._checkBoxes = new Set(['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'user']);
   }
   
@@ -126,11 +126,11 @@ class TipManagerFilter {
       }
       elem = CreateElement.createSelect(null, className, handler, valueList);
       
-    } else if (fieldName == 'termname') {
+    } else if (fieldName == 'termgroupname') {
       var valueList = [];
-      var terms = this._filterQueryResults.terms;
-      for (var i = 0; i < terms.length; i++) {
-        valueList.push({id: i, value: terms[i].termgroupname, textval: terms[i].termname});
+      var termgroups = this._filterQueryResults.termgroups;
+      for (var i = 0; i < termgroups.length; i++) {
+        valueList.push({id: i, value: termgroups[i].termgroupname, textval: termgroups[i].termgroupname});
       }
       elem = CreateElement.createSelect(null, className, handler, valueList);
 
@@ -176,11 +176,11 @@ class TipManagerFilter {
           }
           elemSelect.disabled = !this._tipFilter['coursespecific'];
           
-        } else if (typeName == 'termname') {
+        } else if (typeName == 'termgroupname') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
-          var terms = this._filterQueryResults.terms;
-          for (var k = 0; k < terms.length; k++) {
-            if (terms[k].termname == this._tipFilter.termname) elemSelect.selectedIndex = k;
+          var termgroups = this._filterQueryResults.termgroups;
+          for (var k = 0; k < termgroups.length; k++) {
+            if (termgroups[k].termgroupname == this._tipFilter.termgroupname) elemSelect.selectedIndex = k;
           }
           
         } else if (typeName == 'username') {
@@ -217,10 +217,9 @@ class TipManagerFilter {
           var elemSelect = this._container.getElementsByClassName(className)[0];
           this._tipFilter[typeName] = elemSelect[elemSelect.selectedIndex].value;
           
-        } else if (typeName == 'termname') {
+        } else if (typeName == 'termgroupname') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
-          this._tipFilter[typeName] = elemSelect[elemSelect.selectedIndex].text;
-          this._tipFilter['termgroupname'] = elemSelect[elemSelect.selectedIndex].value;
+          this._tipFilter[typeName] = elemSelect[elemSelect.selectedIndex].value;
           
         } else if (typeName == 'username') {
           var elemSelect = this._container.getElementsByClassName(className)[0];

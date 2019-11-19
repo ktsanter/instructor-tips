@@ -27,7 +27,10 @@ module.exports = internal.TipManager = class {
     var dbResult = this._queryFailureResult();
 
     // tip manager queries
-    if (params.queryName == 'tipschedule') {
+    if (params.queryName == 'tipcourses-usercourses') {
+      dbResult = await this._getUserCourses(params, postData, userInfo);
+      
+    } else if (params.queryName == 'tipschedule') {
       dbResult = await this._getTipSchedule(params, postData, userInfo);
       
     } else if (params.queryName == 'tipschedule-tiplist') {
@@ -151,6 +154,48 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
+  async _getUserCourses(params, postData, userInfo) {
+    var result = this._queryFailureResult();   
+
+    var queryList = {};
+    queryList.usercourses = 
+      'select ' +
+        'usercourse.usercourseid, usercourse.courseid, usercourse.termgroupid, ' +
+        'course.coursename, ' + 
+        'termgroup.termgroupname ' +
+      'from usercourse, course, termgroup ' +
+      'where usercourse.courseid = course.courseid ' +
+        'and usercourse.termgroupid = termgroup.termgroupid ' +
+        'and usercourse.userid = ' + userInfo.userId + ' ';
+      
+    queryList.courses = 
+      'select courseid, coursename ' +
+        'from course ' +
+        'order by coursename ';
+        
+    queryList.termgroups = 
+      'select termgroupid, termgroupname ' +
+      'from termgroup ' +
+      'order by termgroupid ';
+          
+    console.log(queryList);
+    
+    var queryResults = await this._dbQueries(queryList);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+
+      result.usercourses = queryResults.data.usercourses;
+      result.courses = queryResults.data.courses;
+      result.termgroups = queryResults.data.termgroups;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
   async _getTipSchedule(params, postData, userInfo) {
     var result = this._queryFailureResult();   
 

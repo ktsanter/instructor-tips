@@ -2,8 +2,6 @@
 // TipScheduling class
 //-----------------------------------------------------------------------------------
 // TODO: add calendar info to week labels
-// TODO: build UI to add tip to current schedule 
-// TODO: disable other editing choices when one is in-progress
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {
@@ -18,6 +16,9 @@ class TipScheduling {
     this._tipAddContainer = null;
 
     this._tipFilter = new TipManagerFilter('scheduling', () => {return this.update();});
+    
+    this._editInProgress = false;
+    
     this._tipAddEditor = new TipSchedulingEdit({
       editType: 'add tip',
       callbacks: {
@@ -219,6 +220,8 @@ class TipScheduling {
   }
   
   async _tipStatusChange(e) {
+    if (this._editInProgress) return;
+    
     var elemIcon = e.target;
     var tipInformation = elemIcon.parentNode.tipInformation;
     var tipStatusName = tipInformation.tipstatusname;
@@ -246,6 +249,9 @@ class TipScheduling {
   // add/edit/delete tip
   //------------------------------------------------------------------------------------------------
   async _startAddTipUI(e) {
+    if (this._editInProgress) return;
+    this._editInProgress = true;
+    
     var weekContainer = e.target.parentNode.parentNode;
     var weekContents = weekContainer.getElementsByClassName('weeklytip-contents')[0];
     
@@ -262,6 +268,9 @@ class TipScheduling {
   }
   
   async _startEditTipUI(e) {
+    if (this._editInProgress) return;
+    this._editInProgress = true;
+    
     var tipContainer = e.target.parentNode.parentNode;
     var tipInfo = tipContainer.tipInformation;
     
@@ -278,6 +287,9 @@ class TipScheduling {
   }
 
   async _startUnmapTipUI(e) {
+    if (this._editInProgress) return;
+    this._editInProgress = true;
+    
     var tipContainer = e.target.parentNode.parentNode;
     this._highlight(tipContainer, true);
 
@@ -294,6 +306,8 @@ class TipScheduling {
     } else {
       this._highlight(tipContainer, false);
     }
+    
+    this._editInProgress = false;
   }
   
   async _doFinishAdd(dbData) {
@@ -308,6 +322,8 @@ class TipScheduling {
       this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
       this.update();
     }
+    
+    this._editInProgress = false;
   }
 
   async _doFinishEdit(dbData) {
@@ -316,12 +332,16 @@ class TipScheduling {
     if (tipsQuery.success) {
       this.update();
     }
+    
+    this._editInProgress = false;
   }
 
   async _cancelEditChange() {
     if (this._tipAddContainer.parentNode) this._tipAddContainer.parentNode.removeChild(this._tipAddContainer);
     if (this._tipEditContainer.parentNode) this._tipEditContainer.parentNode.removeChild(this._tipEditContainer);
     this._removeAllHighlight();
+    
+    this._editInProgress = false;
   }
 
   //--------------------------------------------------------------

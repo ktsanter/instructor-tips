@@ -7,7 +7,7 @@
 class TipCourseSelection {
   constructor() {
     this._version = '0.01';
-    this._title = 'Course selection';
+    this._title = 'Course/Term selection';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     
@@ -25,19 +25,41 @@ class TipCourseSelection {
 
   //--------------------------------------------------------------
   // updating
-  //--------------------------------------------------------------
-  update() {
-    this._prepContainerForUpdate();
+  //--------------------------------------------------------------  
+  async show(makeVisible) {   
+    if (this._container.classList.contains(this._HIDE_CLASS)) {
+      this._container.classList.remove(this._HIDE_CLASS);
+    }
     
-    var msg = '';
-    msg += '- display all possible course/termgroup combos <br>';
-    msg += '- mark those the user has currently selected <br>';
-    msg += '- provide UI to select any combo<br>';
-    msg += 'e.g.<br>';
-    msg += 'Java Programming A        X semester     X trimester    O summer';
-    this._container.appendChild(CreateElement.createDiv(null, null, msg));
-    
-    // do DB stuff
+    if (!makeVisible) {
+      this._container.classList.add(this._HIDE_CLASS);
+    }
+  }
+
+  async update() {
+    this._prepContainerForUpdate();    
+        
+    var queryResults = await this._doGetQuery('tipmanager/query', 'tipcourses-usercourses');
+    if (queryResults.success) {
+      var usercourses = queryResults.usercourses;
+      var courses = queryResults.courses;
+      var termgroups = queryResults.termgroups;
+      
+      //createTable(id, classList, headers, contents, captionLabel, attachContents, colgroupinfo)
+      var headerList = ['course'];
+      for (var i = 0; i < termgroups.length; i++) headerList.push(termgroups[i].termgroupname);
+      
+      var elemTable = CreateElement.createTable(null, null, headerList);
+      this._container.appendChild(elemTable);
+      
+      for (var i = 0; i < courses.length; i++) {
+        this._buildCourseRow(elemTable, courses[i], termgroups, usercourses);
+      }
+    }
+  }
+  
+  async userchange() {
+    await this.update();
   }
   
   _prepContainerForUpdate() {
@@ -49,31 +71,71 @@ class TipCourseSelection {
     var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
     this._container.appendChild(titleContainer);
     titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
-    titleContainer.appendChild(CreateElement.createIcon(null, 'tipmanager-icon fas fa-caret-down', 'show/hide filter', (e) => {return this._toggleFilterCollapse(e);}));
   }
   
-  async show(makeVisible) {   
-    if (this._container.classList.contains(this._HIDE_CLASS)) {
-      this._container.classList.remove(this._HIDE_CLASS);
+  _buildCourseRow(elemTable, course, termgroupList, usercourseList) {
+    var container = CreateElement.createDiv(null, null);
+    
+    var elemRow = CreateElement.createTableRow(null, null, elemTable);
+    CreateElement.createTableCell(null, null, course.coursename, false, elemRow);
+    
+    var msg = course.coursename;
+    for (var i = 0; i < termgroupList.length; i++) {
+      var termgroup = termgroupList[i];
+      var isSelected = this._isCourseSelectedForUser(course, termgroup, usercourseList);
+      CreateElement.createTableCell(null, null, isSelected, false, elemRow);
     }
     
-    if (!makeVisible) {
-      this._container.classList.add(this._HIDE_CLASS);
-    }
+    return container;
   }
   
-  _toggleFilterCollapse(e) {
-    var elemIcon = e.target;
-    var elemFilter = this._container.getElementsByClassName('tipfilter')[0];
+  _isCourseSelectedForUser(course, termgroup, userCourseList) {
+    var isSelected = false;
     
-    elemIcon.classList.toggle('fa-caret-right');
-    elemIcon.classList.toggle('fa-caret-down');
-    elemFilter.classList.toggle(this._HIDE_CLASS);
+    for (var i = 0; i < userCourseList.length && !isSelected; i++) {
+      var usercourse = userCourseList[i];
+      isSelected = (usercourse.courseid == course.courseid && usercourse.termgroupid == termgroup.termgroupid);
+    }
+    
+    return isSelected;
   }
-  
+
+  //--------------------------------------------------------------
+  // utility methods
+  //--------------------------------------------------------------    
   _removeChildren(elem) {
     while (elem.firstChild) {
       elem.removeChild(elem.firstChild);
     }
   }  
+  
+  //--------------------------------------------------------------
+  // db functions
+  //--------------------------------------------------------------     
+  async _doGetQuery(queryType, queryName) {
+    var resultData = null;
+    
+    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
+    if (requestResult.success) {
+      resultData = requestResult;
+    } else {
+      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
+    }
+    
+    return resultData;
+  }
+
+  async _doPostQuery(queryType, queryName, postData) {
+    var resultData = null;
+    
+    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
+    if (requestResult.success) {
+      resultData = requestResult;
+      this._notice.setNotice('');
+    } else {
+      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
+    }
+    
+    return resultData;
+  }    
 }

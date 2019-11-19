@@ -164,7 +164,6 @@ module.exports = internal.TipFilter = class {
       coursespecific: true,
       coursename: '',
       termgroupname: 'semester',
-      termname: 'Sem 1',
       user: true,
       username: userInfo.userName,
       unspecified: true,
@@ -173,7 +172,7 @@ module.exports = internal.TipFilter = class {
     };
     
     var tipUIConfig = {
-      courseTermGroup: ['coursename', 'termname'],
+      courseTermGroup: ['coursename', 'termgroupname'],
       tipstatusGroup: ['unspecified', 'scheduled', 'completed'],
       userGroup: ['username'],
       groupOrder: ['courseTermGroup', 'tipstatusGroup']
@@ -199,11 +198,10 @@ module.exports = internal.TipFilter = class {
           'from user ' +
           'order by username ',
           
-        terms:
-          'select termname, termgroupname ' +
-          'from term, termgroup ' +
-          'where term.termgroupid = termgroup.termgroupid ' +
-          'order by termname '
+        termgroups:
+          'select termgroupname ' +
+          'from termgroup ' +
+          'order by termgroupid '
       };
       
       var queryResults = await this._dbQueries(queryList);
@@ -214,7 +212,7 @@ module.exports = internal.TipFilter = class {
         result.tipfilter = queryResultForFilter.tipfilter;
         result.courses = queryResults.data.courses;
         result.users = queryResults.data.users;
-        result.terms = queryResults.data.terms;
+        result.termgroups = queryResults.data.termgroups;
         result.uiconfig = tipUIConfig;
         
       } else {
