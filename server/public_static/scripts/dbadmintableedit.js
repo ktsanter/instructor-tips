@@ -46,7 +46,6 @@ class DBAdminTableEdit {
     this._container.appendChild(this._makeAddContainer());
     this._container.appendChild(tableContainer);
     this._container.appendChild(this._makeEditContainer());
-    this._container.appendChild(this._makeDeleteContainer());
     
     var headers = [
       CreateElement.createIcon(null, 'dbadmin-rowicon far fa-plus-square', 'add new row', (e) => {return this._startAdd(e);}),
@@ -100,20 +99,7 @@ class DBAdminTableEdit {
 
     return this._editContainer;
   }
-  
-  _makeDeleteContainer() {
-    this._deleteContainer = CreateElement.createDiv(null, this._HIDE_CLASS + ' dbadmin-editcontainer' );
     
-    this._deleteContainer.appendChild(CreateElement.createDiv(null, 'dbadmin-datacontent dbadmin-deletecontent'));
-    
-    var iconContainer = CreateElement.createDiv(null, null);
-    this._deleteContainer.appendChild(iconContainer);
-    iconContainer.appendChild(CreateElement.createIcon(null, 'dbadmin-editicon far fa-check-square', 'delete', (e) => {return this._finalizeDelete(e);}))
-    iconContainer.appendChild(CreateElement.createIcon(null, 'dbadmin-editicon far fa-window-close', 'cancel', (e) => {return this._cancelDelete(e);}))
-
-    return this._deleteContainer;
-  }
-  
   _makeAddContainer() {
     this._addContainer = CreateElement.createDiv(null, this._HIDE_CLASS + ' dbadmin-editcontainer');
     
@@ -180,41 +166,25 @@ class DBAdminTableEdit {
   _startDelete(e) {
     if (this._changeDialogInProcess) return;
     this._changeDialogInProcess = true;
+    
     var elemRow = e.target.parentNode.parentNode;
     var dbDataIndex = elemRow.dbDataIndex;
-    this._origDBDataRow = this._dbData.data[dbDataIndex];
     
     this._highlight(elemRow, true);
-    var deleteContent = this._deleteContainer.getElementsByClassName('dbadmin-deletecontent')[0];
-    this._clear(deleteContent);
-    for (var i = 0; i < this._displayFields.length; i++) {
-      var dbVal = this._origDBDataRow[this._displayFields[i]];
-      if (dbVal == null) dbVal = 'null';
-      deleteContent.appendChild(CreateElement.createDiv(null, 'dbadmin-datacontent-item', dbVal));
-    }
-
-    this._deleteContainer.parentNode.removeChild(this._deleteContainer);
-    var newDeleteLocation = elemRow.getElementsByClassName('dbadmin-editcell')[0].parentNode;
-    newDeleteLocation.appendChild(this._deleteContainer);
-    newDeleteLocation.classList.remove(this._INVISIBLE_CLASS);
     
-    this._show(this._deleteContainer, true);
+    var itemData = this._dbData.data[dbDataIndex];
+    setTimeout( () => { return this._confirmDelete(this, itemData); }, 1);
   }
   
-  async _finalizeDelete(e) {
+  async _confirmDelete(me, itemData) {
     if (confirm('Deletions cannot be undone\nAre you sure you want to delete this row?')) {
       var primaryKey = this._dbData.primaryKey;
-      var primaryKeyValue = this._origDBDataRow[primaryKey];
+      var primaryKeyValue = itemData[primaryKey];
       var deleteData = {};
       deleteData[primaryKey] = primaryKeyValue;
-      
       await this._callbacks.delete(deleteData);
       this._dbData = await this._callbacks.requery();
     }
-    this.update();
-  }
-  
-  _cancelDelete(e) {
     this.update();
   }
   

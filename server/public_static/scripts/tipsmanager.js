@@ -17,8 +17,8 @@ const app = function () {
 	const settings = {
     helpURL: 'help.html',
     navOptions: [
-      'courses', 'scheduling', 'editing',
-      'mapping', 'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tiptatuses'
+      'courseselection', 'scheduling', 'editing',
+      'mapping', 'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tipstatuses'
     ],
     adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tipstatuses']
   };
@@ -51,7 +51,7 @@ const app = function () {
       title: appinfo.appname,
       
       items: [
-        {label: 'Courses', callback: () => {return _navDispatch('courses');}, subitems: null, rightjustify: false},
+        {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
         {label: 'Admin', callback: null, 
@@ -92,8 +92,8 @@ const app = function () {
   function _renderSubContainers() {
     var container = CreateElement.createDiv(null, null);
     
-    settings.courses = new TipCourseSelection();
-    container.appendChild(settings.courses.render());
+    settings.courseselection = new TipCourseSelection();
+    container.appendChild(settings.courseselection.render());
     
     settings.scheduling = new TipScheduling();
     container.appendChild(settings.scheduling.render());

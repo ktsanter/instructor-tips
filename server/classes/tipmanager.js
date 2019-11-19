@@ -77,7 +77,7 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'singletipstatus') {
       dbResult = await this._updateSingleTipStatus(params, postData, userInfo);
             
-    }else if (params.queryName == 'tipschedule-updatetiptext') {
+    } else if (params.queryName == 'tipschedule-updatetiptext') {
       dbResult = await this._updateTiptext(params, postData, userInfo);
             
     } else {
@@ -93,6 +93,9 @@ module.exports = internal.TipManager = class {
    if (params.queryName == 'tip') {
       dbResult = await this._deleteTip(params, postData, userInfo);
       
+    } else if (params.queryName == 'tipschedule-unmaptip') {
+      dbResult = await this._unmapTip(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -182,6 +185,7 @@ module.exports = internal.TipManager = class {
       'order by termgroupid ';
               
     var queryResults = await this._dbQueries(queryList);
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -235,6 +239,7 @@ module.exports = internal.TipManager = class {
       'where termgroupname = "' + postData.termgroupname + '" ';
     
     var queryResults = await this._dbQueries(queryList);
+        
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -659,10 +664,15 @@ module.exports = internal.TipManager = class {
     async _insertTip(params, postData, userInfo) {
     var result = this._queryFailureResult();
     
+    var userId = userInfo.userId;
+    if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
+      userId = postData.userid;
+    }
+    
     var query = 'insert into tip (tiptext, userid) ' +
                 'values (' +
                   '"' + postData.tiptext + '", ' + 
-                  postData.userid + ' ' + 
+                  userId + ' ' + 
                 ')';
     
     var queryResults = await this._dbQuery(query);
@@ -769,7 +779,6 @@ module.exports = internal.TipManager = class {
       }
     }
     
-    
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';
@@ -781,7 +790,7 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _updateTiptext(params, postData, userInfo) {
+   async _updateTiptext(params, postData, userInfo) {
     var result = this._queryFailureResult();
 
     var query;
@@ -808,7 +817,7 @@ module.exports = internal.TipManager = class {
     
     return result;    
   }
-    
+      
 //---------------------------------------------------------------
 // specific delete methods
 //---------------------------------------------------------------
@@ -831,6 +840,28 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
+  async _unmapTip(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var query;
+    var queryResults;
+    
+    query = 
+      'delete from mappedtip ' +
+      'where mappedtipid = ' + postData.mappedtipid + ' ';
+    
+    queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;    
+  }
+
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------

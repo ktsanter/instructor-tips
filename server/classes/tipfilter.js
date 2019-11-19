@@ -177,10 +177,11 @@ module.exports = internal.TipFilter = class {
       userGroup: ['username'],
       groupOrder: ['courseTermGroup', 'tipstatusGroup']
      };
-     
-     if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
-       tipUIConfig.groupOrder = ['courseTermGroup', 'userGroup', 'tipstatusGroup'];
-     }
+    
+     // this causes problems with determing tip ownership    
+     //if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
+     //  tipUIConfig.groupOrder = ['courseTermGroup', 'userGroup', 'tipstatusGroup'];
+    // }
 
     var queryResultForFilter = await this._getFilter(userInfo, 'scheduling', filter);
     if (!queryResultForFilter.success) {
@@ -282,55 +283,23 @@ module.exports = internal.TipFilter = class {
     var result = this._queryFailureResult();
 
     var filter = {
-      unmapped: true,
-      general: true,
-      coursespecific: true,
-      coursename: '',
-      shared: true,
-      personal: true,
-      user: false,
-      username: '',
       searchtext: ''
     };
     
     var tipUIConfig = {
-      generalOrCourseGroup: ['unmapped', 'general', 'coursespecific', 'coursename'],    
-      publicOrPrivateGroup: ['shared', 'personal'],
-      userGroup: ['user', 'username'],
       searchGroup: ['searchtext'],
-      groupOrder: ['generalOrCourseGroup', 'publicOrPrivateGroup', 'userGroup', 'searchGroup']
-     };
+      groupOrder: ['searchGroup']
+    };
 
     var queryResultForFilter = await this._getFilter(userInfo, 'mapping', filter);
     if (!queryResultForFilter.success) {
       result.details = queryResultForFilter.details;
 
     } else {      
-      var queryList = {
-        courses: 
-          'select coursename ' + 
-          'from course ' + 
-          'order by coursename ',
-          
-        users: 
-          'select username ' + 
-          'from user ' + 
-          'order by username '
-      };
-      
-      var queryResults = await this._dbQueries(queryList);
-      
-      if (queryResults.success) {
-        result.success = true;
-        result.details = 'query succeeded';
-        result.tipfilter = queryResultForFilter.tipfilter;
-        result.courses = queryResults.data.courses;
-        result.users = queryResults.data.users;
-        result.uiconfig = tipUIConfig;
-        
-      } else {
-        result.details = queryResults.details;      
-      }
+      result.success = true;
+      result.details = 'query succeeded';
+      result.tipfilter = queryResultForFilter.tipfilter;
+      result.uiconfig = tipUIConfig;      
     }
     
     return result;

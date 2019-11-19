@@ -42,11 +42,11 @@ class TipMapping {
     this._prepContainerForUpdate();    
     this._container.appendChild(await this._tipFilter.render(this._notice));
 
-    var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipmap', this._tipFilter.getFilter());
-
-    if (tipsQuery.success) {
-      this._container.appendChild(this._showTips(tipsQuery));
-    } 
+    //var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipmap', this._tipFilter.getFilter());
+    
+    //if (tipsQuery.success) {
+      //this._container.appendChild(this._showTips(tipsQuery));
+    //} 
   }
   
   async userchange() {

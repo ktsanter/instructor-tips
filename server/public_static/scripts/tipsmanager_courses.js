@@ -112,17 +112,29 @@ class TipCourseSelection {
   // handlers
   //--------------------------------------------------------------    
   async _selectionChange(e) {
-    var isSelected = e.target.checked;
+    var elemCheckbox = e.target;
     var elemCell = e.target.parentNode.parentNode;
     var elemRow = elemCell.parentNode;
+
+    var isSelected = elemCheckbox.checked;
     var termgroup = elemCell.termgroupinfo;
     var course = elemRow.courseinfo;
-    
-    var postData = {"course": course, "termgroup": termgroup, "selected": isSelected};
-    var queryResults = await this._doPostQuery('tipmanager/update', 'tipcourses-usercourses', postData);
 
-    if (queryResults.success) {
-      this.update();
+    var completeChange = true;    
+    if (!isSelected) {
+      completeChange = confirm('Any private scheduling information will be deleted for this course/term.\n\nContinue with unselecting?');
+    }
+    
+    if (completeChange) {
+      var postData = {"course": course, "termgroup": termgroup, "selected": isSelected};
+      var queryResults = await this._doPostQuery('tipmanager/update', 'tipcourses-usercourses', postData);
+
+      if (queryResults.success) {
+        this.update();
+      }
+
+    } else {
+      if (!isSelected) elemCheckbox.checked = true;
     }
   }
   

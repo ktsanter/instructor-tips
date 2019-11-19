@@ -299,9 +299,11 @@ class TipScheduling {
   async _confirmUnmap(me, tipContainer) {
     if (confirm('Are you sure you want to remove this item from your schedule?')) {
       var tipInfo = tipContainer.tipInformation;
-      console.log('finish unmap - do DB stuff');
-      console.log(tipInfo);
-      this.update();
+      var queryResults = await this._doPostQuery('tipmanager/delete', 'tipschedule-unmaptip', tipInfo);
+      console.log(queryResults);
+      if (queryResults.success) {
+        this.update();
+      }
       
     } else {
       this._highlight(tipContainer, false);
