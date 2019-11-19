@@ -18,7 +18,7 @@ const app = function () {
     helpURL: 'help.html',
     navOptions: [
       'courses', 'scheduling', 'editing',
-      'mapping', 'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tiptatus'
+      'mapping', 'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tiptatuses'
     ],
     adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tipstatuses']
   };
