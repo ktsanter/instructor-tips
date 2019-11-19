@@ -1,3 +1,28 @@
 /*-------------------------------------------------------------------
  * styling for TipCourseSelection class
  *------------------------------------------------------------------*/
+.tipmanager-courses-contents table {
+  border-collapse: collapse;
+}
+
+.tipmanager-courses-contents th {
+  background-color: #093c44;
+  color: white;
+  font-weight: normal;
+  border-style: none;
+  text-align: left;
+  padding-right: 12px;
+}
+
+.tipmanager-courses-contents tr {
+  border-width: 1px;
+  border-top-style: none;
+  border-bottom-style: solid;
+  border-right-style: solid;
+  border-left-style: solid;
+  border-color: #093c44;
+}
+
+.tipmanager-courses-contents td:not(:first-child) {
+  text-align: center;
+}

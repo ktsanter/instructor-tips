@@ -48,8 +48,11 @@ class TipCourseSelection {
       var headerList = ['course'];
       for (var i = 0; i < termgroups.length; i++) headerList.push(termgroups[i].termgroupname);
       
+      var contentContainer = CreateElement.createDiv(null, 'tipmanager-courses-contents');
+      this._container.appendChild(contentContainer);
+      
       var elemTable = CreateElement.createTable(null, null, headerList);
-      this._container.appendChild(elemTable);
+      contentContainer.appendChild(elemTable);
       
       for (var i = 0; i < courses.length; i++) {
         this._buildCourseRow(elemTable, courses[i], termgroups, usercourses);
