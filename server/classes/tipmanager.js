@@ -47,8 +47,8 @@ module.exports = internal.TipManager = class {
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
-    }
-
+    } 
+    
     return dbResult;
   }
 
@@ -68,13 +68,16 @@ module.exports = internal.TipManager = class {
   async doUpdate(params, postData, userInfo) {
     var dbResult = this._queryFailureResult();
     
-    if (params.queryName == 'tip') {
+    if (params.queryName == 'tipcourses-usercourses') {
+      dbResult = await this._updateUserCourse(params, postData, userInfo);
+
+    } else if (params.queryName == 'tip') {
       dbResult = await this._updateTip(params, postData);
 
     } else if (params.queryName == 'singletipstatus') {
       dbResult = await this._updateSingleTipStatus(params, postData, userInfo);
             
-    }if (params.queryName == 'tipschedule-updatetiptext') {
+    }else if (params.queryName == 'tipschedule-updatetiptext') {
       dbResult = await this._updateTiptext(params, postData, userInfo);
             
     } else {
@@ -177,9 +180,7 @@ module.exports = internal.TipManager = class {
       'select termgroupid, termgroupname ' +
       'from termgroup ' +
       'order by termgroupid ';
-          
-    console.log(queryList);
-    
+              
     var queryResults = await this._dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
@@ -192,7 +193,7 @@ module.exports = internal.TipManager = class {
     } else {
       result.details = queryResults.details;
     }
-    
+        
     return result;
   }
 
@@ -680,6 +681,41 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // specific update methods
 //---------------------------------------------------------------
+  async _updateUserCourse(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+     
+    var query;
+    
+    if (postData.selected) {
+      query =
+        'insert into usercourse (userid, courseid, termgroupid) ' +
+        'values ( ' +
+          userInfo.userId + ', ' +
+          postData.course.courseid + ', ' +
+          postData.termgroup.termgroupid + ' ' +
+        ') ';
+        
+    } else {
+      query =
+        'delete from usercourse ' +
+        'where userid = ' + userInfo.userId + ' ' +
+          'and courseid = ' + postData.course.courseid + ' ' +
+          'and termgroupid = ' + postData.termgroup.termgroupid + ' ';
+    }
+             
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
   async _updateTip(params, postData) {
     var result = this._queryFailureResult();
 

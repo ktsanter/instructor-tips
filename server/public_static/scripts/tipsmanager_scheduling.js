@@ -68,8 +68,7 @@ class TipScheduling {
   
   async update() {
     this._prepContainerForUpdate();
-    this._container.appendChild(await this._tipFilter.render(this._notice));
-    
+    this._container.appendChild(await this._tipFilter.render(this._notice));    
 
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
     
@@ -241,8 +240,9 @@ class TipScheduling {
     
     tipInformation.tipstatusname = tipStatusName;
     var queryResults = await this._doPostQuery('tipmanager/update', 'singletipstatus', tipInformation);
-
-    this.update();
+    if (queryResults.success) {
+      this.update();
+    }
   }
   
   //------------------------------------------------------------------------------------------------

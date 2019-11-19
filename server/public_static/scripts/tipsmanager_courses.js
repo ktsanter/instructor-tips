@@ -37,15 +37,14 @@ class TipCourseSelection {
   }
 
   async update() {
-    this._prepContainerForUpdate();    
-        
     var queryResults = await this._doGetQuery('tipmanager/query', 'tipcourses-usercourses');
+    this._prepContainerForUpdate();
+    
     if (queryResults.success) {
       var usercourses = queryResults.usercourses;
       var courses = queryResults.courses;
       var termgroups = queryResults.termgroups;
       
-      //createTable(id, classList, headers, contents, captionLabel, attachContents, colgroupinfo)
       var headerList = ['course'];
       for (var i = 0; i < termgroups.length; i++) headerList.push(termgroups[i].termgroupname);
       
@@ -109,14 +108,19 @@ class TipCourseSelection {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------    
-  _selectionChange(e) {
+  async _selectionChange(e) {
     var isSelected = e.target.checked;
     var elemCell = e.target.parentNode.parentNode;
     var elemRow = elemCell.parentNode;
     var termgroup = elemCell.termgroupinfo;
     var course = elemRow.courseinfo;
     
-    console.log('set selection for ' + course.coursename + ' ' + termgroup.termgroupname + ' to ' + isSelected);
+    var postData = {"course": course, "termgroup": termgroup, "selected": isSelected};
+    var queryResults = await this._doPostQuery('tipmanager/update', 'tipcourses-usercourses', postData);
+
+    if (queryResults.success) {
+      this.update();
+    }
   }
   
   //--------------------------------------------------------------
@@ -156,5 +160,5 @@ class TipCourseSelection {
     }
     
     return resultData;
-  }    
+  }  
 }
