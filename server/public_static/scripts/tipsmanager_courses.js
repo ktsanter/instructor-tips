@@ -75,15 +75,21 @@ class TipCourseSelection {
   
   _buildCourseRow(elemTable, course, termgroupList, usercourseList) {
     var container = CreateElement.createDiv(null, null);
+
+    var handler = (e) => {return this._selectionChange(e)};
     
     var elemRow = CreateElement.createTableRow(null, null, elemTable);
-    CreateElement.createTableCell(null, null, course.coursename, false, elemRow);
+    var cell = CreateElement.createTableCell(null, null, course.coursename, false, elemRow);
+    elemRow.courseinfo = course;
     
     var msg = course.coursename;
     for (var i = 0; i < termgroupList.length; i++) {
       var termgroup = termgroupList[i];
       var isSelected = this._isCourseSelectedForUser(course, termgroup, usercourseList);
-      CreateElement.createTableCell(null, null, isSelected, false, elemRow);
+      cell = CreateElement.createTableCell(null, null, '', false, elemRow);
+      var elemCheckbox = CreateElement.createCheckbox(null, null, 'course-selected', 'is-selected', '', isSelected, handler)
+      cell.appendChild(elemCheckbox);
+      cell.termgroupinfo = termgroup;
     }
     
     return container;
@@ -100,6 +106,19 @@ class TipCourseSelection {
     return isSelected;
   }
 
+  //--------------------------------------------------------------
+  // handlers
+  //--------------------------------------------------------------    
+  _selectionChange(e) {
+    var isSelected = e.target.checked;
+    var elemCell = e.target.parentNode.parentNode;
+    var elemRow = elemCell.parentNode;
+    var termgroup = elemCell.termgroupinfo;
+    var course = elemRow.courseinfo;
+    
+    console.log('set selection for ' + course.coursename + ' ' + termgroup.termgroupname + ' to ' + isSelected);
+  }
+  
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------    
