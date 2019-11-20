@@ -56,7 +56,7 @@ const app = function () {
         {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
         {label: 'Admin', callback: null, 
           subitems: [
-            {label: 'Mapping', callback: () => {return _navDispatch('mapping');}},
+            /*{label: 'Mapping', callback: () => {return _navDispatch('mapping');}}, commented out while I rethink this */
             {label: 'Privileges', callback: () => {return _navDispatch('privileges');}},
             {label: 'Users', callback: () => {return _navDispatch('users');}},
             {label: 'UserPrivileges', callback: () => {return _navDispatch('userprivileges');}},

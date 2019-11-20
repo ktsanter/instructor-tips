@@ -161,48 +161,37 @@ module.exports = internal.TipFilter = class {
     var result = this._queryFailureResult();
 
     var filter = {
-      coursespecific: true,
+      allcourse_alluser: false,
+      allcourse: true,
+      usercourse: false,
+      usercoursename: '',
       coursename: '',
-      termgroupname: 'semester',
-      user: true,
-      username: userInfo.userName,
+      termgroupname: '', 
       unspecified: true,
       completed: true,
       scheduled: true
     };
     
     var tipUIConfig = {
-      courseTermGroup: ['coursename', 'termgroupname'],
+      usercourseGroup: ['allcourse_alluser', 'allcourse', 'usercourse', 'usercoursename'],
       tipstatusGroup: ['unspecified', 'scheduled', 'completed'],
-      userGroup: ['username'],
-      groupOrder: ['courseTermGroup', 'tipstatusGroup']
+      groupOrder: ['usercourseGroup', 'tipstatusGroup']
      };
     
-     // this causes problems with determing tip ownership    
-     //if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
-     //  tipUIConfig.groupOrder = ['courseTermGroup', 'userGroup', 'tipstatusGroup'];
-    // }
-
     var queryResultForFilter = await this._getFilter(userInfo, 'scheduling', filter);
+    
     if (!queryResultForFilter.success) {
       result.details = queryResultForFilter.details;
 
-    } else {      
+    } else {                
       var queryList = {
-        courses: 
-          'select coursename ' + 
-          'from course ' + 
-          'order by coursename ',
-            
-        users:
-          'select username ' +
-          'from user ' +
-          'order by username ',
-          
-        termgroups:
-          'select termgroupname ' +
-          'from termgroup ' +
-          'order by termgroupid '
+        usercourses:
+          'select usercourse.usercourseid, course.coursename, termgroup.termgroupname, termgroup.termlength ' +
+          'from usercourse, course, termgroup ' +
+          'where usercourse.courseid = course.courseid ' +
+            'and usercourse.termgroupid = termgroup.termgroupid ' +
+            'and usercourse.userid = 1 ' + 
+            'order by course.coursename, termgroup.termgroupname '
       };
       
       var queryResults = await this._dbQueries(queryList);
@@ -211,9 +200,7 @@ module.exports = internal.TipFilter = class {
         result.success = true;
         result.details = 'query succeeded';
         result.tipfilter = queryResultForFilter.tipfilter;
-        result.courses = queryResults.data.courses;
-        result.users = queryResults.data.users;
-        result.termgroups = queryResults.data.termgroups;
+        result.usercourses = queryResults.data.usercourses;
         result.uiconfig = tipUIConfig;
         
       } else {
@@ -283,12 +270,18 @@ module.exports = internal.TipFilter = class {
     var result = this._queryFailureResult();
 
     var filter = {
+      unmapped_radio: true,
+      general_radio: false,
+      course_radio: false,
+      user: false,
+      username: '',
       searchtext: ''
     };
     
     var tipUIConfig = {
+      generalGroup: ['unmapped_radio', 'general_radio', 'course_radio', 'coursename'],
       searchGroup: ['searchtext'],
-      groupOrder: ['searchGroup']
+      groupOrder: ['generalGroup', 'searchGroup']
     };
 
     var queryResultForFilter = await this._getFilter(userInfo, 'mapping', filter);
@@ -296,10 +289,26 @@ module.exports = internal.TipFilter = class {
       result.details = queryResultForFilter.details;
 
     } else {      
-      result.success = true;
-      result.details = 'query succeeded';
-      result.tipfilter = queryResultForFilter.tipfilter;
-      result.uiconfig = tipUIConfig;      
+      var queryList = {
+        courses: 
+          'select coursename ' + 
+          'from course ' +
+          'order by coursename '
+      };
+      
+      var queryResults = await this._dbQueries(queryList);
+      
+      if (queryResults.success) {
+        result.success = true;
+        result.details = 'query succeeded';
+        result.tipfilter = queryResultForFilter.tipfilter;
+        result.courses = queryResults.data.courses;
+        result.users = queryResults.data.users;
+        result.uiconfig = tipUIConfig;
+        
+      } else {
+        result.details = queryResults.details;      
+      }
     }
     
     return result;

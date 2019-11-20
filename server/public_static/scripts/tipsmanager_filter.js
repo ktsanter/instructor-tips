@@ -18,8 +18,27 @@ class TipManagerFilter {
     this._tipFilter = null;
     this._filterQueryResults = null;
     
-    this._filterUITypes = ['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'coursename', 'termgroupname', 'user', 'username', 'searchtext'];
+    this._filterUITypes = [
+      'unmapped', 
+      'general', 
+      'coursespecific', 
+      'shared', 
+      'personal', 
+      'unspecified', 
+      'scheduled', 
+      'completed', 
+      'coursename', 
+      'termgroupname', 
+      'user', 
+      'username', 
+      'searchtext', 
+      'allcourse_alluser', 
+      'allcourse', 
+      'usercourse',
+      'usercoursename'
+    ];
     this._checkBoxes = new Set(['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'user']);
+    this._radioButtons = new Set(['allcourse_alluser', 'allcourse', 'usercourse']);
   }
   
   //--------------------------------------------------------------
@@ -99,7 +118,7 @@ class TipManagerFilter {
     var elem = CreateElement.createDiv(null, null, 'not implemented: ' + fieldName);
     var className = 'tipfilter-item tipfilter-' + fieldName;
     var handler = () => {return this._updateFiltering();};
-
+        
     if (fieldName == 'unmapped') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'unmapped', false, handler);
     } else if (fieldName == 'general') {
@@ -118,7 +137,24 @@ class TipManagerFilter {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'scheduled', false, handler);
     } else if (fieldName == 'completed') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'completed', false, handler);
+      
+    } else if (fieldName == 'allcourse_alluser') {
+      elem = CreateElement.createRadio(null, className, groupName, fieldName, 'all courses/all users', false, handler);
+    } else if (fieldName == 'allcourse') {
+      elem = CreateElement.createRadio(null, className, groupName, fieldName, 'all your courses', false, handler);
+    } else if (fieldName == 'usercourse') {
+      elem = CreateElement.createRadio(null, className, groupName, fieldName, '', false, handler);
     
+    } else if (fieldName == 'usercoursename') {
+      var valueList = [];
+      var usercourses = this._filterQueryResults.usercourses;
+      for (var i = 0; i < usercourses.length; i++) {
+        var displayVal = usercourses[i].coursename + ' (' + usercourses[i].termgroupname + ')';
+        var indexVal = i;
+        valueList.push({id: i, value: i, textval: displayVal});
+      }
+      elem = CreateElement.createSelect(null, className, handler, valueList);
+      
     } else if (fieldName == 'coursename') {
       var valueList = [];
       var courses = this._filterQueryResults.courses;
@@ -156,17 +192,20 @@ class TipManagerFilter {
 
   _setFilterUIValues() {
     var uiConfig = this._filterQueryResults.uiconfig;
+
     var configOrder = uiConfig.groupOrder;
-    
     for (var i = 0; i < configOrder.length; i++) {
       var group = uiConfig[configOrder[i]];
-      
+
       for (var j = 0; j < group.length; j++) {
         var typeName = group[j];
-        var className = 'tipfilter-' + typeName;       
+        var className = 'tipfilter-' + typeName;
         var filterElement = this._container.getElementsByClassName(className)[0];
         
         if (this._checkBoxes.has(typeName)) {
+          filterElement.checked = this._tipFilter[typeName];
+          
+        } else if (this._radioButtons.has(typeName)) {
           filterElement.checked = this._tipFilter[typeName];
           
         } else if (typeName == 'coursename') {
@@ -175,7 +214,17 @@ class TipManagerFilter {
           for (var k = 0; k < courses.length; k++) {
             if (courses[k].coursename == this._tipFilter.coursename) elemSelect.selectedIndex = k;
           }
-          elemSelect.disabled = !this._tipFilter['coursespecific'];
+          if (this._tipFilter.hasOwnProperty('coursespecific')) elemSelect.disabled = !this._tipFilter['coursespecific'];
+          if (this._tipFilter.hasOwnProperty('course_radio')) elemSelect.disabled = !this._tipFilter['course_radio'];
+          
+        } else if (typeName == 'usercoursename') {
+          var elemSelect = this._container.getElementsByClassName(className)[0];
+          var usercourses = this._filterQueryResults.usercourses;
+          for (var k = 0; k < usercourses.length; k++) {
+            var displayVal = usercourses[k].coursename + ' (' + usercourses[k].termgroupname + ')';
+            if (displayVal == this._tipFilter.usercoursename) elemSelect.selectedIndex = k;
+          }
+          elemSelect.disabled = !this._tipFilter.usercourse;
           
         } else if (typeName == 'termgroupname') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
@@ -213,6 +262,19 @@ class TipManagerFilter {
         
         if (this._checkBoxes.has(typeName)) {
           this._tipFilter[typeName] = filterElement.checked;
+          
+        } else if (this._radioButtons.has(typeName)) {
+          this._tipFilter[typeName] = filterElement.checked;
+          
+        } else if (typeName == 'usercoursename') {
+          var elemSelect = this._container.getElementsByClassName(className)[0];
+          this._tipFilter[typeName] =  elemSelect[elemSelect.selectedIndex].text;
+          
+          var selectedUserCourseIndex = elemSelect[elemSelect.selectedIndex].index;
+          var usercourse = this._filterQueryResults.usercourses[selectedUserCourseIndex];
+
+          this._tipFilter.coursename = usercourse.coursename;
+          this._tipFilter.termgroupname = usercourse.termgroupname;
           
         } else if (typeName == 'coursename') {
           var elemSelect = this._container.getElementsByClassName(className)[0];

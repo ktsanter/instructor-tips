@@ -1,0 +1,3 @@
+semester|18
+trimester|12
+summer|10

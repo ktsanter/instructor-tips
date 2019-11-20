@@ -71,6 +71,7 @@ class TipScheduling {
     this._container.appendChild(await this._tipFilter.render(this._notice));    
 
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
+    console.log(tipsQuery);
     
     if (tipsQuery.success) {
       if (tipsQuery.usercourseexists) {

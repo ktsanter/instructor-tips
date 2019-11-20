@@ -202,10 +202,90 @@ module.exports = internal.TipManager = class {
   }
 
   async _getTipSchedule(params, postData, userInfo) {
-    var result = this._queryFailureResult();   
+    var result = this._queryFailureResult(); 
 
     var queryList = {};
     
+    if (postData.allcourse_alluser) {
+      queryList.tipschedule = this._getQuery_AllCourseAllUser(postData, userInfo);
+      
+    } else if (postData.allcourse) {
+      queryList.tipschedule = this._getQuery_AllCourse(postData, userInfo);
+      
+    } else if (postData.usercourse) {
+      queryList.tipschedule = this._getQuery_UserCourse(postData, userInfo);
+    }
+
+    queryList.termlength = 
+      'select termlength ' +
+      'from termgroup ' +
+      'where termgroupname = "' + postData.termgroupname + '" ';
+      
+    var queryResults = await this._dbQueries(queryList);
+
+    console.log(params);
+    console.log(postData);
+    console.log(userInfo);
+    console.log(queryList);
+    console.log(queryResults);
+        
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.tipschedule = queryResults.data.tipschedule;
+      result.termlength = queryResults.data.termlength;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  _getQuery_AllCourseAllUser(postData, userInfo) {
+    var query = 
+      'SELECT * ' +
+      'FROM viewmappedtip ' +
+      'WHERE userid IS NULL ' +
+        'AND courseid IS NULL ' +
+        'AND termgroupname = "' + postData.termgroupname + '" ';
+        
+    return query;
+  }    
+
+  _getQuery_AllCourse(postData, userInfo) {
+    var query = 
+      'SELECT * ' +
+      'FROM viewmappedtip ' +
+      'WHERE userid = ' + userInfo.userId + ' ' +
+        'AND courseid IS NULL ' +
+        'AND termgroupname = "' + postData.termgroupname + '" ';
+        
+    return query;
+  }
+
+  _getQuery_UserCourse(postData, userInfo) {
+    var query = 
+      'select ' +
+        'v.mappedtipid, v.userid as tip_userid, v.username as tip_username, v.courseid, v.coursename, v.termgroupid, v.termgroupname, v.week, v.tiptext, ' +
+        'uts.usertipstatusid, uts.tipstatusid, uts.userid as tipstatus_userid, uts.tipstatusname ' +
+      'from viewmappedtip as v ' +
+      'left outer join ( ' +
+        'select usertipstatusid, mappedtipid, tipstatus.tipstatusid, userid, tipstatus.tipstatusname ' +
+        'from usertipstatus, tipstatus ' +
+        'where usertipstatus.tipstatusid = tipstatus.tipstatusid ' +
+      ') as uts ' +
+      'on ( ' +
+        'v.mappedtipid = uts.mappedtipid  ' +
+        'and uts.userid in (select userid from user where username = "' + postData.username + '" ) ' +
+      ') ' +
+      'where (v.userid IS NULL OR v.username = "' + postData.username + '" ) ' + 
+        'and (v.courseid IS NULL OR v.coursename = "' + postData.coursename + '" ) ' +
+        'and v.termgroupname = "' + postData.termgroupname + '" ' +
+        tipstatusCondition + ' ';
+        
+    return query;
+    /*
     var tipstatusCondition = this._buildTipSchedulingConstraints(postData);
     queryList.usercourse =
       'SELECT usercourseid ' +
@@ -255,7 +335,7 @@ module.exports = internal.TipManager = class {
     } else {
       result.details = queryResults.details;
     }
-    
+    */
     return result;
   }
 
@@ -471,20 +551,42 @@ module.exports = internal.TipManager = class {
   async _getTipMapData(params, postData, userInfo) {
     var result = this._queryFailureResult();
     var queryList = {};
-    
-    var constraint = this._buildTipMappingConstraints_orig(postData);  
-/*    
-    queryList.alltips = 
-      'SELECT tipid, generaltipid, coursetipid, tiptext, termgroupname, week, username, coursename ' + 
-      'FROM alltipmapping_orig ' +
-      constraint + ' ';
-  */    
-    var constraint = this._buildTipMappingConstraints(postData);
-    queryList.tips = 
-      'SELECT tipid, tiptext, termgroupname, week, username, coursename ' +
-      'from viewmappedtip ' +
-      constraint + ' ';
      
+    if (postData.unmapped_radio) {
+      queryList.tips = 
+        'select tip.tipid, tip.tiptext, NULL as mappedtipid, NULL as coursename ' + 
+        'from tip  ' + 
+        'where userid is null ' + 
+        'and tipid not in ( ' + 
+          'select tipid  ' + 
+          'from mappedtip ' + 
+        ') ';      
+      
+    } else if (postData.general_radio) {
+      queryList.tips =
+        'select tip.tipid, tip.tiptext, mappedtip.mappedtipid, NULL as coursename ' +
+        'from tip, mappedtip, usercourse ' +
+        'where tip.tipid = mappedtip.tipid ' +
+          'and usercourse.usercourseid = mappedtip.usercourseid ' +
+          'and tip.userid is null ' +
+          'and usercourse.courseid is null ';
+      
+    } else if (postData.course_radio) {
+      queryList.tips =
+      'select tip.tipid, tip.tiptext, mappedtip.mappedtipid, course.coursename ' +
+      'from tip, mappedtip, usercourse, course ' +
+      'where tip.tipid = mappedtip.tipid ' +
+        'and usercourse.usercourseid = mappedtip.usercourseid ' +
+        'and usercourse.courseid = course.courseid ' +
+        'and tip.userid is null ' +
+        'and course.coursename = "' + postData.coursename + '" ';
+    }
+     
+    queryList.courses = 
+      'SELECT coursename ' +
+      'FROM course ' +
+      'ORDER BY coursename ';
+
     queryList.termgroups = 
       'SELECT termgroupname, termlength ' +
       'FROM termgroup ' +
@@ -495,10 +597,8 @@ module.exports = internal.TipManager = class {
     if (queryResults.success) {   
       result.success = true;
       result.details = 'query succeeded';
-      //var processedData = this._processMapResults(queryResults.data.alltips);
-      var processedData = this._processMapResults(queryResults.data.tips);
-      result.tips = processedData.tips;
-      result.mapping = processedData.mapping;
+      result.tips = queryResults.data.tips;
+      result.courses = queryResults.data.courses;
       result.termgroups = queryResults.data.termgroups;
 
     } else {
@@ -506,156 +606,6 @@ module.exports = internal.TipManager = class {
     }
     
     return result;
-  }
-  
-  _buildTipMappingConstraints_orig(postData) {
-    var generalConstraint = '';
-    if (postData.unmapped) generalConstraint = ' (generaltipid IS NULL and coursetipid IS NULL) ';
-    if (postData.general != '') {
-      if (generalConstraint) generalConstraint += ' OR ';
-      generalConstraint += ' (generaltipid IS NOT NULL) ';
-    }
-    if (postData.coursespecific) {
-      if (generalConstraint != '') generalConstraint += ' OR ';
-      generalConstraint += ' (coursename = "' + postData.coursename + '" ) ';
-    }
-    if (!postData.unmapped && !postData.general && !postData.coursespecific) {
-      generalConstraint = ' (FALSE) ';
-    }
-    if (generalConstraint != '') generalConstraint = ' (' + generalConstraint + ') ';
-    
-    var privateConstraint = '';
-    if (postData.shared) privateConstraint = ' (username IS NULL) ';
-    if (postData.personal) {
-      if (privateConstraint != '') privateConstraint += ' OR ';
-      privateConstraint += ' (username IS NOT NULL) ';
-    }
-    if (!postData.shared && !postData.personal) {
-      privateConstraint = ' (FALSE) ';
-    }
-    if (privateConstraint != '') privateConstraint = ' (' + privateConstraint + ') ';
-    
-    var userConstraint = '';
-    if (postData.user) userConstraint = ' (username = "' + postData.username + '") ';
-    
-    var searchConstraint = ' (tiptext like "%' + postData.searchtext + '%") ';
-
-    var constraint = '';
-    if (generalConstraint != '') constraint += generalConstraint;
-    if (privateConstraint != '') {
-      if (constraint != '') constraint += ' AND ';
-      constraint += privateConstraint;
-    }
-    if (userConstraint != '') {
-      if (constraint != '') constraint += ' AND ';
-      constraint += userConstraint;
-    }
-    if (searchConstraint != '') {
-      if (constraint != '') constraint += ' AND ';
-      constraint += searchConstraint;
-    }
-    if (constraint != '') constraint = 'WHERE ' + constraint;
-    
-    return constraint;
-  }
-  
-  _buildTipMappingConstraints(postData) {
-    var generalConstraint = '';
-    if (postData.unmapped) generalConstraint = ' (mappedtipid IS NULL) ';
-    if (postData.general != '') {
-      if (generalConstraint) generalConstraint += ' OR ';
-      generalConstraint += ' (courseid IS NULL) ';
-    }
-    if (postData.coursespecific) {
-      if (generalConstraint != '') generalConstraint += ' OR ';
-      generalConstraint += ' (coursename = "' + postData.coursename + '" ) ';
-    }
-    if (!postData.unmapped && !postData.general && !postData.coursespecific) {
-      generalConstraint = ' (FALSE) ';
-    }
-    if (generalConstraint != '') generalConstraint = ' (' + generalConstraint + ') ';
-    
-    var privateConstraint = '';
-    if (postData.shared) privateConstraint = ' (username IS NULL) ';
-    if (postData.personal) {
-      if (privateConstraint != '') privateConstraint += ' OR ';
-      privateConstraint += ' (username IS NOT NULL) ';
-    }
-    if (!postData.shared && !postData.personal) {
-      privateConstraint = ' (FALSE) ';
-    }
-    if (privateConstraint != '') privateConstraint = ' (' + privateConstraint + ') ';
-     
-    var userConstraint = '';
-    if (postData.user) userConstraint = ' (username = "' + postData.username + '") ';
-    
-    var searchConstraint = ' (tiptext like "%' + postData.searchtext + '%") ';
-
-    var constraint = '';
-    if (generalConstraint != '') constraint += generalConstraint;
-    if (privateConstraint != '') {
-      if (constraint != '') constraint += ' AND ';
-      constraint += privateConstraint;
-    }
-    if (userConstraint != '') {
-      if (constraint != '') constraint += ' AND ';
-      constraint += userConstraint;
-    }
-    if (searchConstraint != '') {
-      if (constraint != '') constraint += ' AND ';
-      constraint += searchConstraint;
-    }
-    if (constraint != '') constraint = 'WHERE ' + constraint;
-    
-    return constraint;
-  }
-  
-  _processMapResults(mapData) {
-    var tips = [];
-    var mapping = {};
-    
-    for (var i = 0; i < mapData.length; i++) {
-      var tip = mapData[i];
-      
-      if (!this._tipInArray(tip.tipid, tips)) {
-        tips.push({tipid: tip.tipid, tiptext: tip.tiptext});
-      }
-      
-      var termgroupName = tip.termgroupname;
-
-      if (termgroupName != null) {
-        if (!mapping.hasOwnProperty(tip.tipid)) {
-          mapping[tip.tipid] = {};
-        }
-        var mapEntry = mapping[tip.tipid];
-      
-        if (!mapEntry.hasOwnProperty(termgroupName)) {
-          mapEntry[termgroupName] = {};
-        }
-        var mapTermEntry = mapEntry[termgroupName];
-        
-        mapTermEntry = {
-          week: tip.week,
-          generaltipid: tip.generaltipid,
-          coursetipid: tip.coursetipid,
-          coursename: tip.coursename
-        }
-        mapEntry[termgroupName] = mapTermEntry;
-        mapping[tip.tipid] = mapEntry;
-      }
-    }
-    
-    return {"tips": tips, "mapping": mapping};
-  }
-  
-  _tipInArray(tipId, arr) {
-    var inArray = false;
-    
-    for (var i = 0; i < arr.length && !inArray; i++) {
-      inArray = (tipId == arr[i].tipid);
-    }
-    
-    return inArray;
   }
 
 //---------------------------------------------------------------

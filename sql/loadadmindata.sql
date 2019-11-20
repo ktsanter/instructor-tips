@@ -9,17 +9,31 @@ DELETE FROM usercourse;
 DELETE FROM course;
 DELETE FROM term;
 DELETE FROM termgroup;
+DELETE FROM tip;
+DELETE FROM mappedtip;
+DELETE from usertipstatus;
 
-INSERT INTO privilege SET privilegename = 'superadmin';
-INSERT INTO privilege SET privilegename = 'admin';
-INSERT INTO privilege SET privilegename = 'lead';
-INSERT INTO privilege SET privilegename = 'instructor';
+#-------------------------------------------------------------
+#-- privilege
+#-------------------------------------------------------------
+load data local infile 'initial_load_data/privilege.txt'
+into table privilege
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\r\n'
+(privilegename);
 
-INSERT INTO user SET usershortname = 'ksanter', username = 'Kevin Santer';
-INSERT INTO user SET usershortname = 'nsanter', username = 'Noah Santer';
-INSERT INTO user SET usershortname = 'bubba', username = 'Bubba McStabbypants';
-INSERT INTO user SET usershortname = 'carlos', username = 'Charles Chorkenheimer';
+#-------------------------------------------------------------
+#-- user
+#-------------------------------------------------------------
+load data local infile 'initial_load_data/user.txt'
+into table user
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\r\n'
+(usershortname, username);
 
+#-------------------------------------------------------------
+#-- userprivilege
+#-------------------------------------------------------------
 INSERT INTO userprivilege (userid, privilegeid)
   SELECT user.userid, privilege.privilegeid 
   FROM user, privilege
@@ -37,10 +51,18 @@ INSERT INTO userprivilege (userid, privilegeid)
   FROM user, privilege
   WHERE user.usershortname = 'carlos' and privilege.privilegename = 'instructor';
 
-INSERT INTO termgroup SET termgroupname = 'semester', termlength = 18;
-INSERT INTO termgroup SET termgroupname = 'trimester', termlength = 12;
-INSERT INTO termgroup SET termgroupname = 'summer', termlength = 10;
+#-------------------------------------------------------------
+#-- termgroup
+#-------------------------------------------------------------
+load data local infile 'initial_load_data/termgroup.txt'
+into table termgroup
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\r\n'
+(termgroupname, termlength);
 
+#-------------------------------------------------------------
+#-- term
+#-------------------------------------------------------------
 INSERT INTO term (termname, termgroupid) SELECT 'Sem 1', termgroupid FROM termgroup where termgroupname = 'semester';
 INSERT INTO term (termname, termgroupid) SELECT 'Sem 2', termgroupid FROM termgroup where termgroupname = 'semester';
 INSERT INTO term (termname, termgroupid) SELECT 'Tri 1', termgroupid FROM termgroup where termgroupname = 'trimester';
@@ -48,40 +70,128 @@ INSERT INTO term (termname, termgroupid) SELECT 'Tri 2', termgroupid FROM termgr
 INSERT INTO term (termname, termgroupid) SELECT 'Tri 3', termgroupid FROM termgroup where termgroupname = 'trimester';
 INSERT INTO term (termname, termgroupid) SELECT 'Summer', termgroupid FROM termgroup where termgroupname = 'summer';
 
-INSERT INTO course set coursename='AP Computer Science Principles (S1)', ap = true;
-INSERT INTO course set coursename='AP Computer Science Principles (S2)', ap = true;
-INSERT INTO course set coursename='Java Programming A', ap = false;
-INSERT INTO course set coursename='Basic Web Design: HTML & CSS', ap = false;
+#-------------------------------------------------------------
+#-- course
+#-------------------------------------------------------------
+load data local infile 'initial_load_data/course.txt'
+into table course
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\r\n'
+(coursename, ap);
 
-#--- all courses, public, all terms
+#-------------------------------------------------------------
+#-- usercourse
+#-------------------------------------------------------------
+
+#--- "all-courses", public, all terms
 INSERT INTO usercourse (userid, courseid, termgroupid) 
 SELECT NULL as userid, NULL as courseid, termgroupid
 FROM termgroup;
 
-#--- all courses, private, all terms
+#--- "all-courses", private, all terms
 INSERT INTO usercourse (userid, courseid, termgroupid) 
 SELECT userid, NULL AS courseid, termgroupid
-FROM termgroup, user;
+FROM termgroup, user
+WHERE termgroup.termgroupname = 'semester';
 
-#--- specific courses, public, all terms
+#--- course-specific, public, all terms
 INSERT INTO usercourse (userid, courseid, termgroupid) 
 SELECT NULL as userid, courseid, termgroupid
-FROM course, termgroup;
+FROM course, termgroup
+WHERE termgroup.termgroupname = 'semester';
 
-#-- specific courses, specific users, specific terms
 INSERT INTO usercourse (userid, courseid, termgroupid) 
-SELECT userid, courseid, termgroupid
-FROM user, course, termgroup
-WHERE user.usershortname = 'ksanter'
-  AND course.coursename in ('Java Programming A', 'Basic Web Design: HTML & CSS')
-  AND termgroup.termgroupname in ('semester', 'trimester');
+SELECT NULL as userid, courseid, termgroupid
+FROM course, termgroup
+WHERE termgroup.termgroupname in ('trimester', 'summer')
+  AND course.ap = false;
   
-INSERT INTO usercourse (userid, courseid, termgroupid) 
-SELECT userid, courseid, termgroupid
-FROM user, course, termgroup
-WHERE user.usershortname = 'carlos'
-  AND course.coursename in ('Java Programming A', 'Basic Web Design: HTML & CSS')
-  AND termgroup.termgroupname in ('semester');
-  
-INSERT INTO tipstatus (tipstatusname) VALUES ('scheduled');
-INSERT INTO tipstatus (tipstatusname) VALUES ('completed');
+#-------------------------------------------------------------
+#-- tipstatus
+#-------------------------------------------------------------
+load data local infile 'initial_load_data/tipstatus.txt'
+into table tipstatus
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\r\n'
+(tipstatusname);
+
+#-------------------------------------------------------------
+#-- tip
+#-------------------------------------------------------------
+#--- load shared general tips from Instructors Corner
+/*
+load data local infile 'tipdata_allcourses_public.txt'
+into table tip
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\r\n'
+(tiptext)
+set userid = null;
+*/
+
+#-- public, all-courses tips
+INSERT INTO tip (tiptext, userid) VALUES ('shared all-courses announcement 001',  NULL);
+INSERT INTO tip (tiptext, userid) VALUES ('shared all-courses announcement 002',  NULL);
+INSERT INTO tip (tiptext, userid) VALUES ('shared all-courses announcement 003',  NULL);
+
+#-- TODO: figure out how to automate this?
+#-- private, all-courses tips
+INSERT INTO tip (tiptext, userid) SELECT 'ksanter all-courses announcement 001', user.userid FROM user WHERE user.usershortname = 'ksanter';
+INSERT INTO tip (tiptext, userid) SELECT 'ksanter all-courses announcement 002', user.userid FROM user WHERE user.usershortname = 'ksanter';
+INSERT INTO tip (tiptext, userid) SELECT 'ksanter all-courses announcement 003', user.userid FROM user WHERE user.usershortname = 'ksanter';
+INSERT INTO tip (tiptext, userid) SELECT 'carlos all-courses announcement 001', user.userid FROM user WHERE user.usershortname = 'carlos';
+INSERT INTO tip (tiptext, userid) SELECT 'carlos all-courses announcement 002', user.userid FROM user WHERE user.usershortname = 'carlos';
+
+#-- public, course-specific tips 
+INSERT INTO tip(tiptext, userid) VALUES ('shared Java A tip 001', NULL);
+INSERT INTO tip(tiptext, userid) VALUES ('shared Java A tip 002', NULL);
+INSERT INTO tip(tiptext, userid) VALUES ('shared Web Design tip 001', NULL);
+INSERT INTO tip(tiptext, userid) VALUES ('shared Web Design tip 002', NULL);
+
+#-------------------------------------------------------------
+#-- mappedtip
+#-------------------------------------------------------------
+#-- temporary mapping for testing - figure out robust strategy
+
+#--- public, all-courses tips
+INSERT INTO mappedtip (tipid, usercourseid, week)
+  SELECT tipid, usercourseid, 0
+  FROM tip, usercourse
+  WHERE tip.tiptext LIKE '%all-courses%'
+    AND tip.userid IS NULL
+    AND usercourse.userid IS NULL
+    AND usercourse.courseid IS NULL;
+
+#-- private, all-courses tips
+/*
+INSERT INTO mappedtip (tipid, usercourseid, week)
+  SELECT tipid, usercourseid, 0
+  FROM tip, usercourse
+  WHERE tip.tiptext LIKE '%all-courses%'
+   AND usercourse.userid = tip.userid
+   AND usercourse.courseid IS NULL;
+*/
+
+#-- public, course-specific tips 
+INSERT INTO mappedtip (tipid, usercourseid, week)
+  SELECT tipid, usercourseid, 0
+  FROM tip, usercourse, course
+  WHERE tip.tiptext LIKE '%java%'
+    AND tip.userid IS NULL
+    AND usercourse.userid IS NULL
+    AND usercourse.courseid = course.courseid
+    AND course.coursename like '%java prog%';
+
+/*
+INSERT INTO mappedtip (tipid, usercourseid, week)
+  SELECT tipid, usercourseid, 0
+  FROM tip, usercourse, course
+  WHERE tip.tiptext LIKE '%web design%'
+    AND tip.userid IS NULL
+    AND usercourse.userid IS NULL
+    AND usercourse.courseid = course.courseid
+    AND course.coursename like '%web design%';
+*/
+#-- make a variety of weeks
+UPDATE mappedtip, tip SET week = 1 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%001';
+UPDATE mappedtip, tip SET week = 2 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%002';
+UPDATE mappedtip, tip SET week = 3 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%003';
