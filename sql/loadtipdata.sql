@@ -85,24 +85,7 @@ INSERT INTO mappedtip (tipid, usercourseid, week)
     AND tip.userid IS NULL
     AND usercourse.userid IS NULL
     AND usercourse.courseid = course.courseid
-    AND course.coursename like '%web design%';
-
-#-- private course-specific tips
-INSERT INTO mappedtip (tipid, usercourseid, week)
-  SELECT tipid, usercourseid, 0
-  FROM tip, usercourse, course
-  WHERE tip.tiptext LIKE '%java%'
-    AND usercourse.userid = tip.userid
-    AND usercourse.courseid = course.courseid
-    AND course.coursename like '%java%';
-
-INSERT INTO mappedtip (tipid, usercourseid, week)
-  SELECT tipid, usercourseid, 0
-  FROM tip, usercourse, course
-  WHERE tip.tiptext LIKE '%web design%'
-    AND usercourse.userid = tip.userid
-    AND usercourse.courseid = course.courseid
-    AND course.coursename like '%web design%';
+    AND course.coursename like '%basic web design%';
 
 #-- make a variety of weeks
 UPDATE mappedtip, tip SET week = 1 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%001';

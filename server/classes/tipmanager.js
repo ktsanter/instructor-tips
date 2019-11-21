@@ -205,38 +205,53 @@ module.exports = internal.TipManager = class {
     var result = this._queryFailureResult(); 
 
     var queryList = {};
+    var showTipStatus = false;
     
     if (postData.adm_allcourse) {
       queryList.tipschedule = this._getQuery_AdminAllCourse(postData, userInfo);
       
-    } else if (postData.adm_usercourse) {
+    } else if (postData.adm_course) {
       queryList.tipschedule = this._getQuery_AdminUserCourse(postData, userInfo);
       
     } else if (postData.allcourse) {
       queryList.tipschedule = this._getQuery_AllCourse(postData, userInfo);
       
-    } else if (postData.usercourse) {
+    } else if (postData.course) {
+      showTipStatus = true;
       queryList.tipschedule = this._getQuery_UserCourse(postData, userInfo);
     }
 
+    queryList.usercourse =
+      'SELECT usercourseid ' +
+      'FROM usercourse ' +
+      'WHERE userid = ' + userInfo.userId + ' ' +
+        'AND courseid IN (SELECT courseid FROM course WHERE coursename = "' + postData.coursename + '") ' +
+        'AND termgroupid IN (SELECT termgroupid FROM termgroup WHERE termgroupname = "' + postData.termgroupname + '") ';
+        
     queryList.termlength = 
       'select termlength ' +
       'from termgroup ' +
       'where termgroupname = "' + postData.termgroupname + '" ';
       
     var queryResults = await this._dbQueries(queryList);
-/*
+
     console.log(params);
     console.log(postData);
     console.log(userInfo);
     console.log(queryList);
     console.log(queryResults);
-  */      
+      
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
       result.tipschedule = queryResults.data.tipschedule;
-      result.termlength = queryResults.data.termlength;
+      result.termlength = queryResults.data.termlength[0].termlength;
+      result.showtipstatus = showTipStatus;
+      if (postData.course) {
+        result.usercourseexists = (queryResults.data.usercourse.length > 0);
+      } else {
+        result.usercourseexists = true;
+      }
 
     } else {
       result.details = queryResults.details;
@@ -247,14 +262,22 @@ module.exports = internal.TipManager = class {
   
   _getQuery_AdminAllCourse(postData, userInfo) {
     var query = 
-      'SELECT "admin all course" ';
+      'select tiptext, week ' + 
+      'from viewmappedtip ' +
+      'where userid is null ' +
+        'and courseid is null ' +
+        'and termgroupname = "' + postData.termgroupname + '" ';
       
     return query;
   }
   
   _getQuery_AdminUserCourse(postData, userInfo) {
     var query = 
-      'SELECT "admin user course" ';
+      'select tiptext, week ' +
+      'from viewmappedtip ' +
+      'where userid is null ' +
+        'and coursename = "' + postData.adm_coursename + '" ' +
+        'and termgroupname = "' + postData.termgroupname + '" ';
       
     return query;
   }
@@ -271,6 +294,8 @@ module.exports = internal.TipManager = class {
   }
 
   _getQuery_UserCourse(postData, userInfo) {
+    var tipstatusCondition = this._buildTipSchedulingConstraints(postData);
+    
     var query = 
       'select ' +
         'v.mappedtipid, v.userid as tip_userid, v.username as tip_username, v.courseid, v.coursename, v.termgroupid, v.termgroupname, v.week, v.tiptext, ' +

@@ -193,18 +193,16 @@ module.exports = internal.TipFilter = class {
           'order by termgroupid ',
           
         courses:
-          'select course.coursename ' +
-          'from usercourse, course, termgroup ' +
+          'select distinct course.coursename ' +
+          'from usercourse, course ' +
           'where usercourse.courseid = course.courseid ' +
-            'and usercourse.termgroupid = termgroup.termgroupid ' +
             'and usercourse.userid = ' + userInfo.userId + ' ' + 
             'order by course.coursename ',
             
         adm_courses:
-          'select course.coursename ' +
-          'from usercourse, course, termgroup ' +
+          'select distinct course.coursename ' +
+          'from usercourse, course ' +
           'where usercourse.courseid = course.courseid ' +
-            'and usercourse.termgroupid = termgroup.termgroupid ' +
             'and usercourse.userid is null ' + 
             'order by course.coursename '
             

@@ -71,11 +71,12 @@ class TipScheduling {
     this._container.appendChild(await this._tipFilter.render(this._notice));    
 
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
+    console.log('tipsQuery:');
     console.log(tipsQuery);
     
     if (tipsQuery.success) {
       if (tipsQuery.usercourseexists) {
-        var organizedTips = this._organizeByWeek(tipsQuery.data, tipsQuery.termlength);
+        var organizedTips = this._organizeByWeek(tipsQuery.tipschedule, tipsQuery.termlength);
         this._container.appendChild(this._showTips(organizedTips, tipsQuery.termlength));
       
       } else {
@@ -301,7 +302,7 @@ class TipScheduling {
     if (confirm('Are you sure you want to remove this item from your schedule?')) {
       var tipInfo = tipContainer.tipInformation;
       var queryResults = await this._doPostQuery('tipmanager/delete', 'tipschedule-unmaptip', tipInfo);
-      console.log(queryResults);
+
       if (queryResults.success) {
         this.update();
       }

@@ -40,6 +40,7 @@ class TipManagerFilter {
     ];
     this._checkBoxes = new Set(['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'user']);
     this._radioButtons = new Set(['allcourse', 'course', 'adm_allcourse', 'adm_course']);
+    this._tipstatusGroup = new Set(['unspecified', 'scheduled', 'completed']);
   }
   
   //--------------------------------------------------------------
@@ -245,6 +246,10 @@ class TipManagerFilter {
         } else if (typeName == 'searchtext') {
           filterElement.value = this._tipFilter[typeName];
         }
+        
+        if (this._tipstatusGroup.has(typeName)) {
+          this._showElement(filterElement.parentNode, this._tipFilter.course);
+        }
       }
     }
   }
@@ -273,7 +278,9 @@ class TipManagerFilter {
           
         } else if (typeName == 'coursename') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
-          this._tipFilter[typeName] = elemSelect[elemSelect.selectedIndex].value;
+          if (elemSelect.selectedIndex >= 0) {
+            this._tipFilter[typeName] = elemSelect[elemSelect.selectedIndex].value;
+          }
           
         } else if (typeName == 'termgroupname') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
@@ -287,6 +294,16 @@ class TipManagerFilter {
           this._tipFilter[typeName] = filterElement.value;
         }
       }
+    }
+  }
+  
+  _showElement(elem, makeVisible) {
+    if (elem.classList.contains(this._HIDE_CLASS)) {
+      elem.classList.remove(this._HIDE_CLASS);
+    }
+    
+    if (!makeVisible) {
+      elem.classList.add(this._HIDE_CLASS);
     }
   }
   

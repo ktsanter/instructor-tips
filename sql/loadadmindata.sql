@@ -172,6 +172,7 @@ INSERT INTO mappedtip (tipid, usercourseid, week)
 */
 
 #-- public, course-specific tips 
+select "public, course-specific tips";
 INSERT INTO mappedtip (tipid, usercourseid, week)
   SELECT tipid, usercourseid, 0
   FROM tip, usercourse, course
@@ -181,17 +182,19 @@ INSERT INTO mappedtip (tipid, usercourseid, week)
     AND usercourse.courseid = course.courseid
     AND course.coursename like '%java prog%';
 
-/*
 INSERT INTO mappedtip (tipid, usercourseid, week)
   SELECT tipid, usercourseid, 0
-  FROM tip, usercourse, course
+  FROM tip, usercourse, course, termgroup
   WHERE tip.tiptext LIKE '%web design%'
     AND tip.userid IS NULL
     AND usercourse.userid IS NULL
     AND usercourse.courseid = course.courseid
-    AND course.coursename like '%web design%';
-*/
+    AND course.coursename like '%basic web design%'
+    and usercourse.termgroupid = termgroup.termgroupid
+    and termgroup.termgroupname = 'semester';
+
 #-- make a variety of weeks
+select "changing mappedtip weeks";
 UPDATE mappedtip, tip SET week = 1 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%001';
 UPDATE mappedtip, tip SET week = 2 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%002';
 UPDATE mappedtip, tip SET week = 3 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%003';
