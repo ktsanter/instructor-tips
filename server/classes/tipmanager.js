@@ -234,12 +234,6 @@ module.exports = internal.TipManager = class {
       'where termgroupname = "' + postData.termgroupname + '" ';
       
     var queryResults = await this._dbQueries(queryList);
-
-    console.log(params);
-    console.log(postData);
-    console.log(userInfo);
-    console.log(queryList);
-    console.log(queryResults);
       
     if (queryResults.success) {
       result.success = true;
@@ -308,66 +302,14 @@ module.exports = internal.TipManager = class {
       ') as uts ' +
       'on ( ' +
         'v.mappedtipid = uts.mappedtipid  ' +
-        'and uts.userid in (select userid from user where username = "' + postData.username + '" ) ' +
+        'and uts.userid = ' + userInfo.userId + ' ' +
       ') ' +
-      'where (v.userid IS NULL OR v.username = "' + postData.username + '" ) ' + 
+      'where (v.userid IS NULL OR v.userid = ' + userInfo.userId + ' ) ' + 
         'and (v.courseid IS NULL OR v.coursename = "' + postData.coursename + '" ) ' +
         'and v.termgroupname = "' + postData.termgroupname + '" ' +
         tipstatusCondition + ' ';
         
     return query;
-    /*
-    var tipstatusCondition = this._buildTipSchedulingConstraints(postData);
-    queryList.usercourse =
-      'SELECT usercourseid ' +
-      'FROM usercourse ' +
-      'WHERE userid IN (SELECT userid FROM user WHERE username = "' + postData.username + '") ' +
-        'AND courseid IN (SELECT courseid FROM course WHERE coursename = "' + postData.coursename + '") ' +
-        'AND termgroupid IN (SELECT termgroupid FROM termgroup WHERE termgroupname = "' + postData.termgroupname + '") ';
-        
-    queryList.tips = 
-      'select ' +
-        'v.mappedtipid, v.userid as tip_userid, v.username as tip_username, v.courseid, v.coursename, v.termgroupid, v.termgroupname, v.week, v.tiptext, ' +
-        'uts.usertipstatusid, uts.tipstatusid, uts.userid as tipstatus_userid, uts.tipstatusname ' +
-      'from viewmappedtip as v ' +
-      'left outer join ( ' +
-        'select usertipstatusid, mappedtipid, tipstatus.tipstatusid, userid, tipstatus.tipstatusname ' +
-        'from usertipstatus, tipstatus ' +
-        'where usertipstatus.tipstatusid = tipstatus.tipstatusid ' +
-      ') as uts ' +
-      'on ( ' +
-        'v.mappedtipid = uts.mappedtipid  ' +
-        'and uts.userid in (select userid from user where username = "' + postData.username + '" ) ' +
-      ') ' +
-      'where (v.userid IS NULL OR v.username = "' + postData.username + '" ) ' + 
-        'and (v.courseid IS NULL OR v.coursename = "' + postData.coursename + '" ) ' +
-        'and v.termgroupname = "' + postData.termgroupname + '" ' +
-        tipstatusCondition + ' ';
-
-    queryList.termlength = 
-      'select termlength ' +
-      'from termgroup ' +
-      'where termgroupname = "' + postData.termgroupname + '" ';
-    
-    var queryResults = await this._dbQueries(queryList);
-        
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-
-      result.usercourseexists = (queryResults.data.usercourse.length > 0);
-      if (result.usercourseexists) {
-        result.data = queryResults.data.tips;
-      } else {
-        result.data = [];
-      }
-      result.termlength = queryResults.data.termlength[0].termlength;
-
-    } else {
-      result.details = queryResults.details;
-    }
-    */
-    return result;
   }
 
   _buildTipSchedulingConstraints(postData) {
@@ -437,45 +379,75 @@ module.exports = internal.TipManager = class {
     
     var filter = postData.filter;
     var weekNumber = postData.week;
-
+        
     var tipId;
+    var userIdSelection;
+    var courseIdSelection;
+
     if (postData.addData.addType == 'existing') {
       tipId = postData.addData.addValue;
-      
+
     } else {
       var tipText = postData.addData.addValue;
+      
+      if (filter.adm_allcourse || filter.adm_course) {
+        userIdSelection = ' NULL '
+      } else {
+        userIdSelection = ' ' + userInfo.userId + ' ';
+      }
+      
       query = 
-        'INSERT INTO tip (tiptext, userid) ' +
-        'SELECT ' + 
+        'insert into tip (tiptext, userid) ' +
+        'select ' +
           '"' + tipText + '", ' +
-          'userid ' +
-          'FROM user ' +
-          'WHERE username = "' + filter.username + '" '
+          userIdSelection;
           
-      queryResults = await this._dbQuery(query);    
+      queryResults = await this._dbQuery(query);
       
       if (queryResults.success) {
-        query =
-          'SELECT tipid ' +
-          'FROM tip, user ' +
-          'WHERE tiptext = "' + tipText + '" ' +
-            'AND username = "' + filter.username + '" ' +
-            'AND tip.userid = user.userid ';
+        if (filter.adm_allcourse || filter.adm_course) {
+          userIdSelection = ' userid is NULL '
+        } else {
+          userIdSelection = ' userid = ' + userInfo.userId + ' ';
+        }
+        
+        query = 
+          'select tipid ' +
+          'from tip ' +
+          'where tiptext = "' + tipText + '" ' +
+            'and ' + userIdSelection;
 
         queryResults = await this._dbQuery(query);
         if (queryResults.success) {
           tipId = queryResults.data[0].tipid;
         }          
-      }        
+      }
     }
 
-    if (tipId) {    
+    if (tipId) {   
+      if (filter.adm_allcourse) {
+        userIdSelection = ' userid is NULL ';
+        courseIdSelection = ' courseid is NULL ';
+        
+      } else if (filter.adm_course) {
+        userIdSelection = ' userid is NULL ';
+        courseIdSelection = 'courseid in (select courseid from course where coursename = "' + filter.adm_coursename + '") ';
+        
+      } else if (filter.allcourse) {
+        userIdSelection = ' userid = ' + userInfo.userId + ' ';
+        courseIdSelection = ' courseid is NULL ';
+        
+      } else {
+        userIdSelection = ' userid = ' + userInfo.userId + ' ';
+        courseIdSelection = 'courseid in (select courseid from course where coursename = "' + filter.coursename + '") ';
+      }
+
       query = 
         'INSERT INTO mappedtip (usercourseid, tipid, week) ' +
           'SELECT usercourseid, ' + tipId + ', ' + weekNumber + ' ' +
           'from usercourse ' +
-          'where courseid in (select courseid from course where coursename = "' + filter.coursename + '") ' +
-          'and userid in (select userid from user where username = "' + filter.username + '") ' +
+          'where ' + courseIdSelection + ' ' +
+          'and ' + userIdSelection + ' ' +
           'and termgroupid in (select termgroupid from termgroup where termgroupname = "' + filter.termgroupname + '") ';
         
       queryResults = await this._dbQuery(query);

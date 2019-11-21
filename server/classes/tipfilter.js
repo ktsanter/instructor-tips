@@ -161,7 +161,7 @@ module.exports = internal.TipFilter = class {
     var result = this._queryFailureResult();
 
     var filter = {
-      termgroupname: '',
+      termgroupname: 'semester',
       adm_allcourse: false,
       adm_course: false,
       adm_coursename: '',
