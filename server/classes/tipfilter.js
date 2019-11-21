@@ -159,9 +159,13 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
   async _getSchedulingTipFilter(params, userInfo) {
     var result = this._queryFailureResult();
-
+// need termgroupname for allcourse and adm_allcourse
     var filter = {
-      allcourse_alluser: false,
+      adm_allcourse: false,
+      adm_usercourse: false,
+      adm_usercoursename: '',
+      adm_coursename: '',
+      adm_termgroupname: '',
       allcourse: true,
       usercourse: false,
       usercoursename: '',
@@ -173,9 +177,10 @@ module.exports = internal.TipFilter = class {
     };
     
     var tipUIConfig = {
-      usercourseGroup: ['allcourse_alluser', 'allcourse', 'usercourse', 'usercoursename'],
+      adminUsercourseGroup: ['adm_allcourse', 'adm_usercourse', 'adm_usercoursename'],
+      usercourseGroup: ['allcourse', 'usercourse', 'usercoursename'],
       tipstatusGroup: ['unspecified', 'scheduled', 'completed'],
-      groupOrder: ['usercourseGroup', 'tipstatusGroup']
+      groupOrder: ['adminUsercourseGroup', 'usercourseGroup', 'tipstatusGroup']
      };
     
     var queryResultForFilter = await this._getFilter(userInfo, 'scheduling', filter);
@@ -190,8 +195,17 @@ module.exports = internal.TipFilter = class {
           'from usercourse, course, termgroup ' +
           'where usercourse.courseid = course.courseid ' +
             'and usercourse.termgroupid = termgroup.termgroupid ' +
-            'and usercourse.userid = 1 ' + 
+            'and usercourse.userid = ' + userInfo.userId + ' ' + 
+            'order by course.coursename, termgroup.termgroupname ',
+            
+        adm_usercourses:
+          'select usercourse.usercourseid, course.coursename, termgroup.termgroupname, termgroup.termlength ' +
+          'from usercourse, course, termgroup ' +
+          'where usercourse.courseid = course.courseid ' +
+            'and usercourse.termgroupid = termgroup.termgroupid ' +
+            'and usercourse.userid is null ' + 
             'order by course.coursename, termgroup.termgroupname '
+            
       };
       
       var queryResults = await this._dbQueries(queryList);
@@ -200,6 +214,7 @@ module.exports = internal.TipFilter = class {
         result.success = true;
         result.details = 'query succeeded';
         result.tipfilter = queryResultForFilter.tipfilter;
+        result.adm_usercourses = queryResults.data.adm_usercourses;
         result.usercourses = queryResults.data.usercourses;
         result.uiconfig = tipUIConfig;
         

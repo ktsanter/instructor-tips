@@ -32,13 +32,17 @@ class TipManagerFilter {
       'user', 
       'username', 
       'searchtext', 
-      'allcourse_alluser', 
       'allcourse', 
       'usercourse',
-      'usercoursename'
+      'usercoursename',
+      'adm_allcourse', 
+      'adm_usercourse',
+      'adm_usercoursename',
+      'adm_coursename',
+      'adm_termgroupname'
     ];
     this._checkBoxes = new Set(['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'user']);
-    this._radioButtons = new Set(['allcourse_alluser', 'allcourse', 'usercourse']);
+    this._radioButtons = new Set(['allcourse', 'usercourse', 'adm_allcourse', 'adm_usercourse']);
   }
   
   //--------------------------------------------------------------
@@ -138,10 +142,12 @@ class TipManagerFilter {
     } else if (fieldName == 'completed') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'completed', false, handler);
       
-    } else if (fieldName == 'allcourse_alluser') {
-      elem = CreateElement.createRadio(null, className, groupName, fieldName, 'all courses/all users', false, handler);
+    } else if (fieldName == 'adm_allcourse') {
+      elem = CreateElement.createRadio(null, className, 'usercourseGroup', fieldName, 'all courses', false, handler);
+    } else if (fieldName == 'adm_usercourse') {
+      elem = CreateElement.createRadio(null, className, 'usercourseGroup', fieldName, '', false, handler);
     } else if (fieldName == 'allcourse') {
-      elem = CreateElement.createRadio(null, className, groupName, fieldName, 'all your courses', false, handler);
+      elem = CreateElement.createRadio(null, className, groupName, fieldName, 'all my courses', false, handler);
     } else if (fieldName == 'usercourse') {
       elem = CreateElement.createRadio(null, className, groupName, fieldName, '', false, handler);
     
@@ -150,6 +156,16 @@ class TipManagerFilter {
       var usercourses = this._filterQueryResults.usercourses;
       for (var i = 0; i < usercourses.length; i++) {
         var displayVal = usercourses[i].coursename + ' (' + usercourses[i].termgroupname + ')';
+        var indexVal = i;
+        valueList.push({id: i, value: i, textval: displayVal});
+      }
+      elem = CreateElement.createSelect(null, className, handler, valueList);
+      
+    } else if (fieldName == 'adm_usercoursename') {
+      var valueList = [];
+      var adm_usercourses = this._filterQueryResults.adm_usercourses;
+      for (var i = 0; i < adm_usercourses.length; i++) {
+        var displayVal = adm_usercourses[i].coursename + ' (' + adm_usercourses[i].termgroupname + ')';
         var indexVal = i;
         valueList.push({id: i, value: i, textval: displayVal});
       }
@@ -226,6 +242,15 @@ class TipManagerFilter {
           }
           elemSelect.disabled = !this._tipFilter.usercourse;
           
+        } else if (typeName == 'adm_usercoursename') {
+          var elemSelect = this._container.getElementsByClassName(className)[0];
+          var adm_usercourses = this._filterQueryResults.adm_usercourses;
+          for (var k = 0; k < adm_usercourses.length; k++) {
+            var displayVal = adm_usercourses[k].adm_coursename + ' (' + adm_usercourses[k].adm_termgroupname + ')';
+            if (displayVal == this._tipFilter.adm_usercoursename) elemSelect.selectedIndex = k;
+          }
+          elemSelect.disabled = !this._tipFilter.adm_usercourse;
+          
         } else if (typeName == 'termgroupname') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
           var termgroups = this._filterQueryResults.termgroups;
@@ -275,6 +300,16 @@ class TipManagerFilter {
 
           this._tipFilter.coursename = usercourse.coursename;
           this._tipFilter.termgroupname = usercourse.termgroupname;
+          
+        } else if (typeName == 'adm_usercoursename') {
+          var elemSelect = this._container.getElementsByClassName(className)[0];
+          this._tipFilter[typeName] =  elemSelect[elemSelect.selectedIndex].text;
+          
+          var selectedUserCourseIndex = elemSelect[elemSelect.selectedIndex].index;
+          var adm_usercourse = this._filterQueryResults.usercourses[selectedUserCourseIndex];
+
+          this._tipFilter.adm_coursename = adm_usercourse.adm_coursename;
+          this._tipFilter.adm_termgroupname = adm_usercourse.adm_termgroupname;
           
         } else if (typeName == 'coursename') {
           var elemSelect = this._container.getElementsByClassName(className)[0];

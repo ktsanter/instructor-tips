@@ -206,8 +206,11 @@ module.exports = internal.TipManager = class {
 
     var queryList = {};
     
-    if (postData.allcourse_alluser) {
-      queryList.tipschedule = this._getQuery_AllCourseAllUser(postData, userInfo);
+    if (postData.adm_allcourse) {
+      queryList.tipschedule = this._getQuery_AdminAllCourse(postData, userInfo);
+      
+    } else if (postData.adm_usercourse) {
+      queryList.tipschedule = this._getQuery_AdminUserCourse(postData, userInfo);
       
     } else if (postData.allcourse) {
       queryList.tipschedule = this._getQuery_AllCourse(postData, userInfo);
@@ -242,16 +245,19 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  _getQuery_AllCourseAllUser(postData, userInfo) {
+  _getQuery_AdminAllCourse(postData, userInfo) {
     var query = 
-      'SELECT * ' +
-      'FROM viewmappedtip ' +
-      'WHERE userid IS NULL ' +
-        'AND courseid IS NULL ' +
-        'AND termgroupname = "' + postData.termgroupname + '" ';
-        
+      'SELECT "admin all course" ';
+      
     return query;
-  }    
+  }
+  
+  _getQuery_AdminUserCourse(postData, userInfo) {
+    var query = 
+      'SELECT "admin user course" ';
+      
+    return query;
+  }
 
   _getQuery_AllCourse(postData, userInfo) {
     var query = 
