@@ -225,13 +225,13 @@ module.exports = internal.TipManager = class {
       'where termgroupname = "' + postData.termgroupname + '" ';
       
     var queryResults = await this._dbQueries(queryList);
-
+/*
     console.log(params);
     console.log(postData);
     console.log(userInfo);
     console.log(queryList);
     console.log(queryResults);
-        
+  */      
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';

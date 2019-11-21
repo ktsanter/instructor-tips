@@ -159,28 +159,25 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
   async _getSchedulingTipFilter(params, userInfo) {
     var result = this._queryFailureResult();
-// need termgroupname for allcourse and adm_allcourse
+
     var filter = {
+      termgroupname: '',
       adm_allcourse: false,
-      adm_usercourse: false,
-      adm_usercoursename: '',
+      adm_course: false,
       adm_coursename: '',
-      adm_termgroupname: '',
       allcourse: true,
-      usercourse: false,
-      usercoursename: '',
+      course: false,
       coursename: '',
-      termgroupname: '', 
       unspecified: true,
       completed: true,
       scheduled: true
     };
     
     var tipUIConfig = {
-      adminUsercourseGroup: ['adm_allcourse', 'adm_usercourse', 'adm_usercoursename'],
-      usercourseGroup: ['allcourse', 'usercourse', 'usercoursename'],
+      termgroupGroup: ['termgroupname'],
+      courseGroup: ['adm_allcourse', 'adm_course', 'adm_coursename', 'allcourse', 'course', 'coursename'],
       tipstatusGroup: ['unspecified', 'scheduled', 'completed'],
-      groupOrder: ['adminUsercourseGroup', 'usercourseGroup', 'tipstatusGroup']
+      groupOrder: ['termgroupGroup', 'courseGroup', 'tipstatusGroup']
      };
     
     var queryResultForFilter = await this._getFilter(userInfo, 'scheduling', filter);
@@ -190,21 +187,26 @@ module.exports = internal.TipFilter = class {
 
     } else {                
       var queryList = {
-        usercourses:
-          'select usercourse.usercourseid, course.coursename, termgroup.termgroupname, termgroup.termlength ' +
+        termgroups: 
+          'select termgroupname, termlength ' +
+          'from termgroup ' +
+          'order by termgroupid ',
+          
+        courses:
+          'select course.coursename ' +
           'from usercourse, course, termgroup ' +
           'where usercourse.courseid = course.courseid ' +
             'and usercourse.termgroupid = termgroup.termgroupid ' +
             'and usercourse.userid = ' + userInfo.userId + ' ' + 
-            'order by course.coursename, termgroup.termgroupname ',
+            'order by course.coursename ',
             
-        adm_usercourses:
-          'select usercourse.usercourseid, course.coursename, termgroup.termgroupname, termgroup.termlength ' +
+        adm_courses:
+          'select course.coursename ' +
           'from usercourse, course, termgroup ' +
           'where usercourse.courseid = course.courseid ' +
             'and usercourse.termgroupid = termgroup.termgroupid ' +
             'and usercourse.userid is null ' + 
-            'order by course.coursename, termgroup.termgroupname '
+            'order by course.coursename '
             
       };
       
@@ -214,8 +216,9 @@ module.exports = internal.TipFilter = class {
         result.success = true;
         result.details = 'query succeeded';
         result.tipfilter = queryResultForFilter.tipfilter;
-        result.adm_usercourses = queryResults.data.adm_usercourses;
-        result.usercourses = queryResults.data.usercourses;
+        result.termgroups = queryResults.data.termgroups;
+        result.adm_courses = queryResults.data.adm_courses;
+        result.courses = queryResults.data.courses;
         result.uiconfig = tipUIConfig;
         
       } else {
