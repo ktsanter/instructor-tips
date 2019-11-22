@@ -175,10 +175,14 @@ module.exports = internal.TipFilter = class {
     
     var tipUIConfig = {
       termgroupGroup: ['termgroupname'],
-      courseGroup: ['adm_allcourse', 'adm_course', 'adm_coursename', 'allcourse', 'course', 'coursename'],
+      courseGroup: ['allcourse', 'course', 'coursename'],
       tipstatusGroup: ['unspecified', 'scheduled', 'completed'],
       groupOrder: ['termgroupGroup', 'courseGroup', 'tipstatusGroup']
-     };
+    };
+     
+    if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
+      tipUIConfig.courseGroup = ['adm_allcourse', 'adm_course', 'adm_coursename', 'allcourse', 'course', 'coursename'];
+    }
     
     var queryResultForFilter = await this._getFilter(userInfo, 'scheduling', filter);
     

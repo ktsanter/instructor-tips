@@ -42,9 +42,6 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tipedit') {
       dbResult = await this._getTipEditData(params, postData, userInfo);
       
-    } else if (params.queryName == 'tipmap') {
-      dbResult = await this._getTipMapData(params, postData, userInfo);
-      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -234,7 +231,7 @@ module.exports = internal.TipManager = class {
       'where termgroupname = "' + postData.termgroupname + '" ';
       
     var queryResults = await this._dbQueries(queryList);
-      
+          
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -312,10 +309,10 @@ module.exports = internal.TipManager = class {
             ') ' +
           ') ' +
       ') ' +
-      'where (vmt.userid IS NULL or vmt.userid = 1 )  ' +
+      'where (vmt.userid IS NULL or vmt.userid = ' + userInfo.userId + ')  ' +
         'and (vmt.courseid is NULL or vmt.coursename = "' + postData.coursename + '")  ' +
         'and vmt.termgroupname = "' + postData.termgroupname + '" ';
-
+    
     return query;
   }
 
@@ -423,7 +420,7 @@ module.exports = internal.TipManager = class {
           'from tip ' +
           'where tiptext = "' + tipText + '" ' +
             'and ' + userIdSelection;
-
+    
         queryResults = await this._dbQuery(query);
         if (queryResults.success) {
           tipId = queryResults.data[0].tipid;
@@ -557,67 +554,6 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-//----------------------------------------------------------
-  async _getTipMapData(params, postData, userInfo) {
-    var result = this._queryFailureResult();
-    var queryList = {};
-     
-    if (postData.unmapped_radio) {
-      queryList.tips = 
-        'select tip.tipid, tip.tiptext, NULL as mappedtipid, NULL as coursename ' + 
-        'from tip  ' + 
-        'where userid is null ' + 
-        'and tipid not in ( ' + 
-          'select tipid  ' + 
-          'from mappedtip ' + 
-        ') ';      
-      
-    } else if (postData.general_radio) {
-      queryList.tips =
-        'select tip.tipid, tip.tiptext, mappedtip.mappedtipid, NULL as coursename ' +
-        'from tip, mappedtip, usercourse ' +
-        'where tip.tipid = mappedtip.tipid ' +
-          'and usercourse.usercourseid = mappedtip.usercourseid ' +
-          'and tip.userid is null ' +
-          'and usercourse.courseid is null ';
-      
-    } else if (postData.course_radio) {
-      queryList.tips =
-      'select tip.tipid, tip.tiptext, mappedtip.mappedtipid, course.coursename ' +
-      'from tip, mappedtip, usercourse, course ' +
-      'where tip.tipid = mappedtip.tipid ' +
-        'and usercourse.usercourseid = mappedtip.usercourseid ' +
-        'and usercourse.courseid = course.courseid ' +
-        'and tip.userid is null ' +
-        'and course.coursename = "' + postData.coursename + '" ';
-    }
-     
-    queryList.courses = 
-      'SELECT coursename ' +
-      'FROM course ' +
-      'ORDER BY coursename ';
-
-    queryList.termgroups = 
-      'SELECT termgroupname, termlength ' +
-      'FROM termgroup ' +
-      'ORDER BY termgroupid ';
-      
-    var queryResults = await this._dbQueries(queryList);
-    
-    if (queryResults.success) {   
-      result.success = true;
-      result.details = 'query succeeded';
-      result.tips = queryResults.data.tips;
-      result.courses = queryResults.data.courses;
-      result.termgroups = queryResults.data.termgroups;
-
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------
@@ -835,21 +771,5 @@ module.exports = internal.TipManager = class {
       'where usertipstatusid = ' + postData.usertipstatusid;
     
     return await this._dbQuery(query);
-  }
-  
-  async _getTipStatusId(tipstatusname) {
-    var tipStatusId = null;
-    
-    var query = 
-      'select tipstatusid ' +
-      'from tipstatus ' +
-      'where tipstatusname = "' + tipstatusname + '" ';
-    
-    var queryResults = await this._dbQuery(query);
-    if (queryResults.success) {
-      tipStatusId = queryResults.data[0].tipstatusid;
-    }
-
-    return tipStatusId;
   }
 }
