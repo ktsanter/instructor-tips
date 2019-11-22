@@ -523,38 +523,32 @@ module.exports = internal.TipManager = class {
     }   
     
     if (postData.personal) {
-      if (postData.user) {
-        queryList.personal = 
-          'SELECT tipid, tiptext, a.userid, a.username ' +
-          'FROM tip ' +
-          'LEFT OUTER JOIN ( ' +
-            'SELECT userid, username ' +
-            'FROM user ' +
-          ') AS a ' + 
-          'ON tip.userid = a.userid ' + 
-          'WHERE a.username = "' + postData.username + '" ' +
-          '  AND tiptext LIKE "%' + postData.searchtext + '%" ' +
-          'ORDER BY tiptext, a.username; ';
-      
-      } else {
-        queryList.personal = 
-          'SELECT tipid, tiptext, a.userid, a.username ' +
-          'FROM tip ' +
-          'LEFT OUTER JOIN ( ' +
-            'SELECT userid, username ' +
-            'FROM user ' +
-          ') AS a ' + 
-          'ON tip.userid = a.userid ' + 
-          'WHERE tiptext LIKE "%' + postData.searchtext + '%" ' +
-            'AND a.userid IS NOT NULL ' + 
-          'ORDER BY tiptext, a.username; ';
-      }
+      queryList.personal = 
+        'SELECT tipid, tiptext, a.userid, a.username ' +
+        'FROM tip ' +
+        'LEFT OUTER JOIN ( ' +
+          'SELECT userid, username ' +
+          'FROM user ' +
+        ') AS a ' + 
+        'ON tip.userid = a.userid ' + 
+        'WHERE tiptext LIKE "%' + postData.searchtext + '%" ' +
+          'AND a.userid = ' + userInfo.userId + ' ' + 
+        'ORDER BY tiptext, a.username ';
     }
     
-    queryList.users = 
-      'SELECT userid, username ' +
-      'FROM user ' +
-      'ORDER BY username ';
+    if (postData.shared) {
+      queryList.users = 
+        'SELECT userid, username ' +
+        'FROM user ' +
+        'ORDER BY username ';
+        
+    } else {
+      queryList.users = 
+        'SELECT userid, username ' +
+        'FROM user ' +
+        'WHERE userid = ' + userInfo.userId + ' ' +
+        'ORDER BY username ';
+    }
       
     var queryResults = await this._dbQueries(queryList);
     
@@ -581,7 +575,7 @@ module.exports = internal.TipManager = class {
       
       result.constraints = {
         foreignKeys: {
-          userid: {data: 'users', displayField: 'username', allownull: true}
+          userid: {data: 'users', displayField: 'username', allownull: postData.shared}
         },
         users: queryResults.data.users
       };

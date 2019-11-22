@@ -238,22 +238,18 @@ module.exports = internal.TipFilter = class {
     var filter = {
       shared: false,
       personal: true,
-      user: true,
-      username: userInfo.userName,
       searchtext: ''
     };
     
     var tipUIConfig = {
       publicOrPrivateGroup: ['shared', 'personal'],
-      userGroup: ['user', 'username'],
       searchGroup: ['searchtext'],
       groupOrder: ['searchGroup']
      };
      
      if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
        filter.shared = true;
-       filter.user = false;
-       tipUIConfig.groupOrder = ['publicOrPrivateGroup', 'userGroup', 'searchGroup'];
+       tipUIConfig.groupOrder = ['publicOrPrivateGroup', 'searchGroup'];
      }
 
     var queryResultForFilter = await this._getFilter(userInfo, 'editing', filter);
@@ -274,55 +270,6 @@ module.exports = internal.TipFilter = class {
         result.success = true;
         result.details = 'query succeeded';
         result.tipfilter = queryResultForFilter.tipfilter;
-        result.users = queryResults.data.users;
-        result.uiconfig = tipUIConfig;
-        
-      } else {
-        result.details = queryResults.details;      
-      }
-    }
-    
-    return result;
-  }
-  
-  //--------------------------------------------------------------  
-  async _getMappingTipFilter(params, userInfo) {
-    var result = this._queryFailureResult();
-
-    var filter = {
-      unmapped_radio: true,
-      general_radio: false,
-      course_radio: false,
-      user: false,
-      username: '',
-      searchtext: ''
-    };
-    
-    var tipUIConfig = {
-      generalGroup: ['unmapped_radio', 'general_radio', 'course_radio', 'coursename'],
-      searchGroup: ['searchtext'],
-      groupOrder: ['generalGroup', 'searchGroup']
-    };
-
-    var queryResultForFilter = await this._getFilter(userInfo, 'mapping', filter);
-    if (!queryResultForFilter.success) {
-      result.details = queryResultForFilter.details;
-
-    } else {      
-      var queryList = {
-        courses: 
-          'select coursename ' + 
-          'from course ' +
-          'order by coursename '
-      };
-      
-      var queryResults = await this._dbQueries(queryList);
-      
-      if (queryResults.success) {
-        result.success = true;
-        result.details = 'query succeeded';
-        result.tipfilter = queryResultForFilter.tipfilter;
-        result.courses = queryResults.data.courses;
         result.users = queryResults.data.users;
         result.uiconfig = tipUIConfig;
         
