@@ -141,7 +141,7 @@ CREATE TABLE usertipstatus
 
 #--------------------------------------------------------------------------
 CREATE VIEW viewmappedtip AS
-  select mappedtipid, user.userid, user.username, course.courseid, course.coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tiptext, mappedtip.week 
+  select mappedtipid, user.userid, user.username, course.courseid, course.coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tipid, tip.tiptext, mappedtip.week 
   from mappedtip, usercourse, termgroup, course, tip, user
   where mappedtip.usercourseid = usercourse.usercourseid
   and usercourse.termgroupid = termgroup.termgroupid 
@@ -151,7 +151,7 @@ CREATE VIEW viewmappedtip AS
 
   UNION
 
-  select mappedtipid, NULL AS userid, NULL AS username, course.courseid, course.coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tiptext, mappedtip.week 
+  select mappedtipid, NULL AS userid, NULL AS username, course.courseid, course.coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tipid, tip.tiptext, mappedtip.week 
   from mappedtip, usercourse, termgroup, course, tip
   where mappedtip.usercourseid = usercourse.usercourseid
   and usercourse.termgroupid = termgroup.termgroupid 
@@ -161,7 +161,7 @@ CREATE VIEW viewmappedtip AS
 
   UNION
 
-  select mappedtipid, user.userid, user.username, NULL AS courseid, NULL AS coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tiptext, mappedtip.week 
+  select mappedtipid, user.userid, user.username, NULL AS courseid, NULL AS coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tipid, tip.tiptext, mappedtip.week 
   from mappedtip, usercourse, termgroup, tip, user
   where mappedtip.usercourseid = usercourse.usercourseid
   and usercourse.termgroupid = termgroup.termgroupid 
@@ -171,7 +171,7 @@ CREATE VIEW viewmappedtip AS
 
   UNION
 
-  select mappedtipid, NULL AS userid, NULL AS username, NULL AS courseid, NULL AS coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tiptext, mappedtip.week 
+  select mappedtipid, NULL AS userid, NULL AS username, NULL AS courseid, NULL AS coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tipid, tip.tiptext, mappedtip.week 
   from mappedtip, usercourse, termgroup, tip
   where mappedtip.usercourseid = usercourse.usercourseid
   and usercourse.termgroupid = termgroup.termgroupid 

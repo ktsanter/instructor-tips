@@ -253,7 +253,7 @@ module.exports = internal.TipManager = class {
   
   _getQuery_AdminAllCourse(postData, userInfo) {
     var query = 
-      'select tiptext, week ' + 
+      'select mappedtipid, tiptext, week ' +
       'from viewmappedtip ' +
       'where userid is null ' +
         'and courseid is null ' +
@@ -264,7 +264,7 @@ module.exports = internal.TipManager = class {
   
   _getQuery_AdminUserCourse(postData, userInfo) {
     var query = 
-      'select tiptext, week ' +
+      'select mappedtipid, tiptext, week ' +
       'from viewmappedtip ' +
       'where userid is null ' +
         'and coursename = "' + postData.adm_coursename + '" ' +
@@ -354,12 +354,51 @@ module.exports = internal.TipManager = class {
     var result = this._queryFailureResult();
     var queryList = {};
     
-    queryList.tips = 
-      'SELECT tipid, tiptext ' +
-      'FROM tip, user ' +
-      'WHERE tip.userid = user.userid ' + 
-        'AND user.username = "' + postData.username + '" ' + 
-      'ORDER BY tiptext ';
+    if (postData.adm_allcourse || postData.adm_course) {
+      queryList.tips = 
+        'select tipid, tiptext ' +
+        'from tip ' +
+        'where userid is null ' +
+        'and tipid not in ( ' +
+          'select tipid ' +
+          'from viewmappedtip ' +
+          'where ( ' +
+            '(userid is null and courseid is null and week = ' + postData.week + ') or ' +
+            '(userid is not null) or ' +
+            '(courseid is not null) ' +
+          ') ' +
+        ') ';
+      
+    } else if (postData.course) {
+      queryList.tips = 
+        'select tipid, tiptext ' +
+        'from tip ' +
+        'where userid = ' + userInfo.userId + ' ' +
+        'and tipid not in ( ' +
+          'select tipid ' +
+          'from viewmappedtip ' +
+          'where ( ' +
+            '(userid = ' + userInfo.userId + ' and coursename = "' + postData.coursename + '" and week = ' + postData.week + ') or ' +
+            '(userid is null) or ' +
+            '(courseid is null) ' +
+          ') ' +
+        ') ';
+      
+    } else {
+      queryList.tips = 
+        'select tipid, tiptext ' +
+        'from tip ' +
+        'where userid = ' + userInfo.userId + ' ' +
+        'and tipid not in ( ' +
+          'select tipid  ' +
+          'from viewmappedtip ' +
+          'where ( ' +
+            '(userid is null) or ' +
+            '(courseid is null) or ' +
+            '(userid = ' + userInfo.userId + ' and coursename = "' + postData.coursename + '" and week = ' + postData.week + ') ' +
+          ') ' +
+        ') ';
+    }
       
     var queryResults = await this._dbQueries(queryList);
     

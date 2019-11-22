@@ -141,11 +141,13 @@ class TipScheduling {
     container.appendChild(contents); 
     
     var tipIconHandler = (e) => {return this._tipStatusChange(e);}
+    var filter = this._tipFilter.getFilter();
     
     for (var i = 0; i < tipsForWeek.length; i++) {
       var tip = tipsForWeek[i];
-      var allowEdit = (tip.tip_userid != null);
-      var allowUnmap = (tip.tip_userid != null && tip.courseid != null);
+      
+      var allowEdit = this._canEditTip(filter, tip);
+      var allowUnmap = this._canUnmapTip(filter, tip);
       var renderedMarkdown = MarkdownToHTML.convert(tip.tiptext);
       
       var singleTipContainer = CreateElement.createDiv(null, null);
@@ -169,6 +171,36 @@ class TipScheduling {
     }
     
     return container;
+  }
+  
+  _canEditTip(filter, tip) {
+    var editable = false;
+    
+    editable = (tip.userid != null);
+    if (filter.adm_allcourse) {
+      editable = true;
+    } else if (filter.adm_course) {
+      editable = true;
+    } else if (filter.allcourse) {
+      editable = true;
+    }
+    
+    return editable;
+  }
+  
+  _canUnmapTip(filter, tip) {
+    var unmappable = false;
+    
+    unmappable = (tip.userid != null && tip.courseid != null);
+    if (filter.adm_allcourse) {
+      unmappable = true;
+    } else if (filter.adm_course) {
+      unmappable = true;
+    } else if (filter.allcourse) {
+      unmappable = true;
+    }
+    
+    return unmappable;
   }
 
   _toggleFilterCollapse(e) {
@@ -263,7 +295,11 @@ class TipScheduling {
     }
     weekContents.insertBefore(this._tipAddContainer, weekContents.firstChild);
     
+    var filter = this._tipFilter.getFilter();
+    filter.week = this._tipAddContainer.parentNode.parentNode.tipscheduleweek;
+    
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule-tiplist', this._tipFilter.getFilter());
+    
     if (tipsQuery.success) {
       this._tipAddEditor.update(tipsQuery.data);
       this._tipAddEditor.show(true);
