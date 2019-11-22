@@ -1,7 +1,7 @@
 USE instructortips;
 
 DELETE FROM usertipfilter;
-DELETE FROM tipstatus;
+/* DELETE FROM tipstatus; */
 DELETE FROM userprivilege;
 DELETE FROM privilege;
 DELETE FROM user;
@@ -54,6 +54,7 @@ INSERT INTO userprivilege (userid, privilegeid)
 #-------------------------------------------------------------
 #-- termgroup
 #-------------------------------------------------------------
+select "termgroup";
 load data local infile 'initial_load_data/termgroup.txt'
 into table termgroup
 FIELDS TERMINATED BY '|'
@@ -63,6 +64,7 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- term
 #-------------------------------------------------------------
+select "term";
 INSERT INTO term (termname, termgroupid) SELECT 'Sem 1', termgroupid FROM termgroup where termgroupname = 'semester';
 INSERT INTO term (termname, termgroupid) SELECT 'Sem 2', termgroupid FROM termgroup where termgroupname = 'semester';
 INSERT INTO term (termname, termgroupid) SELECT 'Tri 1', termgroupid FROM termgroup where termgroupname = 'trimester';
@@ -73,6 +75,7 @@ INSERT INTO term (termname, termgroupid) SELECT 'Summer', termgroupid FROM termg
 #-------------------------------------------------------------
 #-- course
 #-------------------------------------------------------------
+select "course";
 load data local infile 'initial_load_data/course.txt'
 into table course
 FIELDS TERMINATED BY '|'
@@ -82,24 +85,27 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- usercourse
 #-------------------------------------------------------------
-
-#--- "all-courses", public, all terms
+select "usercourse";
+#--- all courses, all users, all terms
+select "1";
 INSERT INTO usercourse (userid, courseid, termgroupid) 
 SELECT NULL as userid, NULL as courseid, termgroupid
 FROM termgroup;
 
-#--- "all-courses", private, all terms
+#--- all courses, specific user, all terms
+select "2";
 INSERT INTO usercourse (userid, courseid, termgroupid) 
 SELECT userid, NULL AS courseid, termgroupid
-FROM termgroup, user
-WHERE termgroup.termgroupname = 'semester';
+FROM termgroup, user;
 
-#--- course-specific, public, all terms
+#--- specific course, all users, all terms
+select "3, semester";
 INSERT INTO usercourse (userid, courseid, termgroupid) 
 SELECT NULL as userid, courseid, termgroupid
 FROM course, termgroup
 WHERE termgroup.termgroupname = 'semester';
 
+select "3, trimester, summer";
 INSERT INTO usercourse (userid, courseid, termgroupid) 
 SELECT NULL as userid, courseid, termgroupid
 FROM course, termgroup
@@ -109,11 +115,13 @@ WHERE termgroup.termgroupname in ('trimester', 'summer')
 #-------------------------------------------------------------
 #-- tipstatus
 #-------------------------------------------------------------
+/*--------
 load data local infile 'initial_load_data/tipstatus.txt'
 into table tipstatus
 FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
 (tipstatusname);
+--------*/
 
 #-------------------------------------------------------------
 #-- tip
@@ -128,6 +136,7 @@ LINES TERMINATED BY '\r\n'
 set userid = null;
 */
 
+/*
 #-- public, all-courses tips
 INSERT INTO tip (tiptext, userid) VALUES ('shared all-courses announcement 001',  NULL);
 INSERT INTO tip (tiptext, userid) VALUES ('shared all-courses announcement 002',  NULL);
@@ -146,12 +155,13 @@ INSERT INTO tip(tiptext, userid) VALUES ('shared Java A tip 001', NULL);
 INSERT INTO tip(tiptext, userid) VALUES ('shared Java A tip 002', NULL);
 INSERT INTO tip(tiptext, userid) VALUES ('shared Web Design tip 001', NULL);
 INSERT INTO tip(tiptext, userid) VALUES ('shared Web Design tip 002', NULL);
-
+*/
 #-------------------------------------------------------------
 #-- mappedtip
 #-------------------------------------------------------------
 #-- temporary mapping for testing - figure out robust strategy
 
+/*
 #--- public, all-courses tips
 INSERT INTO mappedtip (tipid, usercourseid, week)
   SELECT tipid, usercourseid, 0
@@ -160,7 +170,7 @@ INSERT INTO mappedtip (tipid, usercourseid, week)
     AND tip.userid IS NULL
     AND usercourse.userid IS NULL
     AND usercourse.courseid IS NULL;
-
+*/
 #-- private, all-courses tips
 /*
 INSERT INTO mappedtip (tipid, usercourseid, week)
@@ -171,6 +181,7 @@ INSERT INTO mappedtip (tipid, usercourseid, week)
    AND usercourse.courseid IS NULL;
 */
 
+/*
 #-- public, course-specific tips 
 select "public, course-specific tips";
 INSERT INTO mappedtip (tipid, usercourseid, week)
@@ -198,3 +209,4 @@ select "changing mappedtip weeks";
 UPDATE mappedtip, tip SET week = 1 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%001';
 UPDATE mappedtip, tip SET week = 2 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%002';
 UPDATE mappedtip, tip SET week = 3 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%003';
+*/

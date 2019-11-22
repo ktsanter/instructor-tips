@@ -113,6 +113,7 @@ CREATE TABLE mappedtip
   CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip (tipid) ON DELETE CASCADE
 );
 
+/*---
 CREATE TABLE tipstatus
 (
   tipstatusid   int unsigned NOT NULL AUTO_INCREMENT ,
@@ -121,19 +122,21 @@ CREATE TABLE tipstatus
   PRIMARY KEY (tipstatusid),
   CONSTRAINT UNIQUE(tipstatusname)
 );
+---*/
 
 CREATE TABLE usertipstatus
 (
-  usertipstatusid int unsigned NOT NULL AUTO_INCREMENT ,
-  mappedtipid     int unsigned NOT NULL ,
-  tipstatusid     int unsigned NOT NULL ,
-  userid          int unsigned NOT NULL,
+  usertipstatusid  int unsigned NOT NULL AUTO_INCREMENT ,
+  mappedtipid      int unsigned NOT NULL ,
+  userid           int unsigned NOT NULL,
+  for_usercourseid int unsigned NOT NULL,
+  tipstatusname    varchar(30) NOT NULL,
 
   PRIMARY KEY (usertipstatusid),
-  CONSTRAINT UNIQUE (mappedtipid, tipstatusid, userid),
+  CONSTRAINT UNIQUE (mappedtipid, userid, for_usercourseid),
   CONSTRAINT FOREIGN KEY (mappedtipid) REFERENCES mappedtip (mappedtipid) ON DELETE CASCADE,
-  CONSTRAINT FOREIGN KEY (tipstatusid) REFERENCES tipstatus (tipstatusid) ON DELETE CASCADE,
-  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (for_usercourseid) REFERENCES usercourse (usercourseid) ON DELETE CASCADE
 );
 
 #--------------------------------------------------------------------------
@@ -207,12 +210,30 @@ CREATE VIEW viewusercourse as
   
 
 #--------------------------------------------------------------------------
-create view temp_viewuts as
+create view viewusertipstatus as
 select 
-  uts.usertipstatusid, uts.mappedtipid, uts.userid, u.username as uts_username, 
-  vmt.username as vmt_username, vmt.coursename, vmt.termgroupname, vmt.tiptext, vmt.week, 
-  ts.tipstatusname
-from usertipstatus as uts, viewmappedtip as vmt, tipstatus as ts, user as u
-where uts.mappedtipid = vmt.mappedtipid
-and uts.tipstatusid = ts.tipstatusid
-and uts.userid = u.userid;
+  v.mappedtipid, 
+  v.userid as tip_userid, 
+  v.username as tip_username, 
+  v.courseid, v.coursename, 
+  v.termgroupid, 
+  v.termgroupname, 
+  v.week, 
+  v.tiptext, 
+  uts.usertipstatusid, 
+  uts.userid as tipstatus_userid, 
+  uts.tipstatusname,
+  uts.userid,
+  uts.for_usercourseid  
+from viewmappedtip as v
+left outer join (
+  select
+    usertipstatusid, 
+    mappedtipid, 
+    userid, 
+    tipstatusname,
+    for_usercourseid
+  from usertipstatus
+) as uts on (
+  v.mappedtipid = uts.mappedtipid
+)

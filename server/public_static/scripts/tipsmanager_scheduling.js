@@ -164,6 +164,7 @@ class TipScheduling {
           controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-edit far fa-calendar-minus', 'remove tip from week', (e) => {return this._startUnmapTipUI(e);}));
         }
       }
+
       singleTipContainer.tipInformation = tip;
     }
     
@@ -239,6 +240,8 @@ class TipScheduling {
     }
     
     tipInformation.tipstatusname = tipStatusName;
+    tipInformation.for_coursename = this._tipFilter.getFilter().coursename;
+    
     var queryResults = await this._doPostQuery('tipmanager/update', 'singletipstatus', tipInformation);
     if (queryResults.success) {
       this.update();

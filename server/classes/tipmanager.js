@@ -278,8 +278,8 @@ module.exports = internal.TipManager = class {
 
   _getQuery_AllCourse(postData, userInfo) {
     var query = 
-      'SELECT * ' +
-      'FROM viewmappedtip ' +
+      'select vmt.mappedtipid, vmt.userid, vmt.username, vmt.courseid, vmt.coursename, vmt.termgroupid, vmt.termgroupname, vmt.tiptext, vmt.week ' +
+      'FROM viewmappedtip as vmt ' +
       'WHERE userid = ' + userInfo.userId + ' ' +
         'AND courseid IS NULL ' +
         'AND termgroupname = "' + postData.termgroupname + '" ';
@@ -291,24 +291,31 @@ module.exports = internal.TipManager = class {
     var tipstatusCondition = this._buildTipSchedulingConstraints(postData);
     
     var query = 
-      'select ' +
-        'v.mappedtipid, v.userid as tip_userid, v.username as tip_username, v.courseid, v.coursename, v.termgroupid, v.termgroupname, v.week, v.tiptext, ' +
-        'uts.usertipstatusid, uts.tipstatusid, uts.userid as tipstatus_userid, uts.tipstatusname ' +
-      'from viewmappedtip as v ' +
+      'select vmt.mappedtipid, vmt.userid, vmt.username, vmt.courseid, vmt.coursename, vmt.termgroupid, vmt.termgroupname, vmt.tiptext, vmt.week, uts.tipstatusname, uts.usertipstatusid ' +
+      'from viewmappedtip as vmt ' +
       'left outer join ( ' +
-        'select usertipstatusid, mappedtipid, tipstatus.tipstatusid, userid, tipstatus.tipstatusname ' +
-        'from usertipstatus, tipstatus ' +
-        'where usertipstatus.tipstatusid = tipstatus.tipstatusid ' +
-      ') as uts ' +
-      'on ( ' +
-        'v.mappedtipid = uts.mappedtipid  ' +
+        'select tipstatusname, mappedtipid, for_usercourseid, userid, usertipstatusid ' +
+        'from usertipstatus ' +
+      ') as uts on ( ' +
+        'vmt.mappedtipid = uts.mappedtipid ' +
         'and uts.userid = ' + userInfo.userId + ' ' +
+        'and uts.for_usercourseid = (' + 
+          'select usercourseid ' +
+          'from usercourse, course ' +
+          'where usercourse.courseid = course.courseid ' +
+            'and usercourse.userid = ' + userInfo.userId + ' ' +
+            'and course.coursename = "' + postData.coursename + '" ' +
+            'and usercourse.termgroupid = ( ' +
+              'select termgroupid  ' +
+              'from termgroup ' +
+              'where termgroupname = "' + postData.termgroupname + '" ' +
+            ') ' +
+          ') ' +
       ') ' +
-      'where (v.userid IS NULL OR v.userid = ' + userInfo.userId + ' ) ' + 
-        'and (v.courseid IS NULL OR v.coursename = "' + postData.coursename + '" ) ' +
-        'and v.termgroupname = "' + postData.termgroupname + '" ' +
-        tipstatusCondition + ' ';
-        
+      'where (vmt.userid IS NULL or vmt.userid = 1 )  ' +
+        'and (vmt.courseid is NULL or vmt.coursename = "' + postData.coursename + '")  ' +
+        'and vmt.termgroupname = "' + postData.termgroupname + '" ';
+
     return query;
   }
 
@@ -316,10 +323,10 @@ module.exports = internal.TipManager = class {
     var statusA = '';
     var statusB = '';
     if (postData.unspecified) {
-      statusA = 'uts.tipstatusname is null ';      
+      statusA = 'v.tipstatusname is null ';      
     }
     if (postData.scheduled || postData.completed) {
-      statusB = 'uts.tipstatusname in (';
+      statusB = 'v.tipstatusname in (';
       if (postData.scheduled && postData.completed) {
         statusB += '"scheduled", "completed" ';
       } else if (postData.scheduled) {
@@ -706,27 +713,31 @@ module.exports = internal.TipManager = class {
 
     var query;
     var queryResults;
-    
+
     if (postData.tipstatusname == null) {
       queryResults = await this._deleteSingleTipStatus(params, postData, userInfo);
    
     } else {
-      var tipStatusId = await this._getTipStatusId(postData.tipstatusname);
-      
       if (postData.usertipstatusid == null) {
         query =
-          'insert into usertipstatus (mappedtipid, userid, tipstatusid) ' +
-          'values (' +
+          'insert into usertipstatus (mappedtipid, userid, tipstatusname, for_usercourseid) ' +
+          'select ' +
             postData.mappedtipid + ', ' + 
             userInfo.userId + ', ' +
-            tipStatusId +
-          ') ';
+            '"' + postData.tipstatusname + '", ' +
+            'usercourseid ' + 
+            'from usercourse ' +
+            'where userid = ' + userInfo.userId + ' ' +
+            'and courseid in ( ' +
+            '  select courseid from course where coursename = "' + postData.for_coursename + '" ' +
+            '  and termgroupid = ' + postData.termgroupid + 
+            ') ';
           queryResults = await this._dbQuery(query);
       
       } else {
         query =
           'update usertipstatus ' +
-          'set tipstatusid = ' + tipStatusId + ' ' +
+          'set tipstatusname = "' + postData.tipstatusname + '" ' +
           'where usertipstatusid = ' + postData.usertipstatusid;
         queryResults = await this._dbQuery(query);
       }
