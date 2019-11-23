@@ -231,10 +231,6 @@ module.exports = internal.TipManager = class {
       'where termgroupname = "' + postData.termgroupname + '" ';
       
     var queryResults = await this._dbQueries(queryList);
-    console.log('------------------------------------------------------');
-    console.log(postData);
-    console.log(queryList.tipschedule);
-    console.log(queryResults);
           
     if (queryResults.success) {
       result.success = true;

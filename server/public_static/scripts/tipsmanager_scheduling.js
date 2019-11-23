@@ -45,11 +45,21 @@ class TipScheduling {
   //--------------------------------------------------------------
   // initial rendering
   //--------------------------------------------------------------
-  render() {
+  async render() {
     this._container = CreateElement.createDiv(null, 'tipschedule ' + this._HIDE_CLASS);
     this._tipAddContainer = this._tipAddEditor.render();
     this._tipEditContainer = this._tipEditEditor.render();
     
+    this._notice = new StandardNotice(this._container, this._container);
+    this._notice.setNotice('');
+    
+    var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
+    this._container.appendChild(titleContainer);
+    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
+    titleContainer.appendChild(CreateElement.createIcon(null, 'tipmanager-icon fas fa-caret-down', 'show/hide filter', (e) => {return this._toggleFilterCollapse(e);}));
+
+    this._container.appendChild(await this._tipFilter.render(this._notice));    
+
     return this._container;
   }
 
@@ -68,8 +78,8 @@ class TipScheduling {
   
   async update() {
     this._prepContainerForUpdate();
-    this._container.appendChild(await this._tipFilter.render(this._notice));    
 
+    console.log(this._tipFilter.getFilter());
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
     
     if (tipsQuery.success) {
@@ -98,15 +108,10 @@ class TipScheduling {
   }
   
   _prepContainerForUpdate() {
-    this._removeChildren(this._container);
-
-    this._notice = new StandardNotice(this._container, this._container);
-    this._notice.setNotice('');
-    
-    var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
-    this._container.appendChild(titleContainer);
-    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
-    titleContainer.appendChild(CreateElement.createIcon(null, 'tipmanager-icon fas fa-caret-down', 'show/hide filter', (e) => {return this._toggleFilterCollapse(e);}));
+    var contents = this._container.getElementsByClassName('tipschedule-content')[0];
+    if (contents) {
+      this._container.removeChild(contents);
+    }
   }
   
   _showTips(tipsData, termLength) {

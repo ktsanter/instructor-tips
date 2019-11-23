@@ -26,12 +26,12 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	function init () {
+	async function init () {
 		page.body = document.getElementsByTagName('body')[0];
     page.maincontainer = CreateElement.createDiv('mainContainer', null);
     page.body.appendChild(page.maincontainer);
 
-    _renderPage();
+    await _renderPage();
     _navDispatch('scheduling');
 	}
 	
@@ -41,7 +41,7 @@ const app = function () {
   async function _renderPage() {
     page.maincontainer.appendChild(_renderAbout());
     page.maincontainer.appendChild(_renderLogin());
-    page.maincontainer.appendChild(_renderSubContainers());
+    page.maincontainer.appendChild(await _renderSubContainers());
     page.body.insertBefore(await _renderNavbar(), page.body.firstChild);
     page.maincontainer.classList.add('bump-down');
   }
@@ -100,14 +100,14 @@ const app = function () {
     return settings.logincontainer.render();
   }
   
-  function _renderSubContainers() {
+  async function _renderSubContainers() {
     var container = CreateElement.createDiv(null, null);
     
     settings.courseselection = new TipCourseSelection();
     container.appendChild(settings.courseselection.render());
     
     settings.scheduling = new TipScheduling();
-    container.appendChild(settings.scheduling.render());
+    container.appendChild(await settings.scheduling.render());
     
     settings.editing = new TipEditing();
     container.appendChild(settings.editing.render());

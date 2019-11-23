@@ -12,6 +12,11 @@
   display: none;
 }
 
+.tipfilter-coursetoggle-container {
+  /*display: inline-block;*/
+  border: 1px solid blue;
+}
+
 .tipfilter-adm_coursetoggle {
   vertical-align: bottom;
   margin-bottom: 6px;
