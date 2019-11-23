@@ -79,7 +79,6 @@ class TipScheduling {
   async update() {
     this._prepContainerForUpdate();
 
-    console.log(this._tipFilter.getFilter());
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
     
     if (tipsQuery.success) {

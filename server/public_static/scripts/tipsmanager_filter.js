@@ -35,7 +35,7 @@ class TipManagerFilter {
       'scheduled', 
       'completed'
     ];
-    this._checkBoxes = new Set(['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'user']);
+    this._checkBoxes = new Set(['unmapped', 'general', 'coursespecific', 'user']);
     this._radioButtons = new Set([]);
     this._tipstatusGroup = new Set(['unspecified', 'scheduled', 'completed']);
   }
@@ -119,6 +119,7 @@ class TipManagerFilter {
     
     if (fieldName == 'use_adm') {
       elem = this._createSliderSwitch('public', 'private', className, handler);
+      this._showElement(elem, this._tipFilter.allow_adm, true);
       
     } else if (fieldName == 'unmapped') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'unmapped', false, handler);
@@ -128,9 +129,9 @@ class TipManagerFilter {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, '', false, handler);
       
     } else if (fieldName == 'shared') {
-      elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'public', false, handler);
+      elem = this._createSliderSwitch('exclude public', 'include public', className, handler);
     } else if (fieldName == 'personal') {
-      elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'private', false, handler);
+      elem = this._createSliderSwitch('exclude private', 'include private', className, handler);
       
     } else if (fieldName == 'unspecified') {
       elem = this._createSliderSwitch('unspecified', 'unspecified', className + ' tipStatusGroup', handler);
@@ -148,18 +149,18 @@ class TipManagerFilter {
       for (var i = 0; i < adm_courses.length; i++) {
         valueList.push({id: i, value: adm_courses[i].coursename, textval: adm_courses[i].coursename});
       }
-      elem.appendChild(CreateElement.createSelect(null, className, handler, valueList));
+      elem.appendChild(CreateElement.createSelect(null, className + ' select-css', handler, valueList));
       
     } else if (fieldName == 'coursetoggle') {
       elem = CreateElement.createSpan(null, null);
-      elem.appendChild(this._createSliderSwitch('course', 'all your courses', className, handler));
+      elem.appendChild(this._createSliderSwitch('course', 'all courses', className, handler));
 
       var valueList = [];
       var courses = this._filterQueryResults.courses;
       for (var i = 0; i < courses.length; i++) {
         valueList.push({id: i, value: courses[i].coursename, textval: courses[i].coursename});
       }
-      elem.appendChild(CreateElement.createSelect(null, className, handler, valueList));
+      elem.appendChild(CreateElement.createSelect(null, className + ' select-css', handler, valueList));
       elem.appendChild(CreateElement._createElement('br'));
       
     } else if (fieldName == 'termgroupname') {
@@ -168,7 +169,7 @@ class TipManagerFilter {
       for (var i = 0; i < termgroups.length; i++) {
         valueList.push({id: i, value: termgroups[i].termgroupname, textval: termgroups[i].termgroupname});
       }
-      elem = CreateElement.createSelect(null, className, handler, valueList);
+      elem = CreateElement.createSelect(null, className + ' select-css', handler, valueList);
 
     } else if (fieldName == 'user') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, '', false, handler);
@@ -206,6 +207,9 @@ class TipManagerFilter {
           
         } else if (this._radioButtons.has(typeName)) {
           filterElement.checked = this._tipFilter[typeName];
+          
+        } else if (typeName == 'shared' || typeName == 'personal') {
+          this._setSliderSwitchValue(filterElement, this._tipFilter[typeName]);
           
         } else if (typeName == 'use_adm') {
           this._setSliderSwitchValue(filterElement, this._tipFilter[typeName]);
@@ -259,6 +263,8 @@ class TipManagerFilter {
 
      var elemUseAdminChoices = this._container.getElementsByClassName('tipfilter-use_adm')[0];
      if (elemUseAdminChoices) {
+       this._showElement(elemUseAdminChoices, this._tipFilter.allow_adm, true);
+       
        var useAdminChoices = this._getSliderSwitchValue(elemUseAdminChoices);
        
        var elemAdmCourseToggle = this._container.getElementsByClassName('tipfilter-adm_coursetoggle');
@@ -303,6 +309,9 @@ class TipManagerFilter {
           
         } else if (this._radioButtons.has(typeName)) {
           this._tipFilter[typeName] = filterElement.checked;
+          
+        } else if (typeName == 'shared' || typeName == 'personal') {
+          this._tipFilter[typeName] = this._getSliderSwitchValue(filterElement);
           
         } else if (typeName == 'use_adm') {
           this._tipFilter[typeName] = this._getSliderSwitchValue(filterElement);
