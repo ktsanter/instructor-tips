@@ -18,9 +18,9 @@ const app = function () {
     helpURL: 'help.html',
     navOptions: [
       'courseselection', 'scheduling', 'editing',
-      'mapping', 'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tipstatuses'
+      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses'
     ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'tipstatuses']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses']
   };
   
 	//---------------------------------------
@@ -56,15 +56,13 @@ const app = function () {
         {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
         {label: 'Admin', callback: null, 
           subitems: [
-            /*{label: 'Mapping', callback: () => {return _navDispatch('mapping');}}, commented out while I rethink this */
             {label: 'Privileges', callback: () => {return _navDispatch('privileges');}},
             {label: 'Users', callback: () => {return _navDispatch('users');}},
             {label: 'UserPrivileges', callback: () => {return _navDispatch('userprivileges');}},
             {label: 'TermGroups', callback: () => {return _navDispatch('termgroups');}},
             {label: 'Terms', callback: () => {return _navDispatch('terms');}},
             {label: 'Courses', callback: () => {return _navDispatch('courses');}},
-            {label: 'UserCourses', callback: () => {return _navDispatch('usercourses');}},
-            {label: 'TipStatus', callback: () => {return _navDispatch('tipstatuses');}}
+            {label: 'UserCourses', callback: () => {return _navDispatch('usercourses');}}
           ]
         }
       ],
@@ -100,9 +98,6 @@ const app = function () {
     
     settings.editing = new TipEditing();
     container.appendChild(settings.editing.render());
-    
-    settings.mapping = new TipMapping();
-    container.appendChild(settings.mapping.render());
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
       var type = settings.adminTypes[i];
