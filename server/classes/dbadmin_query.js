@@ -25,8 +25,7 @@ module.exports = internal.dbAdminQuery = class {
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo) {
     var dbResult = this._queryFailureResult();
-    
-    // admin queries    
+   
     if (params.queryName == 'privileges') {
       dbResult = await this._getPrivileges(params);
       
@@ -48,8 +47,8 @@ module.exports = internal.dbAdminQuery = class {
     } else if (params.queryName == 'usercourses') {
       dbResult = await this._getUserCourse(params);
       
-    } else if (params.queryName == 'tipstatuses') {
-      dbResult = await this._getTipStatuses(params);
+    } else if (params.queryName == 'navbar') {
+      dbResult = await this._getNavbar(params, userInfo);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -373,32 +372,15 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
 
-  async _getTipStatuses(params) {
+  async _getNavbar(params, userInfo) {
     var result = this._queryFailureResult();
     
-    var queryList = {
-      tipstatuses: 
-        'select tipstatusid, tipstatusname ' +
-        'from tipstatus ' +
-        'order by tipstatusname'
-    };
-    
-    var queryResults = await this._dbQueries(queryList);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.primaryKey = 'tipstatusid',
-      result.insertUpdateFields = [
-        {tipstatusname: 'text'}
-      ],
-      result.displayFields = ['tipstatusname'];
-      result.data = queryResults.data.tipstatuses,
-      result.constraints = {};
-    } else {
-      result.details = queryResults.details;
-    }
-    
+    var allowAdmin = (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin');
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {};
+    result.data.navbar = {allowadmin: allowAdmin};
+
     return result;
   }
 }

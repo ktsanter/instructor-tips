@@ -77,10 +77,6 @@ class TipManagerFilter {
     return this._tipFilter;
   }
   
-  async userchange() {
-    await this.render();
-  }
-  
   async _loadUserTipFilter() {
     var filterQuery = await this._doGetQuery('tipmanager/filter/query', this._filterType);
     

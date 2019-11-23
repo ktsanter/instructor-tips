@@ -49,11 +49,6 @@ class TipEditing {
     }      
   }
   
-  async userchange() {
-    await this._tipFilter.userchange();
-    await this.update();
-  }
-  
   _prepContainerForUpdate() {
     this._removeChildren(this._container);
 

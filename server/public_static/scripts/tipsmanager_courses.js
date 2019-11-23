@@ -60,10 +60,6 @@ class TipCourseSelection {
     }
   }
   
-  async userchange() {
-    await this.update();
-  }
-  
   _prepContainerForUpdate() {
     this._removeChildren(this._container);
 

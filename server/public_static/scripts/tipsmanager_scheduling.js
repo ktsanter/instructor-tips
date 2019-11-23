@@ -82,12 +82,7 @@ class TipScheduling {
       }
     }    
   }
-  
-  async userchange() {
-    await this._tipFilter.userchange();
-    await this.update();
-  }
-  
+ 
   _organizeByWeek(tipsData, termLength) {
     var weeklyData = {};
     for (var i = 0; i <= termLength; i++) {

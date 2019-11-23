@@ -32,10 +32,7 @@ module.exports = internal.TipFilter = class {
       
     } else if (params.queryName == 'editing') {
       dbResult = await this._getEditingTipFilter(params, userInfo);
-      
-    } else if (params.queryName == 'mapping') {
-      dbResult = await this._getMappingTipFilter(params, userInfo);
-      
+
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }

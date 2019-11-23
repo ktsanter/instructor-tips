@@ -38,7 +38,7 @@ app.use('/public', express.static('public_static'))
 // GET requests
 //------------------------------------------------------
 app.get('/admin/query/:queryName',  async function (req, res) {
-  var dbResult = await dbAdminQuery.doQuery(req.params);
+  var dbResult = await dbAdminQuery.doQuery(req.params, res, userManagement.getFullUserInfo().data);
   res.send(dbResult);
 })
 

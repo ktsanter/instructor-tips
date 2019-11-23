@@ -42,18 +42,37 @@ const app = function () {
     page.maincontainer.appendChild(_renderAbout());
     page.maincontainer.appendChild(_renderLogin());
     page.maincontainer.appendChild(_renderSubContainers());
-    page.body.insertBefore(_renderNavbar(), page.body.firstChild);
+    page.body.insertBefore(await _renderNavbar(), page.body.firstChild);
     page.maincontainer.classList.add('bump-down');
   }
   
-  function _renderNavbar() {
+  async function _renderNavbar() {
+    var queryResults = await _doGetQuery('admin/query', 'navbar');
+    console.log(queryResults.data);
+    if (!queryResults.success) {
+      return CreateElement.createDiv(null, null, queryResults.details);
+    }
+    
+    var allowAdmin = queryResults.data.navbar.allowadmin;
+    
     var navConfig = {
       title: appinfo.appname,
       
       items: [
         {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
-        {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
+        {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false}
+      ],
+      
+      hamburgeritems: [
+        {label: 'login', callback: _showLogin},
+        {label: 'help', callback: _showHelp},
+        {label: 'about', callback: _showAbout}
+      ]      
+    };
+    
+    if (allowAdmin) {
+      navConfig.items.push(
         {label: 'Admin', callback: null, 
           subitems: [
             {label: 'Privileges', callback: () => {return _navDispatch('privileges');}},
@@ -65,14 +84,8 @@ const app = function () {
             {label: 'UserCourses', callback: () => {return _navDispatch('usercourses');}}
           ]
         }
-      ],
-      
-      hamburgeritems: [
-        {label: 'login', callback: _showLogin},
-        {label: 'help', callback: _showHelp},
-        {label: 'about', callback: _showAbout}
-      ]      
-    };
+      );
+    }
     
     return new NavigationBar(navConfig);
   }
@@ -140,9 +153,25 @@ const app = function () {
 	// handlers
 	//----------------------------------------
   async function _loginComplete() {
-    await settings.scheduling.userchange();
-    await settings.editing.userchange();
+    location.reload();
   }
+  
+  //--------------------------------------------------------------
+  // db functions
+  //--------------------------------------------------------------     
+  async function _doGetQuery(queryType, queryName) {
+    var resultData = {success: false};
+    
+    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
+    if (requestResult.success) {
+      resultData = requestResult;
+    } else {
+      resultData.details = 'DB error: ' + JSON.stringify(requestResult.details);
+      console.log('DB error: ' + JSON.stringify(requestResult.details));
+    }
+    
+    return resultData;
+  } 
   
   //---------------------------------------
 	// return from wrapper function
