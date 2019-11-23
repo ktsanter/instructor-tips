@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title> slider switch </title>
+    <meta charset="utf-8">
+
+    <link href="styles/sliderswitch.css" rel="stylesheet" type="text/css">
+  </head>
+  
+  <body>
+    <label class="switch switch-yes-no test">
+      <input class="switch-input" type="checkbox" />
+      <span class="switch-label" data-on="Yes" data-off="No"></span> 
+      <span class="switch-handle"></span> 
+    </label>  
+    
+    <button onClick="_getSliderSwitchValue('test')">get value</button>
+    <button onClick="_setSliderSwitchValue('test', true)">set true</button>
+    <button onClick="_setSliderSwitchValue('test', false)">set false</button>
+    
+    <script>
+      function _getSliderSwitchValue(className) {
+        var elemLabel = document.getElementsByClassName(className)[0];
+        var elemInput = elemLabel.getElementsByClassName('switch-input')[0];
+        console.log(elemInput.checked);
+      }
+
+      function _setSliderSwitchValue(className, checked) {
+        var elemLabel = document.getElementsByClassName(className)[0];
+        var elemInput = elemLabel.getElementsByClassName('switch-input')[0];
+        elemInput.checked = checked;
+      }
+    </script>
+  </body>
+</html>

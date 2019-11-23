@@ -44,12 +44,19 @@
 .weeklytip-icon {
   cursor: pointer;
   padding-right: 10px;
+  padding-top: 7px;
+  vertical-align: top;
 }
 
 .weeklytip-singletip {
   display: inline-block;
+  max-width: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
+}
+
+.weeklytip-singletip p {
+  margin-top: 0px;
 }
 
 .hide-weeklytip-contents {

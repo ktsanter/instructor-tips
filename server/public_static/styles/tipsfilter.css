@@ -11,3 +11,15 @@
 .tipmanagerfilter-hide {
   display: none;
 }
+
+.tipfilter-adm_coursetoggle {
+  vertical-align: bottom;
+  margin-bottom: 6px;
+  margin-left: 4px;
+}
+
+.tipfilter-coursetoggle {
+  vertical-align: bottom;
+  margin-bottom: 6px;
+  margin-left: 4px;
+}

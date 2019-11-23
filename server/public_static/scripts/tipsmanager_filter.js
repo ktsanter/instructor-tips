@@ -28,18 +28,15 @@ class TipManagerFilter {
       'username', 
       'searchtext', 
       'termgroupname', 
-      'adm_allcourse', 
-      'adm_course',
-      'adm_coursename',
-      'allcourse', 
-      'course',
-      'coursename', 
+      'use_adm',
+      'adm_coursetoggle',
+      'coursetoggle',
       'unspecified', 
       'scheduled', 
       'completed'
     ];
-    this._checkBoxes = new Set(['unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'user']);
-    this._radioButtons = new Set(['allcourse', 'course', 'adm_allcourse', 'adm_course']);
+    this._checkBoxes = new Set(['use_adm', 'unmapped', 'general', 'coursespecific', 'shared', 'personal', 'unspecified', 'scheduled', 'completed', 'user']);
+    this._radioButtons = new Set([]);
     this._tipstatusGroup = new Set(['unspecified', 'scheduled', 'completed']);
   }
   
@@ -119,7 +116,9 @@ class TipManagerFilter {
     var className = 'tipfilter-item tipfilter-' + fieldName;
     var handler = () => {return this._updateFiltering();};
     
-    if (fieldName == 'unmapped') {
+    if (fieldName == 'use_adm') {
+      elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'use admin course choices', false, handler);
+    } else if (fieldName == 'unmapped') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'unmapped', false, handler);
     } else if (fieldName == 'general') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'general', false, handler);
@@ -137,31 +136,28 @@ class TipManagerFilter {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'scheduled', false, handler);
     } else if (fieldName == 'completed') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, 'completed', false, handler);
-      
-    } else if (fieldName == 'adm_allcourse') {
-      elem = CreateElement.createRadio(null, className, groupName, fieldName, 'all courses', false, handler);
-    } else if (fieldName == 'adm_course') {
-      elem = CreateElement.createRadio(null, className, groupName, fieldName, '', false, handler);
-    } else if (fieldName == 'allcourse') {
-      elem = CreateElement.createRadio(null, className, groupName, fieldName, 'all my courses', false, handler);
-    } else if (fieldName == 'course') {
-      elem = CreateElement.createRadio(null, className, groupName, fieldName, '', false, handler);
-      
-    } else if (fieldName == 'adm_coursename') {
+
+    } else if (fieldName == 'adm_coursetoggle') {
+      elem = CreateElement.createDiv(null, null);
+      elem.appendChild(this._createSliderSwitch('course', 'all courses', className, handler));
+
       var valueList = [];
       var adm_courses = this._filterQueryResults.adm_courses;
       for (var i = 0; i < adm_courses.length; i++) {
         valueList.push({id: i, value: adm_courses[i].coursename, textval: adm_courses[i].coursename});
       }
-      elem = CreateElement.createSelect(null, className, handler, valueList);
+      elem.appendChild(CreateElement.createSelect(null, className, handler, valueList));
       
-    } else if (fieldName == 'coursename') {
+    } else if (fieldName == 'coursetoggle') {
+      elem = CreateElement.createDiv(null, null);
+      elem.appendChild(this._createSliderSwitch('course', 'all your courses', className, handler));
+
       var valueList = [];
       var courses = this._filterQueryResults.courses;
       for (var i = 0; i < courses.length; i++) {
         valueList.push({id: i, value: courses[i].coursename, textval: courses[i].coursename});
       }
-      elem = CreateElement.createSelect(null, className, handler, valueList);
+      elem.appendChild(CreateElement.createSelect(null, className, handler, valueList));
       
     } else if (fieldName == 'termgroupname') {
       var valueList = [];
@@ -208,21 +204,25 @@ class TipManagerFilter {
         } else if (this._radioButtons.has(typeName)) {
           filterElement.checked = this._tipFilter[typeName];
           
-        } else if (typeName == 'adm_coursename') {
-          var elemSelect = this._container.getElementsByClassName(className)[0];
+        } else if (typeName == 'adm_coursetoggle') {
+          this._setSliderSwitchValue(filterElement, this._tipFilter.adm_course);
+
+          var elemSelect = this._container.getElementsByClassName(className)[1];
           var adm_courses = this._filterQueryResults.adm_courses;
           for (var k = 0; k < adm_courses.length; k++) {
             if (adm_courses[k].coursename == this._tipFilter.adm_coursename) elemSelect.selectedIndex = k;
           }
-          elemSelect.disabled = !this._tipFilter.adm_course;
+          this._showElement(elemSelect, this._tipFilter.adm_course);          
           
-        } else if (typeName == 'coursename') {
-          var elemSelect = this._container.getElementsByClassName(className)[0];
+        } else if (typeName == 'coursetoggle') {
+          this._setSliderSwitchValue(filterElement, this._tipFilter.course);
+
+          var elemSelect = this._container.getElementsByClassName(className)[1];
           var courses = this._filterQueryResults.courses;
           for (var k = 0; k < courses.length; k++) {
             if (courses[k].coursename == this._tipFilter.coursename) elemSelect.selectedIndex = k;
           }
-          elemSelect.disabled = !this._tipFilter.course;
+          this._showElement(elemSelect, this._tipFilter.course);          
           
         } else if (typeName == 'termgroupname') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
@@ -248,6 +248,17 @@ class TipManagerFilter {
         }
       }
     }
+    
+     var elemUseAdminChoices = this._container.getElementsByClassName('tipfilter-use_adm')[0];
+     if (elemUseAdminChoices) {
+       var useAdminChoices = elemUseAdminChoices.checked;
+      
+       var elemAdminChoicesContainer = this._container.getElementsByClassName('tipfilter-adm_coursetoggle')[0].parentNode;
+       var elemNonAdminChoicesContainer = this._container.getElementsByClassName('tipfilter-coursetoggle')[0].parentNode;
+
+       this._showElement(elemAdminChoicesContainer, useAdminChoices);
+       this._showElement(elemNonAdminChoicesContainer, !useAdminChoices);
+     }
   }
  
   _getFilterUIValues() {    
@@ -268,14 +279,27 @@ class TipManagerFilter {
         } else if (this._radioButtons.has(typeName)) {
           this._tipFilter[typeName] = filterElement.checked;
           
-        } else if (typeName == 'adm_coursename') {
-          var elemSelect = this._container.getElementsByClassName(className)[0];
-          this._tipFilter[typeName] = elemSelect[elemSelect.selectedIndex].value;
+        } else if (typeName == 'adm_coursetoggle') {
+          var elementList = this._container.getElementsByClassName(className);
+          var elemInput = elementList[0];
+          var elemSelect = elementList[1];
           
-        } else if (typeName == 'coursename') {
-          var elemSelect = this._container.getElementsByClassName(className)[0];
+          var useAdminChoices = this._container.getElementsByClassName('tipfilter-use_adm')[0].checked;
+          this._tipFilter.adm_allcourse = (!this._getSliderSwitchValue(filterElement) && useAdminChoices);
+          this._tipFilter.adm_course = (this._getSliderSwitchValue(filterElement) && useAdminChoices);
+          this._tipFilter.adm_coursename = elemSelect[elemSelect.selectedIndex].value;
+          
+        } else if (typeName == 'coursetoggle') {
+          var elementList = this._container.getElementsByClassName(className);
+          var elemInput = elementList[0];
+          var elemSelect = elementList[1];
+
+          this._tipFilter.allcourse = !this._getSliderSwitchValue(filterElement);
+          this._tipFilter.course = this._getSliderSwitchValue(filterElement);
           if (elemSelect.selectedIndex >= 0) {
-            this._tipFilter[typeName] = elemSelect[elemSelect.selectedIndex].value;
+            this._tipFilter.coursename = elemSelect[elemSelect.selectedIndex].value;
+          } else {
+            this._tipFilter.coursename = '';
           }
           
         } else if (typeName == 'termgroupname') {
@@ -303,6 +327,39 @@ class TipManagerFilter {
     }
   }
   
+  //--------------------------------------------------------------
+  // slider switch
+  //--------------------------------------------------------------     
+  _createSliderSwitch(dataOnLabel, dataOffLabel, addedClassList, handler) {
+    var classList = 'switch switch-yes-no';
+    if (addedClassList != '') classList += ' ' + addedClassList;
+    var container = CreateElement._createElement('label', null, classList);
+    
+    
+    var elemCheckbox = CreateElement._createElement('input', null, 'switch-input');
+    elemCheckbox.type = 'checkbox';
+    container.appendChild(elemCheckbox);
+    if (handler) elemCheckbox.addEventListener('click', e => handler(e));
+    
+    var elemDataSpan = CreateElement.createSpan(null, 'switch-label');
+    container.appendChild(elemDataSpan);
+    elemDataSpan.setAttribute('data-on', dataOnLabel);
+    elemDataSpan.setAttribute('data-off', dataOffLabel);
+    
+    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
+    return container;
+  }
+
+  _getSliderSwitchValue(elem) {
+    var elemInput = elem.getElementsByClassName('switch-input')[0];    
+    return elemInput.checked;
+  }
+
+  _setSliderSwitchValue(elem, checked) {
+    var elemInput = elem.getElementsByClassName('switch-input')[0];
+    elemInput.checked = checked;
+  }
+
   //--------------------------------------------------------------
   // db functions
   //--------------------------------------------------------------     

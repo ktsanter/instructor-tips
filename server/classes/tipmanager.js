@@ -231,6 +231,10 @@ module.exports = internal.TipManager = class {
       'where termgroupname = "' + postData.termgroupname + '" ';
       
     var queryResults = await this._dbQueries(queryList);
+    console.log('------------------------------------------------------');
+    console.log(postData);
+    console.log(queryList.tipschedule);
+    console.log(queryResults);
           
     if (queryResults.success) {
       result.success = true;
@@ -311,7 +315,8 @@ module.exports = internal.TipManager = class {
       ') ' +
       'where (vmt.userid IS NULL or vmt.userid = ' + userInfo.userId + ')  ' +
         'and (vmt.courseid is NULL or vmt.coursename = "' + postData.coursename + '")  ' +
-        'and vmt.termgroupname = "' + postData.termgroupname + '" ';
+        'and vmt.termgroupname = "' + postData.termgroupname + '" ' +
+        tipstatusCondition;
     
     return query;
   }
@@ -320,10 +325,10 @@ module.exports = internal.TipManager = class {
     var statusA = '';
     var statusB = '';
     if (postData.unspecified) {
-      statusA = 'v.tipstatusname is null ';      
+      statusA = 'uts.tipstatusname is null ';      
     }
     if (postData.scheduled || postData.completed) {
-      statusB = 'v.tipstatusname in (';
+      statusB = 'uts.tipstatusname in (';
       if (postData.scheduled && postData.completed) {
         statusB += '"scheduled", "completed" ';
       } else if (postData.scheduled) {

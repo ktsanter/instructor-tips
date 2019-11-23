@@ -113,53 +113,43 @@ WHERE termgroup.termgroupname in ('trimester', 'summer')
   AND course.ap = false;
   
 #-------------------------------------------------------------
-#-- tipstatus
-#-------------------------------------------------------------
-/*--------
-load data local infile 'initial_load_data/tipstatus.txt'
-into table tipstatus
-FIELDS TERMINATED BY '|'
-LINES TERMINATED BY '\r\n'
-(tipstatusname);
---------*/
-
-#-------------------------------------------------------------
 #-- tip
 #-------------------------------------------------------------
-#--- load shared general tips from Instructors Corner
-/*
-load data local infile 'tipdata_allcourses_public.txt'
+select "tip";
+
+#--- load shared general tips from Instructors Corner (semester only)
+load data local infile 'initial_load_data/tipdata_instructorscorner.txt'
 into table tip
 FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
 (tiptext)
 set userid = null;
-*/
 
-/*
-#-- public, all-courses tips
-INSERT INTO tip (tiptext, userid) VALUES ('shared all-courses announcement 001',  NULL);
-INSERT INTO tip (tiptext, userid) VALUES ('shared all-courses announcement 002',  NULL);
-INSERT INTO tip (tiptext, userid) VALUES ('shared all-courses announcement 003',  NULL);
 
-#-- TODO: figure out how to automate this?
-#-- private, all-courses tips
-INSERT INTO tip (tiptext, userid) SELECT 'ksanter all-courses announcement 001', user.userid FROM user WHERE user.usershortname = 'ksanter';
-INSERT INTO tip (tiptext, userid) SELECT 'ksanter all-courses announcement 002', user.userid FROM user WHERE user.usershortname = 'ksanter';
-INSERT INTO tip (tiptext, userid) SELECT 'ksanter all-courses announcement 003', user.userid FROM user WHERE user.usershortname = 'ksanter';
-INSERT INTO tip (tiptext, userid) SELECT 'carlos all-courses announcement 001', user.userid FROM user WHERE user.usershortname = 'carlos';
-INSERT INTO tip (tiptext, userid) SELECT 'carlos all-courses announcement 002', user.userid FROM user WHERE user.usershortname = 'carlos';
-
-#-- public, course-specific tips 
-INSERT INTO tip(tiptext, userid) VALUES ('shared Java A tip 001', NULL);
-INSERT INTO tip(tiptext, userid) VALUES ('shared Java A tip 002', NULL);
-INSERT INTO tip(tiptext, userid) VALUES ('shared Web Design tip 001', NULL);
-INSERT INTO tip(tiptext, userid) VALUES ('shared Web Design tip 002', NULL);
-*/
 #-------------------------------------------------------------
 #-- mappedtip
 #-------------------------------------------------------------
-#-- temporary mapping for testing - figure out robust strategy
+select "mappedtip";
+
+#--- map shared general tips from Instructors Corner (semester only)
+insert into mappedtip (tipid, usercourseid, week)
+select 
+  tipid, 
+  usercourseid,
+  cast(substring(tiptext from 10 for 2) as int) as week
+from tip, usercourse
+where tiptext like "[staging %"
+  and usercourse.userid is NULL
+  and usercourse.courseid is NULL
+  and usercourse.termgroupid in (
+    select termgroupid
+    from termgroup
+    where termgroupname = 'semester'
+);
+
+#--- remove [staging NN] tag from tiptext
+update tip
+set tiptext = substring(tiptext from 13);
 
 /*
 #--- public, all-courses tips

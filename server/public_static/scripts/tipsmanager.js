@@ -48,7 +48,7 @@ const app = function () {
   
   async function _renderNavbar() {
     var queryResults = await _doGetQuery('admin/query', 'navbar');
-    console.log(queryResults.data);
+
     if (!queryResults.success) {
       return CreateElement.createDiv(null, null, queryResults.details);
     }
