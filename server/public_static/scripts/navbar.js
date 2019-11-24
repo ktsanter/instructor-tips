@@ -23,6 +23,22 @@ class NavigationBar {
     elemItem.innerHTML = this._config.title;
     elemList.appendChild(elemItem);
     
+    var hamburgeritems = this._config.hamburgeritems;
+    var classList = 'navbar-item dropdown navbar-item-right';
+    elemItem = CreateElement._createElement('li', null, classList);
+    elemList.appendChild(elemItem);
+        
+    elemItem.appendChild(CreateElement.createIcon(null, 'dropbtn fas fa-bars hamburger-btn'));
+    
+    var elemDiv = CreateElement.createDiv(null, 'dropdown-content hamburger', '');
+    elemItem.appendChild(elemDiv);
+    for (var i = 0; i < hamburgeritems.length; i++) {
+      var subitem = hamburgeritems[i];
+      var elemSubitem = CreateElement.createDiv(null, null, subitem.label);
+      elemDiv.appendChild(elemSubitem);
+      elemSubitem.addEventListener('click', subitem.callback);
+    }
+    
     for (var i = 0; i < this._config.items.length; i++) {
       var item = this._config.items[i];
       var classList = 'navbar-item';
@@ -71,21 +87,7 @@ class NavigationBar {
       }
     }
     
-    var hamburgeritems = this._config.hamburgeritems;
-    var classList = 'navbar-item dropdown navbar-item-right';
-    elemItem = CreateElement._createElement('li', null, classList);
-    elemList.appendChild(elemItem);
-        
-    elemItem.appendChild(CreateElement.createIcon(null, 'dropbtn fas fa-bars hamburger-btn'));
-    
-    var elemDiv = CreateElement.createDiv(null, 'dropdown-content hamburger', '');
-    elemItem.appendChild(elemDiv);
-    for (var i = 0; i < hamburgeritems.length; i++) {
-      var subitem = hamburgeritems[i];
-      var elemSubitem = CreateElement.createDiv(null, null, subitem.label);
-      elemDiv.appendChild(elemSubitem);
-      elemSubitem.addEventListener('click', subitem.callback);
-    }
+
     
     return elemList;
   }

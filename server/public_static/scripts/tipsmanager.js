@@ -53,6 +53,9 @@ const app = function () {
       return CreateElement.createDiv(null, null, queryResults.details);
     }
     
+    var userInfo = await settings.logincontainer._getUserInfo();
+    console.log(userInfo);
+    
     var allowAdmin = queryResults.data.navbar.allowadmin;
     
     var navConfig = {
@@ -61,7 +64,8 @@ const app = function () {
       items: [
         {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
-        {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false}
+        {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
+        {label: userInfo.username, callback: null, subitems: null, rightjustify: true}
       ],
       
       hamburgeritems: [
