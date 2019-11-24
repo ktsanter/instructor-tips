@@ -129,9 +129,9 @@ class TipManagerFilter {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, '', false, handler);
       
     } else if (fieldName == 'shared') {
-      elem = this._createSliderSwitch('exclude public', 'include public', className, handler);
+      elem = this._createSliderSwitch('include public', 'exclude public', className, handler);
     } else if (fieldName == 'personal') {
-      elem = this._createSliderSwitch('exclude private', 'include private', className, handler);
+      elem = this._createSliderSwitch('include private', 'exclude private', className, handler);
       
     } else if (fieldName == 'unspecified') {
       elem = this._createSliderSwitch('unspecified', 'unspecified', className + ' tipStatusGroup', handler);

@@ -2,8 +2,13 @@
  * styling for TipScheduling class
  *------------------------------------------------------------------*/
 .tipschedule-icon {
-  font-size: 1.1em;
+  font-size: 1.2em;
+  margin-right: 2px;
   cursor: pointer;
+}
+
+.tipschedule-icon.collapse-icon {
+  font-size: 1.4em;
 }
 
 .tipschedule-content {
@@ -14,7 +19,7 @@
  * weekly tip boxes
  *-----------------------*/
  .weeklytip {
-   margin-bottom: 5px;
+   margin-bottom: 12px;
  }
  
  .weeklytip-collapse-icon {
@@ -27,8 +32,8 @@
 .weeklytip-label {
   color: white;
   background-color: #093c44;
-  padding-top: 2px;
-  padding-bottom: 2px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 .weeklytip-label-text {
@@ -41,6 +46,10 @@
   padding-left: 4px;
 }
 
+.weeklytip-contents div:nth-of-type(even){
+  background-color: #f2f2f2;
+}
+    
 .weeklytip-icon {
   cursor: pointer;
   padding-right: 10px;

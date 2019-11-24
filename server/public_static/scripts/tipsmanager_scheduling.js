@@ -116,8 +116,8 @@ class TipScheduling {
   _showTips(tipsData, termLength) {
     var contentContainer = CreateElement.createDiv(null, 'tipschedule-content');
 
-    contentContainer.appendChild(CreateElement.createIcon('collapseAll', 'tipschedule-icon far fa-minus-square', 'collapse all weeks', () => {return this._collapseAllWeeks();}));
-    contentContainer.appendChild(CreateElement.createIcon('expandAll', 'tipschedule-icon far fa-plus-square', 'expand all weeks', () => {return this._expandAllWeeks();}));
+    contentContainer.appendChild(CreateElement.createIcon('collapseAll', 'tipschedule-icon collapse-icon far fa-minus-square', 'collapse all weeks', () => {return this._collapseAllWeeks();}));
+    contentContainer.appendChild(CreateElement.createIcon('expandAll', 'tipschedule-icon collapse-icon far fa-plus-square', 'expand all weeks', () => {return this._expandAllWeeks();}));
     
     for (var i = 0; i <= termLength; i++) {
       contentContainer.appendChild(this._renderTipsForWeek(i, tipsData['week' + i]));
