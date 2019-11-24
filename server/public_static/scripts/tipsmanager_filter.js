@@ -118,7 +118,7 @@ class TipManagerFilter {
     var handler = () => {return this._updateFiltering();};
     
     if (fieldName == 'use_adm') {
-      elem = this._createSliderSwitch('public', 'private', className, handler);
+      elem = this._createSliderSwitch('public', 'private', className, handler, true);
       this._showElement(elem, this._tipFilter.allow_adm, true);
       
     } else if (fieldName == 'unmapped') {
@@ -142,7 +142,7 @@ class TipManagerFilter {
 
     } else if (fieldName == 'adm_coursetoggle') {
       elem = CreateElement.createSpan(null, null);
-      elem.appendChild(this._createSliderSwitch('course', 'all courses', className, handler));
+      elem.appendChild(this._createSliderSwitch('course', 'all courses', className, handler, true));
 
       var valueList = [];
       var adm_courses = this._filterQueryResults.adm_courses;
@@ -153,7 +153,7 @@ class TipManagerFilter {
       
     } else if (fieldName == 'coursetoggle') {
       elem = CreateElement.createSpan(null, null);
-      elem.appendChild(this._createSliderSwitch('course', 'all courses', className, handler));
+      elem.appendChild(this._createSliderSwitch('course', 'all courses', className, handler, true));
 
       var valueList = [];
       var courses = this._filterQueryResults.courses;
@@ -383,8 +383,13 @@ class TipManagerFilter {
   //--------------------------------------------------------------
   // slider switch
   //--------------------------------------------------------------
-  _createSliderSwitch(dataOnLabel, dataOffLabel, addedClassList, handler) {
-    var classList = 'switch switch-yes-no';
+  _createSliderSwitch(dataOnLabel, dataOffLabel, addedClassList, handler, useTwoChoice) {
+    var classList = 'switch';
+    if (useTwoChoice) {
+      classList += ' switch-two-choice';
+    } else {
+      classList += ' switch-yes-no';
+    }
     if (addedClassList != '') classList += ' ' + addedClassList;
     var container = CreateElement._createElement('label', null, classList);
     
