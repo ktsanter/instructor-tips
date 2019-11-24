@@ -54,8 +54,6 @@ const app = function () {
     }
     
     var userInfo = await settings.logincontainer._getUserInfo();
-    console.log(userInfo);
-    
     var allowAdmin = queryResults.data.navbar.allowadmin;
     
     var navConfig = {
@@ -70,6 +68,7 @@ const app = function () {
       
       hamburgeritems: [
         {label: 'login', callback: _showLogin},
+        {label: 'calendar', callback: _showCalendar},
         {label: 'help', callback: _showHelp},
         {label: 'about', callback: _showAbout}
       ]      
@@ -141,6 +140,10 @@ const app = function () {
     await settings[arg].update();  
   }
     
+  function _showCalendar() {
+    console.log('show calendar');
+  }
+  
   function _showAbout() {
     settings.aboutbox.show(true);
   }

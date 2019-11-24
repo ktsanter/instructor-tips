@@ -113,17 +113,6 @@ CREATE TABLE mappedtip
   CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip (tipid) ON DELETE CASCADE
 );
 
-/*---
-CREATE TABLE tipstatus
-(
-  tipstatusid   int unsigned NOT NULL AUTO_INCREMENT ,
-  tipstatusname varchar(30) NOT NULL ,
-
-  PRIMARY KEY (tipstatusid),
-  CONSTRAINT UNIQUE(tipstatusname)
-);
----*/
-
 CREATE TABLE usertipstatus
 (
   usertipstatusid  int unsigned NOT NULL AUTO_INCREMENT ,
@@ -137,6 +126,20 @@ CREATE TABLE usertipstatus
   CONSTRAINT FOREIGN KEY (mappedtipid) REFERENCES mappedtip (mappedtipid) ON DELETE CASCADE,
   CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE,
   CONSTRAINT FOREIGN KEY (for_usercourseid) REFERENCES usercourse (usercourseid) ON DELETE CASCADE
+);
+
+CREATE TABLE calendar
+(
+  calendarid        int unsigned NOT NULL AUTO_INCREMENT ,
+  termid            int unsigned NOT NULL,
+  schoolyear        varchar(30) NOT NULL,
+  week              int unsigned NOT NULL,
+  firstday          date NOT NULL,
+  starttype         varchar(30) NOT NULL,
+
+  PRIMARY KEY (calendarid),
+  CONSTRAINT UNIQUE (termid, schoolyear, week, firstday, starttype),
+  CONSTRAINT FOREIGN KEY (termid) REFERENCES term (termid) ON DELETE CASCADE
 );
 
 #--------------------------------------------------------------------------

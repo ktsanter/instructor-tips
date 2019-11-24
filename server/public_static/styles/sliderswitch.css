@@ -122,7 +122,7 @@
 }
 .switch-yes-no .switch-label:after {
 	color: #FFFFFF;
-	background: #32CD32;
+	background: #659DBD; /*#32CD32;*/
 	backface-visibility: hidden;
 	transform: rotateY(180deg);
 }
@@ -177,6 +177,7 @@
   color: #000;
 	background: #659DBD; /*#eceeef;*/
 	backface-visibility: hidden;
+  text-shadow: none;
 }
 .switch-two-choice .switch-handle {
 	display: none;

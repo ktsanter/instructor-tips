@@ -87,7 +87,9 @@ class TipScheduling {
         this._container.appendChild(this._showTips(organizedTips, tipsQuery.termlength));
       
       } else {
-        this._container.appendChild(CreateElement.createDiv(null, null, 'There is no schedule for this user/course/termgroup combination'));
+        var contentContainer = CreateElement.createDiv(null, 'tipschedule-content');
+        this._container.appendChild(contentContainer);
+        contentContainer.appendChild(CreateElement.createDiv(null, null, 'There is no schedule for this user/course/termgroup combination'));
       }
     }    
   }
