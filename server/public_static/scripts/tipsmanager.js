@@ -137,7 +137,7 @@ const app = function () {
       }
     }
     settings[arg].show(true);
-    await settings[arg].update();  
+    await settings[arg].update(true);  
   }
     
   function _showCalendar() {

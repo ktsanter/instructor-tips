@@ -230,6 +230,20 @@ module.exports = internal.TipManager = class {
       'from termgroup ' +
       'where termgroupname = "' + postData.termgroupname + '" ';
       
+    queryList.calendar =
+      'select c.schoolyear, tg.termgroupname, t.termname, c.week, c.firstday, c.starttype ' +
+      'from calendar as c, termgroup as tg, term as t ' +
+      'where c.termid = t.termid ' +
+        'and t.termgroupid = tg.termgroupid ' +
+        'and c.schoolyear = "' + postData.calendar.schoolyear + '" ' +
+        'and tg.termgroupname = "' + postData.termgroupname + '" ' +
+        'and t.termname = "' + postData.calendar[postData.termgroupname] + '" ';
+        
+    queryList.isapcourse = 
+      'select ap from ' +
+      'course ' +
+      'where coursename = "' + postData.coursename + '" ';
+      
     var queryResults = await this._dbQueries(queryList);
           
     if (queryResults.success) {
@@ -237,9 +251,15 @@ module.exports = internal.TipManager = class {
       result.details = 'query succeeded';
       result.tipschedule = queryResults.data.tipschedule;
       result.termlength = queryResults.data.termlength[0].termlength;
+      result.calendar = queryResults.data.calendar;
       result.showtipstatus = showTipStatus;
+      
+      result.isapcourse = false;
       if (postData.course) {
         result.usercourseexists = (queryResults.data.usercourse.length > 0);
+        if (!postData.adm_allcourse && !postData.adm_course) {
+          result.isapcourse = (queryResults.data.isapcourse.length > 0 && queryResults.data.isapcourse[0].ap == 1);
+        }
       } else {
         result.usercourseexists = true;
       }

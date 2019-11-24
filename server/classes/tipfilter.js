@@ -169,13 +169,14 @@ module.exports = internal.TipFilter = class {
       coursename: '',
       unspecified: true,
       completed: true,
-      scheduled: true
+      scheduled: true,
+      calendar: {schoolyear: '2019-2020', semester: 'Sem 1', trimester: 'Tri 1', summer: 'Summer'}
     };
     
     var tipUIConfig = {
       termgroupGroup: ['termgroupname'],
       courseGroup: ['use_adm', 'adm_coursetoggle', 'coursetoggle', 'unspecified', 'scheduled', 'completed'],
-      groupOrder: ['termgroupGroup', 'courseGroup'/*, 'tipstatusGroup'*/]
+      groupOrder: ['termgroupGroup', 'courseGroup']
     };
      
     if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
@@ -206,8 +207,11 @@ module.exports = internal.TipFilter = class {
           'from usercourse, course ' +
           'where usercourse.courseid = course.courseid ' +
             'and usercourse.userid is null ' + 
-            'order by course.coursename '
+            'order by course.coursename ',
             
+        schoolyears:
+          'select distinct schoolyear ' +
+          'from calendar'
       };
       
       var queryResults = await this._dbQueries(queryList);
@@ -219,6 +223,7 @@ module.exports = internal.TipFilter = class {
         result.termgroups = queryResults.data.termgroups;
         result.adm_courses = queryResults.data.adm_courses;
         result.courses = queryResults.data.courses;
+        result.schoolyears = queryResults.data.schoolyears;
         result.uiconfig = tipUIConfig;
         
       } else {

@@ -76,10 +76,15 @@ class TipScheduling {
     }
   }
   
-  async update() {
+  async update(reRenderFilter) {
+    if (reRenderFilter) {
+      await this._tipFilter.render(this._notice);
+    }
+    
     this._prepContainerForUpdate();
 
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
+    console.log(tipsQuery.isapcourse);
     
     if (tipsQuery.success) {
       if (tipsQuery.usercourseexists) {
@@ -91,7 +96,7 @@ class TipScheduling {
         this._container.appendChild(contentContainer);
         contentContainer.appendChild(CreateElement.createDiv(null, null, 'There is no schedule for this user/course/termgroup combination'));
       }
-    }    
+    }
   }
  
   _organizeByWeek(tipsData, termLength) {
