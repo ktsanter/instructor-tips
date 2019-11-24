@@ -83,13 +83,15 @@ class TipScheduling {
     
     this._prepContainerForUpdate();
 
-    var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', this._tipFilter.getFilter());
-    console.log(tipsQuery.isapcourse);
-    
+    var filter = this._tipFilter.getFilter();
+    var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', filter);
+ 
     if (tipsQuery.success) {
       if (tipsQuery.usercourseexists) {
         var organizedTips = this._organizeByWeek(tipsQuery.tipschedule, tipsQuery.termlength);
-        this._container.appendChild(this._showTips(organizedTips, tipsQuery.termlength));
+        var organizedCalendar = this._organizeCalendar(tipsQuery.calendar, tipsQuery.termlength, filter.calendar, filter.termgroupname, tipsQuery.isapcourse);
+
+        this._container.appendChild(this._showTips(organizedTips, organizedCalendar, tipsQuery.termlength, tipsQuery.isapcourse));
       
       } else {
         var contentContainer = CreateElement.createDiv(null, 'tipschedule-content');
@@ -113,6 +115,24 @@ class TipScheduling {
     return weeklyData;
   }
   
+  _organizeCalendar(calendar, termLength, calendarSettings, termgroupName, isAPCourse) {
+    var organizedCalendar = [];
+    var termName = calendarSettings[termgroupName];
+        
+    for (var i = 0; i <= termLength; i++) {
+      organizedCalendar.push({ap: null, start1: null, start2: null});
+    }
+    
+    for (var i = 0; i < calendar.length; i++) {
+      var cRow = calendar[i];
+      if (cRow.termname == termName) {
+        organizedCalendar[cRow.week][cRow.starttype] = cRow.firstday;
+      }
+    }
+    
+    return organizedCalendar;
+  }
+  
   _prepContainerForUpdate() {
     var contents = this._container.getElementsByClassName('tipschedule-content')[0];
     if (contents) {
@@ -120,27 +140,46 @@ class TipScheduling {
     }
   }
   
-  _showTips(tipsData, termLength) {
+  _showTips(tipsData, calendarData, termLength, isAPCourse) {
     var contentContainer = CreateElement.createDiv(null, 'tipschedule-content');
 
     contentContainer.appendChild(CreateElement.createIcon('collapseAll', 'tipschedule-icon collapse-icon far fa-minus-square', 'collapse all weeks', () => {return this._collapseAllWeeks();}));
     contentContainer.appendChild(CreateElement.createIcon('expandAll', 'tipschedule-icon collapse-icon far fa-plus-square', 'expand all weeks', () => {return this._expandAllWeeks();}));
     
     for (var i = 0; i <= termLength; i++) {
-      contentContainer.appendChild(this._renderTipsForWeek(i, tipsData['week' + i]));
+      contentContainer.appendChild(this._renderTipsForWeek(i, tipsData['week' + i], calendarData[i], isAPCourse));
     }
 
     return contentContainer;
   }
   
-  _renderTipsForWeek(weekNumber, tipsForWeek) {
+  _renderTipsForWeek(weekNumber, tipsForWeek, calendarForWeek, isAPCourse) {
     var container = CreateElement.createDiv(null, 'weeklytip');
     container.tipscheduleweek = weekNumber;
+    
+    var filter = this._tipFilter.getFilter();
+    var weekLabel = 'week ' + weekNumber;
+    if (filter.course && !filter.adm_allcourse && !filter.adm_course) {
+      if (weekNumber == 0) {
+        weekLabel += ' &nbsp;&nbsp;&nbsp;(before the term starts)';
+      } else {
+        if (isAPCourse) {
+          weekLabel += ' &nbsp;&nbsp;&nbsp;(' + this._formatDate(calendarForWeek.ap) + ')';
+        } else {
+          weekLabel += ' &nbsp;&nbsp;&nbsp;(' + this._formatDate(calendarForWeek.start1);
+          if (calendarForWeek.start2) {
+            weekLabel += ' or ' + this._formatDate(calendarForWeek.start2) + ')';
+          } else {
+            weekLabel += ')';
+          }
+        }
+      }
+    }
     
     var label = CreateElement.createDiv(null, 'weeklytip-label');
     container.appendChild(label);
     label.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', null, this._toggleWeeklyBoxCollapse));
-    label.appendChild(CreateElement.createSpan(null, 'weeklytip-label-text', 'week ' + weekNumber));
+    label.appendChild(CreateElement.createSpan(null, 'weeklytip-label-text', weekLabel));
     label.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-add far fa-calendar-plus', 'add tip to week', (e) => {return this._startAddTipUI(e);}));
     
     var contents = CreateElement.createDiv(null, 'weeklytip-contents');
@@ -415,7 +454,34 @@ class TipScheduling {
       this._highlight(elemList[i], false);
     }
   }  
-  
+
+  _formatDate(theDate) {
+    var formattedDate = theDate;
+    
+    if (this._isValidDate(theDate)) {
+      formattedDate = '';
+      if (theDate != null & theDate != '') {
+        var objDate = new Date(theDate);
+        /*
+        var day = ("00" + objDate.getDate()).slice(-2);
+        var month = ("00" + (objDate.getMonth() + 1)).slice(-2);
+        var year = (objDate.getFullYear() + '').slice(-2);
+        formattedDate = month + "/" + day + "/" + year;
+        */
+        var day = objDate.getDate();
+        var month = objDate.getMonth() + 1;
+        formattedDate = month + '/' + day;
+      }
+    }
+    
+    return formattedDate;
+  }  
+
+  _isValidDate(str) {
+    var d = new Date(str);
+    return !isNaN(d);
+  }
+
   //--------------------------------------------------------------
   // db functions
   //--------------------------------------------------------------     
