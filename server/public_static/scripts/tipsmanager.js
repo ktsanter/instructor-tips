@@ -110,7 +110,7 @@ const app = function () {
     container.appendChild(await settings.scheduling.render());
     
     settings.editing = new TipEditing();
-    container.appendChild(settings.editing.render());
+    container.appendChild(await settings.editing.render());
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
       var type = settings.adminTypes[i];

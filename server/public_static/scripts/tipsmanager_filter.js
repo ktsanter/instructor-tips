@@ -184,6 +184,7 @@ class TipManagerFilter {
 
     } else if (fieldName == 'searchtext') {
       elem = CreateElement.createTextInput(null, className, '');
+      elem.placeholder = 'search text';
       elem.addEventListener('change', handler);      
     }
     
