@@ -111,9 +111,9 @@ class TipManagerFilter {
       }       
     }
     
-    // move calendar details to after the termgroup elements
-    if (this._elemTermgroup && this._elemCalendarDetails) {
-      this._elemTermgroup.parentNode.appendChild(this._elemCalendarDetails);
+    // this handles moving the calendar setting details after the other components are built
+    if (this._elemTermgroup && this._elemCalendarDetails) {    
+      this._elemCalendarUI.parentNode.appendChild(this._elemCalendarDetails);
       this._buildCalendarDetails();
     }
     
@@ -198,11 +198,13 @@ class TipManagerFilter {
       
     } else if (fieldName == 'calendarui') {
       elem = CreateElement.createDiv(null, className);
+      elem.appendChild(CreateElement.createIcon(null, 'tipfilter-calendaricon fas fa-caret-up', 'show/hide calendar settings', (e) => {return this._toggleCalendarSettings(e);}));
       elem.appendChild(CreateElement.createSpan(null, 'tipfilter-calendarlabel'));
-      elem.appendChild(CreateElement.createIcon(null, 'tipfilter-calendaricon fas fa-caret-right', 'show/hide calendar settings', (e) => {return this._toggleCalendarSettings(e);}));
       
       // this element gets moved and filled later
       this._elemCalendarDetails = CreateElement.createDiv(null, 'tipfilter-calendarui-details ' + this._HIDE_CLASS);
+      this._elemCalendarDetails.style.display = 'none';
+      this._elemCalendarUI = elem;
     }
     
     return elem;
@@ -280,7 +282,7 @@ class TipManagerFilter {
           var calendarLabel = filterElement.getElementsByClassName('tipfilter-calendarlabel')[0];
           calendarLabel.innerHTML = calSettingsMsg;
           
-          var showMe = (this._tipFilter.course && (!this._tipFilter.adm_allcourse || !this._tipFilter.adm_course));
+          var showMe = (this._tipFilter.course && !(this._tipFilter.adm_allcourse || this._tipFilter.adm_course));
           filterElement.style.display = showMe ? 'inline-block' : 'none';
           
           await this._setCalendarUIDetails();
@@ -525,16 +527,21 @@ class TipManagerFilter {
   _toggleCalendarSettings(e) {
     var elemIcon = e.target;
     var elemCalendarDetails = this._container.getElementsByClassName('tipfilter-calendarui-details')[0];
-    
+    var elemCalendarLabel = this._container.getElementsByClassName('tipfilter-calendarlabel')[0];
+  
     if (elemCalendarDetails.classList.contains(this._HIDE_CLASS)) {
-      this._showElement(elemCalendarDetails, true);
-      elemIcon.classList.remove('fa-caret-right');
-      elemIcon.classList.add('fa-caret-down');
+      this._showElement(elemCalendarDetails, true, true);
+      this._showElement(elemCalendarLabel, false);
+      elemCalendarDetails.style.display = 'inline-block';
+      elemIcon.classList.remove('fa-caret-up');
+      elemIcon.classList.add('fa-caret-right');
       
     } else {
-      this._showElement(elemCalendarDetails, false);
-      elemIcon.classList.remove('fa-caret-down');
-      elemIcon.classList.add('fa-caret-right');
+      this._showElement(elemCalendarDetails, false, true);
+      this._showElement(elemCalendarLabel, true);
+      elemCalendarDetails.style.display == 'none';
+      elemIcon.classList.remove('fa-caret-right');
+      elemIcon.classList.add('fa-caret-up');
     }
   }
   

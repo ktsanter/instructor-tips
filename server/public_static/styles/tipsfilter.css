@@ -38,10 +38,15 @@ select.select-css.tipfilter-termgroupname {
 }
 
 .tipfilter-calendaricon {
-  margin-left: 8px;
+  font-size: 1.2em;
+  margin-left: 0px;
+  margin-right: 4px;
 }
 
-.tipfilter-calendarui-details {}
+.tipfilter-calendarui-details {
+  vertical-align: top;
+  margin-top: -3px;
+}
 
 select.select-css.tipfilter-calendarui-year {
   display: inline-block;
