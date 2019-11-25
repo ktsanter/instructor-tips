@@ -186,6 +186,15 @@ class TipManagerFilter {
       elem = CreateElement.createTextInput(null, className, '');
       elem.placeholder = 'search text';
       elem.addEventListener('change', handler);      
+      
+    } else if (fieldName == 'calendarui') {
+      var calendarSettings = this._tipFilter.calendar;
+      var calSettingsMsg = calendarSettings.schoolyear;
+      calSettingsMsg += ' ' + calendarSettings[this._tipFilter.termgroupname];
+      console.log('dont need to set value here');
+      elem = CreateElement.createDiv(null, className);
+      elem.appendChild(CreateElement.createSpan(null, 'tipfilter-calendarlabel', calSettingsMsg));
+      elem.appendChild(CreateElement.createIcon(null, 'tipfilter-calendaricon fas fa-caret-right', 'show/hide calendar settings', (e) => {return this._toggleCalendarSettings(e);}));
     }
     
     return elem;
@@ -256,6 +265,13 @@ class TipManagerFilter {
         } else if (typeName == 'searchtext') {
           filterElement.value = this._tipFilter[typeName];
           
+        } else if (typeName == 'calendarui') {
+          var calendarSettings = this._tipFilter.calendar;
+          var calSettingsMsg = calendarSettings.schoolyear;
+          calSettingsMsg += ' ' + calendarSettings[this._tipFilter.termgroupname];
+          var calendarLabel = filterElement.getElementsByClassName('tipfilter-calendarlabel')[0];
+          calendarLabel.innerHTML = calSettingsMsg;
+
         } else {
           console.log('failed to set: ' + typeName);
         }
@@ -355,6 +371,9 @@ class TipManagerFilter {
         } else if (typeName == 'searchtext') {
           this._tipFilter[typeName] = filterElement.value;
           
+        } else if (typeName == 'calendarui') {
+          console.log('get calendarui');
+
         } else {
           console.log('failed to get: ' + typeName);
         }
@@ -378,6 +397,13 @@ class TipManagerFilter {
         elem.style.display = 'none';
       }
     }
+  }
+  
+  //--------------------------------------------------------------
+  // handlers
+  //--------------------------------------------------------------
+  _toggleCalendarSettings(e) {
+    console.log('toggle calendar settings');
   }
   
   //--------------------------------------------------------------

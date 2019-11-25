@@ -43,7 +43,6 @@ const app = function () {
   async function _renderPage() {
     page.maincontainer.appendChild(_renderAbout());
     page.maincontainer.appendChild(_renderLogin());
-    page.maincontainer.appendChild(_renderCalendarUI());
     page.maincontainer.appendChild(await _renderSubContainers());
     page.body.insertBefore(await _renderNavbar(), page.body.firstChild);
     page.maincontainer.classList.add('bump-down');
@@ -70,7 +69,6 @@ const app = function () {
       ],
       
       hamburgeritems: [
-        {label: 'calendar', callback: _showCalendar},
         {label: 'help', callback: _showHelp},
         {label: 'about', callback: _showAbout}
       ]      
@@ -103,11 +101,6 @@ const app = function () {
   function _renderLogin() {
     settings.logincontainer = new LoginUI(() => {return _loginComplete();});
     return settings.logincontainer.render();
-  }
-  
-  function _renderCalendarUI() {
-    settings.calendaruicontainer = new CalendarUI(() => {return _calendarChangeComplete();});
-    return settings.calendaruicontainer.render();
   }
   
   async function _renderSubContainers() {
@@ -147,10 +140,6 @@ const app = function () {
     await settings[arg].update(true);  
   }
     
-  function _showCalendar() {
-    settings.calendaruicontainer.show(true);
-  }
-  
   function _showAbout() {
     settings.aboutbox.show(true);
   }
@@ -170,10 +159,6 @@ const app = function () {
     location.reload();
   }
   
-  async function _calendarChangeComplete() {
-    console.log('calendar change complete');
-  }
-
   //--------------------------------------------------------------
   // db functions
   //--------------------------------------------------------------     

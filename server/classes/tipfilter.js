@@ -174,7 +174,7 @@ module.exports = internal.TipFilter = class {
     };
     
     var tipUIConfig = {
-      termgroupGroup: ['termgroupname'],
+      termgroupGroup: ['termgroupname', 'calendarui'],
       courseGroup: ['use_adm', 'adm_coursetoggle', 'coursetoggle', 'unspecified', 'scheduled', 'completed'],
       groupOrder: ['termgroupGroup', 'courseGroup']
     };

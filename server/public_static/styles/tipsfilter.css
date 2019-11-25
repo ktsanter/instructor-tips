@@ -28,6 +28,14 @@
   margin-left: 4px;
 }
 
+select.select-css.tipfilter-termgroupname {
+  display: inline-block;
+}
+
+.tipfilter-calendarui {
+  display: inline-block;
+}
+
 .tipfilter-searchtext {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	display: block;

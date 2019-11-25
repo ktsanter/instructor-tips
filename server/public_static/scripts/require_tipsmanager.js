@@ -13,7 +13,6 @@ define(function (require) {
   require('aboutbox');
   require('sqldbinterface');
   require('loginui');
-  require('calendarui');
   require('markdowntohtml');
   require('dbadmintableedit');
   
