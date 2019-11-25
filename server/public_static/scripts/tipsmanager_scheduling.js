@@ -178,7 +178,7 @@ class TipScheduling {
     
     var label = CreateElement.createDiv(null, 'weeklytip-label');
     container.appendChild(label);
-    label.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', null, this._toggleWeeklyBoxCollapse));
+    label.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', 'expand/collapse week', this._toggleWeeklyBoxCollapse));
     label.appendChild(CreateElement.createSpan(null, 'weeklytip-label-text', weekLabel));
     label.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-add far fa-calendar-plus', 'add tip to week', (e) => {return this._startAddTipUI(e);}));
     
@@ -198,7 +198,7 @@ class TipScheduling {
       var singleTipContainer = CreateElement.createDiv(null, null);
       contents.appendChild(singleTipContainer);
       var iconClassList = 'weeklytip-icon ' + this._tipStatusClass[tip.tipstatusname];
-      singleTipContainer.appendChild(CreateElement.createIcon(null, iconClassList, null, tipIconHandler));
+      singleTipContainer.appendChild(CreateElement.createIcon(null, iconClassList, 'change tip status', tipIconHandler));
       singleTipContainer.appendChild(CreateElement.createDiv(null, 'weeklytip-singletip', renderedMarkdown));
       
       if (allowEdit || allowUnmap) {

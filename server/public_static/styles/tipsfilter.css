@@ -41,6 +41,7 @@ select.select-css.tipfilter-termgroupname {
   font-size: 1.2em;
   margin-left: 0px;
   margin-right: 4px;
+  cursor: pointer;
 }
 
 .tipfilter-calendarui-details {
