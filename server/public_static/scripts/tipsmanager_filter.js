@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------------------
 // TipManagerFilter class
 //-----------------------------------------------------------------------------------
-// TODO: drive filter from DB user privileges
+// TODO: 
 //-----------------------------------------------------------------------------------
 
 class TipManagerFilter {
@@ -92,21 +92,27 @@ class TipManagerFilter {
   
   _buildFilterUI() {
     var container = CreateElement.createDiv(null, null);
+    this._elemTermgroup = null;
+    this._elemCalendarDetails = null;
     
     var uiConfig = this._filterQueryResults.uiconfig;
     var configOrder = uiConfig.groupOrder;
     for (var i = 0; i < configOrder.length; i++) {
-      var groupContainer = CreateElement.createDiv(null, null);
-      container.appendChild(groupContainer);
-      
       var groupName = configOrder[i];
-      var group = uiConfig[groupName];;
+      var group = uiConfig[groupName];
+
+      var groupContainer = CreateElement.createDiv(null, 'tipfiltergroup-' + groupName);
+      container.appendChild(groupContainer);
       
       for (var j = 0; j < group.length; j++) {
         var fieldName = group[j];
         groupContainer.appendChild(this._buildFilterUIElement(groupName, fieldName));
         if (fieldName == 'adm_coursename') groupContainer.appendChild(CreateElement._createElement('br', null, null));
       }       
+    }
+    
+    if (this._elemTermgroup && this._elemCalendarDetails) {
+      this._elemTermgroup.parentNode.appendChild(CreateElement.createDiv(null, 'tipfilter-calendarui-details ' + this._HIDE_CLASS, 'select for school year, term buttons'));
     }
     
     return container;
@@ -170,6 +176,7 @@ class TipManagerFilter {
         valueList.push({id: i, value: termgroups[i].termgroupname, textval: termgroups[i].termgroupname});
       }
       elem = CreateElement.createSelect(null, className + ' select-css', handler, valueList);
+      this._elemTermgroup = elem;
 
     } else if (fieldName == 'user') {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, '', false, handler);
@@ -188,19 +195,17 @@ class TipManagerFilter {
       elem.addEventListener('change', handler);      
       
     } else if (fieldName == 'calendarui') {
-      var calendarSettings = this._tipFilter.calendar;
-      var calSettingsMsg = calendarSettings.schoolyear;
-      calSettingsMsg += ' ' + calendarSettings[this._tipFilter.termgroupname];
-      console.log('dont need to set value here');
       elem = CreateElement.createDiv(null, className);
-      elem.appendChild(CreateElement.createSpan(null, 'tipfilter-calendarlabel', calSettingsMsg));
+      elem.appendChild(CreateElement.createSpan(null, 'tipfilter-calendarlabel'));
       elem.appendChild(CreateElement.createIcon(null, 'tipfilter-calendaricon fas fa-caret-right', 'show/hide calendar settings', (e) => {return this._toggleCalendarSettings(e);}));
+      
+      this._elemCalendarDetails = CreateElement.createDiv(null, 'tipfilter-calendarui-details', 'details here');
     }
     
     return elem;
   }
 
-  _setFilterUIValues() {
+  async _setFilterUIValues() {
     var uiConfig = this._filterQueryResults.uiconfig;
 
     var configOrder = uiConfig.groupOrder;
@@ -271,6 +276,11 @@ class TipManagerFilter {
           calSettingsMsg += ' ' + calendarSettings[this._tipFilter.termgroupname];
           var calendarLabel = filterElement.getElementsByClassName('tipfilter-calendarlabel')[0];
           calendarLabel.innerHTML = calSettingsMsg;
+          
+          var showMe = (this._tipFilter.course && (!this._tipFilter.adm_allcourse || !this._tipFilter.adm_course));
+          filterElement.style.display = showMe ? 'inline-block' : 'none';
+          
+          await this._setCalendarUIDetails();
 
         } else {
           console.log('failed to set: ' + typeName);
@@ -381,6 +391,76 @@ class TipManagerFilter {
     }
   }
   
+  //--------------------------------------------------------------
+  // calendar UI methods
+  //--------------------------------------------------------------  
+  async _setCalendarUIDetails() {
+    /*-- add query to get this data --*/
+    var calendarOptions = {
+      schoolyears: ['2019-2020'],
+      terms: [
+        {termgroupname: 'semester', termname: 'Sem 1'},
+        {termgroupname: 'semester', termname: 'Sem 2'},
+        {termgroupname: 'trimester', termname: 'Tri 1'},
+        {termgroupname: 'trimester', termname: 'Tri 2'},
+        {termgroupname: 'trimester', termname: 'Tri 3'}
+      ]
+    };
+    
+    var organizedOptions = this._organizeOptions(calendarOptions);
+    //var handler = () => {return this._saveChanges();}
+    var handler = null;
+    console.log('need handler for calendar details');
+    
+    var container = this._container.getElementsByClassName('tipfilter-calendarui-details')[0];
+    while (container.firstChild) container.removeChild(container.firstChild);
+    
+    var years = [];
+    for (var i = 0; i < organizedOptions.schoolyears.length; i++) {
+      var year = organizedOptions.schoolyears[i];
+      years.push({id: i, value: year, textval: year});
+    }
+    container.appendChild(CreateElement.createSelect(null, 'tipfilter-calendarui-year select-css', handler, years));
+    
+    var termgroupSettings = organizedOptions.termgroups[this._tipFilter.termgroupname];
+    if (termgroupSettings) {
+      for (var i = 0; i < termgroupSettings.length; i++) {
+        var termName = termgroupSettings[i];
+        container.appendChild(CreateElement.createSpan(null, null, 'toggle for ' + termName));
+      }
+    }
+  }
+  
+  _organizeOptions(calendarOptions) {
+    var organizedOptions = {};
+    var schoolyears = calendarOptions.schoolyears;
+    var terms = calendarOptions.terms;
+    var termgroupSet = new Set();
+
+    organizedOptions.schoolyears = schoolyears;
+    organizedOptions.termgroups = {};
+    
+    for (var i = 0; i < terms.length; i++) {
+      termgroupSet.add(terms[i].termgroupname);
+    }
+    
+    var termgroups = Array.from(termgroupSet);
+    for (var i = 0; i < termgroups.length; i++) {
+      organizedOptions.termgroups[termgroups[i]] = [];
+    }
+    
+    for (var i = 0; i < terms.length; i++) {
+      var tgname = terms[i].termgroupname;
+      var tname = terms[i].termname;
+      organizedOptions.termgroups[tgname].push(tname);
+    }
+    
+    return organizedOptions;
+  }
+    
+  //--------------------------------------------------------------
+  // utility methods
+  //--------------------------------------------------------------
   _showElement(elem, makeVisible, override) {
     if (elem.classList.contains(this._HIDE_CLASS)) {
       elem.classList.remove(this._HIDE_CLASS);
@@ -403,8 +483,20 @@ class TipManagerFilter {
   // handlers
   //--------------------------------------------------------------
   _toggleCalendarSettings(e) {
-    console.log('toggle calendar settings');
-  }
+    var elemIcon = e.target;
+    var elemCalendarDetails = this._container.getElementsByClassName('tipfilter-calendarui-details')[0];
+    
+    if (elemCalendarDetails.classList.contains(this._HIDE_CLASS)) {
+      this._showElement(elemCalendarDetails, true);
+      elemIcon.classList.remove('fa-caret-right');
+      elemIcon.classList.add('fa-caret-down');
+      
+    } else {
+      this._showElement(elemCalendarDetails, false);
+      elemIcon.classList.remove('fa-caret-down');
+      elemIcon.classList.add('fa-caret-right');
+    }
+    }
   
   //--------------------------------------------------------------
   // slider switch

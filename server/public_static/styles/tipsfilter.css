@@ -34,6 +34,19 @@ select.select-css.tipfilter-termgroupname {
 
 .tipfilter-calendarui {
   display: inline-block;
+  margin-left: 10px;
+}
+
+.tipfilter-calendaricon {
+  margin-left: 8px;
+}
+
+.tipfilter-calendarui-details {
+  border: 1px solid blue;
+}
+
+select.select-css.tipfilter-calendarui-year {
+  display: inline-block;
 }
 
 .tipfilter-searchtext {
