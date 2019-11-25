@@ -122,7 +122,7 @@
 }
 .switch-yes-no .switch-label:after {
 	color: #FFFFFF;
-	background: #659DBD; /*#32CD32;*/
+	background: var(--bgSecondaryChoice);
 	backface-visibility: hidden;
 	transform: rotateY(180deg);
 }
@@ -169,13 +169,13 @@
 }
 .switch-two-choice .switch-label:after {
 	color: #FFFFFF;
-	background: #BC986A; /*#32CD32;*/
+	background: var(--bgPrimaryChoice);
 	backface-visibility: hidden;
 	transform: rotateY(180deg);
 }
 .switch-two-choice .switch-label:before {
-  color: #000;
-	background: #659DBD; /*#eceeef;*/
+  color: #FFFFFF;
+	background: var(--bgSecondaryChoice);
 	backface-visibility: hidden;
   text-shadow: none;
 }

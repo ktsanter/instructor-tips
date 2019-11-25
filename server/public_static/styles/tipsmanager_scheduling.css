@@ -31,7 +31,7 @@
  
 .weeklytip-label {
   color: white;
-  background-color: #093c44;
+  background-color: var(--bgPrimaryEmphasis);
   padding-top: 6px;
   padding-bottom: 6px;
 }
@@ -45,7 +45,7 @@
 }
 
 .weeklytip-contents div:nth-of-type(even){
-  background-color: #f2f2f2;
+  background-color: var(--bgQuaternaryEmphasis);
 }
     
 .weeklytip-icon {
@@ -84,7 +84,7 @@
 }
 
 .tipschedule-edit {
-  background-color: #ccc;
+  /*background-color:var(--bgSecondaryEmphasis);*/
   border: 1px solid #093c44;
   margin-left: -5px;
 }
@@ -92,6 +92,7 @@
 .tipschedule-edit-container {
   margin-top: 2px;
   margin-bottom: 2px;
+  /*background-color: var(--bgSecondaryEmphasis) !important;*/
 }
 
 .tipschedule-add-text {
@@ -118,5 +119,5 @@
 }
 
 .tipschedule-highlight {
-  background-color: #2f8d98; /*#ccc;*/ /*#6C75FF;*/
+  background-color: var(--bgSecondaryEmphasis) !important;
 }

@@ -8,8 +8,7 @@ ul.navbar {
   list-style-type: none;
   margin: 0;
   padding: 0;
-  /*overflow: hidden;*/
-  background-color: #093c44;/*#333;*/
+  background-color: var(--bgPrimaryEmphasis);
 }
 
 li.navbar-item {
@@ -43,7 +42,7 @@ li.navbar-main-item {
 }
 
 li.navbar-item:not(.navbar-title):hover {
-  background-color: #2f8d98; /*red;*/
+  background-color: var(--bgPrimaryChoice);
 }
 
 li.dropdown {
@@ -61,7 +60,6 @@ li.dropdown {
 
 .hamburger-btn {
   font-size: 1.4em;
-  /*padding-right: 10px;*/
 }
 
 .dropdown-content {
@@ -81,7 +79,9 @@ li.dropdown {
   text-align: left;
 }
 
-.dropdown-content div:hover {background-color: #c1c1c1;}
+.dropdown-content div:hover {
+  background-color: var(--bgTertiaryEmphasis);
+}
 
 .dropdown:hover .dropdown-content {
   display: block;

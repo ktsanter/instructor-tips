@@ -5,7 +5,6 @@ define(function (require) {
   require('tipsmanager_scheduling');
   require('tipsmanager_schedulingedit');
   require('tipsmanager_editing');
-  //require('tipsmanager_mapping');
   require('dbadmincontainer');
   require('dbadmintableedit');
   require('standard_notice');
@@ -14,6 +13,7 @@ define(function (require) {
   require('aboutbox');
   require('sqldbinterface');
   require('loginui');
+  require('calendarui');
   require('markdowntohtml');
   require('dbadmintableedit');
   

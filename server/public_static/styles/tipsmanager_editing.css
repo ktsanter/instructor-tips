@@ -20,24 +20,39 @@
 
 .dbadmin-tableedit table {
   border-collapse: collapse;
+  border: 1px solid var(--bgTertiaryEmphasis);  
 }
 
 .dbadmin-tableedit th {
-  background-color: #093c44;
+  background-color: var(--bgPrimaryEmphasis);
   color: white;
   font-weight: normal;
   border-style: none;
   text-align: left;
   padding-right: 12px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 6px;
+}
+
+.dbadmin-tableedit th:nth-last-child(2) {
+  border-right: 1px solid var(--bgTertiaryEmphasis);
 }
 
 .dbadmin-tableedit tr {
-  border-width: 1px;
-  border-top-style: none;
-  border-bottom-style: solid;
-  border-right-style: solid;
-  border-left-style: solid;
-  border-color: #093c44;
+  background-color: #fff;
+}
+
+.dbadmin-tableedit tr:nth-of-type(even){
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.dbadmin-tableedit td:nth-last-child(2) {
+  border-right: 1px solid var(--bgTertiaryEmphasis);
+}
+
+.dbadmin-tableedit td {
+  padding-left: 6px;
 }
 
 .dbadmin-rowicon {
@@ -49,7 +64,7 @@
 }
 
 .dbadmin-highlight {
-  background-color: #2f8d98; /*#ccc;*/ /*#6C75FF;*/
+  background-color:var(--bgSecondaryEmphasis) !important;
 }
 
 .dbadmin-datacontent {

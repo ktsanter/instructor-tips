@@ -1,0 +1,32 @@
+/*------------------------------------------------------------------
+ * AboutBox
+ *------------------------------------------------------------------*/
+.calendarui {
+  display: inline-block;
+  background-color: #ddd;
+  border: 1px solid black;
+  border-radius: 2px;
+  margin: 4px;
+  padding: 4px 4px;
+  min-width: 40%;
+}
+
+.calendarui-title {
+  font-weight: bold;
+  padding-bottom: 4px;
+}
+
+.calendarui-select {
+  margin-top: 4px;
+}
+
+.calendarui-icon {
+  font-size: 1.4em;
+  padding-top: 4px;
+  float: right;
+  cursor: pointer;
+}
+
+.calendarui-hide {
+  display: none !important;
+}

@@ -28,6 +28,8 @@ const app = function () {
 	//----------------------------------------
 	async function init () {
 		page.body = document.getElementsByTagName('body')[0];
+    page.body.classList.add('instructortips-colorscheme');
+    
     page.maincontainer = CreateElement.createDiv('mainContainer', null);
     page.body.appendChild(page.maincontainer);
 
@@ -41,6 +43,7 @@ const app = function () {
   async function _renderPage() {
     page.maincontainer.appendChild(_renderAbout());
     page.maincontainer.appendChild(_renderLogin());
+    page.maincontainer.appendChild(_renderCalendarUI());
     page.maincontainer.appendChild(await _renderSubContainers());
     page.body.insertBefore(await _renderNavbar(), page.body.firstChild);
     page.maincontainer.classList.add('bump-down');
@@ -63,11 +66,10 @@ const app = function () {
         {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
-        {label: userInfo.username, callback: null, subitems: null, rightjustify: true}
+        {label: userInfo.username, callback: _showLogin, subitems: null, rightjustify: true}
       ],
       
       hamburgeritems: [
-        {label: 'login', callback: _showLogin},
         {label: 'calendar', callback: _showCalendar},
         {label: 'help', callback: _showHelp},
         {label: 'about', callback: _showAbout}
@@ -101,6 +103,11 @@ const app = function () {
   function _renderLogin() {
     settings.logincontainer = new LoginUI(() => {return _loginComplete();});
     return settings.logincontainer.render();
+  }
+  
+  function _renderCalendarUI() {
+    settings.calendaruicontainer = new CalendarUI(() => {return _calendarChangeComplete();});
+    return settings.calendaruicontainer.render();
   }
   
   async function _renderSubContainers() {
@@ -141,7 +148,7 @@ const app = function () {
   }
     
   function _showCalendar() {
-    console.log('show calendar');
+    settings.calendaruicontainer.show(true);
   }
   
   function _showAbout() {
@@ -163,6 +170,10 @@ const app = function () {
     location.reload();
   }
   
+  async function _calendarChangeComplete() {
+    console.log('calendar change complete');
+  }
+
   //--------------------------------------------------------------
   // db functions
   //--------------------------------------------------------------     
