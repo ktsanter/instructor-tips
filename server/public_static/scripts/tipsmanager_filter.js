@@ -111,8 +111,10 @@ class TipManagerFilter {
       }       
     }
     
+    // move calendar details to after the termgroup elements
     if (this._elemTermgroup && this._elemCalendarDetails) {
-      this._elemTermgroup.parentNode.appendChild(CreateElement.createDiv(null, 'tipfilter-calendarui-details ' + this._HIDE_CLASS, 'select for school year, term buttons'));
+      this._elemTermgroup.parentNode.appendChild(this._elemCalendarDetails);
+      this._buildCalendarDetails();
     }
     
     return container;
@@ -199,7 +201,8 @@ class TipManagerFilter {
       elem.appendChild(CreateElement.createSpan(null, 'tipfilter-calendarlabel'));
       elem.appendChild(CreateElement.createIcon(null, 'tipfilter-calendaricon fas fa-caret-right', 'show/hide calendar settings', (e) => {return this._toggleCalendarSettings(e);}));
       
-      this._elemCalendarDetails = CreateElement.createDiv(null, 'tipfilter-calendarui-details', 'details here');
+      // this element gets moved and filled later
+      this._elemCalendarDetails = CreateElement.createDiv(null, 'tipfilter-calendarui-details ' + this._HIDE_CLASS);
     }
     
     return elem;
@@ -224,13 +227,13 @@ class TipManagerFilter {
           filterElement.checked = this._tipFilter[typeName];
           
         } else if (typeName == 'shared' || typeName == 'personal') {
-          this._setSliderSwitchValue(filterElement, this._tipFilter[typeName]);
+          this._setSliderValue(filterElement, this._tipFilter[typeName]);
           
         } else if (typeName == 'use_adm') {
-          this._setSliderSwitchValue(filterElement, this._tipFilter[typeName]);
+          this._setSliderValue(filterElement, this._tipFilter[typeName]);
           
         } else if (typeName == 'adm_coursetoggle') {
-          this._setSliderSwitchValue(filterElement, this._tipFilter.adm_course);
+          this._setSliderValue(filterElement, this._tipFilter.adm_course);
 
           var elemSelect = this._container.getElementsByClassName(className)[1];
           var adm_courses = this._filterQueryResults.adm_courses;
@@ -240,7 +243,7 @@ class TipManagerFilter {
           this._showElement(elemSelect, this._tipFilter.adm_course);          
           
         } else if (typeName == 'coursetoggle') {
-          this._setSliderSwitchValue(filterElement, this._tipFilter.course);
+          this._setSliderValue(filterElement, this._tipFilter.course);
 
           var elemSelect = this._container.getElementsByClassName(className)[1];
           var courses = this._filterQueryResults.courses;
@@ -250,7 +253,7 @@ class TipManagerFilter {
           this._showElement(elemSelect, this._tipFilter.course); 
 
         } else if (this._tipstatusGroup.has(typeName)) {
-          this._setSliderSwitchValue(filterElement, this._tipFilter[typeName]);          
+          this._setSliderValue(filterElement, this._tipFilter[typeName]);          
           
         } else if (typeName == 'termgroupname') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
@@ -292,7 +295,7 @@ class TipManagerFilter {
      if (elemUseAdminChoices) {
        this._showElement(elemUseAdminChoices, this._tipFilter.allow_adm, true);
        
-       var useAdminChoices = this._getSliderSwitchValue(elemUseAdminChoices);
+       var useAdminChoices = this._getSliderValue(elemUseAdminChoices);
        
        var elemAdmCourseToggle = this._container.getElementsByClassName('tipfilter-adm_coursetoggle');
        var elemCourseToggle = this._container.getElementsByClassName('tipfilter-coursetoggle');
@@ -302,8 +305,8 @@ class TipManagerFilter {
        var elemSlider = elemCourseToggle[0];
        var elemSelect = elemCourseToggle[1];
        
-       var admCourseSpecific = this._getSliderSwitchValue(elemAdmSlider);
-       var courseSpecific = this._getSliderSwitchValue(elemSlider);
+       var admCourseSpecific = this._getSliderValue(elemAdmSlider);
+       var courseSpecific = this._getSliderValue(elemSlider);
        
        this._showElement(elemAdmSlider, useAdminChoices, true);
        this._showElement(elemAdmSelect, useAdminChoices && admCourseSpecific, true);
@@ -338,10 +341,10 @@ class TipManagerFilter {
           this._tipFilter[typeName] = filterElement.checked;
           
         } else if (typeName == 'shared' || typeName == 'personal') {
-          this._tipFilter[typeName] = this._getSliderSwitchValue(filterElement);
+          this._tipFilter[typeName] = this._getSliderValue(filterElement);
           
         } else if (typeName == 'use_adm') {
-          this._tipFilter[typeName] = this._getSliderSwitchValue(filterElement);
+          this._tipFilter[typeName] = this._getSliderValue(filterElement);
           
         } else if (typeName == 'adm_coursetoggle') {
           var elementList = this._container.getElementsByClassName(className);
@@ -349,9 +352,9 @@ class TipManagerFilter {
           var elemSelect = elementList[1];
           
           var elemUseAdminChoices = this._container.getElementsByClassName('tipfilter-use_adm')[0];
-          var useAdminChoices = this._getSliderSwitchValue(elemUseAdminChoices);
-          this._tipFilter.adm_allcourse = (!this._getSliderSwitchValue(filterElement) && useAdminChoices);
-          this._tipFilter.adm_course = (this._getSliderSwitchValue(filterElement) && useAdminChoices);
+          var useAdminChoices = this._getSliderValue(elemUseAdminChoices);
+          this._tipFilter.adm_allcourse = (!this._getSliderValue(filterElement) && useAdminChoices);
+          this._tipFilter.adm_course = (this._getSliderValue(filterElement) && useAdminChoices);
           this._tipFilter.adm_coursename = elemSelect[elemSelect.selectedIndex].value;
           
         } else if (typeName == 'coursetoggle') {
@@ -359,8 +362,8 @@ class TipManagerFilter {
           var elemInput = elementList[0];
           var elemSelect = elementList[1];
 
-          this._tipFilter.allcourse = !this._getSliderSwitchValue(filterElement);
-          this._tipFilter.course = this._getSliderSwitchValue(filterElement);
+          this._tipFilter.allcourse = !this._getSliderValue(filterElement);
+          this._tipFilter.course = this._getSliderValue(filterElement);
           if (elemSelect.selectedIndex >= 0) {
             this._tipFilter.coursename = elemSelect[elemSelect.selectedIndex].value;
           } else {
@@ -368,7 +371,7 @@ class TipManagerFilter {
           }
           
         } else if (this._tipstatusGroup.has(typeName)) {
-          this._tipFilter[typeName] = this._getSliderSwitchValue(filterElement);
+          this._tipFilter[typeName] = this._getSliderValue(filterElement);
           
         }else if (typeName == 'termgroupname') {
           var elemSelect = this._container.getElementsByClassName(className)[0];
@@ -382,7 +385,16 @@ class TipManagerFilter {
           this._tipFilter[typeName] = filterElement.value;
           
         } else if (typeName == 'calendarui') {
-          console.log('get calendarui');
+          var elemYear = this._container.getElementsByClassName('tipfilter-calendarui-year')[0];
+          this._tipFilter.calendar.schoolyear = elemYear[elemYear.selectedIndex].value;
+         
+          var elemTerms = this._container.getElementsByClassName('tipfilter-calendarui-term');
+          for (var j = 0; j < elemTerms.length; j++) {
+            var elemTerm = elemTerms[j];
+            if (this._getSliderValue(elemTerm)) {
+              this._tipFilter.calendar[elemTerm.termgroupName] = elemTerm.termName;
+            }
+          }
 
         } else {
           console.log('failed to get: ' + typeName);
@@ -394,40 +406,68 @@ class TipManagerFilter {
   //--------------------------------------------------------------
   // calendar UI methods
   //--------------------------------------------------------------  
-  async _setCalendarUIDetails() {
-    /*-- add query to get this data --*/
-    var calendarOptions = {
-      schoolyears: ['2019-2020'],
-      terms: [
-        {termgroupname: 'semester', termname: 'Sem 1'},
-        {termgroupname: 'semester', termname: 'Sem 2'},
-        {termgroupname: 'trimester', termname: 'Tri 1'},
-        {termgroupname: 'trimester', termname: 'Tri 2'},
-        {termgroupname: 'trimester', termname: 'Tri 3'}
-      ]
-    };
-    
+  _buildCalendarDetails() {
+    var calendarOptions = this._filterQueryResults.calendaroptions;  
     var organizedOptions = this._organizeOptions(calendarOptions);
-    //var handler = () => {return this._saveChanges();}
-    var handler = null;
-    console.log('need handler for calendar details');
+    var handler = () => {return this._updateFiltering();};
     
-    var container = this._container.getElementsByClassName('tipfilter-calendarui-details')[0];
+    var container = this._elemCalendarDetails;
     while (container.firstChild) container.removeChild(container.firstChild);
     
     var years = [];
     for (var i = 0; i < organizedOptions.schoolyears.length; i++) {
-      var year = organizedOptions.schoolyears[i];
+      var year = organizedOptions.schoolyears[i].schoolyear;
       years.push({id: i, value: year, textval: year});
     }
     container.appendChild(CreateElement.createSelect(null, 'tipfilter-calendarui-year select-css', handler, years));
     
-    var termgroupSettings = organizedOptions.termgroups[this._tipFilter.termgroupname];
-    if (termgroupSettings) {
-      for (var i = 0; i < termgroupSettings.length; i++) {
-        var termName = termgroupSettings[i];
-        container.appendChild(CreateElement.createSpan(null, null, 'toggle for ' + termName));
+    var className = 'tipfilter-calendarui-term';
+    var termGroups = organizedOptions.termgroups;
+    for (var termgroupName in termGroups) {
+      var termNames = termGroups[termgroupName];
+
+      for (var j = 0; j < termNames.length; j++) {
+        var termName = termNames[j];
+        var elemSlider = this._createSliderRadio('termname', termName, termName, className, handler);
+        container.appendChild(elemSlider);
+        elemSlider.termgroupName = termgroupName;
+        elemSlider.termName = termName;
+        elemSlider.style.display = 'none';
       }
+    }
+  }
+  
+  _setCalendarUIDetails() {
+    var calendarOptions = this._filterQueryResults.calendaroptions;  
+    var organizedOptions = this._organizeOptions(calendarOptions);
+
+    var container = this._container.getElementsByClassName('tipfilter-calendarui-details')[0];
+    var elemSelect = container.getElementsByClassName('tipfilter-calendarui-year')[0];
+    var elemTermList = container.getElementsByClassName('tipfilter-calendarui-term');
+    
+    for (var i = 0; i < organizedOptions.schoolyears.length; i++) {
+      var year = organizedOptions.schoolyears[i].schoolyear;
+      if (year == this._tipFilter.calendar.schoolyear) elemSelect.selectedIndex = i;
+    }
+    
+    for (var i = 0; i < elemTermList.length; i++) {
+      elemTermList[i].display = 'none';
+    }
+    
+    var termgroupSettings = organizedOptions.termgroups[this._tipFilter.termgroupname];
+    var showTerms = new Set(termgroupSettings);
+    var selectedTermgroupName = this._tipFilter.termgroupname;
+    var selectedTermName = this._tipFilter.calendar[selectedTermgroupName];
+
+    for (var i = 0; i < elemTermList.length; i++) {
+      var elemTerm = elemTermList[i];
+      
+      elemTerm.style.display = 'none';
+      if (showTerms.has(elemTerm.termName)  && termgroupSettings.length > 1) {
+        elemTerm.style.display = 'inline-block';
+      }
+      var selected = (elemTerm.termgroupName == selectedTermgroupName && elemTerm.termName == selectedTermName);
+      this._setSliderValue(elemTerm, selected);
     }
   }
   
@@ -496,7 +536,7 @@ class TipManagerFilter {
       elemIcon.classList.remove('fa-caret-down');
       elemIcon.classList.add('fa-caret-right');
     }
-    }
+  }
   
   //--------------------------------------------------------------
   // slider switch
@@ -508,7 +548,7 @@ class TipManagerFilter {
     } else {
       classList += ' switch-yes-no';
     }
-    if (addedClassList != '') classList += ' ' + addedClassList;
+    if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
     var container = CreateElement._createElement('label', null, classList);
     
     
@@ -526,16 +566,37 @@ class TipManagerFilter {
     return container;
   }
 
-  _getSliderSwitchValue(elem) {
+  _createSliderRadio(groupName, dataOnLabel, dataOffLabel, addedClassList, handler) {
+    var classList = 'switch switch-yes-no';
+    if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
+    var container = CreateElement._createElement('label', null, classList);
+    
+    
+    var elemRadio = CreateElement._createElement('input', null, 'switch-input');
+    elemRadio.type = 'radio';
+    elemRadio.name = groupName;
+    container.appendChild(elemRadio);
+    if (handler) elemRadio.addEventListener('click', e => handler(e));
+    
+    var elemDataSpan = CreateElement.createSpan(null, 'switch-label');
+    container.appendChild(elemDataSpan);
+    elemDataSpan.setAttribute('data-on', dataOnLabel);
+    elemDataSpan.setAttribute('data-off', dataOffLabel);
+    
+    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
+    return container;
+  }
+
+  _getSliderValue(elem) {
     var elemInput = elem.getElementsByClassName('switch-input')[0];    
     return elemInput.checked;
   }
 
-  _setSliderSwitchValue(elem, checked) {
+  _setSliderValue(elem, checked) {
     var elemInput = elem.getElementsByClassName('switch-input')[0];
     elemInput.checked = checked;
   }
-
+  
   //--------------------------------------------------------------
   // db functions
   //--------------------------------------------------------------     

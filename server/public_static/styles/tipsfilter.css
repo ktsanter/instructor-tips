@@ -41,12 +41,12 @@ select.select-css.tipfilter-termgroupname {
   margin-left: 8px;
 }
 
-.tipfilter-calendarui-details {
-  border: 1px solid blue;
-}
+.tipfilter-calendarui-details {}
 
 select.select-css.tipfilter-calendarui-year {
   display: inline-block;
+  vertical-align: bottom;
+  margin-right: 3px;
 }
 
 .tipfilter-searchtext {

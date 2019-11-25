@@ -211,7 +211,13 @@ module.exports = internal.TipFilter = class {
             
         schoolyears:
           'select distinct schoolyear ' +
-          'from calendar'
+          'from calendar',
+          
+        terms:
+          'select termgroupname, termname ' +
+          'from termgroup as tg, term as t ' +
+          'where tg.termgroupid = t.termgroupid ' +
+          'order by termgroupname, termname '
       };
       
       var queryResults = await this._dbQueries(queryList);
@@ -223,7 +229,10 @@ module.exports = internal.TipFilter = class {
         result.termgroups = queryResults.data.termgroups;
         result.adm_courses = queryResults.data.adm_courses;
         result.courses = queryResults.data.courses;
-        result.schoolyears = queryResults.data.schoolyears;
+        result.calendaroptions = {
+          schoolyears: queryResults.data.schoolyears,
+          terms: queryResults.data.terms
+        };
         result.uiconfig = tipUIConfig;
         
       } else {
