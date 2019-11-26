@@ -252,11 +252,16 @@ class TipManagerFilter {
           var elemSelect = this._container.getElementsByClassName(className)[1];
           var courses = this._filterQueryResults.courses;
           
-          if (this._tipFilter.coursename == '' && courses.length > 0) {
-            this._tipFilter.coursename = courses[0].coursename;
-          }
+          var noMatch = true;
           for (var k = 0; k < courses.length; k++) {
-            if (courses[k].coursename == this._tipFilter.coursename) elemSelect.selectedIndex = k;
+            if (courses[k].coursename == this._tipFilter.coursename) {
+              elemSelect.selectedIndex = k;
+              noMatch = false;
+            }
+          }
+          if (noMatch  && courses.length > 0) {
+            this._tipFilter.coursename = courses[0].coursename;
+            elemSelect.selectedIndex = 0;
           }
           this._showElement(elemSelect, this._tipFilter.course); 
 
