@@ -67,7 +67,7 @@ const app = function () {
       
       hamburgeritems: [
         {label: 'help', callback: _showHelp},
-        {label: 'about', callback: _showAbout}
+        {label: 'about ' + appInfo.appName, callback: _showAbout}
       ]      
     };
     

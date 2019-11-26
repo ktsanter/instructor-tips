@@ -4,6 +4,10 @@ const express = require('express')
 const app = express()
 const port = 3000
 
+var favicon = require('serve-favicon')
+var path = require('path')
+app.use(favicon(path.join(__dirname, 'public_static', 'favicon.ico')))
+
 var bodyParser = require('body-parser');
 app.use(bodyParser.json()); 
 
