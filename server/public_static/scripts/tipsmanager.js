@@ -5,16 +5,14 @@
 //-------------------------------------------------------------------
 
 const app = function () {
-  const appinfo = {
-    appversion: '0.01',
-    appname: 'InstructorTips',
-    appauthor: 'Kevin Santer',
-    appcontact: 'ksanter@michiganvirtual.org'
+  const appInfo = {
+    appName: 'InstructorTips'
   };
   
 	const page = {};
   
 	const settings = {
+    aboutURL: 'about.html',
     helpURL: 'help.html',
     navOptions: [
       'courseselection', 'scheduling', 'editing',
@@ -41,7 +39,6 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------  
   async function _renderPage() {
-    page.maincontainer.appendChild(_renderAbout());
     page.maincontainer.appendChild(_renderLogin());
     page.maincontainer.appendChild(await _renderSubContainers());
     page.body.insertBefore(await _renderNavbar(), page.body.firstChild);
@@ -59,7 +56,7 @@ const app = function () {
     var allowAdmin = queryResults.data.navbar.allowadmin;
     
     var navConfig = {
-      title: appinfo.appname,
+      title: appInfo.appName,
       
       items: [
         {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
@@ -91,11 +88,6 @@ const app = function () {
     }
     
     return new NavigationBar(navConfig);
-  }
-  
-  function _renderAbout() {
-    settings.aboutbox = new AboutBox(appinfo);
-    return settings.aboutbox.render();
   }
   
   function _renderLogin() {
@@ -140,12 +132,12 @@ const app = function () {
     await settings[arg].update(true);  
   }
     
-  function _showAbout() {
-    settings.aboutbox.show(true);
-  }
-  
   async function _showLogin() {
     settings.logincontainer.show(true);
+  }
+  
+  function _showAbout() {
+    window.open(settings.aboutURL, '_blank');
   }
   
   function _showHelp() { 

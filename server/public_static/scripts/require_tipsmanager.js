@@ -10,7 +10,6 @@ define(function (require) {
   require('standard_notice');
   require('create_element');
   require('navbar');
-  require('aboutbox');
   require('sqldbinterface');
   require('loginui');
   require('markdowntohtml');

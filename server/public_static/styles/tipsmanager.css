@@ -2,16 +2,6 @@
  * styling for Tips Manager tool
  *------------------------------------------------------------------*/
 
-.instructortips-colorscheme {
-  --bgPrimaryEmphasis: #8d8741;  /*-- khaki green --*/
-  --bgSecondaryEmphasis: #daad86;  /*-- medium sand --*/
-  --bgTertiaryEmphasis: #c9c9c9;  /*-- medium gray --*/
-  --bgQuaternaryEmphasis: #f2f2f2; /*-- light gray --*/
-  --bgPrimaryChoice:  #bc986a;  /*-- dark sand --*/
-  --bgSecondaryChoice: #659dbd;  /*-- dusty light blue --*/
-  --bgTertiaryChoice: #fbeec1;  /*-- light sand --*/
-}
-
 html {
   overflow-y: scroll;
 }
