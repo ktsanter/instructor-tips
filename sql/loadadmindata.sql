@@ -1,7 +1,15 @@
+#------------------------------------------------------------
+#-- initial admin data load
+#------------------------------------------------------------
+#--- NOTE: the order matters here because of the course 
+#---       and user triggers
+#------------------------------------------------------------
+
 USE instructortips;
 
+select "deleting from tables";
+
 DELETE FROM usertipfilter;
-/* DELETE FROM tipstatus; */
 DELETE FROM userprivilege;
 DELETE FROM privilege;
 DELETE FROM user;
@@ -14,8 +22,21 @@ DELETE FROM mappedtip;
 DELETE from usertipstatus;
 
 #-------------------------------------------------------------
+#-- termgroup
+#-------------------------------------------------------------
+select "termgroup";
+
+load data local infile 'initial_load_data/termgroup.txt'
+into table termgroup
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\r\n'
+(termgroupname, termlength);
+
+#-------------------------------------------------------------
 #-- privilege
 #-------------------------------------------------------------
+select "privilege";
+
 load data local infile 'initial_load_data/privilege.txt'
 into table privilege
 FIELDS TERMINATED BY '|'
@@ -25,6 +46,8 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- user
 #-------------------------------------------------------------
+select "user";
+
 load data local infile 'initial_load_data/user.txt'
 into table user
 FIELDS TERMINATED BY '|'
@@ -34,6 +57,8 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- userprivilege
 #-------------------------------------------------------------
+select "userprivilege";
+
 INSERT INTO userprivilege (userid, privilegeid)
   SELECT user.userid, privilege.privilegeid 
   FROM user, privilege
@@ -52,14 +77,14 @@ INSERT INTO userprivilege (userid, privilegeid)
   WHERE user.usershortname = 'carlos' and privilege.privilegename = 'instructor';
 
 #-------------------------------------------------------------
-#-- termgroup
+#-- course
 #-------------------------------------------------------------
-select "termgroup";
-load data local infile 'initial_load_data/termgroup.txt'
-into table termgroup
+select "course";
+load data local infile 'initial_load_data/course.txt'
+into table course
 FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
-(termgroupname, termlength);
+(coursename, ap);
 
 #-------------------------------------------------------------
 #-- term
@@ -73,16 +98,6 @@ INSERT INTO term (termname, termgroupid) SELECT 'Tri 3', termgroupid FROM termgr
 INSERT INTO term (termname, termgroupid) SELECT 'Summer', termgroupid FROM termgroup where termgroupname = 'summer';
 
 #-------------------------------------------------------------
-#-- course
-#-------------------------------------------------------------
-select "course";
-load data local infile 'initial_load_data/course.txt'
-into table course
-FIELDS TERMINATED BY '|'
-LINES TERMINATED BY '\r\n'
-(coursename, ap);
-
-#-------------------------------------------------------------
 #-- usercourse
 #-------------------------------------------------------------
 select "usercourse";
@@ -92,26 +107,6 @@ INSERT INTO usercourse (userid, courseid, termgroupid)
 SELECT NULL as userid, NULL as courseid, termgroupid
 FROM termgroup;
 
-#--- all courses, specific user, all terms
-select "2";
-INSERT INTO usercourse (userid, courseid, termgroupid) 
-SELECT userid, NULL AS courseid, termgroupid
-FROM termgroup, user;
-
-#--- specific course, all users, all terms
-select "3, semester";
-INSERT INTO usercourse (userid, courseid, termgroupid) 
-SELECT NULL as userid, courseid, termgroupid
-FROM course, termgroup
-WHERE termgroup.termgroupname = 'semester';
-
-select "3, trimester, summer";
-INSERT INTO usercourse (userid, courseid, termgroupid) 
-SELECT NULL as userid, courseid, termgroupid
-FROM course, termgroup
-WHERE termgroup.termgroupname in ('trimester', 'summer')
-  AND course.ap = false;
-  
 #-------------------------------------------------------------
 #-- tip
 #-------------------------------------------------------------
@@ -151,52 +146,3 @@ where tiptext like "[staging %"
 update tip
 set tiptext = substring(tiptext from 13);
 
-/*
-#--- public, all-courses tips
-INSERT INTO mappedtip (tipid, usercourseid, week)
-  SELECT tipid, usercourseid, 0
-  FROM tip, usercourse
-  WHERE tip.tiptext LIKE '%all-courses%'
-    AND tip.userid IS NULL
-    AND usercourse.userid IS NULL
-    AND usercourse.courseid IS NULL;
-*/
-#-- private, all-courses tips
-/*
-INSERT INTO mappedtip (tipid, usercourseid, week)
-  SELECT tipid, usercourseid, 0
-  FROM tip, usercourse
-  WHERE tip.tiptext LIKE '%all-courses%'
-   AND usercourse.userid = tip.userid
-   AND usercourse.courseid IS NULL;
-*/
-
-/*
-#-- public, course-specific tips 
-select "public, course-specific tips";
-INSERT INTO mappedtip (tipid, usercourseid, week)
-  SELECT tipid, usercourseid, 0
-  FROM tip, usercourse, course
-  WHERE tip.tiptext LIKE '%java%'
-    AND tip.userid IS NULL
-    AND usercourse.userid IS NULL
-    AND usercourse.courseid = course.courseid
-    AND course.coursename like '%java prog%';
-
-INSERT INTO mappedtip (tipid, usercourseid, week)
-  SELECT tipid, usercourseid, 0
-  FROM tip, usercourse, course, termgroup
-  WHERE tip.tiptext LIKE '%web design%'
-    AND tip.userid IS NULL
-    AND usercourse.userid IS NULL
-    AND usercourse.courseid = course.courseid
-    AND course.coursename like '%basic web design%'
-    and usercourse.termgroupid = termgroup.termgroupid
-    and termgroup.termgroupname = 'semester';
-
-#-- make a variety of weeks
-select "changing mappedtip weeks";
-UPDATE mappedtip, tip SET week = 1 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%001';
-UPDATE mappedtip, tip SET week = 2 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%002';
-UPDATE mappedtip, tip SET week = 3 WHERE mappedtip.tipid = tip.tipid AND tiptext like '%003';
-*/

@@ -245,7 +245,7 @@ module.exports = internal.TipManager = class {
       'where coursename = "' + postData.coursename + '" ';
       
     var queryResults = await this._dbQueries(queryList);
-          
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';

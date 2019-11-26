@@ -1,6 +1,14 @@
+#-----------------------------------------------------------------
+#-- create DB for Instructor Tips
+#-----------------------------------------------------------------
 DROP DATABASE IF EXISTS instructortips;
 CREATE DATABASE instructortips;
 USE instructortips;
+
+#-----------------------------------------------------------------
+#-- tables
+#-----------------------------------------------------------------
+select "creating tables";
 
 CREATE TABLE user
 (
@@ -143,6 +151,32 @@ CREATE TABLE calendar
 );
 
 #--------------------------------------------------------------------------
+#-- triggers
+#--------------------------------------------------------------------------
+
+#-- add null courses to usercourse for new users
+select "trigger_newuser";
+
+CREATE TRIGGER trigger_newuser
+  AFTER INSERT ON user FOR EACH ROW
+    INSERT usercourse (userid, courseid, termgroupid)
+    SELECT new.userid, NULL AS courseid, termgroup.termgroupid
+    FROM termgroup;
+
+#-- add null users to usercourse for new courses
+select "trigger_newcourse";
+
+CREATE TRIGGER trigger_newcourse
+  AFTER INSERT ON course FOR EACH ROW
+    INSERT usercourse (userid, courseid, termgroupid)
+    SELECT NULL AS userid, new.courseid, termgroup.termgroupid
+    FROM termgroup;
+    
+#--------------------------------------------------------------------------
+#-- views
+#--------------------------------------------------------------------------
+select "viewmappedtip";
+
 CREATE VIEW viewmappedtip AS
   select mappedtipid, user.userid, user.username, course.courseid, course.coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tipid, tip.tiptext, mappedtip.week 
   from mappedtip, usercourse, termgroup, course, tip, user
@@ -183,6 +217,8 @@ CREATE VIEW viewmappedtip AS
   and usercourse.courseid IS NULL;
   
 #--------------------------------------------------------------------------
+select "viewusercourse";
+
 CREATE VIEW viewusercourse as
   select usercourseid, NULL AS courseid, NULL AS coursename, NULL AS ap, termgroup.termgroupid, termgroupname, NULL AS userid, NULL AS username  
   from usercourse, termgroup  
@@ -211,8 +247,9 @@ CREATE VIEW viewusercourse as
     and usercourse.termgroupid = termgroup.termgroupid  
     and usercourse.userid = user.userid;
   
-
 #--------------------------------------------------------------------------
+select "viewusertipstatus";
+
 create view viewusertipstatus as
 select 
   v.mappedtipid, 
