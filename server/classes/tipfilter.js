@@ -250,17 +250,19 @@ module.exports = internal.TipFilter = class {
     var filter = {
       shared: false,
       personal: true,
+      personal_notowned: false,
       searchtext: ''
     };
     
     var tipUIConfig = {
-      publicOrPrivateGroup: ['shared', 'personal'],
+      publicOrPrivateGroup: ['shared', 'personal', 'personal_notowned'],
       searchGroup: ['searchtext'],
       groupOrder: ['searchGroup']
      };
      
      if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
        filter.shared = true;
+       filter.personal_notowned = true;
        tipUIConfig.groupOrder = ['publicOrPrivateGroup', 'searchGroup'];
      }
 

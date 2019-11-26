@@ -137,9 +137,11 @@ class TipManagerFilter {
       elem = CreateElement.createCheckbox(null, className, groupName, fieldName, '', false, handler);
       
     } else if (fieldName == 'shared') {
-      elem = this._createSliderSwitch('include public', 'exclude public', className, handler);
+      elem = this._createSliderSwitch('public', 'public', className, handler);
     } else if (fieldName == 'personal') {
-      elem = this._createSliderSwitch('include private', 'exclude private', className, handler);
+      elem = this._createSliderSwitch('own private', 'own private', className, handler); 
+    } else if (fieldName == 'personal_notowned') {
+      elem = this._createSliderSwitch('other\'s private', 'other\'s private', className, handler);
       
     } else if (fieldName == 'unspecified') {
       elem = this._createSliderSwitch('unspecified', 'unspecified', className + ' tipStatusGroup', handler);
@@ -228,7 +230,7 @@ class TipManagerFilter {
         } else if (this._radioButtons.has(typeName)) {
           filterElement.checked = this._tipFilter[typeName];
           
-        } else if (typeName == 'shared' || typeName == 'personal') {
+        } else if (typeName == 'shared' || typeName == 'personal' || typeName == 'personal_notowned') {
           this._setSliderValue(filterElement, this._tipFilter[typeName]);
           
         } else if (typeName == 'use_adm') {
@@ -249,6 +251,10 @@ class TipManagerFilter {
 
           var elemSelect = this._container.getElementsByClassName(className)[1];
           var courses = this._filterQueryResults.courses;
+          
+          if (this._tipFilter.coursename == '' && courses.length > 0) {
+            this._tipFilter.coursename = courses[0].coursename;
+          }
           for (var k = 0; k < courses.length; k++) {
             if (courses[k].coursename == this._tipFilter.coursename) elemSelect.selectedIndex = k;
           }
@@ -342,7 +348,7 @@ class TipManagerFilter {
         } else if (this._radioButtons.has(typeName)) {
           this._tipFilter[typeName] = filterElement.checked;
           
-        } else if (typeName == 'shared' || typeName == 'personal') {
+        } else if (typeName == 'shared' || typeName == 'personal' || typeName == 'personal_notowned') {
           this._tipFilter[typeName] = this._getSliderValue(filterElement);
           
         } else if (typeName == 'use_adm') {
@@ -414,7 +420,7 @@ class TipManagerFilter {
     var handler = () => {return this._updateFiltering();};
     
     var container = this._elemCalendarDetails;
-    while (container.firstChild) container.removeChild(container.firstChild);
+    //while (container.firstChild) container.removeChild(container.firstChild);
     
     var years = [];
     for (var i = 0; i < organizedOptions.schoolyears.length; i++) {

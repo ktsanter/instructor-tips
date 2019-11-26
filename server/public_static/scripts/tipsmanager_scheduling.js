@@ -80,11 +80,11 @@ class TipScheduling {
     if (reRenderFilter) {
       await this._tipFilter.render(this._notice);
     }
-    
-    this._prepContainerForUpdate();
-
+        
     var filter = this._tipFilter.getFilter();
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', filter);
+
+    this._prepContainerForUpdate();
  
     if (tipsQuery.success) {
       if (tipsQuery.usercourseexists) {
@@ -302,12 +302,7 @@ class TipScheduling {
     var elemIcon = e.target;
     var tipInformation = elemIcon.parentNode.tipInformation;
     var tipStatusName = tipInformation.tipstatusname;
-    
-    var classListArray = this._tipStatusClass[tipStatusName].split(' ');
-    for (var i = 0; i < classListArray.length; i++) {
-      elemIcon.classList.remove(classListArray[i]);
-    }
-    
+
     if (tipStatusName == null) {
       tipStatusName = 'scheduled';
     } else if (tipStatusName == 'scheduled') {
@@ -462,12 +457,6 @@ class TipScheduling {
       formattedDate = '';
       if (theDate != null & theDate != '') {
         var objDate = new Date(theDate);
-        /*
-        var day = ("00" + objDate.getDate()).slice(-2);
-        var month = ("00" + (objDate.getMonth() + 1)).slice(-2);
-        var year = (objDate.getFullYear() + '').slice(-2);
-        formattedDate = month + "/" + day + "/" + year;
-        */
         var day = objDate.getDate();
         var month = objDate.getMonth() + 1;
         formattedDate = month + '/' + day;

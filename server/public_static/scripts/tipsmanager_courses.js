@@ -80,13 +80,16 @@ class TipCourseSelection {
     var cell = CreateElement.createTableCell(null, null, course.coursename, false, elemRow);
     elemRow.courseinfo = course;
     
-    var msg = course.coursename;
     for (var i = 0; i < termgroupList.length; i++) {
       var termgroup = termgroupList[i];
       var isSelected = this._isCourseSelectedForUser(course, termgroup, usercourseList);
       cell = CreateElement.createTableCell(null, null, '', false, elemRow);
-      var elemCheckbox = CreateElement.createCheckbox(null, null, 'course-selected', 'is-selected', '', isSelected, handler)
-      cell.appendChild(elemCheckbox);
+      
+      if (termgroup.termgroupname == 'semester' || course.ap == 0) {
+        var elemCheckbox = CreateElement.createCheckbox(null, null, 'course-selected', 'is-selected', '', isSelected, handler);
+        cell.appendChild(elemCheckbox);
+      }
+      
       cell.termgroupinfo = termgroup;
     }
     

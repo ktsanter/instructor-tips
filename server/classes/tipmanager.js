@@ -164,7 +164,7 @@ module.exports = internal.TipManager = class {
     queryList.usercourses = 
       'select ' +
         'usercourse.usercourseid, usercourse.courseid, usercourse.termgroupid, ' +
-        'course.coursename, ' + 
+        'course.coursename, course.ap, ' + 
         'termgroup.termgroupname ' +
       'from usercourse, course, termgroup ' +
       'where usercourse.courseid = course.courseid ' +
@@ -172,7 +172,7 @@ module.exports = internal.TipManager = class {
         'and usercourse.userid = ' + userInfo.userId + ' ';
       
     queryList.courses = 
-      'select courseid, coursename ' +
+      'select courseid, coursename, ap ' +
         'from course ' +
         'order by coursename ';
         
@@ -545,16 +545,22 @@ module.exports = internal.TipManager = class {
     
     if (postData.personal) {
       queryList.personal = 
-        'SELECT tipid, tiptext, a.userid, a.username ' +
-        'FROM tip ' +
-        'LEFT OUTER JOIN ( ' +
-          'SELECT userid, username ' +
-          'FROM user ' +
-        ') AS a ' + 
-        'ON tip.userid = a.userid ' + 
-        'WHERE tiptext LIKE "%' + postData.searchtext + '%" ' +
-          'AND a.userid = ' + userInfo.userId + ' ' + 
-        'ORDER BY tiptext, a.username ';
+        'SELECT tipid, tiptext, tip.userid, username ' +
+        'FROM tip, user ' +
+        'where tip.userid = user.userid ' + 
+          'and tiptext LIKE "%' + postData.searchtext + '%" ' +
+          'AND tip.userid = ' + userInfo.userId + ' ' + 
+        'ORDER BY tiptext, username ';
+    }
+    
+    if (postData.personal_notowned) {
+      queryList.personal_notowned = 
+        'SELECT tipid, tiptext, tip.userid, username ' +
+        'FROM tip, user ' +
+        'where tip.userid = user.userid ' + 
+          'and tiptext LIKE "%' + postData.searchtext + '%" ' +
+          'AND tip.userid != ' + userInfo.userId + ' ' + 
+        'ORDER BY tiptext, username ';
     }
     
     if (postData.shared) {

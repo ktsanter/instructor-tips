@@ -12,6 +12,10 @@
   --bgTertiaryChoice: #fbeec1;  /*-- light sand --*/
 }
 
+html {
+  overflow-y: scroll;
+}
+
 body {
 	color: black;
 	background-color: #eee;

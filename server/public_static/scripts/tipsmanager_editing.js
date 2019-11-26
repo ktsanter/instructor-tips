@@ -48,10 +48,9 @@ class TipEditing {
     }
   }
   
-  async update() {
-    this._prepContainerForUpdate();    
-    
+  async update() {    
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipedit', this._tipFilter.getFilter());
+    this._prepContainerForUpdate();    
 
     if (tipsQuery.success) {
       this._container.appendChild(this._showTips(tipsQuery));

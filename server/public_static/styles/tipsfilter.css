@@ -84,3 +84,19 @@ select.select-css.tipfilter-calendarui-year {
 	color: #222;
 	outline: none;
 }
+
+.tipfilter-adm_coursetoggle.switch-two-choice .switch-label:before {
+	background: var(--bgPrimaryChoice);
+}
+
+.tipfilter-adm_coursetoggle.switch-two-choice .switch-label:after {
+	background: var(--bgSecondaryChoice);
+}
+
+.tipfilter-coursetoggle.switch-two-choice .switch-label:before {
+	background: var(--bgPrimaryChoice);
+}
+
+.tipfilter-coursetoggle.switch-two-choice .switch-label:after {
+	background: var(--bgSecondaryChoice);
+}

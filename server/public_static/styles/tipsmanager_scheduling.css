@@ -55,6 +55,10 @@
   vertical-align: top;
 }
 
+.weeklytip-icon.far.fa-square {
+  padding-right: 12px;
+}
+
 .weeklytip-singletip {
   display: inline-block;
   max-width: 90%;
