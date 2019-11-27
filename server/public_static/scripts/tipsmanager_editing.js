@@ -27,8 +27,8 @@ class TipEditing {
     
     var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
     this._container.appendChild(titleContainer);
-    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
     titleContainer.appendChild(CreateElement.createIcon(null, 'tipmanager-icon fas fa-caret-down', 'show/hide filter', (e) => {return this._toggleFilterCollapse(e);}));
+    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
     
     this._container.appendChild(await this._tipFilter.render(this._notice));
 

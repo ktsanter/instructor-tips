@@ -88,7 +88,7 @@
 }
 
 .tipschedule-edit {
-  /*background-color:var(--bgSecondaryEmphasis);*/
+  background-color:var(--bgQuaternaryEmphasis);
   border: 1px solid #093c44;
   margin-left: -5px;
 }
@@ -96,15 +96,18 @@
 .tipschedule-edit-container {
   margin-top: 2px;
   margin-bottom: 2px;
-  /*background-color: var(--bgSecondaryEmphasis) !important;*/
 }
 
 .tipschedule-add-text {
   width: 90%;
 }
 
+.tipschedule-edit-container .tipschedule-add-text.edit {
+  margin-left: 25px;
+}
+
 .tipschedule-add-select {
-  width: 90%;
+  width: 89%;
 }
 
 .tipschedule-add-choice {
@@ -123,5 +126,16 @@
 }
 
 .tipschedule-highlight {
-  background-color: var(--bgSecondaryEmphasis) !important;
+  background-color: var(--bgSecondaryChoice) !important;
+}
+
+.tipschedule-highlight .tipschedule-controls {
+  background-color: var(--bgSecondaryChoice) !important;
+}
+
+/*-----------------------
+ * schedule share 
+ *-----------------------*/
+.tipschedule-share {
+  border: 1px solid blue;
 }

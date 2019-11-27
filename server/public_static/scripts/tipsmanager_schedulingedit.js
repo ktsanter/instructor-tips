@@ -93,7 +93,7 @@ class TipSchedulingEdit {
     var cancelHandler = (e) => {return this._cancelOperation(e);};
 
     this._editedTipInfo = tipsData;
-    var tipTextArea = CreateElement.createTextArea(null, 'tipschedule-add-text');
+    var tipTextArea = CreateElement.createTextArea(null, 'tipschedule-add-text edit');
     tipTextArea.value = tipsData.tiptext;
     tipTextArea.rows = 8;
     inputContainer.appendChild(tipTextArea);

@@ -35,6 +35,14 @@ class TipScheduling {
       }
     });
     
+    this._tipScheduleShare = new TipSchedulingShare({
+      editType: 'edit tip',
+      callbacks: {
+        cancelChange: () => {return this._cancelEditChange();} ,
+        finishEdit:  (dbData) => {return this._doFinishEdit(dbData);}
+      }
+    });
+    
     this._tipStatusClass = {
       null: 'far fa-square',
       scheduled: 'fas fa-exclamation-circle',
@@ -47,16 +55,19 @@ class TipScheduling {
   //--------------------------------------------------------------
   async render() {
     this._container = CreateElement.createDiv(null, 'tipschedule ' + this._HIDE_CLASS);
+    
     this._tipAddContainer = this._tipAddEditor.render();
     this._tipEditContainer = this._tipEditEditor.render();
+    this._tipScheduleShareContainer = this._tipScheduleShare.render();
     
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
     
     var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
     this._container.appendChild(titleContainer);
-    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
     titleContainer.appendChild(CreateElement.createIcon(null, 'tipmanager-icon fas fa-caret-down', 'show/hide filter', (e) => {return this._toggleFilterCollapse(e);}));
+    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
+    titleContainer.appendChild(CreateElement.createIcon(null, 'tipmanager-icon tipmanager-shareicon far fa-share-square', 'share this schedule', (e) => {return this._handleShare(e);}));
 
     this._container.appendChild(await this._tipFilter.render(this._notice));    
 
@@ -67,21 +78,30 @@ class TipScheduling {
   // updating
   //--------------------------------------------------------------
   show(makeVisible) {
-    if (this._container.classList.contains(this._HIDE_CLASS)) {
-      this._container.classList.remove(this._HIDE_CLASS);
+    this._showElement(this._container, makeVisible);
+  }
+  
+  _showElement(elem, makeVisible) {
+    if (elem.classList.contains(this._HIDE_CLASS)) {
+      elem.classList.remove(this._HIDE_CLASS);
     }
     
     if (!makeVisible) {
-      this._container.classList.add(this._HIDE_CLASS);
+      elem.classList.add(this._HIDE_CLASS);
     }
   }
-  
+
   async update(reRenderFilter) {
     if (reRenderFilter) {
       await this._tipFilter.render(this._notice);
     }
-        
+    this._tipScheduleShare.show(false);
+    
     var filter = this._tipFilter.getFilter();
+    
+    var elemShareIcon = this._container.getElementsByClassName('tipmanager-shareicon')[0];
+    this._showElement(elemShareIcon, !(filter.adm_allcourse || filter.adm_course || filter.allcourse));
+    
     var tipsQuery = await this._doPostQuery('tipmanager/query', 'tipschedule', filter);
 
     this._prepContainerForUpdate();
@@ -178,7 +198,7 @@ class TipScheduling {
     
     var label = CreateElement.createDiv(null, 'weeklytip-label');
     container.appendChild(label);
-    label.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', 'expand/collapse week', this._toggleWeeklyBoxCollapse));
+    label.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', 'expand/collapse week', (e) => {return this._toggleWeeklyBoxCollapse(e);}));
     label.appendChild(CreateElement.createSpan(null, 'weeklytip-label-text', weekLabel));
     label.appendChild(CreateElement.createIcon(null, 'tipschedule-icon tipschedule-icon-add far fa-calendar-plus', 'add tip to week', (e) => {return this._startAddTipUI(e);}));
     
@@ -248,6 +268,9 @@ class TipScheduling {
     return unmappable;
   }
 
+  //--------------------------------------------------------------
+  // handlers
+  //--------------------------------------------------------------
   _toggleFilterCollapse(e) {
     var elemIcon = e.target;
     var elemFilter = this._container.getElementsByClassName('tipfilter')[0];
@@ -264,6 +287,8 @@ class TipScheduling {
   }
   
   _toggleWeeklyBoxCollapse(e) {
+    if (this._editInProgress) return;
+    
     var elemContents = e.target.parentNode.parentNode.getElementsByClassName('weeklytip-contents')[0];
     var elemIcon = e.target;
 
@@ -273,6 +298,8 @@ class TipScheduling {
   }
   
   _collapseAllWeeks() {
+    if (this._editInProgress) return;
+    
     var elemWeeklyTips = this._container.getElementsByClassName('weeklytip');
     for (var i = 0; i < elemWeeklyTips.length; i++) {
       var tipContainer = elemWeeklyTips[i];
@@ -285,6 +312,8 @@ class TipScheduling {
   }
   
   _expandAllWeeks() {
+    if (this._editInProgress) return;
+    
     var elemWeeklyTips = this._container.getElementsByClassName('weeklytip');
     for (var i = 0; i < elemWeeklyTips.length; i++) {
       var tipContainer = elemWeeklyTips[i];
@@ -320,6 +349,18 @@ class TipScheduling {
     }
   }
   
+  async _handleShare(e) {
+    if (this._editInProgress) return;
+    
+    var elemTitle = this._container.getElementsByClassName('tipmanager-title')[0];
+    if (this._tipScheduleShareContainer.parentNode) {
+      this._tipScheduleShareContainer.parentNode.removeChild(this._tipScheduleShareContainer);
+    }
+    elemTitle.appendChild(this._tipScheduleShareContainer);
+
+    this._tipScheduleShare.show(true);
+  }
+
   //------------------------------------------------------------------------------------------------
   // add/edit/delete tip
   //------------------------------------------------------------------------------------------------
