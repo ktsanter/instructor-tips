@@ -42,6 +42,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tipedit') {
       dbResult = await this._getTipEditData(params, postData, userInfo);
       
+    } else if (params.queryName == 'otherusers') {
+      dbResult = await this._getOtherUsers(params, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -616,6 +619,31 @@ module.exports = internal.TipManager = class {
     
     return result;
   }
+  
+  async _getOtherUsers(params, userInfo) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      users: 
+        'select userid, username, usershortname ' +
+        'from user ' +
+        'where userid != ' + userInfo.userId + ' ' +
+        'order by username'
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data.users,
+      result.constraints = {};
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
   
 //---------------------------------------------------------------
 // specific insert methods

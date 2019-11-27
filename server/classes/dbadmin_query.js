@@ -25,7 +25,7 @@ module.exports = internal.dbAdminQuery = class {
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo) {
     var dbResult = this._queryFailureResult();
-   
+
     if (params.queryName == 'privileges') {
       dbResult = await this._getPrivileges(params);
       

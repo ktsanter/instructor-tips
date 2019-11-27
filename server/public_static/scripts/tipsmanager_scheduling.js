@@ -351,6 +351,10 @@ class TipScheduling {
   
   async _handleShare(e) {
     if (this._editInProgress) return;
+    if (this._tipScheduleShare.isVisible()) {
+      this._tipScheduleShare.show(false);
+      return;
+    }
     
     var elemTitle = this._container.getElementsByClassName('tipmanager-title')[0];
     if (this._tipScheduleShareContainer.parentNode) {
@@ -358,15 +362,17 @@ class TipScheduling {
     }
     elemTitle.appendChild(this._tipScheduleShareContainer);
 
-    this._tipScheduleShare.show(true);
+    await this._tipScheduleShare.update();
   }
-
+  
   //------------------------------------------------------------------------------------------------
   // add/edit/delete tip
   //------------------------------------------------------------------------------------------------
   async _startAddTipUI(e) {
     if (this._editInProgress) return;
     this._editInProgress = true;
+    
+    this._tipScheduleShare.show(false);
     
     var weekContainer = e.target.parentNode.parentNode;
     var weekContents = weekContainer.getElementsByClassName('weeklytip-contents')[0];
@@ -391,6 +397,8 @@ class TipScheduling {
     if (this._editInProgress) return;
     this._editInProgress = true;
     
+    this._tipScheduleShare.show(false);
+
     var tipContainer = e.target.parentNode.parentNode;
     var tipInfo = tipContainer.tipInformation;
     
@@ -409,6 +417,8 @@ class TipScheduling {
   async _startUnmapTipUI(e) {
     if (this._editInProgress) return;
     this._editInProgress = true;
+    
+    this._tipScheduleShare.show(false);
     
     var tipContainer = e.target.parentNode.parentNode;
     this._highlight(tipContainer, true);

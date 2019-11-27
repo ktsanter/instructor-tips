@@ -137,5 +137,17 @@
  * schedule share 
  *-----------------------*/
 .tipschedule-share {
-  border: 1px solid blue;
+  margin-top: 10px;
 }
+
+.tipschedule-share-contents {
+  border: 1px solid var(--bgTertiaryEmphasis);
+  background-color: white;
+  padding: 14px;
+  display: inline-block;
+}
+
+.tipschedule-share-controlcontainer {
+  margin-top: 4px;
+}
+

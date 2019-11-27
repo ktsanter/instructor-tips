@@ -56,11 +56,6 @@ app.get('/usermanagement/setuser/username/:userShortName', async function (req, 
   res.send(dbResult);
 })
 
-app.get('/usermanagement/getuser', async function (req, res) {
-  var dbResult = await userManagement.getUserInfo(req.params, req.body);
-  res.send(dbResult);
-})
-
 app.get('/tipmanager/filter/query/:queryName', async function (req, res) {
   var dbResult = await dbTipFilter.doQuery(req.params, req.body, userManagement.getFullUserInfo().data);
   res.send(dbResult);
@@ -72,6 +67,11 @@ app.get('/tipmanager/query/:queryName', async function (req, res) {
 })
 
 // *** temporary for user management ***
+app.get('/usermanagement/getuser', async function (req, res) {
+  var dbResult = await userManagement.getUserInfo(req.params, req.body);
+  res.send(dbResult);
+})
+
 app.get('/debug/query/users',  async function (req, res) {
   var dbResult = await dbAdminQuery._getUsers('users');
   res.send(dbResult);
