@@ -327,7 +327,11 @@ module.exports = internal.TipFilter = class {
 // utility methods
 //---------------------------------------------------------------
   _sanitizeText(str) {
-    var cleaned = str.replace(/"/g, '\\"');;
+    var cleaned = str;
+    
+    if (cleaned) {
+      cleaned = str.replace(/"/g, '\\"');
+    }
     
     // consider other cleaning e.g. <script> tags
     

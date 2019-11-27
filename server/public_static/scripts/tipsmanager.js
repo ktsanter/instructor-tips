@@ -16,9 +16,9 @@ const app = function () {
     helpURL: 'help.html',
     navOptions: [
       'courseselection', 'scheduling', 'editing',
-      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses'
+      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars'
     ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars']
   };
   
 	//---------------------------------------
@@ -81,7 +81,8 @@ const app = function () {
             {label: 'TermGroups', callback: () => {return _navDispatch('termgroups');}},
             {label: 'Terms', callback: () => {return _navDispatch('terms');}},
             {label: 'Courses', callback: () => {return _navDispatch('courses');}},
-            {label: 'UserCourses', callback: () => {return _navDispatch('usercourses');}}
+            {label: 'UserCourses', callback: () => {return _navDispatch('usercourses');}},
+            {label: 'Calendars', callback: () => {return _navDispatch('calendars');}}
           ]
         }
       );

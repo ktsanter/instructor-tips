@@ -47,6 +47,9 @@ module.exports = internal.dbAdminQuery = class {
     } else if (params.queryName == 'usercourses') {
       dbResult = await this._getUserCourse(params);
       
+    } else if (params.queryName == 'calendars') {
+      dbResult = await this._getCalendar(params);
+      
     } else if (params.queryName == 'navbar') {
       dbResult = await this._getNavbar(params, userInfo);
       
@@ -372,6 +375,41 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
 
+  async _getCalendar(params) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      calendars:
+        'select ' +
+          'c.calendarid, c.termid, c.schoolyear, c.starttype, c.week, c.firstday, ' +
+          'tg.termgroupid, tg.termgroupname, ' +
+          't.termid, t.termname ' +
+        'from calendar as c, termgroup as tg, term as t ' +
+        'where c.termid = t.termid ' +
+          'and t.termgroupid = tg.termgroupid ' +
+        'order by c.schoolyear, tg.termgroupname, t.termname, c.starttype, c.week, c.firstday '
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.primaryKey = 'calendar',
+      result.insertUpdateFields = [
+        //{coursename: 'text'},
+        //{ap: 'boolean'}
+      ],
+      result.displayFields = ['schoolyear', 'termgroupname', 'termname', 'starttype', 'week', 'firstday'];
+      result.data = queryResults.data.calendars,
+      result.constraints = {};
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
   async _getNavbar(params, userInfo) {
     var result = this._queryFailureResult();
     
