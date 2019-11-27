@@ -86,7 +86,7 @@ class TipManagerFilter {
   async _updateFiltering() {
     this._getFilterUIValues();
     this._setFilterUIValues();
-    await this._doPostQuery('tipmanager/filter/update', this._filtertype, {tipfilter: this._tipFilter, tipfiltertype: this._filterType});
+    await this._doPostQuery('tipmanager/filter/update', this._filterType, {tipfilter: this._tipFilter, tipfiltertype: this._filterType});
     this._updateCallback();
   }
   
@@ -395,7 +395,7 @@ class TipManagerFilter {
           this._tipFilter[typeName] = elemSelect[elemSelect.selectedIndex].value;
           
         } else if (typeName == 'searchtext') {
-          this._tipFilter[typeName] = filterElement.value;
+          this._tipFilter[typeName] = this._sanitizeText(filterElement.value);
           
         } else if (typeName == 'calendarui') {
           var elemYear = this._container.getElementsByClassName('tipfilter-calendarui-year')[0];
@@ -531,6 +531,14 @@ class TipManagerFilter {
       }
     }
   }
+  
+  _sanitizeText(str) {
+    var cleaned = str; //str.replace(/"/g, '\\"');;
+    
+    // consider other cleaning e.g. <script> tags
+    
+    return cleaned;
+  }  
   
   //--------------------------------------------------------------
   // handlers

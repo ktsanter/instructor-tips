@@ -110,17 +110,19 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
   async _getFilter(userInfo, filterType, defaultFilter) {
     var result = this._queryFailureResult();
-
+    
     var filterQuery = 
         'select tipfilter ' +
         'from usertipfilter ' +
         'where userid = "' + userInfo.userId + '" ' +
         'and tipfiltertype = "' + filterType + '" ';
-
+    
     var queryResult = await this._dbQuery(filterQuery);
+    
     if (queryResult.success) {
       if (queryResult.data.length == 0) {
         queryResult = await this._insertFilter(userInfo, filterType, defaultFilter);
+        
         if (queryResult.success) queryResult = await this._dbQuery(filterQuery);
       }
       
@@ -267,6 +269,7 @@ module.exports = internal.TipFilter = class {
      }
 
     var queryResultForFilter = await this._getFilter(userInfo, 'editing', filter);
+
     if (!queryResultForFilter.success) {
       result.details = queryResultForFilter.details;
 
@@ -300,15 +303,15 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
   async _updateTipFilter(params, postData, userInfo) {
     var result = this._queryFailureResult();
-
+    postData.tipfilter.searchtext = this._sanitizeText(postData.tipfilter.searchtext);
     var query = 'update usertipfilter ' +
                 'set ' +
                   'tipfilter = \'' + JSON.stringify(postData.tipfilter) + '\' ' +
                 'where userid = ' + userInfo.userId + ' ' +
                 'and tipfiltertype = "' + postData.tipfiltertype + '" ';
-                
-    var queryResults = await this._dbQuery(query);
 
+    var queryResults = await this._dbQuery(query);
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';
@@ -319,4 +322,16 @@ module.exports = internal.TipFilter = class {
     
     return result;
   }    
+  
+//---------------------------------------------------------------
+// utility methods
+//---------------------------------------------------------------
+  _sanitizeText(str) {
+    var cleaned = str.replace(/"/g, '\\"');;
+    
+    // consider other cleaning e.g. <script> tags
+    
+    return cleaned;
+  }
+  
 }

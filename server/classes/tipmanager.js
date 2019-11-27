@@ -452,7 +452,7 @@ module.exports = internal.TipManager = class {
       tipId = postData.addData.addValue;
 
     } else {
-      var tipText = postData.addData.addValue;
+      var tipText = this._sanitizeText(postData.addData.addValue);
       
       if (filter.adm_allcourse || filter.adm_course) {
         userIdSelection = ' NULL '
@@ -534,12 +534,15 @@ module.exports = internal.TipManager = class {
     var result = this._queryFailureResult();
     var queryList = {};
     
+    var searchText = postData.searchtext;
+    searchText = this._sanitizeText(searchText);
+    
     if (postData.shared) {
       queryList.shared = 
         'SELECT tipid, tiptext, NULL as userid, NULL as username ' +
         'FROM tip ' + 
         'WHERE userid IS NULL ' +
-        '  AND tiptext LIKE "%' + postData.searchtext + '%" ' +
+        '  AND tiptext LIKE "%' + searchText + '%" ' +
         'ORDER BY tiptext ';
     }   
     
@@ -548,7 +551,7 @@ module.exports = internal.TipManager = class {
         'SELECT tipid, tiptext, tip.userid, username ' +
         'FROM tip, user ' +
         'where tip.userid = user.userid ' + 
-          'and tiptext LIKE "%' + postData.searchtext + '%" ' +
+          'and tiptext LIKE "%' + searchText + '%" ' +
           'AND tip.userid = ' + userInfo.userId + ' ' + 
         'ORDER BY tiptext, username ';
     }
@@ -558,7 +561,7 @@ module.exports = internal.TipManager = class {
         'SELECT tipid, tiptext, tip.userid, username ' +
         'FROM tip, user ' +
         'where tip.userid = user.userid ' + 
-          'and tiptext LIKE "%' + postData.searchtext + '%" ' +
+          'and tiptext LIKE "%' + searchText + '%" ' +
           'AND tip.userid != ' + userInfo.userId + ' ' + 
         'ORDER BY tiptext, username ';
     }
@@ -576,7 +579,7 @@ module.exports = internal.TipManager = class {
         'WHERE userid = ' + userInfo.userId + ' ' +
         'ORDER BY username ';
     }
-      
+          
     var queryResults = await this._dbQueries(queryList);
     
     if (queryResults.success) {
@@ -625,9 +628,11 @@ module.exports = internal.TipManager = class {
       userId = postData.userid;
     }
     
+    var tipText = this._sanitizeText(postData.tiptext);
+    
     var query = 'insert into tip (tiptext, userid) ' +
                 'values (' +
-                  '"' + postData.tiptext + '", ' + 
+                  '"' + tipText + '", ' + 
                   userId + ' ' + 
                 ')';
     
@@ -685,9 +690,10 @@ module.exports = internal.TipManager = class {
   async _updateTip(params, postData) {
     var result = this._queryFailureResult();
 
+    var tipText = this._sanitizeText(postData.tiptext);
     var query = 'update tip ' +
                 'set ' +
-                  'tiptext = "' + postData.tiptext + '", ' +
+                  'tiptext = "' + tipText + '", ' +
                   'userid = ' + postData.userid + ' ' +
                 'where tipid = ' + postData.tipid;
 
@@ -756,9 +762,11 @@ module.exports = internal.TipManager = class {
     var query;
     var queryResults;
     
+    var tipText = this._sanitizeText(postData.tiptext);
+    
     query =
       'update tip ' +
-      'set tiptext = "' + postData.tiptext + '" ' +
+      'set tiptext = "' + tipText + '" ' +
       'where tipid in ( ' +
         'select tipid ' +
         'from mappedtip ' +
@@ -831,5 +839,13 @@ module.exports = internal.TipManager = class {
       'where usertipstatusid = ' + postData.usertipstatusid;
     
     return await this._dbQuery(query);
+  }
+
+  _sanitizeText(str) {
+    var cleaned = str.replace(/"/g, '\\"');;
+    
+    // consider other cleaning e.g. <script> tags
+    
+    return cleaned;
   }
 }
