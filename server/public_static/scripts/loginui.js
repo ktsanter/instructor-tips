@@ -14,7 +14,7 @@ class LoginUI {
     this._container = null;
   }
  
-  render() {
+  async render() {
     var elemContainer = CreateElement.createDiv(null, 'loginui ' + this._HIDE_CLASS);
     this._container = elemContainer;
 
@@ -24,14 +24,7 @@ class LoginUI {
     elemContainer.appendChild(CreateElement.createDiv(null, 'loginui-info'));
     elemContainer.appendChild(CreateElement.createDiv(null, 'loginui-info'));
     
-    var optionList = [
-      {id: 0, value: '', textval: 'ksanter'},
-      {id: 1, value: '', textval: 'carlos'},
-      {id: 2, value: '', textval: 'nsanter'},
-      {id: 3, value: '', textval: 'bubba'}
-    ];
-
-    elemContainer.appendChild(CreateElement.createSelect(null, 'loginui-select', null, optionList));
+    elemContainer.appendChild(CreateElement.createSelect(null, 'loginui-select', null));
     
     var elemConfirmContainer = CreateElement.createDiv(null, null);
     elemContainer.appendChild(elemConfirmContainer);
@@ -43,13 +36,26 @@ class LoginUI {
     return elemContainer;
   }
 
-  async show(makeVisible) {   
+  async show(makeVisible) { 
     if (this._container.classList.contains(this._HIDE_CLASS)) {
       this._container.classList.remove(this._HIDE_CLASS);
     }
     
     if (makeVisible) {
       var userInfo = await this._getUserInfo();
+      
+      var dbResult = await this._doGetQuery('debug/query', 'users');
+      var userData = dbResult.data;
+      var optionList = [];
+      if (dbResult.success) {
+        for (var i = 0; i < userData.length; i++) {
+          optionList.push({id: i, value: '', textval: userData[i].usershortname});
+        }
+      }
+
+      var elemSelectOrig = this._container.getElementsByClassName('loginui-select')[0];
+      var elemSelectNew = CreateElement.createSelect(null, 'loginui-select', null, optionList);     
+      elemSelectOrig.parentNode.replaceChild(elemSelectNew, elemSelectOrig);
 
       this._container.getElementsByClassName('loginui-info')[0].innerHTML = 'user id: ' + userInfo.usershortname;
       this._container.getElementsByClassName('loginui-info')[1].innerHTML = 'user name: ' + userInfo.username; 

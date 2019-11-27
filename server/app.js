@@ -71,6 +71,12 @@ app.get('/tipmanager/query/:queryName', async function (req, res) {
   res.send(dbResult);
 })
 
+// *** temporary for user management ***
+app.get('/debug/query/users',  async function (req, res) {
+  var dbResult = await dbAdminQuery._getUsers('users');
+  res.send(dbResult);
+})
+
 //------------------------------------------------------
 // POST requests
 //------------------------------------------------------

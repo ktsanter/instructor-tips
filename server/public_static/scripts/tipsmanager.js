@@ -39,7 +39,7 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------  
   async function _renderPage() {
-    page.maincontainer.appendChild(_renderLogin());
+    page.maincontainer.appendChild(await _renderLogin());
     page.maincontainer.appendChild(await _renderSubContainers());
     page.body.insertBefore(await _renderNavbar(), page.body.firstChild);
     page.maincontainer.classList.add('bump-down');
@@ -91,9 +91,9 @@ const app = function () {
     return new NavigationBar(navConfig);
   }
   
-  function _renderLogin() {
+  async function _renderLogin() {
     settings.logincontainer = new LoginUI(() => {return _loginComplete();});
-    return settings.logincontainer.render();
+    return await settings.logincontainer.render();
   }
   
   async function _renderSubContainers() {
