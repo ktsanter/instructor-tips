@@ -1,7 +1,7 @@
 #---------------------------------------------------
 #-- stage then load calendar data
 #---------------------------------------------------
-select 'calendar';
+select 'loading calendar...';
 USE instructortips;
 
 drop table if exists calendar_staging;
@@ -33,10 +33,13 @@ create table calendar_staging
   week18      varchar(30)
 );
 
-load data local infile 'initial_load_data/calendar_staging.txt'
+select "loading staging data for calendar...";
+
+load data local infile 'initial_load_data/calendar staging - staged.csv'
 into table calendar_staging
-FIELDS TERMINATED BY '|'
+FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\r\n'
+IGNORE 1 LINES
 (
   schoolyear,
   termname,

@@ -66,15 +66,15 @@ INSERT INTO userprivilege (userid, privilegeid)
 INSERT INTO userprivilege (userid, privilegeid)
   SELECT user.userid, privilege.privilegeid 
   FROM user, privilege
-  WHERE user.usershortname = 'nsanter' and privilege.privilegename = 'admin';
+  WHERE user.usershortname = 'test_admin' and privilege.privilegename = 'admin';
 INSERT INTO userprivilege (userid, privilegeid)
   SELECT user.userid, privilege.privilegeid 
   FROM user, privilege
-  WHERE user.usershortname = 'bubba' and privilege.privilegename = 'lead';
+  WHERE user.usershortname = 'test_lead' and privilege.privilegename = 'lead';
 INSERT INTO userprivilege (userid, privilegeid)
   SELECT user.userid, privilege.privilegeid 
   FROM user, privilege
-  WHERE user.usershortname = 'carlos' and privilege.privilegename = 'instructor';
+  WHERE user.usershortname = 'test_instructor' and privilege.privilegename = 'instructor';
 
 #-------------------------------------------------------------
 #-- course

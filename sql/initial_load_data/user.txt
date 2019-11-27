@@ -1,4 +1,4 @@
 ksanter|Kevin Santer
-nsanter|Noah Santer
-bubba|Bubba McStabbypants
-carlos|Charles Chorkenheimer
+test_admin|Ms. Admin
+test_lead|Mr. Lead
+test_instructor|Ms. Instructor
