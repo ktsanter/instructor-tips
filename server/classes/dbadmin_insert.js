@@ -47,8 +47,8 @@ module.exports = internal.dbAdminInsert = class {
     } else if (params.queryName == 'usercourses') {
       dbResult = await this._insertUserCourse(params, postData);
       
-    } else if (params.queryName == 'tipstatuses') {
-      dbResult = await this._insertTipStatuses(params, postData);
+    } else if (params.queryName == 'calendars') {
+      dbResult = await this._insertCalendar(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -242,17 +242,21 @@ module.exports = internal.dbAdminInsert = class {
     
     return result;
   }
-
-  async _insertTipStatuses(params, postData) {
+  
+  async _insertCalendar(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into tipstatus (tipstatusname) ' +
+    var query = 'insert into calendar (termid, schoolyear, week, firstday, starttype) ' +
                 'values (' +
-                  '"' + postData.tipstatusname + '"' + 
+                  '' + postData.termid + ', ' +
+                  '"' + postData.schoolyear + '", ' + 
+                  '' + postData.week + ', ' + 
+                  '"' + postData.firstday + '", ' + 
+                  '"' + postData.starttype + '" ' + 
                 ')';
 
     var queryResults = await this._dbQuery(query);
-
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'insert succeeded';

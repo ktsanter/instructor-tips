@@ -47,8 +47,8 @@ module.exports = internal.dbAdminDelete = class {
     } else if (params.queryName == 'usercourses') {
       dbResult = await this._deleteUserCourse(params, postData);
       
-    } else if (params.queryName == 'tipstatuses') {
-      dbResult = await this._deleteTipStatuses(params, postData);
+    } else if (params.queryName == 'calendars') {
+      dbResult = await this._deleteCalendar(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -223,11 +223,11 @@ module.exports = internal.dbAdminDelete = class {
     return result;
   }
 
-  async _deleteTipStatuses(params, postData) {
+  async _deleteCalendar(params, postData) {
     var result = this._queryFailureResult();
 
-    var query = 'delete from tipstatus ' +
-                'where tipstatusid = ' + postData.tipstatusid;
+    var query = 'delete from calendar ' +
+                'where calendarid = ' + postData.calendarid;
 
     var queryResults = await this._dbQuery(query);
 

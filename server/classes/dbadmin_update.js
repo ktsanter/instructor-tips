@@ -47,8 +47,8 @@ module.exports = internal.dbAdminUpdate = class {
     } else if (params.queryName == 'usercourses') {
       dbResult = await this._updateUserCourse(params, postData);
       
-    } else if (params.queryName == 'tipstatuses') {
-      dbResult = await this._updateTipStatuses(params, postData);
+    } else if (params.queryName == 'calendars') {
+      dbResult = await this._updateCalendar(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -247,13 +247,17 @@ module.exports = internal.dbAdminUpdate = class {
     return result;
   }
 
-  async _updateTipStatuses(params, postData) {
+  async _updateCalendar(params, postData) {
     var result = this._queryFailureResult();
 
-    var query = 'update tipstatus ' +
+    var query = 'update calendar ' +
                 'set ' +
-                  'tipstatusname = "' + postData.tipstatusname + '" ' +
-                'where tipstatusid = ' + postData.tipstatusid;
+                  'termid = ' + postData.termid + ',' +
+                  'schoolyear = "' + postData.schoolyear + '", ' +
+                  'week = ' + postData.week + ', ' +
+                  'firstday = "' + postData.firstday + '", ' +
+                  'starttype = "' + postData.starttype + '" ' +
+                'where calendarid = ' + postData.calendarid;
                 
     var queryResults = await this._dbQuery(query);
 

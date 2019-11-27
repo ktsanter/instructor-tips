@@ -381,13 +381,16 @@ module.exports = internal.dbAdminQuery = class {
     var queryList = {
       calendars:
         'select ' +
-          'c.calendarid, c.termid, c.schoolyear, c.starttype, c.week, c.firstday, ' +
-          'tg.termgroupid, tg.termgroupname, ' +
+          'c.calendarid, c.termid, c.schoolyear, c.starttype, c.week, date_format(c.firstday, "%Y-%m-%d") as firstday, ' +
           't.termid, t.termname ' +
-        'from calendar as c, termgroup as tg, term as t ' +
+        'from calendar as c, term as t ' +
         'where c.termid = t.termid ' +
-          'and t.termgroupid = tg.termgroupid ' +
-        'order by c.schoolyear, tg.termgroupname, t.termname, c.starttype, c.week, c.firstday '
+        'order by c.schoolyear, t.termname, c.starttype, c.week, c.firstday ',
+        
+      terms:
+        'select termid, termname ' +
+        'from term ' +
+        'order by termname '
     };
     
     var queryResults = await this._dbQueries(queryList);
@@ -395,14 +398,22 @@ module.exports = internal.dbAdminQuery = class {
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.primaryKey = 'calendar',
+      result.primaryKey = 'calendarid',
       result.insertUpdateFields = [
-        //{coursename: 'text'},
-        //{ap: 'boolean'}
+        {termid: 'foreignkey'},
+        {schoolyear: 'text'},
+        {week: 'text'},
+        {firstday: 'text'},
+        {starttype: 'text'}
       ],
-      result.displayFields = ['schoolyear', 'termgroupname', 'termname', 'starttype', 'week', 'firstday'];
+      result.displayFields = ['schoolyear', 'termname', 'starttype', 'week', 'firstday'];
       result.data = queryResults.data.calendars,
-      result.constraints = {};
+      result.constraints = {
+        foreignKeys: {
+          termid: {data: 'terms', displayField: 'termname', allownull: false}
+        },
+        terms: queryResults.data.terms
+      };
     } else {
       result.details = queryResults.details;
     }
