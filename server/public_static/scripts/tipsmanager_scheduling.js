@@ -215,7 +215,7 @@ class TipScheduling {
       var allowUnmap = this._canUnmapTip(filter, tip);
       var renderedMarkdown = MarkdownToHTML.convert(tip.tiptext);
       
-      var singleTipContainer = CreateElement.createDiv(null, null);
+      var singleTipContainer = CreateElement.createDiv(null, 'weeklytip-singletipcontainer');
       contents.appendChild(singleTipContainer);
       var iconClassList = 'weeklytip-icon ' + this._tipStatusClass[tip.tipstatusname];
       singleTipContainer.appendChild(CreateElement.createIcon(null, iconClassList, 'change tip status', tipIconHandler));

@@ -44,7 +44,7 @@
   padding-left: 4px;
 }
 
-.weeklytip-contents div:nth-of-type(even){
+.weeklytip-contents div:nth-of-type(even):not(.tipschedule-controls) {
   background-color: var(--bgQuaternaryEmphasis);
 }
     
@@ -85,6 +85,7 @@
 .tipschedule-icon-edit {
   padding-left: 2px;
   padding-right: 2px;
+  padding-top: 5px;
 }
 
 .tipschedule-edit {
@@ -123,6 +124,7 @@
 .tipschedule-controls {
   display: inline-block;
   float: right;
+  background-color: inherit !important;
 }
 
 .tipschedule-highlight {
