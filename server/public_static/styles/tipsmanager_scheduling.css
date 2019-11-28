@@ -85,7 +85,7 @@
 .tipschedule-icon-edit {
   padding-left: 2px;
   padding-right: 2px;
-  padding-top: 5px;
+  padding-top: 3px;
 }
 
 .tipschedule-edit {
@@ -151,5 +151,9 @@
 
 .tipschedule-share-controlcontainer {
   margin-top: 4px;
+}
+
+.tipschedule-share-select.select-css {
+  max-width: none;
 }
 
