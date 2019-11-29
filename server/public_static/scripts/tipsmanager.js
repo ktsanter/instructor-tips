@@ -16,7 +16,8 @@ const app = function () {
     helpURL: 'help.html',
     navOptions: [
       'courseselection', 'scheduling', 'editing',
-      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars'
+      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars',
+      'manageshared'
     ],
     adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars']
   };
@@ -66,6 +67,7 @@ const app = function () {
       ],
       
       hamburgeritems: [
+        {label: 'shared', callback: () => {return _navDispatch('manageshared');}},      
         {label: 'help', callback: _showHelp},
         {label: 'about ' + appInfo.appName, callback: _showAbout}
       ]      
@@ -107,6 +109,9 @@ const app = function () {
     
     settings.editing = new TipEditing();
     container.appendChild(await settings.editing.render());
+
+    settings.manageshared = new TipSchedulingShareManagement();
+    container.appendChild(await settings.manageshared.render());
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
       var type = settings.adminTypes[i];

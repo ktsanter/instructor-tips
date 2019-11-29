@@ -45,6 +45,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'otherusers') {
       dbResult = await this._getOtherUsers(params, userInfo);
       
+    } else if (params.queryName == 'sharedwithuser') {
+      dbResult = await this._getSchedulesSharedWithUser(params, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -82,6 +85,9 @@ module.exports = internal.TipManager = class {
             
     } else if (params.queryName == 'tipschedule-updatetiptext') {
       dbResult = await this._updateTiptext(params, postData, userInfo);
+            
+    } else if (params.queryName == 'integrate-shared') {
+      dbResult = await this._integrateSharedSchedule(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -548,12 +554,6 @@ module.exports = internal.TipManager = class {
         'and termgroupname = "' + postData.termgroupname + '" ';
         
     queryResults = await this._dbQuery(query);
-
-    console.log(params);
-    console.log(userInfo);
-    console.log(postData);
-    console.log(query);
-    console.log(queryResults);
     
     if (queryResults.success) {
       query = 
@@ -567,8 +567,6 @@ module.exports = internal.TipManager = class {
         ') ';
         
       queryResults = await this._dbQuery(query);
-      console.log(query);
-      console.log(queryResults);        
     }
     
     if (queryResults.success) {   
@@ -695,6 +693,45 @@ module.exports = internal.TipManager = class {
     return result;
   }    
   
+  async _getSchedulesSharedWithUser(params, userInfo) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      sharedwithuser: 
+        'select ' +
+          'ss.sharedscheduleid, ss.userid_source, ss.timestampshared, ss.coursename, ss.termgroupid, ' +
+          'u.username, ' +
+          'tg.termgroupname ' +
+        'from sharedschedule as ss, user as u, termgroup as tg ' +
+        'where ss.userid_dest = ' + userInfo.userId + ' ' +
+          'and ss.userid_source = u.userid ' +
+          'and ss.termgroupid = tg.termgroupid ' +
+        'order by ss.timestampshared ',
+          
+      usercourses: 
+        'select u.usercourseid, c.coursename, tg.termgroupname ' +
+        'from usercourse as u, course as c, termgroup as tg ' +
+        'where u.courseid = c.courseid ' +
+          'and u.termgroupid = tg.termgroupid ' +
+          'and u.userid = ' + userInfo.userId + ' ' +
+          'and u.courseid is not null '
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data.sharedwithuser;
+      result.usercourses = queryResults.data.usercourses;
+      result.constraints = {};
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
+
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------
@@ -862,6 +899,63 @@ module.exports = internal.TipManager = class {
     }
     
     return result;    
+  }
+  
+  async _integrateSharedSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var queryResults;
+    
+    var queryList = {
+      scheduleInfo: 
+        'select userid_source, userid_dest, scheduleinfo ' +
+        'from sharedschedule ' +
+        'where sharedscheduleid = ' + postData.scheduleItem.sharedscheduleid + ' ',
+        
+      mappedTips: 
+        'select ' +
+          'mt.mappedtipid, mt.usercourseid, mt.tipid, mt.week, ' +
+          't.tiptext ' +
+        'from mappedtip as mt, tip as t ' +
+        'where mt.usercourseid = ' + postData.courseSelection.usercourseid + ' ' +
+          'and mt.tipid = t.tipid '
+    };
+      
+    queryResults = await this._dbQueries(queryList);
+        
+    if (queryResults.success) {
+      var scheduleInfo = queryResults.data.scheduleInfo;
+      var mappedTips = queryResults.data.mappedTips;
+      queryResults = await this._doScheduleIntegration(userInfo.userId, scheduleInfo, mappedTips);
+      
+      if (queryResults.success) {
+        console.log('okay so far');
+        console.log('delete from sharedschedule');
+        queryResults.success = false;
+        queryResults.details = '<br>okay so far<br>delete from sharedschedule on sucess<br>';
+      } 
+    }
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'schedule integration succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;    
+  }
+  
+  async _doScheduleIntegration(userId, scheduleInfo, mappedTips) {
+    var result = this._queryFailureResult();
+    
+    result.details = 'integration step';
+    console.log(userId);
+    console.log(scheduleInfo);
+    console.log(mappedTips);
+    
+    return result;
   }
       
 //---------------------------------------------------------------

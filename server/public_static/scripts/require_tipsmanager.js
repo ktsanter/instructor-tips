@@ -5,6 +5,7 @@ define(function (require) {
   require('tipsmanager_scheduling');
   require('tipsmanager_schedulingedit');
   require('tipsmanager_schedulingshare');
+  require('tipsmanager_manageshared');
   require('tipsmanager_editing');
   require('dbadmincontainer');
   require('dbadmintableedit');

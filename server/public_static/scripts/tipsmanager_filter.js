@@ -627,7 +627,7 @@ class TipManagerFilter {
   // db functions
   //--------------------------------------------------------------     
   async _doGetQuery(queryType, queryName) {
-    var resultData = null;
+    var resultData = {success: false};
     
     var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
     if (requestResult.success) {
@@ -640,7 +640,7 @@ class TipManagerFilter {
   }
 
   async _doPostQuery(queryType, queryName, postData) {
-    var resultData = null;
+    var resultData = {success: false};
     
     var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
     if (requestResult.success) {

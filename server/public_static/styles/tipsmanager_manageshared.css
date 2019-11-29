@@ -1,0 +1,54 @@
+/*-------------------------------------------------------------------
+ * styling for TipSchedulingShareManagement class
+ *------------------------------------------------------------------*/
+.manageschedule-content table {
+  border-collapse: collapse;
+  border: 1px solid var(--bgTertiaryEmphasis);
+}
+
+.manageschedule-content th {
+  background-color: var(--bgPrimaryEmphasis);
+  color: white;
+  font-weight: normal;
+  border-style: none;
+  text-align: left;
+  padding-right: 12px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  padding-left: 6px;
+}
+
+.manageschedule-content tr {
+  background-color: #fff;
+}
+.manageschedule-content tr:nth-of-type(even){
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.manageschedule-content td {
+  padding-left: 6px;
+}
+
+.manageschedule-coursecontainer {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  margin-right: 0.4em;
+}
+
+.manageschedule-course.select-css {
+  max-width: none;
+  width: 100%;
+}
+
+.manageschedule-coursecontainer.no-courses {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;  
+  padding-top: 0.4em;
+  padding-bottom: 0.4em;
+  padding-left: 0.3em;
+  font-style: italic;
+}
+
+.manageschedule-import button {
+  margin-right: 0.4em;
+}

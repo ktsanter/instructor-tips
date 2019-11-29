@@ -20,8 +20,9 @@ class SQLDBInterface {
         var errmsg = '*ERROR: in ' + METHOD_TITLE + ', ' + JSON.stringify(json.details);
         console.log(errmsg);
         result.details = errmsg;
+      } else {
+        result = json;
       }
-      result = json;
       
     } catch (error) {
       var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
@@ -49,8 +50,9 @@ class SQLDBInterface {
         console.log('url: ' + url);
         console.log('postData: ' + JSON.stringify(postData));
         result.details = errmsg;
+      } else {
+        result = json;
       }
-      result = json;
       
     } catch (error) {
       var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
