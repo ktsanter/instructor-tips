@@ -5,9 +5,11 @@
 #---       and user triggers
 #------------------------------------------------------------
 
+select "loading admin data..." as comment;
+
 USE instructortips;
 
-select "deleting from tables";
+select "deleting from tables" as comment;
 
 DELETE FROM usertipfilter;
 DELETE FROM userprivilege;
@@ -24,7 +26,7 @@ DELETE from usertipstatus;
 #-------------------------------------------------------------
 #-- termgroup
 #-------------------------------------------------------------
-select "termgroup";
+select "loading termgroup" as comment;
 
 load data local infile 'initial_load_data/termgroup.txt'
 into table termgroup
@@ -35,7 +37,7 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- privilege
 #-------------------------------------------------------------
-select "privilege";
+select "loading privilege" as comment;
 
 load data local infile 'initial_load_data/privilege.txt'
 into table privilege
@@ -46,7 +48,7 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- user
 #-------------------------------------------------------------
-select "user";
+select "loading user" as comment;
 
 load data local infile 'initial_load_data/user.txt'
 into table user
@@ -57,7 +59,7 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- userprivilege
 #-------------------------------------------------------------
-select "userprivilege";
+select "loading userprivilege" as comment;
 
 INSERT INTO userprivilege (userid, privilegeid)
   SELECT user.userid, privilege.privilegeid 
@@ -79,7 +81,7 @@ INSERT INTO userprivilege (userid, privilegeid)
 #-------------------------------------------------------------
 #-- course
 #-------------------------------------------------------------
-select "course";
+select "loading course" as comment;
 load data local infile 'initial_load_data/course.txt'
 into table course
 FIELDS TERMINATED BY '|'
@@ -89,7 +91,7 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- term
 #-------------------------------------------------------------
-select "term";
+select "loading term" as comment;
 INSERT INTO term (termname, termgroupid) SELECT 'Sem 1', termgroupid FROM termgroup where termgroupname = 'semester';
 INSERT INTO term (termname, termgroupid) SELECT 'Sem 2', termgroupid FROM termgroup where termgroupname = 'semester';
 INSERT INTO term (termname, termgroupid) SELECT 'Tri 1', termgroupid FROM termgroup where termgroupname = 'trimester';
@@ -100,9 +102,8 @@ INSERT INTO term (termname, termgroupid) SELECT 'Summer', termgroupid FROM termg
 #-------------------------------------------------------------
 #-- usercourse
 #-------------------------------------------------------------
-select "usercourse";
-#--- all courses, all users, all terms
-select "1";
+select "loading usercourse" as comment;
+
 INSERT INTO usercourse (userid, courseid, termgroupid) 
 SELECT NULL as userid, NULL as courseid, termgroupid
 FROM termgroup;
@@ -110,7 +111,7 @@ FROM termgroup;
 #-------------------------------------------------------------
 #-- tip
 #-------------------------------------------------------------
-select "tip";
+select "loading tip" as comment;
 
 #--- load shared general tips from Instructors Corner (semester only)
 load data local infile 'initial_load_data/tipdata_instructorscorner.txt'
@@ -124,7 +125,7 @@ set userid = null;
 #-------------------------------------------------------------
 #-- mappedtip
 #-------------------------------------------------------------
-select "mappedtip";
+select "loading mappedtip" as comment;
 
 #--- map shared general tips from Instructors Corner (semester only)
 insert into mappedtip (tipid, usercourseid, week)

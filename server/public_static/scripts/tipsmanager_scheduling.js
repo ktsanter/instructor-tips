@@ -58,10 +58,11 @@ class TipScheduling {
     
     this._tipAddContainer = this._tipAddEditor.render();
     this._tipEditContainer = this._tipEditEditor.render();
-    this._tipScheduleShareContainer = this._tipScheduleShare.render();
     
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
+
+    this._tipScheduleShareContainer = this._tipScheduleShare.render(this._notice);
     
     var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
     this._container.appendChild(titleContainer);
@@ -362,7 +363,8 @@ class TipScheduling {
     }
     elemTitle.appendChild(this._tipScheduleShareContainer);
 
-    await this._tipScheduleShare.update();
+    var filter = this._tipFilter.getFilter();
+    await this._tipScheduleShare.update({coursename: filter.coursename, termgroupname: filter.termgroupname});
   }
   
   //------------------------------------------------------------------------------------------------

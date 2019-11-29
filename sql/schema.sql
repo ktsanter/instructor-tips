@@ -1,6 +1,8 @@
 #-----------------------------------------------------------------
 #-- create DB for Instructor Tips
 #-----------------------------------------------------------------
+select "creating instructortips db" as comment;
+
 DROP DATABASE IF EXISTS instructortips;
 CREATE DATABASE instructortips;
 USE instructortips;
@@ -8,7 +10,7 @@ USE instructortips;
 #-----------------------------------------------------------------
 #-- tables
 #-----------------------------------------------------------------
-select "creating tables";
+select "creating tables" as comment;
 
 CREATE TABLE user
 (
@@ -150,13 +152,29 @@ CREATE TABLE calendar
   CONSTRAINT FOREIGN KEY (termid) REFERENCES term (termid) ON DELETE CASCADE
 );
 
+CREATE TABLE sharedschedule
+(
+  sharedscheduleid        int unsigned NOT NULL AUTO_INCREMENT ,
+  userid_source           int unsigned NOT NULL,
+  userid_dest             int unsigned NOT NULL,
+  scheduleinfo            json NOT NULL,
+  timestampshared         datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  coursename              varchar(100) NOT NULL,
+  termgroupid             int unsigned NOT NULL,
+
+  PRIMARY KEY (sharedscheduleid),
+  CONSTRAINT UNIQUE (userid_source, userid_dest, timestampshared),
+  CONSTRAINT FOREIGN KEY (userid_source) REFERENCES user (userid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (userid_dest) REFERENCES user (userid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (termgroupid) REFERENCES termgroup (termgroupid) ON DELETE CASCADE
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------
+select "creating triggers" as comment;
 
 #-- add null courses to usercourse for new users
-select "trigger_newuser";
-
 CREATE TRIGGER trigger_newuser
   AFTER INSERT ON user FOR EACH ROW
     INSERT usercourse (userid, courseid, termgroupid)
@@ -164,8 +182,6 @@ CREATE TRIGGER trigger_newuser
     FROM termgroup;
 
 #-- add null users to usercourse for new courses
-select "trigger_newcourse";
-
 CREATE TRIGGER trigger_newcourse
   AFTER INSERT ON course FOR EACH ROW
     INSERT usercourse (userid, courseid, termgroupid)
@@ -175,7 +191,7 @@ CREATE TRIGGER trigger_newcourse
 #--------------------------------------------------------------------------
 #-- views
 #--------------------------------------------------------------------------
-select "viewmappedtip";
+select "creating views" as comment;
 
 CREATE VIEW viewmappedtip AS
   select mappedtipid, user.userid, user.username, course.courseid, course.coursename, termgroup.termgroupid, termgroup.termgroupname, tip.tipid, tip.tiptext, mappedtip.week 
@@ -217,8 +233,6 @@ CREATE VIEW viewmappedtip AS
   and usercourse.courseid IS NULL;
   
 #--------------------------------------------------------------------------
-select "viewusercourse";
-
 CREATE VIEW viewusercourse as
   select usercourseid, NULL AS courseid, NULL AS coursename, NULL AS ap, termgroup.termgroupid, termgroupname, NULL AS userid, NULL AS username  
   from usercourse, termgroup  
@@ -248,8 +262,6 @@ CREATE VIEW viewusercourse as
     and usercourse.userid = user.userid;
   
 #--------------------------------------------------------------------------
-select "viewusertipstatus";
-
 create view viewusertipstatus as
 select 
   v.mappedtipid, 

@@ -18,9 +18,11 @@ class TipSchedulingShare {
   //--------------------------------------------------------------
   // initial rendering
   //--------------------------------------------------------------
-  render() {
+  render(notice) {
     this._container = CreateElement.createDiv(null, 'tipschedule-share ' + this._HIDE_CLASS);
-    
+
+    this._notice = notice;
+
     return this._container;
   }
 
@@ -41,8 +43,8 @@ class TipSchedulingShare {
     return !this._container.classList.contains(this._HIDE_CLASS);
   }
     
-  async update() {
-    console.log('update share');
+  async update(shareInfo) {
+    this._shareInfo = shareInfo;
     
     while (this._container.firstChild) this._container.removeChild(this._container.firstChild);
 
@@ -64,7 +66,7 @@ class TipSchedulingShare {
     var userList = [];
     for (var i = 0; i < userData.length; i++) {
       var user = userData[i];
-      userList.push({id: i, value: user.usershortname, textval: user.username});
+      userList.push({id: user.userid, value: user.usershortname, textval: user.username});
     }
       
     container.appendChild(CreateElement.createSelect(null, 'tipschedule-share-select select-css', null, userList));
@@ -81,8 +83,15 @@ class TipSchedulingShare {
   //------------------------------------------------------------
   // handlers
   //------------------------------------------------------------  
-  _confirm(e) {
-    console.log('confirm');
+  async _confirm(e) {
+    var elemSelect = this._container.getElementsByClassName('tipschedule-share-select')[0];
+    var shareWithUser = elemSelect[elemSelect.selectedIndex].id;
+    this._shareInfo.sharewith = shareWithUser;
+    
+    var queryResults = await this._doPostQuery('tipmanager/insert', 'storesharedschedule', this._shareInfo);
+    console.log(queryResults);
+    
+    if (queryResults.success) this.show(false);
   }
 
   //------------------------------------------------------------

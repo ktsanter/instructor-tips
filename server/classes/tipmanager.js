@@ -58,6 +58,9 @@ module.exports = internal.TipManager = class {
    if (params.queryName == 'tip') {
       dbResult = await this._insertTip(params, postData, userInfo);
       
+    } else if (params.queryName == 'storesharedschedule') {
+      dbResult = await this._storeSharedSchedule(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -532,6 +535,53 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
+  async _storeSharedSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var query;
+    var queryResults;
+    
+    query =
+      'select username, coursename, termgroupid, termgroupname, tiptext, week ' +
+      'from viewmappedtip ' +
+      'where userid = ' + userInfo.userId + ' ' +
+        'and (courseid is null or coursename = "' + postData.coursename + '") ' +
+        'and termgroupname = "' + postData.termgroupname + '" ';
+        
+    queryResults = await this._dbQuery(query);
+
+    console.log(params);
+    console.log(userInfo);
+    console.log(postData);
+    console.log(query);
+    console.log(queryResults);
+    
+    if (queryResults.success) {
+      query = 
+        'insert into sharedschedule (userid_source, userid_dest, scheduleinfo, coursename, termgroupid) ' +
+        'values ( ' +
+          userInfo.userId + ', ' +
+          postData.sharewith + ', ' +
+          'JSON_OBJECT("sharedInfo", \'' + this._escapeSingleQuote(JSON.stringify(queryResults.data)) + '\'), ' +
+          '"' + postData.coursename + '", ' +
+          '(select termgroupid from termgroup where termgroupname = "' + postData.termgroupname + '") ' +
+        ') ';
+        
+      queryResults = await this._dbQuery(query);
+      console.log(query);
+      console.log(queryResults);        
+    }
+    
+    if (queryResults.success) {   
+      result.success = true;
+      result.details = 'query succeeded';
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
 //----------------------------------------------------------
   async _getTipEditData(params, postData, userInfo) {
     var result = this._queryFailureResult();
@@ -875,5 +925,11 @@ module.exports = internal.TipManager = class {
     // consider other cleaning e.g. <script> tags
     
     return cleaned;
+  }
+  
+  _escapeSingleQuote(str) {
+    var escaped = str.replace(/'/g, "\\'");;
+        
+    return escaped;
   }
 }
