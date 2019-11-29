@@ -43,12 +43,13 @@ class TipSchedulingShareManagement {
     if (queryResults.success) {
       var schedulesSharedWithUser = queryResults.data;
       var userCourseData = queryResults.usercourses;
+      var allCourseData = queryResults.allcourses;
       
       if (schedulesSharedWithUser.length == 0) {
         this._container.appendChild(CreateElement.createDiv(null, 'manageschedule-noresults', 'no schedules have been shared with you'));
         
       } else {
-        this._container.appendChild(this._renderScheduleList(schedulesSharedWithUser, userCourseData));
+        this._container.appendChild(this._renderScheduleList(schedulesSharedWithUser, userCourseData, allCourseData));
       }
     }
   }
@@ -64,12 +65,12 @@ class TipSchedulingShareManagement {
     titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
   }
   
-  _renderScheduleList(schedulesSharedWithUser, userCourseData) {
+  _renderScheduleList(schedulesSharedWithUser, userCourseData, allCourseData) {
     var container;
 
     container = CreateElement.createDiv(null, 'manageschedule-content');
 
-    var organizedUserCourses = this._organizeUserCourses(userCourseData);
+    var organizedUserCourses = this._organizeUserCourses(userCourseData, allCourseData);
 
     var headerList = ['shared by', 'shared', 'term group', 'source course', 'target course', 'import'];
     var elemTable = CreateElement.createTable(null, 'managschedule-sharelist', headerList);
@@ -82,19 +83,29 @@ class TipSchedulingShareManagement {
     return container;
   }
 
-  _organizeUserCourses(userCourseData) {
-    var organized = {};
+  _organizeUserCourses(userCourseData, allCourseData) {
+    var organizedCourses = {};
+    var organizedAllCourses = {};
     
     for (var i = 0; i < userCourseData.length; i++) {
       var userCourseItem = userCourseData[i];
       var termgroupName = userCourseItem.termgroupname;
-      if (!organized.hasOwnProperty(termgroupName)) {
-        organized[termgroupName] = [];
+      if (!organizedCourses.hasOwnProperty(termgroupName)) {
+        organizedCourses[termgroupName] = [];
       }
-      organized[termgroupName].push({usercourseid: userCourseItem.usercourseid, coursename: userCourseItem.coursename});
+      organizedCourses[termgroupName].push({usercourseid: userCourseItem.usercourseid, coursename: userCourseItem.coursename});
     }
     
-    return organized;
+    for (var i = 0; i < allCourseData.length; i++) {
+      var userAllCourseItem = allCourseData[i];
+      var termgroupName = userAllCourseItem.termgroupname;
+      if (!organizedAllCourses.hasOwnProperty(termgroupName)) {
+        organizedAllCourses[termgroupName] = [];
+      }
+      organizedAllCourses[termgroupName].push({usercourseid: userAllCourseItem.usercourseid, coursename: userAllCourseItem.coursename});
+    }
+
+    return {specific: organizedCourses, all: organizedAllCourses};
   }
   
   _buildScheduleRow(elemTable, scheduleItem, userCourses) {
@@ -110,11 +121,12 @@ class TipSchedulingShareManagement {
     
     var courseList = [];
     var termgroupName = scheduleItem.termgroupname;
-    var coursesForTermgroup = userCourses[termgroupName];
+    var coursesForTermgroup = userCourses.specific[termgroupName];
+    var allcoursesForTermgroup = userCourses.all[termgroupName][0];
     
     if (coursesForTermgroup) {
       for (var i = 0; i < coursesForTermgroup.length; i++) {
-        courseList.push({id: coursesForTermgroup[i].usercourseid, value: JSON.stringify(coursesForTermgroup[i]), textval: coursesForTermgroup[i].coursename});
+        courseList.push({id: coursesForTermgroup[i].usercourseid, value: JSON.stringify({specific: coursesForTermgroup[i], all: allcoursesForTermgroup}), textval: coursesForTermgroup[i].coursename});
       }
 
       var elemCell = CreateElement.createTableCell(null, null, '');
@@ -147,11 +159,14 @@ class TipSchedulingShareManagement {
     var elemSelect = elemRow.getElementsByClassName('manageschedule-course')[0];
     
     var scheduleItem = elemRow.scheduleItem;
-    var courseSelection = JSON.parse(elemSelect[elemSelect.selectedIndex].value);
+    var courseSelections = JSON.parse(elemSelect[elemSelect.selectedIndex].value);
+    var specificCourse = courseSelections.specific;
+    var allCourse = courseSelections.all;
     
     var postData = {
       "scheduleItem": elemRow.scheduleItem,
-      "courseSelection": JSON.parse(elemSelect[elemSelect.selectedIndex].value)
+      "courseSelection": JSON.parse(elemSelect[elemSelect.selectedIndex].value).specific,
+      "allCourseSelection": allCourse
     };
     
     var queryResults = await this._doPostQuery('tipmanager/update', 'integrate-shared', postData);

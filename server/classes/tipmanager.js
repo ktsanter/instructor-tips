@@ -714,7 +714,14 @@ module.exports = internal.TipManager = class {
         'where u.courseid = c.courseid ' +
           'and u.termgroupid = tg.termgroupid ' +
           'and u.userid = ' + userInfo.userId + ' ' +
-          'and u.courseid is not null '
+          'and u.courseid is not null ',
+          
+      allcourses: 
+        'select u.usercourseid, null as coursename, tg.termgroupname ' +
+        'from usercourse as u, termgroup as tg ' +
+        'where u.termgroupid = tg.termgroupid ' +
+          'and u.userid = ' + userInfo.userId + ' ' +
+          'and u.courseid is null '
     };
     
     var queryResults = await this._dbQueries(queryList);
@@ -724,6 +731,7 @@ module.exports = internal.TipManager = class {
       result.details = 'query succeeded';
       result.data = queryResults.data.sharedwithuser;
       result.usercourses = queryResults.data.usercourses;
+      result.allcourses = queryResults.data.allcourses;
       result.constraints = {};
     } else {
       result.details = queryResults.details;
@@ -908,7 +916,6 @@ module.exports = internal.TipManager = class {
     
     var queryList = {
       sharedSchedule: 
-        //'select userid_source, userid_dest, JSON_EXTRACT(scheduleinfo, "$.sharedInfo") as sharedinfo ' +
         'select userid_source, userid_dest, scheduleinfo ' +
         'from sharedschedule ' +
         'where sharedscheduleid = ' + postData.scheduleItem.sharedscheduleid + ' ',
@@ -923,24 +930,25 @@ module.exports = internal.TipManager = class {
     };
       
     queryResults = await this._dbQueries(queryList);
-    console.log(queryList);
-    console.log(queryResults);
         
     if (queryResults.success) {
       var scheduleInfoArray = JSON.parse(JSON.parse(queryResults.data.sharedSchedule[0].scheduleinfo).sharedInfo);  
 
       var sharedInfo = queryResults.data.sharedSchedule[0].sharedinfo;
       var mappedTips = queryResults.data.mappedTips;
-      queryResults = await this._doScheduleIntegration(userInfo.userId, scheduleInfoArray, mappedTips);
+      var specificUserCourse = postData.courseSelection.usercourseid;
+      var allUserCourse = postData.allCourseSelection.usercourseid;
+      queryResults = this._buildScheduleIntegrationQueries(userInfo.userId, specificUserCourse, allUserCourse, scheduleInfoArray, mappedTips);
       
       if (queryResults.success) {
-        console.log('okay so far');
-        console.log('delete from sharedschedule');
-        queryResults.success = false;
-        queryResults.details = '<br>okay so far<br>delete from sharedschedule on sucess<br>';
+        var queryArray = queryResults.queryArray;
+        queryArray.push('delete from sharedschedule where sharedscheduleid = ' + postData.scheduleItem.sharedscheduleid + '; ');
+        for (var i = 0; i < queryArray.length && queryResults.success; i++) {
+          queryResults = await this._dbQuery(queryArray[i]);
+        }
       } 
     }
-
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'schedule integration succeeded';
@@ -952,17 +960,41 @@ module.exports = internal.TipManager = class {
     return result;    
   }
   
-  async _doScheduleIntegration(userId, sharedInfo, mappedTips) {
+  _buildScheduleIntegrationQueries(userId, usercourseId, allUsercourseId, sharedInfo, mappedTips) {
     var result = this._queryFailureResult();
-    console.log('********** doScheduleIntegration *************');
     
-    for (var i = 0; i < sharedInfo.length; i++) {
+    result.success = true;
+    result.queryArray = [];
+    
+    for (var i = 0; i < sharedInfo.length && result.success; i++) {
       var scheduleItem = sharedInfo[i];
       
-      console.log(scheduleItem);
+      var tipText = scheduleItem.tiptext;
+      var week = scheduleItem.week;
+        
+      result.queryArray.push( 
+        'insert ignore ' + 
+        'into tip (tiptext, userid) ' +
+        'values (' + 
+          '"' + tipText + '", ' + 
+          userId + ' ' + 
+        '); '
+      );
+                
+      result.queryArray.push( 
+        'insert ignore ' +
+        'into mappedtip (usercourseid, tipid, week) ' +
+          'select ' +
+            (scheduleItem.coursename == null ? allUsercourseId : usercourseId) + ', ' +
+            'tipid, ' + 
+            week + ' ' +
+          'from tip ' +
+          'where userid = ' + userId + ' ' + 
+          '  and tiptext = "' + tipText + '" ' +
+        '; '
+      );   
     }
-    console.log('**********************************************');
-
+    
     return result;
   }
       

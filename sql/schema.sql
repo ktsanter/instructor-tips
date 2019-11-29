@@ -107,6 +107,7 @@ CREATE TABLE tip
   tiptext   varchar(1000) NOT NULL ,
 
   PRIMARY KEY (tipid),
+  CONSTRAINT UNIQUE (userid, tiptext),
   CONSTRAINT FOREIGN KEY (userid) REFERENCES User (userid) ON DELETE CASCADE
 );
 
