@@ -9,24 +9,32 @@
 .manageschedule-content th {
   background-color: var(--bgPrimaryEmphasis);
   color: white;
+  text-align:left;
   font-weight: normal;
   border-style: none;
-  text-align: left;
-  padding-right: 12px;
   padding-top: 7px;
   padding-bottom: 7px;
-  padding-left: 6px;
 }
 
 .manageschedule-content tr {
   background-color: #fff;
 }
+
 .manageschedule-content tr:nth-of-type(even){
   background-color: var(--bgQuaternaryEmphasis);
 }
 
+.manageschedule-highlight {
+  background-color: var(--bgSecondaryChoice) !important;
+}
+
 .manageschedule-content td {
-  padding-left: 6px;
+  padding-right: 1.6em;
+}
+
+
+.manageschedule-content td:nth-of-type(7){
+  text-align:center;
 }
 
 .manageschedule-coursecontainer {
@@ -49,6 +57,25 @@
   font-style: italic;
 }
 
-.manageschedule-import button {
-  margin-right: 0.4em;
+.manageschedule-import {
+  font-size: 1.1em;
+  padding-left: 0.2em;
+  padding-right: 0;
+}
+
+.manageschedule-delete {
+  font-size: 1.3em;
+}
+
+.manageschedule-comment {
+  padding-left: 0.2em;
+  vertical-align: top;
+}
+
+.manageschedule-commenttext {
+  background-color: var(--bgSecondaryEmphasis);
+  border: 1px solid var(--bgTertiaryEmphasis);
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  padding-left: 0.2em;
 }

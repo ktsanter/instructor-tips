@@ -17,9 +17,11 @@ class TipSchedulingShareManagement {
   //--------------------------------------------------------------
   // initial rendering
   //--------------------------------------------------------------
-  render() {
+  render(notice) {
     this._container = CreateElement.createDiv(null, 'manageschedule ' + this._HIDE_CLASS);
-            
+
+    this._notice = notice;
+    
     return this._container;;
   }
 
@@ -72,13 +74,15 @@ class TipSchedulingShareManagement {
 
     var organizedUserCourses = this._organizeUserCourses(userCourseData, allCourseData);
 
-    var headerList = ['shared by', 'shared', 'term group', 'source course', 'target course', 'import'];
+    var headerList = ['', 'shared by', 'shared', 'term', 'source course', 'target course', ''];
     var elemTable = CreateElement.createTable(null, 'managschedule-sharelist', headerList);
     container.appendChild(elemTable);
 
     for (var i = 0; i < schedulesSharedWithUser.length; i++) {
       this._buildScheduleRow(elemTable, schedulesSharedWithUser[i], organizedUserCourses);
     }
+    
+    this._commentRow = this._buildCommentRow(headerList.length);
 
     return container;
   }
@@ -112,17 +116,35 @@ class TipSchedulingShareManagement {
     var elemRow = CreateElement.createTableRow(null, null, elemTable);
     elemRow.scheduleItem = scheduleItem;
 
-    var handler = (e) => {return this._importSchedule(e)};
-      
-    elemRow.appendChild(CreateElement.createTableCell(null, null, scheduleItem.username));
-    elemRow.appendChild(CreateElement.createTableCell(null, null, this._formatTimeStamp(scheduleItem.timestampshared)));
-    elemRow.appendChild(CreateElement.createTableCell(null, null, scheduleItem.termgroupname));
-    elemRow.appendChild(CreateElement.createTableCell(null, null, scheduleItem.coursename));
+    var importHandler = (e) => {return this._importSchedule(e)};
+    var deleteHandler = (e) => {return this._deleteSchedule(e)};
+    var commentHandler = (e) => {return this._showComment(e)};
     
     var courseList = [];
     var termgroupName = scheduleItem.termgroupname;
     var coursesForTermgroup = userCourses.specific[termgroupName];
     var allcoursesForTermgroup = userCourses.all[termgroupName][0];
+
+    if (coursesForTermgroup) {
+      var elemCell = CreateElement.createTableCell(null, 'manageschedule-import', '');
+      elemRow.appendChild(elemCell);
+      
+      elemCell.appendChild(CreateElement.createIcon(null, 'manageschedule-import fas fa-file-import', 'import schedule', importHandler));
+
+    } else {
+      var elemCell = CreateElement.createTableCell(null, 'manageschedule-import', '');
+      elemRow.appendChild(elemCell);    
+    }
+    
+    elemRow.appendChild(CreateElement.createTableCell(null, null, scheduleItem.username));
+    if (scheduleItem.commenttext && scheduleItem.commenttext.length > 0) {
+      elemRow.lastChild.appendChild(CreateElement.createIcon(null, 'manageschedule-comment far fa-comment', 'show comment', commentHandler));
+    }
+    
+    elemRow.appendChild(CreateElement.createTableCell(null, null, this._formatTimeStamp(scheduleItem.timestampshared)));
+    elemRow.appendChild(CreateElement.createTableCell(null, null, scheduleItem.termgroupname));
+    elemRow.appendChild(CreateElement.createTableCell(null, null, scheduleItem.coursename));
+    
     
     if (coursesForTermgroup) {
       for (var i = 0; i < coursesForTermgroup.length; i++) {
@@ -136,21 +158,36 @@ class TipSchedulingShareManagement {
       elemCell.appendChild(selectContainer);
       selectContainer.appendChild(CreateElement.createSelect(null, 'manageschedule-course select-css', null, courseList));      
       
-      elemCell = CreateElement.createTableCell(null, 'manageschedule-import', '');
-      elemRow.appendChild(elemCell);
-      
-      elemCell.appendChild(CreateElement.createButton(null, 'manageschedule-use', 'import', 'add schedule info to selected course', handler));
     
     } else {
       var elemCell = CreateElement.createTableCell(null, null, '');
       elemRow.appendChild(elemCell);      
       elemCell.appendChild(CreateElement.createDiv(null, 'manageschedule-coursecontainer no-courses', 'no matching course schedules'));
-
-      var elemCell = CreateElement.createTableCell(null, 'manageschedule-import', '');
-      elemRow.appendChild(elemCell);    
     }
+    
+    var elemCell = CreateElement.createTableCell(null, null, '');
+    elemRow.appendChild(elemCell);
+    elemCell.appendChild(CreateElement.createIcon(null, 'manageschedule-delete far fa-trash-alt', 'delete this shared schedule', deleteHandler));    
   }
   
+  _buildCommentRow(numCells) {
+    var elemRow = CreateElement.createTableRow(null, 'manageschedule-commentrow');
+    
+    var elemCell = CreateElement.createTableCell(null, null, '');
+    elemRow.appendChild(elemCell);
+    
+    elemCell = CreateElement.createTableCell(null, 'manageschedule-commentcell', '');
+    elemRow.appendChild(elemCell);
+    elemCell.colSpan = numCells-2;
+    
+    elemCell.appendChild(CreateElement.createDiv(null, 'manageschedule-commenttext'));
+    
+    var elemCell = CreateElement.createTableCell(null, null, '');
+    elemRow.appendChild(elemCell);
+
+    return elemRow;
+  }
+
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------    
@@ -172,6 +209,45 @@ class TipSchedulingShareManagement {
     var queryResults = await this._doPostQuery('tipmanager/update', 'integrate-shared', postData);
     if (queryResults.success) {
       await this.update();
+    }
+  }
+  
+  async _deleteSchedule(e) {
+    var elemRow = e.target.parentNode.parentNode;
+    elemRow.classList.add('manageschedule-highlight');
+    
+    setTimeout( () => { return this._confirmDelete(this, elemRow); }, 1);
+  }
+  
+  async _confirmDelete(me, elemRow) {
+    if (confirm('Are you sure you want to delete this shared schedule?')) {
+      var scheduleItem = elemRow.scheduleItem;
+
+      var queryResults = await this._doPostQuery('tipmanager/delete', 'delete-shared', scheduleItem);
+      if (queryResults.success) {
+        await this.update();
+      }
+      
+    } else {
+      elemRow.classList.remove('manageschedule-highlight');
+    }
+  }
+  
+  _showComment(e) {
+    if (this._commentRow.isShowing) {
+      this._commentRow.parentNode.removeChild(this._commentRow);
+      this._commentRow.isShowing = false;
+    
+    } else {
+      var elemRow = e.target.parentNode.parentNode;
+      var commentText = elemRow.scheduleItem.commenttext;
+      var commentCell = this._commentRow.getElementsByClassName('manageschedule-commenttext')[0];
+      
+      commentCell.innerHTML = MarkdownToHTML.convert(commentText);
+      
+      elemRow.parentNode.insertBefore(this._commentRow, elemRow.nextSibling);
+      
+      this._commentRow.isShowing = true;
     }
   }
   

@@ -49,7 +49,7 @@ class LoginUI {
       var optionList = [];
       if (dbResult.success) {
         for (var i = 0; i < userData.length; i++) {
-          optionList.push({id: i, value: '', textval: userData[i].usershortname});
+          optionList.push({id: i, value: userData[i].usershortname, textval: userData[i].username});
         }
       }
 
@@ -67,7 +67,7 @@ class LoginUI {
 
   async _completeLogin(e) {
     var elemSelect = this._container.getElementsByClassName('loginui-select')[0];
-    var userShortName = elemSelect.options[elemSelect.selectedIndex].text;
+    var userShortName = elemSelect.options[elemSelect.selectedIndex].value;
     
     var dbResult = await this._doGetQuery('usermanagement/setuser', 'username/' + userShortName);
     if (dbResult.success) {

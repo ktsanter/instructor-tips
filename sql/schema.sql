@@ -162,6 +162,7 @@ CREATE TABLE sharedschedule
   timestampshared         datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   coursename              varchar(100) NOT NULL,
   termgroupid             int unsigned NOT NULL,
+  commenttext             varchar(1024) NOT NULL,
 
   PRIMARY KEY (sharedscheduleid),
   CONSTRAINT UNIQUE (userid_source, userid_dest, timestampshared),

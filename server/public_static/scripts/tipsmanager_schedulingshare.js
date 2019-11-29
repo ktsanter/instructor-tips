@@ -5,14 +5,13 @@
 //-----------------------------------------------------------------------------------
 
 class TipSchedulingShare {
-  constructor(config) {
+  constructor() {
     this._version = '0.01';
     this._title = 'SchedulingShare';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     
     this._container = null;
-    this._config = config;
   }
  
   //--------------------------------------------------------------
@@ -34,9 +33,13 @@ class TipSchedulingShare {
       this._container.classList.remove(this._HIDE_CLASS);
     }
     
-    if (!makeVisible) {
+    if (makeVisible) {
+      this._clearSelectedText();
+      this._container.getElementsByClassName('tipschedule-share-select')[0].focus();
+      
+    } else {
       this._container.classList.add(this._HIDE_CLASS);
-    }
+    } 
   }
 
   isVisible() {
@@ -48,7 +51,7 @@ class TipSchedulingShare {
     
     while (this._container.firstChild) this._container.removeChild(this._container.firstChild);
 
-    var queryResult = await this._doGetQuery('tipmanager/query', 'otherusers');
+    var queryResult = await this._doGetQuery('tipmanager/query', 'userstosharewith');
     
     if (!queryResult.success) {
       this._container.innerHTML = 'query failed';
@@ -62,6 +65,8 @@ class TipSchedulingShare {
   
   _renderUI(userData) {
     var container = CreateElement.createDiv(null, 'tipschedule-share-contents');
+    
+    container.appendChild(CreateElement.createDiv(null, 'tipschedule-share-title', 'Share this schedule with...'));
 
     var userList = [];
     for (var i = 0; i < userData.length; i++) {
@@ -70,12 +75,18 @@ class TipSchedulingShare {
     }
       
     container.appendChild(CreateElement.createSelect(null, 'tipschedule-share-select select-css', null, userList));
+    var elemComment = CreateElement.createTextArea(null, 'tipschedule-share-comment');
+    container.appendChild(elemComment);
+    elemComment.placeholder = 'add a comment';
+    elemComment.rows = 1;
+    elemComment.cols = 60;
       
     var elemButtonContainer = CreateElement.createDiv(null, 'tipschedule-share-controlcontainer');
     container.appendChild(elemButtonContainer);
 
-    elemButtonContainer.appendChild(CreateElement.createButton(null, 'tipschedule-share-control', 'share schedule', 'confirm you want to share the schedule', (e) => {return this._confirm(e);}));
-      
+    elemButtonContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-share-control far fa-check-square', 'confirm you want to share the schedule', (e) => {return this._confirm(e);}));
+    elemButtonContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-share-control far fa-window-close', 'cancel', (e) => {return this._cancel(e);}));
+
     return container;
   }
   
@@ -86,12 +97,20 @@ class TipSchedulingShare {
   async _confirm(e) {
     var elemSelect = this._container.getElementsByClassName('tipschedule-share-select')[0];
     var shareWithUser = elemSelect[elemSelect.selectedIndex].id;
+    
+    var elemComment = this._container.getElementsByClassName('tipschedule-share-comment')[0];
+    var commentText = this._sanitizeText(elemComment.value);
+    
     this._shareInfo.sharewith = shareWithUser;
+    this._shareInfo.commentText = commentText;
     
     var queryResults = await this._doPostQuery('tipmanager/insert', 'storesharedschedule', this._shareInfo);
-    console.log(queryResults);
     
     if (queryResults.success) this.show(false);
+  }
+
+  _cancel(e) {
+    this.show(false);
   }
 
   //------------------------------------------------------------
@@ -102,6 +121,28 @@ class TipSchedulingShare {
       elem.removeChild(elem.firstChild);
     }
   }
+
+  _clearSelectedText() {
+    if (window.getSelection) {
+        if (window.getSelection().empty) {  // Chrome
+            window.getSelection().empty();
+        }
+        else if (window.getSelection().removeAllRanges) {  // Firefox
+            window.getSelection().removeAllRanges();
+        }
+    }
+    else if (document.selection) {  // IE?
+        document.selection.empty();
+    }
+  }  
+  
+  _sanitizeText(str) {
+    var cleaned = str; //str.replace(/"/g, '\\"');;
+    
+    // consider other cleaning e.g. <script> tags
+    
+    return cleaned;
+  }  
   
   //--------------------------------------------------------------
   // db functions

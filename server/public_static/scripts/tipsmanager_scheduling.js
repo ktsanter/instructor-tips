@@ -35,13 +35,7 @@ class TipScheduling {
       }
     });
     
-    this._tipScheduleShare = new TipSchedulingShare({
-      editType: 'edit tip',
-      callbacks: {
-        cancelChange: () => {return this._cancelEditChange();} ,
-        finishEdit:  (dbData) => {return this._doFinishEdit(dbData);}
-      }
-    });
+    this._tipScheduleShare = new TipSchedulingShare();
     
     this._tipStatusClass = {
       null: 'far fa-square',
@@ -118,6 +112,7 @@ class TipScheduling {
         var contentContainer = CreateElement.createDiv(null, 'tipschedule-content');
         this._container.appendChild(contentContainer);
         contentContainer.appendChild(CreateElement.createDiv(null, null, 'There is no schedule for this user/course/termgroup combination'));
+        this._showElement(elemShareIcon, false);
       }
     }
   }

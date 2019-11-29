@@ -42,8 +42,8 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tipedit') {
       dbResult = await this._getTipEditData(params, postData, userInfo);
       
-    } else if (params.queryName == 'otherusers') {
-      dbResult = await this._getOtherUsers(params, userInfo);
+    } else if (params.queryName == 'userstosharewith') {
+      dbResult = await this._getUsersToShareWith(params, userInfo);
       
     } else if (params.queryName == 'sharedwithuser') {
       dbResult = await this._getSchedulesSharedWithUser(params, userInfo);
@@ -104,6 +104,9 @@ module.exports = internal.TipManager = class {
       
     } else if (params.queryName == 'tipschedule-unmaptip') {
       dbResult = await this._unmapTip(params, postData, userInfo);
+            
+    } else if (params.queryName == 'delete-shared') {
+      dbResult = await this._deleteSharedSchedule(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -557,13 +560,14 @@ module.exports = internal.TipManager = class {
     
     if (queryResults.success) {
       query = 
-        'insert into sharedschedule (userid_source, userid_dest, scheduleinfo, coursename, termgroupid) ' +
+        'insert into sharedschedule (userid_source, userid_dest, scheduleinfo, coursename, termgroupid, commenttext) ' +
         'values ( ' +
           userInfo.userId + ', ' +
           postData.sharewith + ', ' +
           'JSON_OBJECT("sharedInfo", \'' + this._escapeSingleQuote(JSON.stringify(queryResults.data)) + '\'), ' +
           '"' + postData.coursename + '", ' +
-          '(select termgroupid from termgroup where termgroupname = "' + postData.termgroupname + '") ' +
+          '(select termgroupid from termgroup where termgroupname = "' + postData.termgroupname + '"), ' +
+          '"' + this._sanitizeText(postData.commentText) + '" ' +
         ') ';
         
       queryResults = await this._dbQuery(query);
@@ -668,14 +672,13 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _getOtherUsers(params, userInfo) {
+  async _getUsersToShareWith(params, userInfo) {
     var result = this._queryFailureResult();
     
     var queryList = {
       users: 
         'select userid, username, usershortname ' +
         'from user ' +
-        'where userid != ' + userInfo.userId + ' ' +
         'order by username'
     };
     
@@ -699,7 +702,7 @@ module.exports = internal.TipManager = class {
     var queryList = {
       sharedwithuser: 
         'select ' +
-          'ss.sharedscheduleid, ss.userid_source, ss.timestampshared, ss.coursename, ss.termgroupid, ' +
+          'ss.sharedscheduleid, ss.userid_source, ss.timestampshared, ss.coursename, ss.termgroupid, ss.commenttext, ' +
           'u.username, ' +
           'tg.termgroupname ' +
         'from sharedschedule as ss, user as u, termgroup as tg ' +
@@ -1042,6 +1045,25 @@ module.exports = internal.TipManager = class {
     return result;    
   }
 
+  async _deleteSharedSchedule(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from sharedschedule ' +
+                'where sharedscheduleid = ' + postData.sharedscheduleid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------
