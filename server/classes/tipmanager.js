@@ -907,7 +907,8 @@ module.exports = internal.TipManager = class {
     var queryResults;
     
     var queryList = {
-      scheduleInfo: 
+      sharedSchedule: 
+        //'select userid_source, userid_dest, JSON_EXTRACT(scheduleinfo, "$.sharedInfo") as sharedinfo ' +
         'select userid_source, userid_dest, scheduleinfo ' +
         'from sharedschedule ' +
         'where sharedscheduleid = ' + postData.scheduleItem.sharedscheduleid + ' ',
@@ -922,11 +923,15 @@ module.exports = internal.TipManager = class {
     };
       
     queryResults = await this._dbQueries(queryList);
+    console.log(queryList);
+    console.log(queryResults);
         
     if (queryResults.success) {
-      var scheduleInfo = queryResults.data.scheduleInfo;
+      var scheduleInfoArray = JSON.parse(JSON.parse(queryResults.data.sharedSchedule[0].scheduleinfo).sharedInfo);  
+
+      var sharedInfo = queryResults.data.sharedSchedule[0].sharedinfo;
       var mappedTips = queryResults.data.mappedTips;
-      queryResults = await this._doScheduleIntegration(userInfo.userId, scheduleInfo, mappedTips);
+      queryResults = await this._doScheduleIntegration(userInfo.userId, scheduleInfoArray, mappedTips);
       
       if (queryResults.success) {
         console.log('okay so far');
@@ -947,14 +952,17 @@ module.exports = internal.TipManager = class {
     return result;    
   }
   
-  async _doScheduleIntegration(userId, scheduleInfo, mappedTips) {
+  async _doScheduleIntegration(userId, sharedInfo, mappedTips) {
     var result = this._queryFailureResult();
+    console.log('********** doScheduleIntegration *************');
     
-    result.details = 'integration step';
-    console.log(userId);
-    console.log(scheduleInfo);
-    console.log(mappedTips);
-    
+    for (var i = 0; i < sharedInfo.length; i++) {
+      var scheduleItem = sharedInfo[i];
+      
+      console.log(scheduleItem);
+    }
+    console.log('**********************************************');
+
     return result;
   }
       
