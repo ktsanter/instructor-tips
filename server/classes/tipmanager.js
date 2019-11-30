@@ -48,6 +48,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'sharedwithuser') {
       dbResult = await this._getSchedulesSharedWithUser(params, userInfo);
       
+    } else if (params.queryName == 'notificationoptions') {
+      dbResult = await this._getUserNotificationOptions(params, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -88,6 +91,9 @@ module.exports = internal.TipManager = class {
             
     } else if (params.queryName == 'integrate-shared') {
       dbResult = await this._integrateSharedSchedule(params, postData, userInfo);
+            
+    } else if (params.queryName == 'notificationoptions') {
+      dbResult = await this._updateUserNotificationOptions(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -742,7 +748,31 @@ module.exports = internal.TipManager = class {
     
     return result;
   }    
-
+  
+  async _getUserNotificationOptions(params, userInfo) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      notificationoptions: 
+        'select sharedschedule, pushreminders ' +
+        'from user ' +
+        'where userid = ' + userInfo.userId + ' '
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data.notificationoptions[0],
+      result.constraints = {};
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
+  
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------
@@ -1000,6 +1030,32 @@ module.exports = internal.TipManager = class {
     }
     
     return result;
+  }
+  
+  async _updateUserNotificationOptions(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var query;
+    var queryResults;
+    
+    query =
+      'update user ' +
+      'set ' + 
+        'sharedschedule = ' + postData.sharedschedule + ', ' +
+        'pushreminders = ' + postData.pushreminders + ' ' +
+      'where userid = ' + userInfo.userId + ' ';
+
+    queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;    
   }
       
 //---------------------------------------------------------------

@@ -1,4 +1,4 @@
-ksanter|Kevin Santer
-test_admin|Penelope Q. Admin
-test_lead|Horatio P. Lead
-test_instructor|Dolores R. Instructor
+ksanter|Kevin Santer|ktsanter@gmail.com
+test_admin|Penelope Q. Admin|ktsanter2@gmail.com
+test_lead|Horatio P. Lead|ktsanter2@gmail.com
+test_instructor|Dolores R. Instructor|ktsanter2@gmail.com

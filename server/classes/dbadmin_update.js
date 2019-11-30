@@ -116,11 +116,19 @@ module.exports = internal.dbAdminUpdate = class {
   
   async _updateUser(params, postData) {
     var result = this._queryFailureResult();
+
+    var sharedScheduleOption = 0;
+    if (postData.sharedschedule == '1') sharedScheduleOption = 1;
+    var pushRemindersOption = 0;
+    if (postData.pushreminders == '1') pushRemindersOption = 1;
     
     var query = 'update user ' + 
                 'set ' + 
                   'usershortname = "' + postData.usershortname + '", ' +
-                  'username = "' + postData.username + '" ' +
+                  'username = "' + postData.username + '", ' +
+                  'email = "' + postData.email + '", ' +
+                  'sharedschedule = ' + sharedScheduleOption + ', ' +
+                  'pushreminders = ' + pushRemindersOption + ' ' +
                 'where userid = ' + postData.userid;
                 
     var queryResults = await this._dbQuery(query);

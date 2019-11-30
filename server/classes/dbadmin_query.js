@@ -150,7 +150,7 @@ module.exports = internal.dbAdminQuery = class {
     
     var queryList = {
       users: 
-        'select userid, username, usershortname ' +
+        'select userid, username, usershortname, email, sharedschedule, pushreminders ' +
         'from user ' +
         'order by username'
     };
@@ -163,9 +163,12 @@ module.exports = internal.dbAdminQuery = class {
       result.primaryKey = 'userid',
       result.insertUpdateFields = [
         {usershortname: 'text'}, 
-        {username: 'text'}
+        {username: 'text'},
+        {email: 'text'},
+        {sharedschedule: 'text'},
+        {pushreminders: 'text'}
       ],
-      result.displayFields = ['usershortname', 'username'];
+      result.displayFields = ['usershortname', 'username', 'emai', 'sharedschedule', 'pushreminders'];
       result.data = queryResults.data.users,
       result.constraints = {};
     } else {

@@ -17,7 +17,7 @@ const app = function () {
     navOptions: [
       'courseselection', 'scheduling', 'editing',
       'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars',
-      'manageshared'
+      'manageshared', 'notification'
     ],
     adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars']
   };
@@ -33,7 +33,7 @@ const app = function () {
     page.body.appendChild(page.maincontainer);
 
     await _renderPage();
-    _navDispatch('scheduling');
+    //_navDispatch('scheduling');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -84,6 +84,7 @@ const app = function () {
       
       hamburgeritems: [
         {label: htmlForShared, callback: () => {return _navDispatch('manageshared');}},      
+        {label: 'notification options', callback: () => {return _navDispatch('notification');}},      
         {label: 'help', callback: _showHelp},
         {label: 'about ' + appInfo.appName, callback: _showAbout}
       ]      
@@ -132,6 +133,9 @@ const app = function () {
       callback: () => {return _sharedScheduleChange();}
     });
     container.appendChild(await settings.manageshared.render());
+
+    settings.notification = new NotificationOptions();
+    container.appendChild(await settings.notification.render());
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
       var type = settings.adminTypes[i];

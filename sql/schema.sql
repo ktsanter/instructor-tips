@@ -14,9 +14,12 @@ select "creating tables" as comment;
 
 CREATE TABLE user
 (
-  userid        int unsigned NOT NULL AUTO_INCREMENT ,
-  usershortname varchar(30) NOT NULL ,
-  username      varchar(100) NOT NULL ,
+  userid            int unsigned NOT NULL AUTO_INCREMENT ,
+  usershortname     varchar(30) NOT NULL ,
+  username          varchar(100) NOT NULL ,
+  email             varchar(100) NULL,
+  sharedschedule    int unsigned NOT NULL ,
+  pushreminders     int unsigned NOT NULL,
 
   PRIMARY KEY (userid),
   CONSTRAINT UNIQUE(usershortname)

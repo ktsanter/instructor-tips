@@ -113,14 +113,22 @@ module.exports = internal.dbAdminInsert = class {
   async _insertUser(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into user (usershortname, username) ' +
+    var sharedCcheduleOption = 0;
+    if (postData.sharedschedule == '1') sharedScheduleOption = 1;
+    var pushRemindersOption = 0;
+    if (postData.pushreminders == '1') pushRemindersOption = 1;
+    
+    var query = 'insert into user (usershortname, username, email, sharedschedule, pushreminders) ' +
                 'values (' +
                   '"' + postData.usershortname + '", ' + 
-                  '"' + postData.username + '"' + 
+                  '"' + postData.username + '",' + 
+                  '"' + postData.email + '", ' +
+                  sharedCcheduleOption + ', ' +
+                  pushRemindersOption +
                 ')';
     
     var queryResults = await this._dbQuery(query);
-
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'insert succeeded';

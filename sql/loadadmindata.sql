@@ -54,7 +54,10 @@ load data local infile 'initial_load_data/user.txt'
 into table user
 FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
-(usershortname, username);
+(usershortname, username, email)
+set 
+  sharedschedule = 0, 
+  pushreminders = 0;
 
 #-------------------------------------------------------------
 #-- userprivilege
