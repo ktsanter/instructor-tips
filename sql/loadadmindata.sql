@@ -113,20 +113,56 @@ FROM termgroup;
 #-------------------------------------------------------------
 select "loading tip" as comment;
 
-#--- load shared general tips from Instructors Corner (semester only)
+
+#--- load "all course" public tips from Instructors Corner (semester only)
+create table if not exists tipinitial_staging as
+  select *
+  from tip
+  where 1 != 1;
+  
+delete from tipinitial_staging;
+
 load data local infile 'initial_load_data/tipdata_instructorscorner.txt'
-into table tip
+into table tipinitial_staging
 FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
 (tiptext)
 set userid = null;
 
+drop table if exists tip_staging;
+create table tip_staging as
+  select distinct substring(tiptext from 13) as tiptext
+  from tipinitial_staging;
+  
+drop table if exists tipweek_staging;
+create table tipweek_staging as 
+  select 
+    cast(substring(tiptext from 10 for 2) as int) as week,
+    substring(tiptext from 13) as tiptext
+  from tipinitial_staging;    
+
+insert into tip(userid, tiptext) 
+  select NULL as userid, tiptext
+  from tip_staging;
 
 #-------------------------------------------------------------
 #-- mappedtip
 #-------------------------------------------------------------
 select "loading mappedtip" as comment;
 
+insert into mappedtip(tipid, usercourseid, week)
+select t.tipid, uc.usercourseid, tw.week 
+from tip as t, tipweek_staging as tw, usercourse as uc
+where t.tiptext = tw.tiptext
+  and uc.userid is NULL
+  and uc.courseid is NULL
+  and uc.termgroupid in (
+    select termgroupid
+    from termgroup
+    where termgroupname = 'semester'
+  );
+
+/*
 #--- map shared general tips from Instructors Corner (semester only)
 insert into mappedtip (tipid, usercourseid, week)
 select 
@@ -142,8 +178,4 @@ where tiptext like "[staging %"
     from termgroup
     where termgroupname = 'semester'
 );
-
-#--- remove [staging NN] tag from tiptext
-update tip
-set tiptext = substring(tiptext from 13);
-
+*/
