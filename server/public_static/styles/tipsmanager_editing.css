@@ -65,7 +65,7 @@
 }
 
 .dbadmin-highlight {
-  background-color:var(--bgSecondaryEmphasis) !important;
+  background-color:var(--bgSecondaryChoice) !important;
 }
 
 .dbadmin-datacontent {

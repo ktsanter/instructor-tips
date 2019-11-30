@@ -564,7 +564,7 @@ module.exports = internal.TipManager = class {
         'values ( ' +
           userInfo.userId + ', ' +
           postData.sharewith + ', ' +
-          'JSON_OBJECT("sharedInfo", \'' + this._escapeSingleQuote(JSON.stringify(queryResults.data)) + '\'), ' +
+          'JSON_OBJECT("sharedInfo", \'' + JSON.stringify(this._escapeShareInfo(queryResults.data)) + '\'), ' +
           '"' + postData.coursename + '", ' +
           '(select termgroupid from termgroup where termgroupname = "' + postData.termgroupname + '"), ' +
           '"' + this._sanitizeText(postData.commentText) + '" ' +
@@ -933,9 +933,10 @@ module.exports = internal.TipManager = class {
     };
       
     queryResults = await this._dbQueries(queryList);
-        
+
+
     if (queryResults.success) {
-      var scheduleInfoArray = JSON.parse(JSON.parse(queryResults.data.sharedSchedule[0].scheduleinfo).sharedInfo);  
+      var scheduleInfoArray = this._unescapeShareInfo(JSON.parse(JSON.parse(queryResults.data.sharedSchedule[0].scheduleinfo).sharedInfo));  
 
       var sharedInfo = queryResults.data.sharedSchedule[0].sharedinfo;
       var mappedTips = queryResults.data.mappedTips;
@@ -1083,9 +1084,23 @@ module.exports = internal.TipManager = class {
     return cleaned;
   }
   
-  _escapeSingleQuote(str) {
-    var escaped = str.replace(/'/g, "\\'");;
-        
-    return escaped;
+  _escapeShareInfo(shareInfo) {
+    for (var i = 0; i < shareInfo.length; i++) {
+      shareInfo[i].tiptext = shareInfo[i].tiptext.replace(/'/g, "=====");
+      shareInfo[i].tiptext = shareInfo[i].tiptext.replace(/"/g, "@@@@@");
+      shareInfo[i].tiptext = shareInfo[i].tiptext.replace(/\n/g, "+++++");
+    }
+
+    return shareInfo;
+  }
+  
+  _unescapeShareInfo(shareInfo) {
+    for (var i = 0; i < shareInfo.length; i++) {
+      shareInfo[i].tiptext = shareInfo[i].tiptext.replace(/=====/g, "'");
+      shareInfo[i].tiptext = shareInfo[i].tiptext.replace(/\+\+\+\+\+/g, '\n');
+      shareInfo[i].tiptext = shareInfo[i].tiptext.replace(/@@@@@/g, '\\"');
+    }
+
+    return shareInfo;
   }
 }
