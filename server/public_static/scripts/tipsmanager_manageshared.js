@@ -238,9 +238,9 @@ class TipSchedulingShareManagement {
   
   _showComment(e) {
     var elemRow = e.target.parentNode.parentNode;  
-    var action = null;
-    
+        
     if (this._commentRow.scheduleItem) {
+      this._commentRow.previousSibling.classList.remove('manageschedule-highlight2');
       this._commentRow.parentNode.removeChild(this._commentRow);
       
       if (this._commentRow.scheduleItem.sharedscheduleid != elemRow.scheduleItem.sharedscheduleid) {
@@ -259,6 +259,7 @@ class TipSchedulingShareManagement {
       
       commentCell.innerHTML = MarkdownToHTML.convert(commentText);
       
+      elemRow.classList.add('manageschedule-highlight2');
       elemRow.parentNode.insertBefore(this._commentRow, elemRow.nextSibling);
     }
   }
