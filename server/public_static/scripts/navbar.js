@@ -87,8 +87,6 @@ class NavigationBar {
       }
     }
     
-
-    
     return elemList;
   }
   

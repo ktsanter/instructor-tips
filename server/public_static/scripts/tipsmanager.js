@@ -56,6 +56,22 @@ const app = function () {
     var userInfo = await settings.logincontainer._getUserInfo();
     var allowAdmin = queryResults.data.navbar.allowadmin;
     
+    var sharedScheduleCount = await _getNumberOfSharedSchedules();
+    var elemCount = CreateElement.createDiv(null, 'tipmanager-schedulecount', '')
+    elemCount.style.display = 'none';
+    var elemCount2 = CreateElement.createSpan(null, 'tipmanager-schedulecount2', '')
+    elemCount2.innerHTML = '';
+    
+    if (sharedScheduleCount > 0) {
+      elemCount.style.display = 'inline-block';
+      elemCount.innerHTML = sharedScheduleCount;
+      elemCount.title = 'you have ' + sharedScheduleCount + ' shared schedules';
+      elemCount2.innerHTML = ' (' + sharedScheduleCount + ')';
+    }
+    
+    var htmlForLogin = userInfo.username + elemCount.outerHTML;
+    var htmlForShared = 'shared' + elemCount2.outerHTML;
+
     var navConfig = {
       title: appInfo.appName,
       
@@ -63,11 +79,11 @@ const app = function () {
         {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
-        {label: userInfo.username, callback: _showLogin, subitems: null, rightjustify: true}
+        {label: htmlForLogin, callback: _showLogin, subitems: null, rightjustify: true}
       ],
       
       hamburgeritems: [
-        {label: 'shared', callback: () => {return _navDispatch('manageshared');}},      
+        {label: htmlForShared, callback: () => {return _navDispatch('manageshared');}},      
         {label: 'help', callback: _showHelp},
         {label: 'about ' + appInfo.appName, callback: _showAbout}
       ]      
@@ -104,13 +120,17 @@ const app = function () {
     settings.courseselection = new TipCourseSelection();
     container.appendChild(settings.courseselection.render());
     
-    settings.scheduling = new TipScheduling();
+    settings.scheduling = new TipScheduling({
+      callback: () => {return _sharedScheduleChange();}
+    });
     container.appendChild(await settings.scheduling.render());
     
     settings.editing = new TipEditing();
     container.appendChild(await settings.editing.render());
 
-    settings.manageshared = new TipSchedulingShareManagement();
+    settings.manageshared = new TipSchedulingShareManagement({
+      callback: () => {return _sharedScheduleChange();}
+    });
     container.appendChild(await settings.manageshared.render());
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
@@ -122,6 +142,17 @@ const app = function () {
     return container;
   }
 
+  async function _getNumberOfSharedSchedules() {
+    var count = 0;
+    
+    var queryResults = await _doGetQuery('tipmanager/query', 'sharedwithuser');
+    if (queryResults.success) {
+      count = queryResults.data.length;
+    }
+    
+    return count;
+  }
+  
   //---------------------------------------
 	// navbar callbacks
 	//----------------------------------------
@@ -141,6 +172,24 @@ const app = function () {
   async function _showLogin() {
     settings.logincontainer.show(true);
   }
+  
+  async function _sharedScheduleChange() {
+    var elemCount = page.body.getElementsByClassName('tipmanager-schedulecount')[0];
+    var elemCount2 = page.body.getElementsByClassName('tipmanager-schedulecount2')[0];
+
+    var count = await _getNumberOfSharedSchedules();
+    
+    if (count > 0) {
+      elemCount.style.display = 'inline-block';
+      elemCount.innerHTML = count;
+      elemCount.title = 'you have ' + count + ' shared schedules';      
+      elemCount2.innerHTML = ' (' + count + ')';
+
+    } else {
+      elemCount.style.display = 'none';
+      elemCount2.innerHTML = '';
+    }
+  }  
   
   function _showAbout() {
     window.open(settings.aboutURL, '_blank');

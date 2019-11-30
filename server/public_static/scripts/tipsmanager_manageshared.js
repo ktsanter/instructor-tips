@@ -5,13 +5,15 @@
 //-----------------------------------------------------------------------------------
 
 class TipSchedulingShareManagement {
-  constructor() {
+  constructor(config) {
     this._version = '0.01';
     this._title = 'Shared schedules';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     
     this._container = null;
+    this._config = config;
+    this._callback = config.callback;
   }
  
   //--------------------------------------------------------------
@@ -39,6 +41,7 @@ class TipSchedulingShareManagement {
   }
 
   async update() {
+    await this._callback();
     var queryResults = await this._doGetQuery('tipmanager/query', 'sharedwithuser');
     this._prepContainerForUpdate();
     
@@ -234,20 +237,29 @@ class TipSchedulingShareManagement {
   }
   
   _showComment(e) {
-    if (this._commentRow.isShowing) {
-      this._commentRow.parentNode.removeChild(this._commentRow);
-      this._commentRow.isShowing = false;
+    var elemRow = e.target.parentNode.parentNode;  
+    var action = null;
     
+    if (this._commentRow.scheduleItem) {
+      this._commentRow.parentNode.removeChild(this._commentRow);
+      
+      if (this._commentRow.scheduleItem.sharedscheduleid != elemRow.scheduleItem.sharedscheduleid) {
+         this._commentRow.scheduleItem = elemRow.scheduleItem;
+      } else {
+        this._commentRow.scheduleItem = null;
+      }
+      
     } else {
-      var elemRow = e.target.parentNode.parentNode;
+       this._commentRow.scheduleItem = elemRow.scheduleItem;
+    }
+
+    if (this._commentRow.scheduleItem) {
       var commentText = elemRow.scheduleItem.commenttext;
       var commentCell = this._commentRow.getElementsByClassName('manageschedule-commenttext')[0];
       
       commentCell.innerHTML = MarkdownToHTML.convert(commentText);
       
       elemRow.parentNode.insertBefore(this._commentRow, elemRow.nextSibling);
-      
-      this._commentRow.isShowing = true;
     }
   }
   

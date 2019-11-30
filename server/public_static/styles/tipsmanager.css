@@ -41,6 +41,16 @@ body {
   padding-right: 7px;
 }
 
+.tipmanager-schedulecount {
+  display: inline-block;
+  background-color: var(--bgSecondaryChoice);
+  border: 1px solid white;
+  border-radius: 50%;
+  margin-left: 0.2em;
+  min-width: 1.0em;
+  padding-right: 0.06em;
+}
+
 /*------------------------------------------------------------------
  * standard error and notice
  *------------------------------------------------------------------*/

@@ -5,12 +5,15 @@
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {
-  constructor() {
+  constructor(config) {
     this._version = '0.01';
     this._title = 'Scheduling';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     this._HIGHLIGHT_CLASS = 'tipschedule-highlight';
+    
+    this._config = config;
+    this._callback = config.callback;
     
     this._container = null;
     this._tipAddContainer = null;
@@ -359,7 +362,7 @@ class TipScheduling {
     elemTitle.appendChild(this._tipScheduleShareContainer);
 
     var filter = this._tipFilter.getFilter();
-    await this._tipScheduleShare.update({coursename: filter.coursename, termgroupname: filter.termgroupname});
+    await this._tipScheduleShare.update({coursename: filter.coursename, termgroupname: filter.termgroupname, callback: this._callback});
   }
   
   //------------------------------------------------------------------------------------------------
