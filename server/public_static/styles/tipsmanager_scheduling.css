@@ -146,16 +146,18 @@
 .tipschedule-share-contents {
   min-width: 40%;
   border: 1px solid var(--bgTertiaryEmphasis);
-  background-color: var(--bgSecondaryEmphasis);
+  background-color: var(--bgTertiaryChoice);
   padding: 0.1em 0.4em;
   display: inline-block;
 }
 
-.tipschedule-share-title {
+.tipschedule-share-titletext {
+  display: inline-block;
   font-size: 1.1em;
   font-style: italic;
   padding-bottom: 0.3em;
 }
+
 
 .tipschedule-share-comment {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
@@ -166,6 +168,8 @@
   margin-top: 0.6em;
 }
 
+.tipschedule-share-select {}
+
 .tipschedule-share-select.select-css {
   max-width: none;
   margin-left: 0;
@@ -174,5 +178,8 @@
 .tipschedule-share-control {
   cursor: pointer;
   font-size: 1.5em;
-  padding-right: 6px;
+}
+
+.tipschedule-share-control.fa-check-square {
+  float: right;
 }
