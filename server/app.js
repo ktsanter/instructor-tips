@@ -13,10 +13,15 @@ app.use(bodyParser.json());
 
 const mariadb = require('mariadb')
 
+var nodemailer = require('nodemailer');
+
 const userManagementClass = require('./classes/usermanagement')
 const userManagement = new userManagementClass(mariadb, 'instructortips');
 
 /* temporary */ userManagement.setUser({userShortName: 'ksanter'});
+
+const gMailerClass = require('./classes/gmailer');
+const gMailer = new gMailerClass(nodemailer);
 
 const dbAdminQueryClass = require('./classes/dbadmin_query')
 const dbAdminQuery = new dbAdminQueryClass(mariadb, 'instructortips');
@@ -72,9 +77,16 @@ app.get('/usermanagement/getuser', async function (req, res) {
   res.send(dbResult);
 })
 
+//  *** temporary for faked login **
 app.get('/debug/query/users',  async function (req, res) {
   var dbResult = await dbAdminQuery._getUsers('users');
   res.send(dbResult);
+})
+
+// *** debugging email send
+app.get('/debug/query/testmessage',  async function (req, res) {
+  var mailerResult = await gMailer.sendTestMessage(req.params, res.Body);
+  res.send(mailerResult);
 })
 
 //------------------------------------------------------
@@ -101,7 +113,7 @@ app.post('/tipmanager/query/:queryName', async function (req, res) {
 })
 
 app.post('/tipmanager/insert/:queryName', async function (req, res) {
-  var dbResult = await dbTipManager.doInsert(req.params, req.body, userManagement.getFullUserInfo().data);
+  var dbResult = await dbTipManager.doInsert(req.params, req.body, userManagement.getFullUserInfo().data, gMailer);
   res.send(dbResult);
 })
 

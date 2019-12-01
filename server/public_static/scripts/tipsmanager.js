@@ -33,7 +33,7 @@ const app = function () {
     page.body.appendChild(page.maincontainer);
 
     await _renderPage();
-    //_navDispatch('scheduling');
+    _navDispatch('scheduling');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -76,8 +76,8 @@ const app = function () {
       title: appInfo.appName,
       
       items: [
-        {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
+        {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
         {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
         {label: htmlForLogin, callback: _showLogin, subitems: null, rightjustify: true}
       ],

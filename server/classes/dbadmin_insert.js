@@ -113,7 +113,7 @@ module.exports = internal.dbAdminInsert = class {
   async _insertUser(params, postData) {
     var result = this._queryFailureResult();
     
-    var sharedCcheduleOption = 0;
+    var sharedScheduleOption = 0;
     if (postData.sharedschedule == '1') sharedScheduleOption = 1;
     var pushRemindersOption = 0;
     if (postData.pushreminders == '1') pushRemindersOption = 1;
@@ -123,7 +123,7 @@ module.exports = internal.dbAdminInsert = class {
                   '"' + postData.usershortname + '", ' + 
                   '"' + postData.username + '",' + 
                   '"' + postData.email + '", ' +
-                  sharedCcheduleOption + ', ' +
+                  sharedScheduleOption + ', ' +
                   pushRemindersOption +
                 ')';
     

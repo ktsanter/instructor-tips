@@ -168,7 +168,7 @@ module.exports = internal.dbAdminQuery = class {
         {sharedschedule: 'text'},
         {pushreminders: 'text'}
       ],
-      result.displayFields = ['usershortname', 'username', 'emai', 'sharedschedule', 'pushreminders'];
+      result.displayFields = ['usershortname', 'username', 'email', 'sharedschedule', 'pushreminders'];
       result.data = queryResults.data.users,
       result.constraints = {};
     } else {

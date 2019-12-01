@@ -13,8 +13,16 @@ body {
 	font-size: 13px;
 }
 
-#mainContainer.bump-down {
-  margin-top: 38px;
+@media screen and (pointer: fine) {
+  #mainContainer.bump-down {
+    margin-top: 3em;
+  }
+}
+
+@media screen and (pointer: coarse) {
+  #mainContainer.bump-down {
+    margin-top: 5.4em;
+  }
 }
 
 .tipmanager-hide {

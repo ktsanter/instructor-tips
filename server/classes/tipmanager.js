@@ -58,14 +58,14 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
 
-  async doInsert(params, postData, userInfo) {
+  async doInsert(params, postData, userInfo, gMailer) {
     var dbResult = this._queryFailureResult();
     
    if (params.queryName == 'tip') {
       dbResult = await this._insertTip(params, postData, userInfo);
       
     } else if (params.queryName == 'storesharedschedule') {
-      dbResult = await this._storeSharedSchedule(params, postData, userInfo);
+      dbResult = await this._storeSharedSchedule(params, postData, userInfo, gMailer);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -550,7 +550,7 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _storeSharedSchedule(params, postData, userInfo) {
+  async _storeSharedSchedule(params, postData, userInfo, gMailer) {
     var result = this._queryFailureResult();
     var query;
     var queryResults;
@@ -577,6 +577,35 @@ module.exports = internal.TipManager = class {
         ') ';
         
       queryResults = await this._dbQuery(query);
+      
+      if (queryResults.success) {
+        query = 
+          'select sharedschedule, username, email ' +
+          'from user ' +
+          'where userid = ' + postData.sharewith + ' ';
+          
+          queryResults = await this._dbQuery(query);
+         
+          if (queryResults.success) {
+            var userData = queryResults.data[0];
+            if (userData.sharedschedule) {
+              var bodyText = userInfo.userName + ' shared a schedule with you in the Instructor Tips app';
+              if (postData.commentText.length > 0) {
+                bodyText += ' along with this comment: "' + postData.commentText + '"';
+              } else {
+                bodyText += '.';
+              }
+              
+              var mailResult = await gMailer.sendMessage(
+                userData.email, 
+                'an Instructor Tips schedule has been shared with you',
+                bodyText
+              )
+                          
+              queryResults.success = mailResult.success;
+            }
+         }
+      }
     }
     
     if (queryResults.success) {   

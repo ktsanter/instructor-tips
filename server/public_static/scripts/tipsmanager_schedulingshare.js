@@ -103,6 +103,7 @@ class TipSchedulingShare {
     this._shareInfo.commentText = commentText;
     
     var queryResults = await this._doPostQuery('tipmanager/insert', 'storesharedschedule', this._shareInfo);
+    
     if (queryResults.success) {
       this._shareInfo.callback();
     }
