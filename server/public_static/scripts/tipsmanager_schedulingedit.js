@@ -90,12 +90,13 @@ class TipSchedulingEdit {
     this._container.appendChild(controlContainer);
 
     var finalizeEditHandler =  (e) => {return this._finalizeEdit(e);};
-    var cancelHandler = (e) => {return this._cancelOperation(e);};
+    var cancelHandler = (e, info) => {return this._cancelOperation(e, tipsData);};
 
     this._editedTipInfo = tipsData;
     var tipTextArea = CreateElement.createTextArea(null, 'tipschedule-add-text edit');
     tipTextArea.value = tipsData.tiptext;
     tipTextArea.rows = 8;
+    tipTextArea.addEventListener('input', (e, info) => {this._handleTipEditChange(e, tipsData);});
     inputContainer.appendChild(tipTextArea);
     
     controlContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-editicon far fa-check-square', 'save', finalizeEditHandler));
@@ -148,8 +149,15 @@ class TipSchedulingEdit {
     this._config.callbacks.finishEdit(this._editedTipInfo);
   }
 
-  _cancelOperation(e) {
+  _cancelOperation(e, tipsData) {
+    if (this._config.editType == 'edit tip') {
+      tipsData.elemTip.innerHTML = MarkdownToHTML.convert(tipsData.tiptext);
+    }
     this._config.callbacks.cancelChange();
+  }
+  
+  _handleTipEditChange(e, tipsData) {
+    tipsData.elemTip.innerHTML = MarkdownToHTML.convert(e.target.value);
   }
 
   //------------------------------------------------------------

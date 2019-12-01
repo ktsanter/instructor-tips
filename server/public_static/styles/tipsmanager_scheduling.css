@@ -142,6 +142,7 @@
 
 .tipschedule-highlight {
   background-color: var(--bgSecondaryChoice) !important;
+  color: white;
 }
 
 .tipschedule-highlight .tipschedule-controls {
@@ -157,7 +158,7 @@
 }
 
 .tipschedule-share-contents {
-  min-width: 40%;
+  min-width: 30%;
   border: 1px solid var(--bgTertiaryEmphasis);
   background-color: var(--bgTertiaryChoice);
   padding: 0.1em 0.4em;
@@ -195,4 +196,6 @@
 
 .tipschedule-share-control.fa-check-square {
   float: right;
+  padding-top: 0.7em;
+  padding-left: 0.5em;
 }

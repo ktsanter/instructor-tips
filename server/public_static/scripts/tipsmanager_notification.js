@@ -18,7 +18,6 @@ class NotificationOptions {
   // initial rendering
   //--------------------------------------------------------------
   render(notice) {
-    console.log('render');
     this._container = CreateElement.createDiv(null, 'notification ' + this._HIDE_CLASS);
 
     this._notice = notice;
@@ -40,8 +39,6 @@ class NotificationOptions {
   }
 
   async update() {
-    console.log('update');
-
     var queryResults = await this._doGetQuery('tipmanager/query', 'notificationoptions');
     this._prepContainerForUpdate();
     
@@ -68,10 +65,15 @@ class NotificationOptions {
     
     var elemSharedSchedule = this._createSliderSwitch('shared schedules', 'shared schedules', 'notification-control sharedschedule', handler);
     this._setSliderValue(elemSharedSchedule, notificationData.sharedschedule);
+    elemSharedSchedule.title = 'receive email notifications when a schedule is shared with you';
 
     var elemPushReminders = this._createSliderSwitch('reminders', 'reminders', 'notification-control pushreminders', handler);
     this._setSliderValue(elemPushReminders, notificationData.pushreminders);
+    elemPushReminders.title = 'receive weekly reminders about your schedule';
 
+    var elemEmail = CreateElement.createTextInput(null, 'notification-control email', notificationData.email);
+    var elemEmailConfirm = CreateElement.createButton(null, 'notification-control email-confirm', 'save', 'save email', handler);
+    
     var elemSubContainer = CreateElement.createDiv(null, 'notification-contents-container');
     elemSubContainer.appendChild(elemSharedSchedule);
     container.appendChild(elemSubContainer);
@@ -80,7 +82,11 @@ class NotificationOptions {
     elemSubContainer.appendChild(elemPushReminders);
     container.appendChild(elemSubContainer);
     
-    var elem
+    elemSubContainer = CreateElement.createDiv(null, 'notification-contents-container');
+    container.appendChild(elemSubContainer);
+    elemSubContainer.appendChild(elemEmail);
+    elemSubContainer.appendChild(elemEmailConfirm);    
+
     return container;
   }
 
@@ -88,20 +94,17 @@ class NotificationOptions {
   // handlers
   //--------------------------------------------------------------    
   async _updateSettings(e) {
-    console.log('update settings');
     var elemSharedSchedule = this._container.getElementsByClassName('sharedschedule')[0];
     var elemPushReminders = this._container.getElementsByClassName('pushreminders')[0];
+    var elemEmail = this._container.getElementsByClassName('email')[0];
     
     var postData = {
       sharedschedule: this._getSliderValue(elemSharedSchedule),
-      pushreminders: this._getSliderValue(elemPushReminders)
+      pushreminders: this._getSliderValue(elemPushReminders),
+      email: elemEmail.value
     };
-    console.log(postData);
     
     var queryResults = await this._doPostQuery('tipmanager/update', 'notificationoptions', postData);
-    if (queryResults.success) {
-      //this.update();
-    }
   }
   
   //--------------------------------------------------------------

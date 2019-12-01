@@ -70,7 +70,7 @@ const app = function () {
     }
     
     var htmlForLogin = userInfo.username + elemCount.outerHTML;
-    var htmlForShared = 'shared' + elemCount2.outerHTML;
+    var htmlForShared = 'shared schedules' + elemCount2.outerHTML;
 
     var navConfig = {
       title: appInfo.appName,
@@ -78,7 +78,6 @@ const app = function () {
       items: [
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
-        {label: 'Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
         {label: htmlForLogin, callback: _showLogin, subitems: null, rightjustify: true}
       ],
       
@@ -91,11 +90,13 @@ const app = function () {
     };
     
     if (allowAdmin) {
+      navConfig.items.splice(2, 0, {label: 'Tip Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false});
+
       navConfig.items.push(
         {label: 'Admin', callback: null, 
           subitems: [
-            {label: 'Privileges', callback: () => {return _navDispatch('privileges');}},
             {label: 'Users', callback: () => {return _navDispatch('users');}},
+            {label: 'Privileges', callback: () => {return _navDispatch('privileges');}},
             {label: 'UserPrivileges', callback: () => {return _navDispatch('userprivileges');}},
             {label: 'TermGroups', callback: () => {return _navDispatch('termgroups');}},
             {label: 'Terms', callback: () => {return _navDispatch('terms');}},

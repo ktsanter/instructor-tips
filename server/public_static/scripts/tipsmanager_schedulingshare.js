@@ -69,7 +69,6 @@ class TipSchedulingShare {
     var elemTitleContainer = CreateElement.createDiv(null, 'tipschedule-share-title')
     container.appendChild(elemTitleContainer);
     elemTitleContainer.appendChild(CreateElement.createDiv(null, 'tipschedule-share-titletext', 'Share this schedule with...'));
-    elemTitleContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-share-control far fa-check-square', 'confirm you want to share the schedule', (e) => {return this._confirm(e);}));
 
     var userList = [];
     for (var i = 0; i < userData.length; i++) {
@@ -79,11 +78,16 @@ class TipSchedulingShare {
       
     container.appendChild(CreateElement.createSelect(null, 'tipschedule-share-select select-css', null, userList));
     
+    var elemCommentContainer = CreateElement.createDiv(null, null);
+    container.appendChild(elemCommentContainer);
+    
     var elemComment = CreateElement.createTextArea(null, 'tipschedule-share-comment');
-    container.appendChild(elemComment);
+    elemCommentContainer.appendChild(elemComment);
     elemComment.placeholder = 'add a comment';
     elemComment.rows = 1;
     elemComment.cols = 60;
+
+    elemCommentContainer.appendChild(CreateElement.createIcon(null, 'tipschedule-share-control far fa-check-square', 'confirm you want to share the schedule', (e) => {return this._confirm(e);}));
 
     return container;
   }

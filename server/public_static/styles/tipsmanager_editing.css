@@ -66,6 +66,10 @@
 
 .dbadmin-highlight {
   background-color:var(--bgSecondaryChoice) !important;
+  color: white;
+}
+.dbadmin-highlight .dbadmin-editicon {
+  color: black;
 }
 
 .dbadmin-datacontent {

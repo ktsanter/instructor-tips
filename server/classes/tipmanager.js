@@ -783,7 +783,7 @@ module.exports = internal.TipManager = class {
     
     var queryList = {
       notificationoptions: 
-        'select sharedschedule, pushreminders ' +
+        'select sharedschedule, pushreminders, email ' +
         'from user ' +
         'where userid = ' + userInfo.userId + ' '
     };
@@ -1071,7 +1071,8 @@ module.exports = internal.TipManager = class {
       'update user ' +
       'set ' + 
         'sharedschedule = ' + postData.sharedschedule + ', ' +
-        'pushreminders = ' + postData.pushreminders + ' ' +
+        'pushreminders = ' + postData.pushreminders + ', ' +
+        'email = "' + postData.email + '" ' +
       'where userid = ' + userInfo.userId + ' ';
 
     queryResults = await this._dbQuery(query);

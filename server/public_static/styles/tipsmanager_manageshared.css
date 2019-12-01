@@ -1,3 +1,94 @@
 /*-------------------------------------------------------------------
- * styling for NotificationOptions class
+ * styling for TipSchedulingShareManagement class
  *------------------------------------------------------------------*/
+.manageschedule-content table {
+  border-collapse: collapse;
+  border: 1px solid var(--bgTertiaryEmphasis);
+}
+
+.manageschedule-content th {
+  background-color: var(--bgPrimaryEmphasis);
+  color: white;
+  text-align:left;
+  font-weight: normal;
+  border-style: none;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.manageschedule-content tr {
+  background-color: #fff;
+}
+
+.manageschedule-content tr:nth-of-type(even){
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.manageschedule-highlight {
+  background-color: var(--bgSecondaryChoice) !important;
+}
+
+.manageschedule-highlight2 {
+  border-left: 3px solid var(--bgSecondaryChoice);
+  border-top: 3px solid var(--bgSecondaryChoice);
+  border-right: 3px solid var(--bgSecondaryChoice);
+}
+
+.manageschedule-content td {
+  padding-right: 1.6em;
+}
+
+
+.manageschedule-content td:nth-of-type(7){
+  text-align:center;
+}
+
+.manageschedule-coursecontainer {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  margin-right: 0.4em;
+}
+
+.manageschedule-course.select-css {
+  max-width: none;
+  width: 100%;
+}
+
+.manageschedule-coursecontainer.no-courses {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;  
+  padding-top: 0.4em;
+  padding-bottom: 0.4em;
+  padding-left: 0.3em;
+  font-style: italic;
+}
+
+.manageschedule-import {
+  font-size: 1.1em;
+  padding-left: 0.2em;
+  padding-right: 0;
+}
+
+.manageschedule-delete {
+  font-size: 1.3em;
+}
+
+.manageschedule-comment.fa-comment {
+  vertical-align: top;
+  padding-left: 0.2em;
+}
+
+.manageschedule-commentrow {
+  background-color: var(--bgQuaternaryEmphasis) !important;
+  border-left: 3px solid var(--bgSecondaryChoice);
+  border-bottom: 3px solid var(--bgSecondaryChoice);
+  border-right: 3px solid var(--bgSecondaryChoice);  
+}
+
+.manageschedule-commenttext {
+  background-color: white; /*var(--bgSecondaryEmphasis);*/
+  border: 1px solid var(--bgTertiaryEmphasis);
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  padding-left: 0.2em;
+}

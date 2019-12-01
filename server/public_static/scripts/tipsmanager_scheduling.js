@@ -410,6 +410,9 @@ class TipScheduling {
     
     this._insertAfter(this._tipEditContainer, tipContainer);
     
+    //console.log(tipContainer.getElementsByClassName('weeklytip-singletip')[0]);
+    tipInfo.elemTip = tipContainer.getElementsByClassName('weeklytip-singletip')[0];
+    
     this._tipEditEditor.update(tipInfo);
     this._tipEditEditor.show(true);    
   }
