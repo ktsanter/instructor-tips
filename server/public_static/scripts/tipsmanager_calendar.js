@@ -137,9 +137,14 @@ class TipCalendar {
   }
   
   _renderWeek(weekNumber, weekInfo) {
-    var container = CreateElement.createDiv(null, 'calendar-week', 'week ' + weekNumber + ': ' + weekInfo.firstDay);
+    var container = CreateElement.createDiv(null, 'calendar-week');
     container.referenceRow = weekInfo.referenceRow;
-    container.addEventListener('click', (e) => {return this._test(e);});
+    
+    container.appendChild(CreateElement.createDiv(null, 'calendar-weeknumber', 'week ' + weekNumber));
+    
+    var elemFirstDay = CreateElement.createTextInput(null, 'calendar-weekfirstday', weekInfo.firstDay);
+    container.appendChild(elemFirstDay);
+    elemFirstDay.type = 'date';
     
     return container;
   }
@@ -154,6 +159,7 @@ class TipCalendar {
   }
   
   _test(e) {
+    console.log(e.target);
     console.log(e.target.referenceRow);
   }
   

@@ -1,3 +1,25 @@
 /*-------------------------------------------------------------------
  * styling for TipCalendar class
  *------------------------------------------------------------------*/
+
+.calendar-container {
+  margin-top: 1.0em;
+}
+
+.calendar-week {
+  padding-bottom: 0.2em;
+}
+
+.calendar-weeknumber {
+  width: 5em; 
+  display: inline-block;
+}
+
+.calendar-weekfirstday {
+  display: inline-block;
+}
+
+input.calendar-weekfirstday {
+  	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
