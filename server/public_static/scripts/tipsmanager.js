@@ -15,7 +15,7 @@ const app = function () {
     aboutURL: 'about.html',
     helpURL: 'help.html',
     navOptions: [
-      'courseselection', 'scheduling', 'editing',
+      'courseselection', 'scheduling', 'editing', 'calendarui',
       'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars',
       'manageshared', 'notification'
     ],
@@ -91,18 +91,19 @@ const app = function () {
     
     if (allowAdmin) {
       navConfig.items.splice(2, 0, {label: 'Tip Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false});
+      navConfig.items.splice(3, 0, {label: 'Calendar', callback: () => {return _navDispatch('calendarui');}, subitems: null, rightjustify: false});
 
       navConfig.items.push(
         {label: 'Admin', callback: null, 
           subitems: [
-            {label: 'Users', callback: () => {return _navDispatch('users');}},
-            {label: 'Privileges', callback: () => {return _navDispatch('privileges');}},
-            {label: 'UserPrivileges', callback: () => {return _navDispatch('userprivileges');}},
-            {label: 'TermGroups', callback: () => {return _navDispatch('termgroups');}},
-            {label: 'Terms', callback: () => {return _navDispatch('terms');}},
-            {label: 'Courses', callback: () => {return _navDispatch('courses');}},
-            {label: 'UserCourses', callback: () => {return _navDispatch('usercourses');}},
-            {label: 'Calendars', callback: () => {return _navDispatch('calendars');}}
+            {label: 'User', callback: () => {return _navDispatch('users');}},
+            {label: 'Privilege', callback: () => {return _navDispatch('privileges');}},
+            {label: 'UserPrivilege', callback: () => {return _navDispatch('userprivileges');}},
+            {label: 'TermGroup', callback: () => {return _navDispatch('termgroups');}},
+            {label: 'Term', callback: () => {return _navDispatch('terms');}},
+            {label: 'Course', callback: () => {return _navDispatch('courses');}},
+            {label: 'UserCourse', callback: () => {return _navDispatch('usercourses');}},
+            {label: 'Calendar', callback: () => {return _navDispatch('calendars');}}
           ]
         }
       );
@@ -129,6 +130,9 @@ const app = function () {
     
     settings.editing = new TipEditing();
     container.appendChild(await settings.editing.render());
+
+    settings.calendarui = new TipCalendar();
+    container.appendChild(await settings.calendarui.render());
 
     settings.manageshared = new TipSchedulingShareManagement({
       callback: () => {return _sharedScheduleChange();}
