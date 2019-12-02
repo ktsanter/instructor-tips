@@ -19,7 +19,6 @@ class TipCalendar {
   // initial rendering
   //--------------------------------------------------------------
   render(notice) {
-    console.log('render');
     this._container = CreateElement.createDiv(null, 'tipcalendar ' + this._HIDE_CLASS);
 
     this._notice = notice;
@@ -41,8 +40,8 @@ class TipCalendar {
   }
 
   async update() {
-    console.log('update');
     var queryResults = await this._doGetQuery('admin/query', 'calendars');
+    
     this._prepContainerForUpdate();
     
     if (queryResults.success) {
@@ -76,9 +75,9 @@ class TipCalendar {
       if (!organized.hasOwnProperty(schoolYear)) organized[schoolYear] = {};
       if (!organized[schoolYear].hasOwnProperty(termName)) organized[schoolYear][termName] = {};
       if (!organized[schoolYear][termName].hasOwnProperty(startType)) organized[schoolYear][termName][startType] = {};
-      organized[schoolYear][termName][startType][week] = firstDay;
+      organized[schoolYear][termName][startType][week] = {"firstDay": firstDay, "referenceRow": calendarData[i]};
       
-      selectionSet.add(schoolYear + ', ' + termName + ', ' + startType);
+      selectionSet.add(this._buildSelectionFromComponents(schoolYear, termName, startType));
     }
     
     organized.selectionList = Array.from(selectionSet);
@@ -87,7 +86,6 @@ class TipCalendar {
   }
   
   _renderUI() {
-    console.log('renderUI');
     var container = CreateElement.createDiv(null, 'tipcalendar-ui');
     
     container.appendChild(this._renderSelectionUI());
@@ -128,8 +126,22 @@ class TipCalendar {
     this._removeChildren(container);
         
     if (selection) {
-      container.innerHTML = 'render calendar for: ' + selection;
+      var components = this._getComponentsFromSelection(selection);
+      var calendar = this._calendarInfo[components.schoolYear][components.termName][components.startType];
+      var numWeeks = Object.keys(calendar).length;
+      
+      for (var i = 1; i <= numWeeks; i++) {
+        container.appendChild(this._renderWeek(i, calendar[i])  );
+      }
     }
+  }
+  
+  _renderWeek(weekNumber, weekInfo) {
+    var container = CreateElement.createDiv(null, 'calendar-week', 'week ' + weekNumber + ': ' + weekInfo.firstDay);
+    container.referenceRow = weekInfo.referenceRow;
+    container.addEventListener('click', (e) => {return this._test(e);});
+    
+    return container;
   }
 
   //--------------------------------------------------------------
@@ -141,6 +153,10 @@ class TipCalendar {
     this._updateCalendar(selection);
   }
   
+  _test(e) {
+    console.log(e.target.referenceRow);
+  }
+  
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------    
@@ -150,6 +166,19 @@ class TipCalendar {
     }
   }  
   
+  _buildSelectionFromComponents(schoolYear, termName, startType) {
+    return schoolYear + ', ' + termName + ', ' + startType;
+  }
+  
+  _getComponentsFromSelection(selection) {
+    var componentList = selection.split(', ');
+    return {
+      schoolYear: componentList[0],
+      termName: componentList[1],
+      startType: componentList[2]
+    };
+  }
+
   _formatTimeStamp(timeStamp) {
     var formatted = timeStamp;
     
