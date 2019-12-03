@@ -50,6 +50,9 @@ module.exports = internal.dbAdminDelete = class {
     } else if (params.queryName == 'calendars') {
       dbResult = await this._deleteCalendar(params, postData);
       
+    } else if (params.queryName == 'schoolyear-calendar') {
+      dbResult = await this._deleteSchoolYearCalendar(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -228,6 +231,25 @@ module.exports = internal.dbAdminDelete = class {
 
     var query = 'delete from calendar ' +
                 'where calendarid = ' + postData.calendarid;
+
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+  async _deleteSchoolYearCalendar(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from calendar ' +
+                'where schoolyear = "' + postData.schoolyear + '" ';
 
     var queryResults = await this._dbQuery(query);
 

@@ -107,9 +107,9 @@ class TipCalendar {
     var handler = (e) => {return this._selectionChange();};
     container.appendChild(CreateElement.createSelect(null, 'tipcalendar-ui calendar-selection select-css', handler, selections));
     
-    container.appendChild(CreateElement.createButton(null, 'calendar-create', 'create', 'create a new calendar', () => {return this._handleButton('create')}));
-    container.appendChild(CreateElement.createButton(null, 'calendar-save', 'save', 'save changes for this term', () => {return this._handleButton('save')}));
-    container.appendChild(CreateElement.createButton(null, 'calendar-delete', 'delete', 'delete the entire year\'s calendar', () => {return this._handleButton('delete')}));
+    container.appendChild(CreateElement.createButton(null, 'calendar-control calendar-create', 'create', 'create a new calendar', () => {return this._handleButton('create')}));
+    container.appendChild(CreateElement.createButton(null, 'calendar-control calendar-save', 'save', 'save changes for this term', () => {return this._handleButton('save')}));
+    container.appendChild(CreateElement.createButton(null, 'calendar-control calendar-delete', 'delete', 'delete the entire year\'s calendar', () => {return this._handleButton('delete')}));
     
     return container;
   }
@@ -163,7 +163,6 @@ class TipCalendar {
   }
   
   _markOutOfSequence(container) {
-    console.log(container);
     var elemListWeeks = container.getElementsByClassName('calendar-week');
     var prevWeekFirstDay = elemListWeeks[0].getElementsByClassName('calendar-weekfirstday')[0].value;
     
@@ -173,7 +172,6 @@ class TipCalendar {
       var diffTime = new Date(firstDay).getTime() - new Date(prevWeekFirstDay).getTime();
       var diffDays = diffTime / (1000 * 3600 * 24);
       
-      console.log(i + ' ' + prevWeekFirstDay + ' ' + firstDay + ' ' + diffDays);
       var elemWeekNumber = elemListWeeks[i].getElementsByClassName('calendar-weeknumber')[0];
       
       if (elemWeekNumber.classList.contains('out-of-sequence')) elemWeekNumber.classList.remove('out-of-sequence');
@@ -192,16 +190,71 @@ class TipCalendar {
   }
 
   //--------------------------------------------------------------
+  // create/save/delete
+  //--------------------------------------------------------------    
+  async _createCalendar() {
+    var schoolYearName = prompt('Enter the name for the new school year calendar (max 30 characters, no quotes):');
+    if (schoolYearName == null) return;
+    if (schoolYearName.length == '0' || schoolYearName.length > 30) {
+      console.log('invalid school year name');
+      return;
+    } 
+ 
+    var postData = {schoolyear: schoolYearName};
+    var queryResult = await this._doPostQuery('admin/insert', 'schoolyear-calendar', postData );
+
+    if (queryResult.success) {
+      this.update();
+    }
+  }
+  
+  async _saveCalendar() {
+    var selection = this._getCalendarSelection();
+    var selectionComponents = this._getComponentsFromSelection(selection);
+    console.log('save ' + JSON.stringify(selectionComponents));
+  }
+  
+  async _deleteCalendar() {
+    var selection = this._getCalendarSelection();
+    var selectionComponents = this._getComponentsFromSelection(selection);
+    var schoolYearName = selectionComponents.schoolYear;
+    
+    var msg = 'All calendars for the school year "' + schoolYearName + '" will be deleted.';
+    msg += '\n\nAre you sure you want to do this?';
+    if (!confirm(msg)) return;
+    
+    var postData = {schoolyear: schoolYearName};
+    var queryResult = await this._doPostQuery('admin/delete', 'schoolyear-calendar', postData );
+
+    if (queryResult.success) {
+      this.update();
+    }
+  }
+  
+  _getCalendarSelection() {
+    var elemSelect = this._container.getElementsByClassName('calendar-selection')[0];
+    return elemSelect[elemSelect.selectedIndex].value;
+  }
+  
+  //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------    
   async _selectionChange(e) {
     var elemSelect = this._container.getElementsByClassName('calendar-selection')[0];
     var selection = elemSelect[elemSelect.selectedIndex].value;
-    this._updateCalendar(selection);
+    this._updateCalendar(this._getCalendarSelection());
   }
   
   _handleButton(changeType) {
-    console.log(changeType);
+    if (changeType == 'create') {
+      this._createCalendar();
+
+    } else if (changeType == 'save') {
+      this._saveCalendar();
+
+    } else if (changeType == 'delete') {
+      this._deleteCalendar();
+    }
   }
   
   _handleDropFill(e) {

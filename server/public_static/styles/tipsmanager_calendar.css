@@ -1,6 +1,12 @@
 /*-------------------------------------------------------------------
  * styling for TipCalendar class
  *------------------------------------------------------------------*/
+.calendar-control {
+  margin-top: 0.2em;
+  width: 4.8em;
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  color: #444;
+}
 
 .calendar-container {
   margin-top: 1.0em;

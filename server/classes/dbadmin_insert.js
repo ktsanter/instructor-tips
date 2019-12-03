@@ -50,6 +50,9 @@ module.exports = internal.dbAdminInsert = class {
     } else if (params.queryName == 'calendars') {
       dbResult = await this._insertCalendar(params, postData);
       
+    } else if (params.queryName == 'schoolyear-calendar') {
+      dbResult = await this._insertSchoolYearCalendar(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -71,9 +74,13 @@ module.exports = internal.dbAdminInsert = class {
     try {
         conn = await this._pool.getConnection();
         await conn.query('USE ' + this._dbName);
-        await conn.query(sql);
+        const rows = await conn.query(sql);
         dbResult.success = true;
         dbResult.details = 'db request succeeded';
+        dbResult.data = [];
+        for (var i = 0; i < rows.length; i++) {
+          dbResult.data.push(rows[i]);
+        }        
         
     } catch (err) {
       dbResult.details = err;
@@ -85,6 +92,27 @@ module.exports = internal.dbAdminInsert = class {
     
     return dbResult;
   }
+  
+  async _dbQueries(queryList) {
+    var queryResults = {
+      success: true,
+      details: 'queries succeeded',
+      data: {}
+    };
+    
+    for (var key in queryList) {
+      var singleResult = await this._dbQuery(queryList[key]);
+      if (!singleResult.success) {
+        queryResults.success = false;
+        queryResults.details = 'DB query failed (' + key +') ' + singleResult.details;
+        
+      } else {
+        queryResults.data[key] = singleResult.data;
+      }
+    }
+          
+    return queryResults;
+  }   
 
 //---------------------------------------------------------------
 // specific query functions
@@ -264,6 +292,63 @@ module.exports = internal.dbAdminInsert = class {
                 ')';
 
     var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  async _insertSchoolYearCalendar(params, postData) {
+    var result = this._queryFailureResult();
+    var startTypeList = {
+      'semester': ['start1', 'start2', 'ap'],
+      'trimester':['start1', 'start2'],
+      'summer': ['start1']
+    }
+    
+    var query = 
+      'select ' +
+        'tg.termgroupname, tg.termlength, ' +
+        't.termid, t.termname ' +
+      'from termgroup as tg, term as t ' +
+      'where tg.termgroupid = t.termgroupid ';
+      
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      var schoolYearName = postData.schoolyear;
+      var defaultFirstDay = '2000-01-01';
+      var queryList = {};
+      
+      for (var i = 0; i < queryResults.data.length; i++) {
+        var termInfo = queryResults.data[i];
+        var arrStartTypes = startTypeList[termInfo.termgroupname];
+        
+        for (var j = 0; j < arrStartTypes.length; j++) {
+          var startType = arrStartTypes[j];
+          
+          for (var week = 1; week <= termInfo.termlength; week++) {
+            queryList[i + '-' + j + '-' + week] = 
+              'insert into calendar (termid, schoolyear, week, firstday, starttype) ' +
+              'values ( ' +
+                termInfo.termid + ', ' +
+                '"' + schoolYearName + '", ' +
+                week + ', ' +
+                '"' + defaultFirstDay + '", ' +
+                '"' + startType + '" ' +                
+              ') ';
+          }
+        }
+      }
+      
+      queryResults = await this._dbQueries(queryList);
+    }
     
     if (queryResults.success) {
       result.success = true;
