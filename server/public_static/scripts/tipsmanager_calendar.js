@@ -23,7 +23,7 @@ class TipCalendar {
 
     this._notice = notice;
     
-    return this._container;;
+    return this._container;
   }
 
   //--------------------------------------------------------------
@@ -88,13 +88,13 @@ class TipCalendar {
   _renderUI() {
     var container = CreateElement.createDiv(null, 'tipcalendar-ui');
     
-    container.appendChild(this._renderSelectionUI());
+    container.appendChild(this._renderControls());
     container.appendChild(this._renderCalendar(this._calendarInfo.selectionList[0]));
     
     return container;
   }
   
-  _renderSelectionUI() {
+  _renderControls() {
     var container = CreateElement.createDiv(null, 'tipcalendar-ui selection-container');
     
     var selections = [];
@@ -106,6 +106,10 @@ class TipCalendar {
     
     var handler = (e) => {return this._selectionChange();};
     container.appendChild(CreateElement.createSelect(null, 'tipcalendar-ui calendar-selection select-css', handler, selections));
+    
+    container.appendChild(CreateElement.createButton(null, 'calendar-create', 'create', 'create a new calendar', () => {return this._handleButton('create')}));
+    container.appendChild(CreateElement.createButton(null, 'calendar-save', 'save', 'save changes for this term', () => {return this._handleButton('save')}));
+    container.appendChild(CreateElement.createButton(null, 'calendar-delete', 'delete', 'delete the entire year\'s calendar', () => {return this._handleButton('delete')}));
     
     return container;
   }
@@ -131,22 +135,60 @@ class TipCalendar {
       var numWeeks = Object.keys(calendar).length;
       
       for (var i = 1; i <= numWeeks; i++) {
-        container.appendChild(this._renderWeek(i, calendar[i])  );
+        container.appendChild(this._renderWeek(i, calendar[i], (i < numWeeks)));
       }
+      
+      this._markOutOfSequence(container);
     }
   }
   
-  _renderWeek(weekNumber, weekInfo) {
+  _renderWeek(weekNumber, weekInfo, includeDropFill) {
     var container = CreateElement.createDiv(null, 'calendar-week');
     container.referenceRow = weekInfo.referenceRow;
+    container.addEventListener('mouseenter', (e) => {return this._weekEnterExit(e, true);});
+    container.addEventListener('mouseleave', (e) => {return this._weekEnterExit(e, false);});
     
     container.appendChild(CreateElement.createDiv(null, 'calendar-weeknumber', 'week ' + weekNumber));
     
     var elemFirstDay = CreateElement.createTextInput(null, 'calendar-weekfirstday', weekInfo.firstDay);
     container.appendChild(elemFirstDay);
     elemFirstDay.type = 'date';
+    elemFirstDay.addEventListener('change', (e) => {return this._handleFirstDayChange(e);});
+    
+    if (includeDropFill) {
+      container.append(CreateElement.createIcon(null, 'calendar-dropfill fas fa-arrow-circle-down', 'fill following weeks', (e) => {return this._handleDropFill(e)}));
+    }
     
     return container;
+  }
+  
+  _markOutOfSequence(container) {
+    console.log(container);
+    var elemListWeeks = container.getElementsByClassName('calendar-week');
+    var prevWeekFirstDay = elemListWeeks[0].getElementsByClassName('calendar-weekfirstday')[0].value;
+    
+    for (var i = 1; i < elemListWeeks.length; i++) {
+      var firstDay = elemListWeeks[i].getElementsByClassName('calendar-weekfirstday')[0].value; 
+
+      var diffTime = new Date(firstDay).getTime() - new Date(prevWeekFirstDay).getTime();
+      var diffDays = diffTime / (1000 * 3600 * 24);
+      
+      console.log(i + ' ' + prevWeekFirstDay + ' ' + firstDay + ' ' + diffDays);
+      var elemWeekNumber = elemListWeeks[i].getElementsByClassName('calendar-weeknumber')[0];
+      
+      if (elemWeekNumber.classList.contains('out-of-sequence')) elemWeekNumber.classList.remove('out-of-sequence');
+      elemWeekNumber.title = '';
+      if (diffDays != 7) {
+        elemWeekNumber.classList.add('out-of-sequence');
+        elemWeekNumber.title = 'out of sequence';
+      }
+      
+      prevWeekFirstDay = firstDay;      
+    }      
+  }
+  
+  _getFirstDayFromContainer(weekContainer) {
+    return weekContainer
   }
 
   //--------------------------------------------------------------
@@ -158,11 +200,43 @@ class TipCalendar {
     this._updateCalendar(selection);
   }
   
-  _test(e) {
-    console.log(e.target);
-    console.log(e.target.referenceRow);
+  _handleButton(changeType) {
+    console.log(changeType);
   }
   
+  _handleDropFill(e) {
+    var startWeekNumber = e.target.parentNode.referenceRow.week;
+    
+    var firstDay = new Date(e.target.parentNode.getElementsByClassName('calendar-weekfirstday')[0].value);
+    
+    var weekElements = this._container.getElementsByClassName('calendar-week');
+    for (var i = 0; i < weekElements.length; i++) {
+      var elemWeek = weekElements[i];
+      var weekNumber = elemWeek.referenceRow.week;
+      if (weekNumber > startWeekNumber) {
+        var weekDiff = weekNumber - startWeekNumber;
+        var calculatedDate = new Date(firstDay);
+        calculatedDate.setDate(firstDay.getDate() + weekDiff * 7 + 1);
+        elemWeek.getElementsByClassName('calendar-weekfirstday')[0].value = this._formatDate(calculatedDate);
+      }
+    }
+    
+    this._markOutOfSequence(this._container.getElementsByClassName('calendar-container')[0]);
+  }
+  
+  _weekEnterExit(e, enter) {
+    var elemIcon = e.target.getElementsByClassName('calendar-dropfill')[0];
+    if (enter) {
+      if (elemIcon) elemIcon.style.display = 'inline-block';
+    } else {
+      if (elemIcon) elemIcon.style.display = 'none';
+    }
+  }
+  
+  _handleFirstDayChange(e) {
+    this._markOutOfSequence(this._container.getElementsByClassName('calendar-container')[0]);
+  }
+
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------    
@@ -185,18 +259,17 @@ class TipCalendar {
     };
   }
 
-  _formatTimeStamp(timeStamp) {
-    var formatted = timeStamp;
+  _formatDate(d) {
+    var formatted = d;
     
     if (this._isValidDate(formatted)) {
       formatted = '';
-      if (timeStamp != null & timeStamp != '') {
-        var objDate = new Date(timeStamp);
-        var day = objDate.getDate();
-        var month = objDate.getMonth() + 1;
+      if (d != null & d != '') {
+        var objDate = new Date(d);
+        var day = ('00' + objDate.getDate()).slice(-2);
+        var month = ('00' + (objDate.getMonth() + 1)).slice(-2);
         var year = objDate.getFullYear();
-        formatted = (objDate.getMonth() + 1) + '/' + objDate.getDate() + '/' + objDate.getFullYear();
-        formatted += ' ' + objDate.getHours() + ':' + objDate.getMinutes() + ':' + objDate.getSeconds();
+        formatted =  year  + '-' + month + '-' + day;
       }
     }
     
