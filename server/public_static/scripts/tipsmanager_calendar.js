@@ -209,9 +209,24 @@ class TipCalendar {
   }
   
   async _saveCalendar() {
-    var selection = this._getCalendarSelection();
-    var selectionComponents = this._getComponentsFromSelection(selection);
-    console.log('save ' + JSON.stringify(selectionComponents));
+    var elemWeekList = this._container.getElementsByClassName('calendar-week');
+    var updateData = [];
+    
+    for (var i = 0; i < elemWeekList.length; i++) {
+      var elemWeek = elemWeekList[i];
+      var calendarId = elemWeek.referenceRow.calendarid;
+      var firstDay = elemWeek.getElementsByClassName('calendar-weekfirstday')[0].value;
+      updateData.push({'calendarid': calendarId, 'firstday': firstDay});
+    }
+    
+    var postData = {'updateData': updateData};
+    
+    var queryResult = await this._doPostQuery('admin/update', 'schoolyear-calendar', postData);
+    if (queryResult.success) {
+      var selection = this._getCalendarSelection();
+      await this.update();
+      this._updateCalendar(selection);
+    }
   }
   
   async _deleteCalendar() {

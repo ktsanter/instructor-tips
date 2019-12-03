@@ -50,6 +50,9 @@ module.exports = internal.dbAdminUpdate = class {
     } else if (params.queryName == 'calendars') {
       dbResult = await this._updateCalendar(params, postData);
       
+    } else if (params.queryName == 'schoolyear-calendar') {
+      dbResult = await this._updateSchoolYearCalendar(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -89,6 +92,27 @@ module.exports = internal.dbAdminUpdate = class {
     
     return dbResult;
   }
+  
+  async _dbQueries(queryList) {
+    var queryResults = {
+      success: true,
+      details: 'queries succeeded',
+      data: {}
+    };
+    
+    for (var key in queryList) {
+      var singleResult = await this._dbQuery(queryList[key]);
+      if (!singleResult.success) {
+        queryResults.success = false;
+        queryResults.details = 'DB query failed (' + key +') ' + singleResult.details;
+        
+      } else {
+        queryResults.data[key] = singleResult.data;
+      }
+    }
+          
+    return queryResults;
+  }    
 
 //---------------------------------------------------------------
 // specific query functions
@@ -277,6 +301,31 @@ module.exports = internal.dbAdminUpdate = class {
       result.details = queryResults.details;
     }
     
+    return result;
+  }
+  
+  async _updateSchoolYearCalendar(params, postData) {
+    var result = this._queryFailureResult();
+
+    var queryList = {};
+    for (var i = 0; i < postData.updateData.length; i++) {
+      var item = postData.updateData[i];
+      queryList[item.calendarid] = 
+        'update calendar ' +
+        'set firstday = "' + item.firstday + '" ' +
+        'where calendarid = ' + item.calendarid + ' '
+    }
+        
+    var queryResults = await this._dbQueries(queryList);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+
     return result;
   }
 }
