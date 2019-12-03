@@ -105,11 +105,44 @@ class TipCalendar {
     }
     
     var handler = (e) => {return this._selectionChange();};
-    container.appendChild(CreateElement.createSelect(null, 'tipcalendar-ui calendar-selection select-css', handler, selections));
+    var subContainer = CreateElement.createDiv(null, 'tipcalendar-ui calendar-subcontainer');
+    container.appendChild(subContainer);
+    subContainer.appendChild(CreateElement.createSelect(null, 'tipcalendar-ui calendar-selection select-css', handler, selections));
+    subContainer.appendChild(CreateElement.createIcon(null, 'calendar-dirtybit fas fa-asterisk', 'unsaved changes'))
     
-    container.appendChild(CreateElement.createButton(null, 'calendar-control calendar-create', 'create', 'create a new calendar', () => {return this._handleButton('create')}));
-    container.appendChild(CreateElement.createButton(null, 'calendar-control calendar-save', 'save', 'save changes for this term', () => {return this._handleButton('save')}));
-    container.appendChild(CreateElement.createButton(null, 'calendar-control calendar-delete', 'delete', 'delete the entire year\'s calendar', () => {return this._handleButton('delete')}));
+    subContainer = CreateElement.createDiv(null, 'calendary-secondary-subcontainer');
+    container.appendChild(subContainer);
+    subContainer.appendChild(CreateElement.createButton(
+      null, 
+      'calendar-control calendar-create', 
+      'create', 
+      'create a new set of calendars for a school year', 
+      () => {return this._handleButton('create')}
+    ));
+    subContainer.appendChild(CreateElement.createButton(
+      null, 
+      'calendar-control calendar-delete', 
+      'delete', 
+      'delete the entire school year\'s calendar', 
+      () => {return this._handleButton('delete')}
+    ));
+
+    subContainer = CreateElement.createDiv(null, 'calendary-secondary-subcontainer');
+    container.appendChild(subContainer);
+    subContainer.appendChild(CreateElement.createButton(
+      null, 
+      'calendar-control calendar-save', 
+      'save', 
+      'save changes for this term', 
+      () => {return this._handleButton('save')}
+    ));
+    subContainer.appendChild(CreateElement.createButton(
+      null, 
+      'calendar-control calendar-save', 
+      'discard', 
+      'discard changes for this term', 
+      () => {return this._handleButton('discard')}
+    ));
     
     return container;
   }
@@ -126,6 +159,7 @@ class TipCalendar {
     var container = optionalContainer;
     if (!optionalContainer) {
       container = this._container.getElementsByClassName('calendar-container')[0];
+      this._container.getElementsByClassName('calendar-dirtybit')[0].style.display = 'none';
     }
     this._removeChildren(container);
         
@@ -208,7 +242,25 @@ class TipCalendar {
     }
   }
   
-  async _saveCalendar() {
+  
+  async _deleteCalendar() {
+    var selection = this._getCalendarSelection();
+    var selectionComponents = this._getComponentsFromSelection(selection);
+    var schoolYearName = selectionComponents.schoolYear;
+    
+    var msg = 'All calendars for the school year "' + schoolYearName + '" will be deleted.';
+    msg += '\n\nAre you sure you want to do this?';
+    if (!confirm(msg)) return;
+    
+    var postData = {schoolyear: schoolYearName};
+    var queryResult = await this._doPostQuery('admin/delete', 'schoolyear-calendar', postData );
+
+    if (queryResult.success) {
+      this.update();
+    }
+  }
+
+  async _saveCalendarChanges() {
     var elemWeekList = this._container.getElementsByClassName('calendar-week');
     var updateData = [];
     
@@ -229,21 +281,9 @@ class TipCalendar {
     }
   }
   
-  async _deleteCalendar() {
-    var selection = this._getCalendarSelection();
-    var selectionComponents = this._getComponentsFromSelection(selection);
-    var schoolYearName = selectionComponents.schoolYear;
-    
-    var msg = 'All calendars for the school year "' + schoolYearName + '" will be deleted.';
-    msg += '\n\nAre you sure you want to do this?';
-    if (!confirm(msg)) return;
-    
-    var postData = {schoolyear: schoolYearName};
-    var queryResult = await this._doPostQuery('admin/delete', 'schoolyear-calendar', postData );
-
-    if (queryResult.success) {
-      this.update();
-    }
+  async _discardCalendarChanges() {
+    var elemSelect = this._container.getElementsByClassName('calendar-selection')[0];
+    this._updateCalendar(this._getCalendarSelection());
   }
   
   _getCalendarSelection() {
@@ -265,7 +305,10 @@ class TipCalendar {
       this._createCalendar();
 
     } else if (changeType == 'save') {
-      this._saveCalendar();
+      this._saveCalendarChanges();
+
+    } else if (changeType == 'discard') {
+      this._discardCalendarChanges();
 
     } else if (changeType == 'delete') {
       this._deleteCalendar();
@@ -290,6 +333,7 @@ class TipCalendar {
     }
     
     this._markOutOfSequence(this._container.getElementsByClassName('calendar-container')[0]);
+    this._container.getElementsByClassName('calendar-dirtybit')[0].style.display = 'inline-block';    
   }
   
   _weekEnterExit(e, enter) {
@@ -303,6 +347,7 @@ class TipCalendar {
   
   _handleFirstDayChange(e) {
     this._markOutOfSequence(this._container.getElementsByClassName('calendar-container')[0]);
+    this._container.getElementsByClassName('calendar-dirtybit')[0].style.display = 'inline-block';
   }
 
   //--------------------------------------------------------------
