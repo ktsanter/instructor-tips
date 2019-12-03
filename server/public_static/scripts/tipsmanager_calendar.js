@@ -116,7 +116,7 @@ class TipCalendar {
       null, 
       'calendar-control calendar-create', 
       'create', 
-      'create a new set of calendars for a school year', 
+      'create a set of calendars for a new school year', 
       () => {return this._handleButton('create')}
     ));
     subContainer.appendChild(CreateElement.createButton(
