@@ -1,6 +1,8 @@
 "use strict";
 //---------------------------------------------------------------
-// server-side user management
+// server-side user management 
+// NOTE: this is a temporary implementation without security
+//       or session management
 //---------------------------------------------------------------
 // TODO:
 //---------------------------------------------------------------
@@ -39,6 +41,39 @@ module.exports = internal.UserManagement = class {
     dbResult.data = this._userInfo;
     
     return dbResult;
+  }
+  
+  getUserInfo() {
+    var dbResult = this._queryFailureResult();
+    
+    dbResult.success = true;
+    dbResult.details = 'getUser succeeded';
+    dbResult.data = {
+      usershortname: this._userInfo.userShortName,
+      username: this._userInfo.userName
+    }
+    
+    return dbResult;
+  }
+  
+  async getUserList() {
+    var result = this._queryFailureResult();
+    
+    var query = 'select userid, usershortname, username ' +
+                'from user ' +
+                'order by username ';
+    
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query  succeeded';
+      result.data = queryResults.data;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
   }
   
   getUserInfo() {

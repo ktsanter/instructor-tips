@@ -80,7 +80,7 @@ app.get('/tipmanager/query/:queryName', async function (req, res) {
   }
 })
 
-// *** temporary for user management ***
+// ------ *** temporary user management *** ---------------
 app.get('/usermanagement/getuser', async function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel('instructor')) {
     res.send(await userManagement.getUserInfo(req.params, req.body));
@@ -90,9 +90,9 @@ app.get('/usermanagement/getuser', async function (req, res) {
   }
 })
 
-app.get('/usermanagement/getfulluser', async function (req, res) {
+app.get('/usermanagement/getuserlist', async function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel('instructor')) {
-    res.send(await userManagement.getFullUserInfo(req.params, req.body));
+    res.send(await userManagement.getUserList(req.params, req.body));
 
   } else {
     res.send(_failedRequest('get'));
@@ -107,25 +107,8 @@ app.get('/usermanagement/setuser/username/:userShortName', async function (req, 
     res.send(_failedRequest('get'));
   }
 })
+// ------ *** end of temporary user management *** ---------------
 
-// *** debugging queries
-app.get('/debug/query/users',  async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel('instructor')) {
-    res.send(await dbAdminQuery._getUsers('users'));
-
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})
-
-app.get('/debug/query/testmessage',  async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel('instructor')) {
-    res.send(await gMailer.sendTestMessage(req.params, res.Body));
-
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})
 
 //------------------------------------------------------
 // POST requests

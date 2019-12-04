@@ -44,7 +44,7 @@ class LoginUI {
     if (makeVisible) {
       var userInfo = await this._getUserInfo();
       
-      var dbResult = await this._doGetQuery('debug/query', 'users');
+      var dbResult = await this._doGetQuery('usermanagement', 'getuserlist');
       var userData = dbResult.data;
       var optionList = [];
       if (dbResult.success) {
