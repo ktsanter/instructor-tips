@@ -78,6 +78,24 @@ module.exports = internal.UserManagement = class {
     return dbResult;
   }
   
+  isAtLeastPrivilegeLevel(targetPrivilegeLevel) {
+    var userPrivilegeLevel = 'none';
+    if (this._userInfo) userPrivilegeLevel = this._userInfo.privilegeLevel;
+    
+    var levelRanks = {
+      'none': -1,
+      'instructor': 0,
+      'lead': 1,
+      'admin': 2,
+      'superadmin': 3
+    };
+        
+    var targetPrivilegeRank = levelRanks[targetPrivilegeLevel];
+    var userPrivilegeRank = levelRanks[userPrivilegeLevel];
+
+    return (userPrivilegeRank >= targetPrivilegeRank);
+  }
+  
 //---------------------------------------------------------------
 // general query functions
 //---------------------------------------------------------------

@@ -7,7 +7,7 @@
 const internal = {};
 
 module.exports = internal.TipManager = class {
-  constructor(mariadb, dbName) {
+  constructor(mariadb, dbName, userManagement) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
@@ -18,38 +18,39 @@ module.exports = internal.TipManager = class {
     });
     
     this._dbName = dbName;
+    this._userManagement = userManagement;
   }
   
 //---------------------------------------------------------------
 // dispatchers
 //---------------------------------------------------------------
-  async doQuery(params, postData, userInfo) {
+  async doQuery(params, postData) {
     var dbResult = this._queryFailureResult();
 
     // tip manager queries
     if (params.queryName == 'tipcourses-usercourses') {
-      dbResult = await this._getUserCourses(params, postData, userInfo);
+      dbResult = await this._getUserCourses(params, postData);
       
     } else if (params.queryName == 'tipschedule') {
-      dbResult = await this._getTipSchedule(params, postData, userInfo);
+      dbResult = await this._getTipSchedule(params, postData);
       
     } else if (params.queryName == 'tipschedule-tiplist') {
-      dbResult = await this._getTipScheduleTipList(params, postData, userInfo);
+      dbResult = await this._getTipScheduleTipList(params, postData);
       
     } else if (params.queryName == 'tipschedule-addtip') {
-      dbResult = await this._addTipToSchedule(params, postData, userInfo);
+      dbResult = await this._addTipToSchedule(params, postData);
       
     } else if (params.queryName == 'tipedit') {
-      dbResult = await this._getTipEditData(params, postData, userInfo);
+      dbResult = await this._getTipEditData(params, postData);
       
     } else if (params.queryName == 'userstosharewith') {
-      dbResult = await this._getUsersToShareWith(params, userInfo);
+      dbResult = await this._getUsersToShareWith(params);
       
     } else if (params.queryName == 'sharedwithuser') {
-      dbResult = await this._getSchedulesSharedWithUser(params, userInfo);
+      dbResult = await this._getSchedulesSharedWithUser(params);
       
     } else if (params.queryName == 'notificationoptions') {
-      dbResult = await this._getUserNotificationOptions(params, userInfo);
+      dbResult = await this._getUserNotificationOptions(params);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -58,14 +59,14 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
 
-  async doInsert(params, postData, userInfo, gMailer) {
+  async doInsert(params, postData, gMailer) {
     var dbResult = this._queryFailureResult();
     
    if (params.queryName == 'tip') {
-      dbResult = await this._insertTip(params, postData, userInfo);
+      dbResult = await this._insertTip(params, postData);
       
     } else if (params.queryName == 'storesharedschedule') {
-      dbResult = await this._storeSharedSchedule(params, postData, userInfo, gMailer);
+      dbResult = await this._storeSharedSchedule(params, postData, gMailer);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -74,26 +75,26 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
   
-  async doUpdate(params, postData, userInfo) {
+  async doUpdate(params, postData) {
     var dbResult = this._queryFailureResult();
     
     if (params.queryName == 'tipcourses-usercourses') {
-      dbResult = await this._updateUserCourse(params, postData, userInfo);
+      dbResult = await this._updateUserCourse(params, postData);
 
     } else if (params.queryName == 'tip') {
       dbResult = await this._updateTip(params, postData);
 
     } else if (params.queryName == 'singletipstatus') {
-      dbResult = await this._updateSingleTipStatus(params, postData, userInfo);
+      dbResult = await this._updateSingleTipStatus(params, postData);
             
     } else if (params.queryName == 'tipschedule-updatetiptext') {
-      dbResult = await this._updateTiptext(params, postData, userInfo);
+      dbResult = await this._updateTiptext(params, postData);
             
     } else if (params.queryName == 'integrate-shared') {
-      dbResult = await this._integrateSharedSchedule(params, postData, userInfo);
+      dbResult = await this._integrateSharedSchedule(params, postData);
             
     } else if (params.queryName == 'notificationoptions') {
-      dbResult = await this._updateUserNotificationOptions(params, postData, userInfo);
+      dbResult = await this._updateUserNotificationOptions(params, postData);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -102,17 +103,17 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }  
 
-  async doDelete(params, postData, userInfo) {
+  async doDelete(params, postData) {
     var dbResult = this._queryFailureResult();
     
    if (params.queryName == 'tip') {
-      dbResult = await this._deleteTip(params, postData, userInfo);
+      dbResult = await this._deleteTip(params, postData);
       
     } else if (params.queryName == 'tipschedule-unmaptip') {
-      dbResult = await this._unmapTip(params, postData, userInfo);
+      dbResult = await this._unmapTip(params, postData);
             
     } else if (params.queryName == 'delete-shared') {
-      dbResult = await this._deleteSharedSchedule(params, postData, userInfo);
+      dbResult = await this._deleteSharedSchedule(params, postData);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -178,8 +179,10 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
-  async _getUserCourses(params, postData, userInfo) {
+  async _getUserCourses(params, postData) {
     var result = this._queryFailureResult();   
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;
 
     var queryList = {};
     queryList.usercourses = 
@@ -219,8 +222,10 @@ module.exports = internal.TipManager = class {
     return result;
   }
 
-  async _getTipSchedule(params, postData, userInfo) {
+  async _getTipSchedule(params, postData) {
     var result = this._queryFailureResult(); 
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;
 
     var queryList = {};
     var showTipStatus = false;
@@ -392,8 +397,11 @@ module.exports = internal.TipManager = class {
   }
   
 //----------------------------------------------------------
-  async _getTipScheduleTipList(params, postData, userInfo) {
+  async _getTipScheduleTipList(params, postData) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;
+    
     var queryList = {};
     
     if (postData.adm_allcourse || postData.adm_course) {
@@ -457,10 +465,12 @@ module.exports = internal.TipManager = class {
   }
   
 //----------------------------------------------------------
-  async _addTipToSchedule(params, postData, userInfo) {
+  async _addTipToSchedule(params, postData) {
     var result = this._queryFailureResult();
     var query;
     var queryResults;
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;    
     
     var filter = postData.filter;
     var weekNumber = postData.week;
@@ -550,10 +560,12 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _storeSharedSchedule(params, postData, userInfo, gMailer) {
+  async _storeSharedSchedule(params, postData, gMailer) {
     var result = this._queryFailureResult();
     var query;
     var queryResults;
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;    
     
     query =
       'select username, coursename, termgroupid, termgroupname, tiptext, week ' +
@@ -620,8 +632,11 @@ module.exports = internal.TipManager = class {
   }
 
 //----------------------------------------------------------
-  async _getTipEditData(params, postData, userInfo) {
+  async _getTipEditData(params, postData) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;
+    
     var queryList = {};
     
     var searchText = postData.searchtext;
@@ -707,9 +722,9 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _getUsersToShareWith(params, userInfo) {
+  async _getUsersToShareWith(params) {
     var result = this._queryFailureResult();
-    
+       
     var queryList = {
       users: 
         'select userid, username, usershortname ' +
@@ -731,8 +746,10 @@ module.exports = internal.TipManager = class {
     return result;
   }    
   
-  async _getSchedulesSharedWithUser(params, userInfo) {
+  async _getSchedulesSharedWithUser(params) {
     var result = this._queryFailureResult();
+
+    var userInfo = this._userManagement.getFullUserInfo().data;    
     
     var queryList = {
       sharedwithuser: 
@@ -778,8 +795,10 @@ module.exports = internal.TipManager = class {
     return result;
   }    
   
-  async _getUserNotificationOptions(params, userInfo) {
+  async _getUserNotificationOptions(params) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;    
     
     var queryList = {
       notificationoptions: 
@@ -805,11 +824,13 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------
-    async _insertTip(params, postData, userInfo) {
+    async _insertTip(params, postData) {
     var result = this._queryFailureResult();
     
+    var userInfo = this._userManagement.getFullUserInfo().data;    
+    
     var userId = userInfo.userId;
-    if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
+    if (this._userManagement.isAtLeastPrivilegeLevel('admin')) {
       userId = postData.userid;
     }
     
@@ -837,8 +858,10 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // specific update methods
 //---------------------------------------------------------------
-  async _updateUserCourse(params, postData, userInfo) {
+  async _updateUserCourse(params, postData) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;    
      
     var query;
     
@@ -895,14 +918,16 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
-  async _updateSingleTipStatus(params, postData, userInfo) {
+  async _updateSingleTipStatus(params, postData) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;    
 
     var query;
     var queryResults;
 
     if (postData.tipstatusname == null) {
-      queryResults = await this._deleteSingleTipStatus(params, postData, userInfo);
+      queryResults = await this._deleteSingleTipStatus(params, postData);
    
     } else {
       if (postData.usertipstatusid == null) {
@@ -941,9 +966,9 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-   async _updateTiptext(params, postData, userInfo) {
+   async _updateTiptext(params, postData) {
     var result = this._queryFailureResult();
-
+    
     var query;
     var queryResults;
     
@@ -971,8 +996,10 @@ module.exports = internal.TipManager = class {
     return result;    
   }
   
-  async _integrateSharedSchedule(params, postData, userInfo) {
+  async _integrateSharedSchedule(params, postData) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;    
 
     var queryResults;
     
@@ -1061,8 +1088,10 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _updateUserNotificationOptions(params, postData, userInfo) {
+  async _updateUserNotificationOptions(params, postData) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;    
 
     var query;
     var queryResults;
@@ -1110,8 +1139,9 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
-  async _unmapTip(params, postData, userInfo) {
+  async _unmapTip(params, postData) {
     var result = this._queryFailureResult();
+    
     var query;
     var queryResults;
     
@@ -1154,7 +1184,7 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------
-  async _deleteSingleTipStatus(params, postData, userInfo) {
+  async _deleteSingleTipStatus(params, postData) {
     var query =
       'delete from usertipstatus ' +
       'where usertipstatusid = ' + postData.usertipstatusid;

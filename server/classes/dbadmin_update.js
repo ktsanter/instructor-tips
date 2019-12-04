@@ -7,7 +7,7 @@
 const internal = {};
 
 module.exports = internal.dbAdminUpdate = class {
-  constructor(mariadb, dbName) {
+  constructor(mariadb, dbName, userManagement) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
@@ -18,12 +18,13 @@ module.exports = internal.dbAdminUpdate = class {
     });
     
     this._dbName = dbName;
+    this._userManagement = userManagement;
   }
   
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
-  async doUpdate(params, postData, userInfo) {
+  async doUpdate(params, postData) {
     var dbResult = this._queryFailureResult();
     
     if (params.queryName == 'privileges') {

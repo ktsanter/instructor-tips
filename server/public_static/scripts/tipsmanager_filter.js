@@ -634,6 +634,7 @@ class TipManagerFilter {
       resultData = requestResult;
     } else {
       this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
+      console.log('queryType: ' + queryType + ' queryName: ' + queryName);
     }
     
     return resultData;
@@ -648,6 +649,8 @@ class TipManagerFilter {
       this._notice.setNotice('');
     } else {
       this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
+      console.log('queryType: ' + queryType + ' queryName: ' + queryName);
+      console.log(postData);
     }
     
     return resultData;

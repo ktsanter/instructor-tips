@@ -7,7 +7,7 @@
 const internal = {};
 
 module.exports = internal.dbAdminQuery = class {
-  constructor(mariadb, dbName) {
+  constructor(mariadb, dbName, userManagement) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
@@ -18,12 +18,13 @@ module.exports = internal.dbAdminQuery = class {
     });
     
     this._dbName = dbName;
+    this._userManagement = userManagement;
   }
   
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
-  async doQuery(params, postData, userInfo) {
+  async doQuery(params, postData) {
     var dbResult = this._queryFailureResult();
 
     if (params.queryName == 'privileges') {
@@ -51,7 +52,7 @@ module.exports = internal.dbAdminQuery = class {
       dbResult = await this._getCalendar(params);
       
     } else if (params.queryName == 'navbar') {
-      dbResult = await this._getNavbar(params, userInfo);
+      dbResult = await this._getNavbar(params);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -424,10 +425,10 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
   
-  async _getNavbar(params, userInfo) {
+  async _getNavbar(params) {
     var result = this._queryFailureResult();
     
-    var allowAdmin = (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin');
+    var allowAdmin = this._userManagement.isAtLeastPrivilegeLevel('admin');
     result.success = true;
     result.details = 'query succeeded';
     result.data = {};

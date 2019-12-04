@@ -227,6 +227,7 @@ const app = function () {
     } else {
       resultData.details = 'DB error: ' + JSON.stringify(requestResult.details);
       console.log('DB error: ' + JSON.stringify(requestResult.details));
+      console.log('queryType = ' + queryType + ' queryName=' + queryName);
     }
     
     return resultData;

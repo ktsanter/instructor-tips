@@ -7,7 +7,7 @@
 const internal = {};
 
 module.exports = internal.dbAdminDelete = class {
-  constructor(mariadb, dbName) {
+  constructor(mariadb, dbName, userManagement) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
@@ -18,6 +18,7 @@ module.exports = internal.dbAdminDelete = class {
     });
     
     this._dbName = dbName;
+    this._userManagement = userManagement;
   }
   
 //---------------------------------------------------------------

@@ -8,7 +8,7 @@
 const internal = {};
 
 module.exports = internal.TipFilter = class {
-  constructor(mariadb, dbName) {
+  constructor(mariadb, dbName, userManagement) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
@@ -19,19 +19,20 @@ module.exports = internal.TipFilter = class {
     });
     
     this._dbName = dbName;
+    this._userManagement = userManagement;
   }
   
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
-  async doQuery(params, postData, userInfo) {
+  async doQuery(params, postData) {
     var dbResult = this._queryFailureResult();
         
     if (params.queryName == 'scheduling') {
-      dbResult = await this._getSchedulingTipFilter(params, userInfo);
+      dbResult = await this._getSchedulingTipFilter(params);
       
     } else if (params.queryName == 'editing') {
-      dbResult = await this._getEditingTipFilter(params, userInfo);
+      dbResult = await this._getEditingTipFilter(params);
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -43,10 +44,10 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // update dispatcher
 //---------------------------------------------------------------
-  async doUpdate(params, postData, userInfo) {
+  async doUpdate(params, postData) {
     var dbResult = this._queryFailureResult();
     
-    dbResult = await this._updateTipFilter(params, postData, userInfo);
+    dbResult = await this._updateTipFilter(params, postData);
     
     return dbResult;
   }
@@ -108,8 +109,10 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // general purpose filter methods
 //---------------------------------------------------------------
-  async _getFilter(userInfo, filterType, defaultFilter) {
+  async _getFilter(filterType, defaultFilter) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;
     
     var filterQuery = 
         'select tipfilter ' +
@@ -121,7 +124,7 @@ module.exports = internal.TipFilter = class {
     
     if (queryResult.success) {
       if (queryResult.data.length == 0) {
-        queryResult = await this._insertFilter(userInfo, filterType, defaultFilter);
+        queryResult = await this._insertFilter(filterType, defaultFilter);
         
         if (queryResult.success) queryResult = await this._dbQuery(filterQuery);
       }
@@ -141,7 +144,9 @@ module.exports = internal.TipFilter = class {
     return result;
   }
   
-  async _insertFilter(userInfo, filterType, filter) {
+  async _insertFilter(filterType, filter) {
+    var userInfo = this._userManagement.getFullUserInfo().data;
+
     var query = 
       'insert into usertipfilter (tipfilter, userid, tipfiltertype) ' +
       'values (' +
@@ -156,8 +161,10 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
-  async _getSchedulingTipFilter(params, userInfo) {
+  async _getSchedulingTipFilter(params) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;
 
     var filter = {
       termgroupname: 'semester',
@@ -181,11 +188,11 @@ module.exports = internal.TipFilter = class {
       groupOrder: ['termgroupGroup', 'courseGroup']
     };
      
-    if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
+    if (this._userManagement.isAtLeastPrivilegeLevel('admin')) {
       filter.allow_adm = true;
     }
 
-    var queryResultForFilter = await this._getFilter(userInfo, 'scheduling', filter);
+    var queryResultForFilter = await this._getFilter('scheduling', filter);
     
     if (!queryResultForFilter.success) {
       result.details = queryResultForFilter.details;
@@ -246,7 +253,7 @@ module.exports = internal.TipFilter = class {
   } 
   
   //--------------------------------------------------------------
-  async _getEditingTipFilter(params, userInfo) {
+  async _getEditingTipFilter(params) {
     var result = this._queryFailureResult();
 
     var filter = {
@@ -262,13 +269,13 @@ module.exports = internal.TipFilter = class {
       groupOrder: ['searchGroup']
      };
      
-     if (userInfo.privilegeLevel == 'admin' || userInfo.privilegeLevel == 'superadmin') {
+     if (this._userManagement.isAtLeastPrivilegeLevel('admin')) {
        filter.shared = true;
        filter.personal_notowned = true;
        tipUIConfig.groupOrder = ['publicOrPrivateGroup', 'searchGroup'];
      }
 
-    var queryResultForFilter = await this._getFilter(userInfo, 'editing', filter);
+    var queryResultForFilter = await this._getFilter('editing', filter);
 
     if (!queryResultForFilter.success) {
       result.details = queryResultForFilter.details;
@@ -301,8 +308,11 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // update methods
 //---------------------------------------------------------------
-  async _updateTipFilter(params, postData, userInfo) {
+  async _updateTipFilter(params, postData) {
     var result = this._queryFailureResult();
+    
+    var userInfo = this._userManagement.getFullUserInfo().data;
+    
     postData.tipfilter.searchtext = this._sanitizeText(postData.tipfilter.searchtext);
     var query = 'update usertipfilter ' +
                 'set ' +
