@@ -84,8 +84,7 @@ const app = function () {
       hamburgeritems: [
         {label: htmlForShared, callback: () => {return _navDispatch('manageshared');}},      
         {label: 'notification options', callback: () => {return _navDispatch('notification');}},      
-        {label: 'help', callback: _showHelp},
-        {label: 'about ' + appInfo.appName, callback: _showAbout}
+        {label: 'help', callback: _showHelp}
       ]      
     };
     
@@ -199,11 +198,7 @@ const app = function () {
       elemCount2.innerHTML = '';
     }
   }  
-  
-  function _showAbout() {
-    window.open(settings.aboutURL, '_blank');
-  }
-  
+
   function _showHelp() { 
     window.open(settings.helpURL, '_blank');
   }

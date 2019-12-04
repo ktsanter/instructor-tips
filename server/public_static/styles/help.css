@@ -27,3 +27,29 @@ body {
   padding-right: 3px;  
 }
 
+.about-container {
+  display: inline-block;
+  background-color: white;
+  margin-top: 8px;
+  padding: 8px 8px;
+  border: 1px solid var(--bgTertiaryEmphasis);
+}
+
+.about-logosplash {
+  padding-bottom: 3px;
+}
+
+.about-logo {
+  font-size: 1.4em;
+  padding-right: 0.2em;
+}
+
+.about-logotitle {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.contents-container {
+  margin-top: 1em;
+  font-style: italic;
+}
