@@ -1,13 +1,17 @@
 var express = require('express')
-var parseurl = require('parseurl')
+//var parseurl = require('parseurl')
+const path = require('path')
 var session = require('express-session')
-var mysql = require('mysql')
+var mySQL = require('mysql')
 var MySQLStore = require('express-mysql-session')(session);
 
 var app = express()
 const port = 3000;
 
-var mysqlPool = mysql.createPool({
+var bodyParser = require('body-parser');
+app.use(bodyParser.json()); 
+
+var mysqlPool = mySQL.createPool({
     host: 'localhost',
     user: 'root',
     password: 'SwordFish002',
@@ -24,34 +28,45 @@ var sessionStore = new MySQLStore({
 
 app.use(session({
   secret: 'Grit Gumption',
-  cookie: {maxAge: 30000}, // 30 seconds for testing
+  cookie: {maxAge: 300000}, 
   resave: false,
   saveUninitialized: true,
   store: sessionStore
 }))
 
 app.use(function (req, res, next) {
-  if (!req.session.views) {
-    req.session.views = {}
+  if (!req.session.userInfo) {
+    req.session.userInfo = {userId: -1}
   }
-
-  // get the url pathname
-  var pathname = parseurl(req).pathname
-
-  // count the views
-  req.session.views[pathname] = (req.session.views[pathname] || 0) + 1
-  
-  console.log(req.session);
 
   next()
 })
 
-app.get('/foo', function (req, res, next) {
-  res.send('you viewed this page ' + req.session.views['/foo'] + ' times' + '<br>expires: ' + req.session.cookie._expires)
+app.get('/mainpage.html', function (req, res) {
+  console.log('trying to access mainpage.html');
+
+  var htmlFile = 'mainpage.html';
+  if (!req.session.userInfo || req.session.userInfo.userId < 0) {
+    htmlFile = 'login.html';
+  }
+  
+  res.sendFile(path.join(__dirname, 'private', htmlFile))
 })
 
-app.get('/bar', function (req, res, next) {
-  res.send('you viewed this page ' + req.session.views['/bar'] + ' times' + '<br>expires: ' + req.session.cookie._expires)
+app.post('/login', function (req, res) {
+  var userName = req.body.userName;
+  var userPassword = req.body.userPassword;
+
+  var result = {success: false, details: 'login failed'};  
+  if (userPassword == 'okay') {
+    result.success = true;
+    result.details = 'login succeeded';
+    req.session.userInfo.userId = 1;
+  }
+
+  console.log('login attempt: ' + userName + ' ' + userPassword + ' - ' + (result.success ? 'succeeded' : 'failed'));
+
+  res.send(result);
 })
 
 app.listen(port, () => console.log('app listening on port ' + port));

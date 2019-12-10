@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>login page</title>
+  </head>
+
+  <body>
+    <h2> login page </h2>
+    
+    <div>
+      <span> user </span>
+      <input id = 'userName' type='text' value='Horst Lindhofen'> 
+    </div>
+    
+    <div>
+      <span> password </span>
+      <input id='userPassword' type='text'> 
+    </div>    
+    
+    <button onClick="tryLogin()">login</button>
+    
+    <script>
+      async function tryLogin() {
+        var uname = document.getElementById('userName').value;
+        var pwd = document.getElementById('userPassword').value;
+        console.log(uname);
+        console.log(pwd);
+
+        var result = await _doPost('/login', {userName: uname, userPassword: pwd});
+        if (result.success) {
+          window.open('mainpage.html', '_self');
+        }
+      }
+      
+      async function _doGet(reqPath) {
+        const METHOD_TITLE = '_doGet';
+        
+        var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
+
+        try {
+          const resp = await fetch(reqPath);
+          const json = await resp.json();
+          //console.log(json);
+
+          if (!json.success) {
+            var errmsg = '*ERROR: in ' + METHOD_TITLE + ', ' + JSON.stringify(json.details);
+            console.log(errmsg);
+            result.details = errmsg;
+          } else {
+            result = json;
+          }
+          
+        } catch (error) {
+          var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
+          console.log(errmsg);
+          result.details = errmsg;
+        }
+        
+        return result;
+      }  
+      
+      async function _doPost(reqPath, postData) {
+        const METHOD_TITLE = '_doPost';
+        
+        var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
+
+        try {
+          const resp = await fetch(reqPath, {method: 'post', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(postData)});
+          const json = await resp.json();
+          //console.log(json);
+          
+          if (!json.success) {
+            var errmsg = '*ERROR: in ' + METHOD_TITLE + ', ' + JSON.stringify(json.details);
+            console.log(errmsg);
+            console.log('reqPath: ' + reqPath);
+            console.log('postData: ' + JSON.stringify(postData));
+            result.details = errmsg;
+          } else {
+            result = json;
+          }
+          
+        } catch (error) {
+          var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
+          console.log(errmsg);
+          result.details = errmsg;
+        }
+        
+        return result;
+      }    
+    </script>
+  </body>
+</html>
