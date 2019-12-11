@@ -15,7 +15,7 @@ const mariadb = require('mariadb')
 
 var nodemailer = require('nodemailer');
 
-const userManagementClass = require('./classes/usermanagement')
+const userManagementClass = require('./classes/usermanagement_temp1')
 const userManagement = new userManagementClass(mariadb, 'instructortips');
 
 /* temporary */ userManagement.setUser({userShortName: 'ksanter'});
