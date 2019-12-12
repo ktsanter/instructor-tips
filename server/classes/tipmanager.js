@@ -59,7 +59,7 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
 
-  async doInsert(params, postData, gMailer) {
+  async doInsert(params, postData, gMailer, userInfo) {
     var dbResult = this._queryFailureResult();
     
    if (params.queryName == 'tip') {
@@ -75,7 +75,7 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
   
-  async doUpdate(params, postData) {
+  async doUpdate(params, postData, userInfo) {
     var dbResult = this._queryFailureResult();
     
     if (params.queryName == 'tipcourses-usercourses') {
@@ -970,6 +970,8 @@ module.exports = internal.TipManager = class {
       result.data = null;
     } else {
       result.details = queryResults.details;
+      console.log(queryResult.details);
+      console.log(query);
     }
     
     return result;    

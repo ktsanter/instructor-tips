@@ -122,7 +122,7 @@ module.exports = internal.TipFilter = class {
     
     if (queryResult.success) {
       if (queryResult.data.length == 0) {
-        queryResult = await this._insertFilter(filterType, defaultFilter);
+        queryResult = await this._insertFilter(filterType, defaultFilter, userInfo);
         
         if (queryResult.success) queryResult = await this._dbQuery(filterQuery);
       }

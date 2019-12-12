@@ -13,7 +13,7 @@ var nodemailer = require('nodemailer');
 const app = express()
 const port = 3000
 
-app.use(favicon(path.join(__dirname, 'private', 'favicon.ico')))
+app.use(favicon('favicon.ico'))
 
 app.use(bodyParser.json()); 
 
@@ -27,12 +27,14 @@ app.use(bodyParser.json());
       host: 'localhost',
       user: 'root',
       password: 'SwordFish002',
-      database: 'session_test'
+      database: 'sessionstore'
   });
 
+  const MS_PER_HOUR = 60 * 60 * 1000;
+  
   var sessionStore = new MySQLStore({
       clearExpired: true,
-      checkExpirationInterval: 900000,
+      checkExpirationInterval: 1 * MS_PER_HOUR,
       createDatabaseTable: true  
     }, 
     mysqlPool
@@ -40,7 +42,7 @@ app.use(bodyParser.json());
 
   app.use(session({
     secret: 'Grit Gumption',
-    cookie: {maxAge: 300000}, 
+    cookie: {maxAge: 24 * MS_PER_HOUR}, 
     resave: false,
     saveUninitialized: true,
     store: sessionStore
@@ -83,13 +85,13 @@ app.use(bodyParser.json());
   const dbTipFilterClass = require('./classes/tipfilter')
   const dbTipFilter = new dbTipFilterClass(mariadb, 'instructortips', userManagement);
 
-
-function _failedRequest(requestType) {
-  return {success: false, details: requestType + ' failed'};
-}
+//---------- bolerplate response for failed request
+  function _failedRequest(requestType) {
+    return {success: false, details: requestType + ' failed'};
+  }
 
 //------------------------------------------------------
-// login and main page
+// login/logout and main page
 //------------------------------------------------------
   app.get('/tipsmanager.html', function (req, res) {
     var loggedin = userManagement.isLoggedIn(req.session);
@@ -116,6 +118,11 @@ function _failedRequest(requestType) {
     }
   })
   
+  app.get('/usermanagement/logout', function (req, res) {
+    userManagement.logout(req.session);
+    res.redirect('/login.html');
+  })
+
 //------------------------------------------------------
 // GET requests
 //------------------------------------------------------
@@ -239,7 +246,7 @@ function _failedRequest(requestType) {
 
   app.post('/tipmanager/filter/update/:queryName', async function (req, res) {
     if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-      res.send(await dbTipFilter.doUpdate(req.params, req.body, req.session));
+      res.send(await dbTipFilter.doUpdate(req.params, req.body, userManagement.getUserInfo(req.session)));
 
     } else {
       res.send(_failedRequest('post'));

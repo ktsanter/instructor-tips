@@ -13,6 +13,8 @@ const app = function () {
   
 	const settings = {
     helpURL: 'help.html',
+    logoutURL: '/usermanagement/logout',
+    
     navOptions: [
       'courseselection', 'scheduling', 'editing', 'calendarui',
       'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars',
@@ -67,7 +69,7 @@ const app = function () {
     if (sharedScheduleCount > 0) {
       elemCount.style.display = 'inline-block';
       elemCount.innerHTML = sharedScheduleCount;
-      elemCount.title = 'you have ' + sharedScheduleCount + ' shared schedules';
+      elemCount.title = 'you have ' + sharedScheduleCount + ' shared schedule(s)';
       elemCount2.innerHTML = ' (' + sharedScheduleCount + ')';
     }
     
@@ -80,13 +82,14 @@ const app = function () {
       items: [
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
-        {label: htmlForLogin, callback: _showLogin, subitems: null, rightjustify: true}
+        {label: htmlForLogin, callback: null, subitems: null, rightjustify: true}
       ],
       
       hamburgeritems: [
         {label: htmlForShared, callback: () => {return _navDispatch('manageshared');}},      
         {label: 'notification options', callback: () => {return _navDispatch('notification');}},      
-        {label: 'help', callback: _showHelp}
+        {label: 'help', callback: _showHelp},
+        {label: 'logout', callback: _doLogout}
       ]      
     };
     
@@ -207,12 +210,9 @@ const app = function () {
     window.open(settings.helpURL, '_blank');
   }
   
-  //---------------------------------------
-	// handlers
-	//----------------------------------------
-  //async function _loginComplete() {
-  //  location.reload();
- // }
+  async function _doLogout() {
+    window.open(settings.logoutURL, '_self'); 
+  }
   
   //--------------------------------------------------------------
   // db functions
