@@ -55,6 +55,44 @@ button.notification-control.email-confirm:active {
   background-color: var(--bgQuaternaryEmphasis);
 }
 
+input.password-new {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	display: inline-block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 1.4em .5em .8em;
+  width: 20em;
+	box-sizing: border-box;
+	margin: 0;
+  margin-top: 0.3em;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	border-radius: .3em;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #fff;
+ }
+
+input.password-confirm {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	display: inline-block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 1.4em .5em .8em;
+  width: 20em;
+	box-sizing: border-box;
+	margin: 0;
+  margin-top: 0.3em;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	border-radius: .3em;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #fff;
+ }
+
 button.password-control {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   height: 2.6em;
