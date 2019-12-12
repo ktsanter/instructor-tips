@@ -24,15 +24,16 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // dispatchers
 //---------------------------------------------------------------
-  async doQuery(params, postData) {
+  async doQuery(params, postData, sessionInfo) {
+    console.log('doQuery ' + JSON.stringify(params) + ' ' + JSON.stringify(sessionInfo));
     var dbResult = this._queryFailureResult();
 
     // tip manager queries
     if (params.queryName == 'tipcourses-usercourses') {
-      dbResult = await this._getUserCourses(params, postData);
+      dbResult = await this._getUserCourses(params, postData, sessionInfo);
       
     } else if (params.queryName == 'tipschedule') {
-      dbResult = await this._getTipSchedule(params, postData);
+      dbResult = await this._getTipSchedule(params, postData, sessionInfo);
       
     } else if (params.queryName == 'tipschedule-tiplist') {
       dbResult = await this._getTipScheduleTipList(params, postData);
@@ -47,7 +48,7 @@ module.exports = internal.TipManager = class {
       dbResult = await this._getUsersToShareWith(params);
       
     } else if (params.queryName == 'sharedwithuser') {
-      dbResult = await this._getSchedulesSharedWithUser(params);
+      dbResult = await this._getSchedulesSharedWithUser(params, sessionInfo);
       
     } else if (params.queryName == 'notificationoptions') {
       dbResult = await this._getUserNotificationOptions(params);
@@ -179,11 +180,9 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
-  async _getUserCourses(params, postData) {
+  async _getUserCourses(params, postData, sessionInfo) {
     var result = this._queryFailureResult();   
     
-    var userInfo = this._userManagement.getFullUserInfo().data;
-
     var queryList = {};
     queryList.usercourses = 
       'select ' +
@@ -193,7 +192,7 @@ module.exports = internal.TipManager = class {
       'from usercourse, course, termgroup ' +
       'where usercourse.courseid = course.courseid ' +
         'and usercourse.termgroupid = termgroup.termgroupid ' +
-        'and usercourse.userid = ' + userInfo.userId + ' ';
+        'and usercourse.userid = ' + this._userManagement.getUserId(sessionInfo) + ' ';
       
     queryList.courses = 
       'select courseid, coursename, ap ' +
@@ -222,32 +221,30 @@ module.exports = internal.TipManager = class {
     return result;
   }
 
-  async _getTipSchedule(params, postData) {
+  async _getTipSchedule(params, postData, sessionInfo) {
     var result = this._queryFailureResult(); 
     
-    var userInfo = this._userManagement.getFullUserInfo().data;
-
     var queryList = {};
     var showTipStatus = false;
     
     if (postData.adm_allcourse) {
-      queryList.tipschedule = this._getQuery_AdminAllCourse(postData, userInfo);
+      queryList.tipschedule = this._getQuery_AdminAllCourse(postData, sessionInfo);
       
     } else if (postData.adm_course) {
-      queryList.tipschedule = this._getQuery_AdminUserCourse(postData, userInfo);
+      queryList.tipschedule = this._getQuery_AdminUserCourse(postData, sessionInfo);
       
     } else if (postData.allcourse) {
-      queryList.tipschedule = this._getQuery_AllCourse(postData, userInfo);
+      queryList.tipschedule = this._getQuery_AllCourse(postData, sessionInfo);
       
     } else if (postData.course) {
       showTipStatus = true;
-      queryList.tipschedule = this._getQuery_UserCourse(postData, userInfo);
+      queryList.tipschedule = this._getQuery_UserCourse(postData, sessionInfo);
     }
 
     queryList.usercourse =
       'SELECT usercourseid ' +
       'FROM usercourse ' +
-      'WHERE userid = ' + userInfo.userId + ' ' +
+      'WHERE userid = ' + this._userManagement.getUserId(sessionInfo) + ' ' +
         'AND courseid IN (SELECT courseid FROM course WHERE coursename = "' + postData.coursename + '") ' +
         'AND termgroupid IN (SELECT termgroupid FROM termgroup WHERE termgroupname = "' + postData.termgroupname + '") ';
         
@@ -297,7 +294,7 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  _getQuery_AdminAllCourse(postData, userInfo) {
+  _getQuery_AdminAllCourse(postData, sessionInfo) {
     var query = 
       'select mappedtipid, tiptext, week ' +
       'from viewmappedtip ' +
@@ -308,7 +305,7 @@ module.exports = internal.TipManager = class {
     return query;
   }
   
-  _getQuery_AdminUserCourse(postData, userInfo) {
+  _getQuery_AdminUserCourse(postData, sessionInfo) {
     var query = 
       'select mappedtipid, tiptext, week ' +
       'from viewmappedtip ' +
@@ -319,18 +316,18 @@ module.exports = internal.TipManager = class {
     return query;
   }
 
-  _getQuery_AllCourse(postData, userInfo) {
+  _getQuery_AllCourse(postData, sessionInfo) {
     var query = 
       'select vmt.mappedtipid, vmt.userid, vmt.username, vmt.courseid, vmt.coursename, vmt.termgroupid, vmt.termgroupname, vmt.tiptext, vmt.week ' +
       'FROM viewmappedtip as vmt ' +
-      'WHERE userid = ' + userInfo.userId + ' ' +
+      'WHERE userid = ' + this._userManagement.getUserId(sessionInfo) + ' ' +
         'AND courseid IS NULL ' +
         'AND termgroupname = "' + postData.termgroupname + '" ';
         
     return query;
   }
 
-  _getQuery_UserCourse(postData, userInfo) {
+  _getQuery_UserCourse(postData, sessionInfo) {
     var tipstatusCondition = this._buildTipSchedulingConstraints(postData);
     
     var query = 
@@ -341,12 +338,12 @@ module.exports = internal.TipManager = class {
         'from usertipstatus ' +
       ') as uts on ( ' +
         'vmt.mappedtipid = uts.mappedtipid ' +
-        'and uts.userid = ' + userInfo.userId + ' ' +
+        'and uts.userid = ' + this._userManagement.getUserId(sessionInfo) + ' ' +
         'and uts.for_usercourseid = (' + 
           'select usercourseid ' +
           'from usercourse, course ' +
           'where usercourse.courseid = course.courseid ' +
-            'and usercourse.userid = ' + userInfo.userId + ' ' +
+            'and usercourse.userid = ' + this._userManagement.getUserId(sessionInfo) + ' ' +
             'and course.coursename = "' + postData.coursename + '" ' +
             'and usercourse.termgroupid = ( ' +
               'select termgroupid  ' +
@@ -355,7 +352,7 @@ module.exports = internal.TipManager = class {
             ') ' +
           ') ' +
       ') ' +
-      'where (vmt.userid IS NULL or vmt.userid = ' + userInfo.userId + ')  ' +
+      'where (vmt.userid IS NULL or vmt.userid = ' + this._userManagement.getUserId(sessionInfo) + ')  ' +
         'and (vmt.courseid is NULL or vmt.coursename = "' + postData.coursename + '")  ' +
         'and vmt.termgroupname = "' + postData.termgroupname + '" ' +
         tipstatusCondition;
@@ -746,10 +743,8 @@ module.exports = internal.TipManager = class {
     return result;
   }    
   
-  async _getSchedulesSharedWithUser(params) {
+  async _getSchedulesSharedWithUser(params, sessionInfo) {
     var result = this._queryFailureResult();
-
-    var userInfo = this._userManagement.getFullUserInfo().data;    
     
     var queryList = {
       sharedwithuser: 
@@ -758,7 +753,7 @@ module.exports = internal.TipManager = class {
           'u.username, ' +
           'tg.termgroupname ' +
         'from sharedschedule as ss, user as u, termgroup as tg ' +
-        'where ss.userid_dest = ' + userInfo.userId + ' ' +
+        'where ss.userid_dest = ' + this._userManagement.getUserId(sessionInfo) + ' ' +
           'and ss.userid_source = u.userid ' +
           'and ss.termgroupid = tg.termgroupid ' +
         'order by ss.timestampshared ',
@@ -768,14 +763,14 @@ module.exports = internal.TipManager = class {
         'from usercourse as u, course as c, termgroup as tg ' +
         'where u.courseid = c.courseid ' +
           'and u.termgroupid = tg.termgroupid ' +
-          'and u.userid = ' + userInfo.userId + ' ' +
+          'and u.userid = ' + this._userManagement.getUserId(sessionInfo) + ' ' +
           'and u.courseid is not null ',
           
       allcourses: 
         'select u.usercourseid, null as coursename, tg.termgroupname ' +
         'from usercourse as u, termgroup as tg ' +
         'where u.termgroupid = tg.termgroupid ' +
-          'and u.userid = ' + userInfo.userId + ' ' +
+          'and u.userid = ' + this._userManagement.getUserId(sessionInfo) + ' ' +
           'and u.courseid is null '
     };
     

@@ -1,0 +1,102 @@
+/*-------------------------------------------------------------------
+ * styling for TipManagerFilter class
+ *------------------------------------------------------------------*/
+
+.tipfilter {
+  padding: 2px 0px;
+  margin-bottom: 14px;
+}
+
+.tipmanagerfilter-hide {
+  display: none;
+}
+
+.tipfilter-coursetoggle-container {
+  /*display: inline-block;*/
+  border: 1px solid blue;
+}
+
+.tipfilter-adm_coursetoggle {
+  vertical-align: bottom;
+  margin-bottom: 6px;
+  margin-left: 4px;
+}
+
+.tipfilter-coursetoggle {
+  vertical-align: bottom;
+  margin-bottom: 6px;
+  margin-left: 4px;
+}
+
+select.select-css.tipfilter-termgroupname {
+  display: inline-block;
+}
+
+.tipfilter-calendarui {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.tipfilter-calendaricon {
+  font-size: 1.2em;
+  margin-left: 0px;
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+.tipfilter-calendarui-details {
+  vertical-align: top;
+  margin-top: -3px;
+}
+
+select.select-css.tipfilter-calendarui-year {
+  display: inline-block;
+  vertical-align: bottom;
+  margin-right: 3px;
+}
+
+.tipfilter-searchtext {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	display: block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 1.4em .5em .8em;
+  width: 50%;
+	box-sizing: border-box;
+	margin: 0;
+  margin-top: 0.3em;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	border-radius: .3em;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #fff;
+}
+
+.tipfilter-searchtext:hover {
+	border-color: #888;
+}
+.tipfilter-searchtext:focus {
+	border-color: #aaa;
+	box-shadow: 0 0 1px 3px rgba(59, 153, 252, .7);
+	box-shadow: 0 0 0 3px -moz-mac-focusring;
+	color: #222;
+	outline: none;
+}
+
+.tipfilter-adm_coursetoggle.switch-two-choice .switch-label:before {
+	background: var(--bgPrimaryChoice);
+}
+
+.tipfilter-adm_coursetoggle.switch-two-choice .switch-label:after {
+	background: var(--bgSecondaryChoice);
+}
+
+.tipfilter-coursetoggle.switch-two-choice .switch-label:before {
+	background: var(--bgPrimaryChoice);
+}
+
+.tipfilter-coursetoggle.switch-two-choice .switch-label:after {
+	background: var(--bgSecondaryChoice);
+}

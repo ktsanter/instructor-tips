@@ -84,6 +84,18 @@ module.exports = internal.UserManagement = class {
     return (userPrivilegeRank >= targetPrivilegeRank);
   }
   
+  getUserInfo(sessionInfo) {
+    var result = {
+      success: true,
+      data: {
+        usershortname: this.getUserShortName(sessionInfo),
+        username: this.getUserName(sessionInfo)
+      }
+    };
+    
+    return result;
+  }  
+  
 //---------------------------------------------------------------
 // general query functions
 //---------------------------------------------------------------

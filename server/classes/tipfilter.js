@@ -25,14 +25,14 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
-  async doQuery(params, postData) {
+  async doQuery(params, postData, sessionInfo) {
     var dbResult = this._queryFailureResult();
         
     if (params.queryName == 'scheduling') {
-      dbResult = await this._getSchedulingTipFilter(params);
+      dbResult = await this._getSchedulingTipFilter(params, sessionInfo);
       
     } else if (params.queryName == 'editing') {
-      dbResult = await this._getEditingTipFilter(params);
+      dbResult = await this._getEditingTipFilter(params, sessionInfo);
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -44,10 +44,10 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // update dispatcher
 //---------------------------------------------------------------
-  async doUpdate(params, postData) {
+  async doUpdate(params, postData, sessionInfo) {
     var dbResult = this._queryFailureResult();
     
-    dbResult = await this._updateTipFilter(params, postData);
+    dbResult = await this._updateTipFilter(params, postData, sessionInfo);
     
     return dbResult;
   }
@@ -109,15 +109,13 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // general purpose filter methods
 //---------------------------------------------------------------
-  async _getFilter(filterType, defaultFilter) {
+  async _getFilter(filterType, defaultFilter, sessionInfo) {
     var result = this._queryFailureResult();
-    
-    var userInfo = this._userManagement.getFullUserInfo().data;
     
     var filterQuery = 
         'select tipfilter ' +
         'from usertipfilter ' +
-        'where userid = "' + userInfo.userId + '" ' +
+        'where userid = "' + this._userManagement.getUserId(sessionInfo) + '" ' +
         'and tipfiltertype = "' + filterType + '" ';
     
     var queryResult = await this._dbQuery(filterQuery);
@@ -144,14 +142,12 @@ module.exports = internal.TipFilter = class {
     return result;
   }
   
-  async _insertFilter(filterType, filter) {
-    var userInfo = this._userManagement.getFullUserInfo().data;
-
+  async _insertFilter(filterType, filter, sessionInfo) {
     var query = 
       'insert into usertipfilter (tipfilter, userid, tipfiltertype) ' +
       'values (' +
         '\'' + JSON.stringify(filter) + '\', ' + 
-        '"' + userInfo.userId + '", ' + 
+        '"' + this._userManagement.getUserId(sessionInfo) + '", ' + 
         '"' + filterType + '" ' +
       ')';
 
@@ -161,11 +157,9 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
-  async _getSchedulingTipFilter(params) {
+  async _getSchedulingTipFilter(params, sessionInfo) {
     var result = this._queryFailureResult();
     
-    var userInfo = this._userManagement.getFullUserInfo().data;
-
     var filter = {
       termgroupname: 'semester',
       allow_adm: false,
@@ -188,11 +182,11 @@ module.exports = internal.TipFilter = class {
       groupOrder: ['termgroupGroup', 'courseGroup']
     };
      
-    if (this._userManagement.isAtLeastPrivilegeLevel('admin')) {
+    if (this._userManagement.isAtLeastPrivilegeLevel(sessionInfo, 'admin')) {
       filter.allow_adm = true;
     }
 
-    var queryResultForFilter = await this._getFilter('scheduling', filter);
+    var queryResultForFilter = await this._getFilter('scheduling', filter, sessionInfo);
     
     if (!queryResultForFilter.success) {
       result.details = queryResultForFilter.details;
@@ -208,7 +202,7 @@ module.exports = internal.TipFilter = class {
           'select distinct course.coursename ' +
           'from usercourse, course ' +
           'where usercourse.courseid = course.courseid ' +
-            'and usercourse.userid = ' + userInfo.userId + ' ' + 
+            'and usercourse.userid = ' + this._userManagement.getUserId(sessionInfo) + ' ' + 
             'order by course.coursename ',
             
         adm_courses:
@@ -253,7 +247,7 @@ module.exports = internal.TipFilter = class {
   } 
   
   //--------------------------------------------------------------
-  async _getEditingTipFilter(params) {
+  async _getEditingTipFilter(params, sessionInfo) {
     var result = this._queryFailureResult();
 
     var filter = {
@@ -269,13 +263,13 @@ module.exports = internal.TipFilter = class {
       groupOrder: ['searchGroup']
      };
      
-     if (this._userManagement.isAtLeastPrivilegeLevel('admin')) {
+     if (this._userManagement.isAtLeastPrivilegeLevel(sessionInfo, 'admin')) {
        filter.shared = true;
        filter.personal_notowned = true;
        tipUIConfig.groupOrder = ['publicOrPrivateGroup', 'searchGroup'];
      }
 
-    var queryResultForFilter = await this._getFilter('editing', filter);
+    var queryResultForFilter = await this._getFilter('editing', filter, sessionInfo);
 
     if (!queryResultForFilter.success) {
       result.details = queryResultForFilter.details;
@@ -308,16 +302,14 @@ module.exports = internal.TipFilter = class {
 //---------------------------------------------------------------
 // update methods
 //---------------------------------------------------------------
-  async _updateTipFilter(params, postData) {
+  async _updateTipFilter(params, postData, sessionInfo) {
     var result = this._queryFailureResult();
-    
-    var userInfo = this._userManagement.getFullUserInfo().data;
     
     postData.tipfilter.searchtext = this._sanitizeText(postData.tipfilter.searchtext);
     var query = 'update usertipfilter ' +
                 'set ' +
                   'tipfilter = \'' + JSON.stringify(postData.tipfilter) + '\' ' +
-                'where userid = ' + userInfo.userId + ' ' +
+                'where userid = ' + this._userManagement.getUserId(sessionInfo) + ' ' +
                 'and tipfiltertype = "' + postData.tipfiltertype + '" ';
 
     var queryResults = await this._dbQuery(query);
@@ -346,6 +338,5 @@ module.exports = internal.TipFilter = class {
     // consider other cleaning e.g. <script> tags
     
     return cleaned;
-  }
-  
+  }  
 }

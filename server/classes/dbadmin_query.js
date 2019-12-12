@@ -24,7 +24,7 @@ module.exports = internal.dbAdminQuery = class {
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
-  async doQuery(params, postData) {
+  async doQuery(params, postData, sessionInfo) {
     var dbResult = this._queryFailureResult();
 
     if (params.queryName == 'privileges') {
@@ -52,7 +52,7 @@ module.exports = internal.dbAdminQuery = class {
       dbResult = await this._getCalendar(params);
       
     } else if (params.queryName == 'navbar') {
-      dbResult = await this._getNavbar(params);
+      dbResult = await this._getNavbar(params, sessionInfo);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -425,10 +425,10 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
   
-  async _getNavbar(params) {
+  async _getNavbar(params, sessionInfo) {
     var result = this._queryFailureResult();
     
-    var allowAdmin = this._userManagement.isAtLeastPrivilegeLevel('admin');
+    var allowAdmin = this._userManagement.isAtLeastPrivilegeLevel(sessionInfo, 'admin');
     result.success = true;
     result.details = 'query succeeded';
     result.data = {};
