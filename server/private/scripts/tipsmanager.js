@@ -12,7 +12,6 @@ const app = function () {
 	const page = {};
   
 	const settings = {
-    aboutURL: 'about.html',
     helpURL: 'help.html',
     navOptions: [
       'courseselection', 'scheduling', 'editing', 'calendarui',

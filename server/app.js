@@ -127,6 +127,10 @@ function _failedRequest(requestType) {
       res.sendFile(path.join(__dirname, 'private', 'scripts/' + req.params.script))
   })
 
+  app.get('/help.html', function (req, res) {
+      res.sendFile(path.join(__dirname, 'private', 'help.html'))
+  })
+
 
   app.get('/admin/query/:queryName',  async function (req, res) {
     if (userManagement.isAtLeastPrivilegeLevel(req.session, 'instructor') && req.params.queryName == 'navbar') {
