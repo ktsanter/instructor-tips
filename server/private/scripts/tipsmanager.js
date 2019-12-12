@@ -54,7 +54,7 @@ const app = function () {
     var dbResult = await _doGetQuery('usermanagement', 'getuser');
     var userInfo = null;
     if (dbResult.success) {
-      userInfo = dbResult.data;
+      userInfo = dbResult.userInfo;
     }    
     var allowAdmin = queryResults.data.navbar.allowadmin;
     
@@ -71,7 +71,7 @@ const app = function () {
       elemCount2.innerHTML = ' (' + sharedScheduleCount + ')';
     }
     
-    var htmlForLogin = userInfo.username + elemCount.outerHTML;
+    var htmlForLogin = userInfo.userName + elemCount.outerHTML;
     var htmlForShared = 'shared schedules' + elemCount2.outerHTML;
 
     var navConfig = {

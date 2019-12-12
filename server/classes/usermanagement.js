@@ -22,14 +22,13 @@ module.exports = internal.UserManagement = class {
   
 //---------------------------------------------------------------
 // public methods
-//---------------------------------------------------------------
-  getUserId(sessionInfo) { return sessionInfo.userInfo.userId; };
-  getUserName(sessionInfo) { return sessionInfo.userInfo.userName; };
-  getUserShortName(sessionInfo) { return sessionInfo.userInfo.userShortName; };
-  getPrivilegeLevel(sessionInfo) { return sessionInfo.userInfo.privilegeLevel; }
+//---------------------------------------------------------------  
+  getUserInfo(sessionInfo) {
+    return sessionInfo.userInfo;
+  }
   
-  isLoggedIn(sessionInfo) {
-    return (sessionInfo.userInfo && this.getUserId(sessionInfo) >= 0);
+  initializeUserInfo(sessionInfo) {
+    sessionInfo.userInfo = {userId: -1};
   }
   
   async attemptLogin(sessionInfo, userName, userPassword) {
@@ -37,7 +36,7 @@ module.exports = internal.UserManagement = class {
     
     this.logout(sessionInfo);
     
-    var queryResult = await this._getAllUserInfo();
+    var queryResult = await this._queryAllUserInfo();
     if (queryResult.success) {
       
       if (userPassword == 'okay') {
@@ -65,11 +64,16 @@ module.exports = internal.UserManagement = class {
   }
   
   logout(sessionInfo) {
-    sessionInfo.userInfo = {userId: -1};
+    this.initializeUserInfo(sessionInfo);
   }
   
-  isAtLeastPrivilegeLevel(sessionInfo, targetPrivilegeLevel) {
-    var userPrivilegeLevel = this.getPrivilegeLevel(sessionInfo);
+  isLoggedIn(sessionInfo) {
+    var userInfo = this.getUserInfo(sessionInfo);
+    return (userInfo && userInfo.userId >= 0);
+  }  
+  
+  isAtLeastPrivilegeLevel(userInfo, targetPrivilegeLevel) {
+    var userPrivilegeLevel = userInfo.privilegeLevel;
     
     var levelRanks = {
       'instructor': 0,
@@ -84,13 +88,10 @@ module.exports = internal.UserManagement = class {
     return (userPrivilegeRank >= targetPrivilegeRank);
   }
   
-  getUserInfo(sessionInfo) {
+  queryUserInfo(sessionInfo) {
     var result = {
       success: true,
-      data: {
-        usershortname: this.getUserShortName(sessionInfo),
-        username: this.getUserName(sessionInfo)
-      }
+      userInfo: this.getUserInfo(sessionInfo)
     };
     
     return result;
@@ -132,7 +133,7 @@ module.exports = internal.UserManagement = class {
 //---------------------------------------------------------------
 // specific query functions
 //---------------------------------------------------------------
-  async _getAllUserInfo() {
+  async _queryAllUserInfo() {
     var result = this._queryFailureResult();
     
     var query = 'select user.userid, privilege.privilegeid, usershortname, username, privilegename ' +
