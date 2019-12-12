@@ -18,7 +18,7 @@ const app = function () {
     navOptions: [
       'courseselection', 'scheduling', 'editing', 'calendarui',
       'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars',
-      'manageshared', 'notification'
+      'manageshared', 'settings'
     ],
     adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars']
   };
@@ -40,7 +40,13 @@ const app = function () {
 	//-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------  
-  async function _renderPage() {
+  async function _renderPage() {    
+    var dbResult = await _doGetQuery('usermanagement', 'getuser');
+    settings.userInfo = null;
+    if (dbResult.success) {
+      settings.userInfo = dbResult.userInfo;
+    }    
+    
     page.maincontainer.appendChild(await _renderSubContainers());
     page.body.insertBefore(await _renderNavbar(), page.body.firstChild);
     page.maincontainer.classList.add('bump-down');
@@ -52,12 +58,7 @@ const app = function () {
     if (!queryResults.success) {
       return CreateElement.createDiv(null, null, queryResults.details);
     }
-    
-    var dbResult = await _doGetQuery('usermanagement', 'getuser');
-    var userInfo = null;
-    if (dbResult.success) {
-      userInfo = dbResult.userInfo;
-    }    
+
     var allowAdmin = queryResults.data.navbar.allowadmin;
     
     var sharedScheduleCount = await _getNumberOfSharedSchedules();
@@ -73,7 +74,7 @@ const app = function () {
       elemCount2.innerHTML = ' (' + sharedScheduleCount + ')';
     }
     
-    var htmlForLogin = userInfo.userName + elemCount.outerHTML;
+    var htmlForLogin = settings.userInfo.userName + elemCount.outerHTML;
     var htmlForShared = 'shared schedules' + elemCount2.outerHTML;
 
     var navConfig = {
@@ -87,7 +88,7 @@ const app = function () {
       
       hamburgeritems: [
         {label: htmlForShared, callback: () => {return _navDispatch('manageshared');}},      
-        {label: 'notification options', callback: () => {return _navDispatch('notification');}},      
+        {label: 'settings', callback: () => {return _navDispatch('settings');}},      
         {label: 'help', callback: _showHelp},
         {label: 'logout', callback: _doLogout}
       ]      
@@ -116,13 +117,6 @@ const app = function () {
     return new NavigationBar(navConfig);
   }
   
-  /*
-  async function _renderLogin() {
-    settings.logincontainer = new LoginUI(() => {return _loginComplete();});
-    return await settings.logincontainer.render();
-  }
-  */
-  
   async function _renderSubContainers() {
     var container = CreateElement.createDiv(null, null);
     
@@ -145,8 +139,8 @@ const app = function () {
     });
     container.appendChild(await settings.manageshared.render());
 
-    settings.notification = new NotificationOptions();
-    container.appendChild(await settings.notification.render());
+    settings.settings = new Settings();
+    container.appendChild(await settings.settings.render());
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
       var type = settings.adminTypes[i];

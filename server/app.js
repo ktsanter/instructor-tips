@@ -122,6 +122,11 @@ app.use(bodyParser.json());
     userManagement.logout(req.session);
     res.redirect('/login.html');
   })
+  
+  app.post('/change_password', async function (req, res) {
+    userManagement.changePassword(req.body, req.session);
+    res.redirect('/login.html');
+  })  
 
 //------------------------------------------------------
 // GET requests

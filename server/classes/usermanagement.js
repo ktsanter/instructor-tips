@@ -97,6 +97,13 @@ module.exports = internal.UserManagement = class {
     return result;
   }  
   
+  changePassword(postData, sessionInfo) {
+    console.log('change password');
+    console.log(postData);
+    console.log(sessionInfo.userInfo);
+    this.logout(sessionInfo);
+  }
+  
 //---------------------------------------------------------------
 // general query functions
 //---------------------------------------------------------------

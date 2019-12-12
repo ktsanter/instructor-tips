@@ -1,13 +1,13 @@
 //-----------------------------------------------------------------------------------
-// NotificationOptions class
+// Settings class
 //-----------------------------------------------------------------------------------
 // TODO: 
 //-----------------------------------------------------------------------------------
 
-class NotificationOptions {
+class Settings {
   constructor() {
     this._version = '0.01';
-    this._title = 'Notification options';
+    this._title = 'Settings';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     
@@ -44,6 +44,7 @@ class NotificationOptions {
     
     if (queryResults.success) {       
       this._container.appendChild(this._renderNotificationUI(queryResults.data));
+      this._container.appendChild(this._renderPasswordUI());
     }
   }
   
@@ -52,16 +53,16 @@ class NotificationOptions {
 
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
-    
-    var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
-    this._container.appendChild(titleContainer);
-    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
   }
   
   _renderNotificationUI(notificationData) {
     var container = CreateElement.createDiv(null, 'notification-contents');
 
     var handler = (e) => {return this._updateSettings();};
+    
+    var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
+    container.appendChild(titleContainer);
+    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', 'Notification settings'));
     
     var elemSharedSchedule = this._createSliderSwitch('shared schedules', 'shared schedules', 'notification-control sharedschedule', handler);
     this._setSliderValue(elemSharedSchedule, notificationData.sharedschedule);
@@ -72,6 +73,7 @@ class NotificationOptions {
     elemPushReminders.title = 'receive weekly reminders about your schedule';
 
     var elemEmail = CreateElement.createTextInput(null, 'notification-control email', notificationData.email);
+    elemEmail.placeholder = 'email';
     var elemEmailConfirm = CreateElement.createButton(null, 'notification-control email-confirm', 'save', 'save email', handler);
     
     var elemSubContainer = CreateElement.createDiv(null, 'notification-contents-container');
@@ -82,7 +84,7 @@ class NotificationOptions {
     elemSubContainer.appendChild(elemPushReminders);
     container.appendChild(elemSubContainer);
     
-    elemSubContainer = CreateElement.createDiv(null, 'notification-contents-container');
+    elemSubContainer = CreateElement.createDiv(null, 'notification-contents-container2');
     container.appendChild(elemSubContainer);
     elemSubContainer.appendChild(elemEmail);
     elemSubContainer.appendChild(elemEmailConfirm);    
@@ -90,6 +92,47 @@ class NotificationOptions {
     return container;
   }
 
+  _renderPasswordUI() {
+    var container = CreateElement.createDiv(null, 'notification-contents');
+    
+    var titleContainer = CreateElement.createDiv(null, 'tipmanager-title');
+    container.appendChild(titleContainer);
+    titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', 'Change password')); 
+
+    var elemForm = CreateElement._createElement('form', null, 'password-form');
+    container.appendChild(elemForm);
+    elemForm.action = '/change_password';
+    elemForm.method = 'post';    
+    
+    var passwordInputHandler = (e) => {return this._validatePassword(e);};
+    
+    var subContainer = CreateElement.createDiv(null, null);
+    elemForm.appendChild(subContainer);
+    var elemPassword = CreateElement._createElement('input', null, 'password-new');
+    subContainer.appendChild(elemPassword);
+    elemPassword.type = 'password';
+    elemPassword.name = 'newPassword';
+    elemPassword.placeholder = 'new password';
+    elemPassword.autocomplete = 'off';
+    elemPassword.addEventListener('input', passwordInputHandler);
+    
+    subContainer = CreateElement.createDiv(null, null);
+    elemForm.appendChild(subContainer);
+    elemPassword = CreateElement._createElement('input', null, 'password-confirm');
+    subContainer.appendChild(elemPassword);
+    elemPassword.type = 'password';
+    elemPassword.placeholder = 'confirm password';
+    elemPassword.autocomplete = 'off';
+    elemPassword.addEventListener('input', passwordInputHandler);
+    
+    var elemSaveButton = CreateElement.createButton(null, 'password-control', 'save', 'save new password', (e) => {return this._saveNewPassword(e)});
+    elemForm.appendChild(elemSaveButton);
+    elemSaveButton.type = 'button';
+    elemSaveButton.disabled = true;
+    
+    return container;
+  }
+  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------    
@@ -105,6 +148,48 @@ class NotificationOptions {
     };
     
     var queryResults = await this._doPostQuery('tipmanager/update', 'notificationoptions', postData);
+  }
+
+  _validatePassword(e) {
+    var elemNewPassword = this._container.getElementsByClassName('password-new')[0];
+    var elemConfirmPassword = this._container.getElementsByClassName('password-confirm')[0];
+    var elemSaveButton = this._container.getElementsByClassName('password-control')[0];
+    
+    var validation = this._newPasswordIsValid();
+    if (validation.newIsValid) {
+      elemNewPassword.style.color = 'black';
+    } else {
+      elemNewPassword.style.color = 'red';
+    }
+    
+    if (validation.confirmIsValid) {
+      elemConfirmPassword.style.color = 'black';
+    } else {
+      elemConfirmPassword.style.color = 'red';
+    }
+    
+    elemSaveButton.disabled = !validation.valid;
+  }
+  
+  _newPasswordIsValid() {
+    var newPassword = this._container.getElementsByClassName('password-new')[0].value;
+    var confirmPassword = this._container.getElementsByClassName('password-confirm')[0].value;
+    var result = {}
+
+    result.newIsValid = (newPassword.length > 3);
+    result.confirmIsValid = (newPassword == confirmPassword);
+    result.valid = (result.newIsValid && result.confirmIsValid);
+    
+    return result;
+  }
+  
+  async _saveNewPassword(e) {
+    var validation = this._newPasswordIsValid();
+    if (!validation.valid) return;
+    
+    var elemForm = this._container.getElementsByClassName('password-form')[0];
+    
+    elemForm.submit();
   }
   
   //--------------------------------------------------------------
