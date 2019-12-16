@@ -143,7 +143,10 @@ app.use(bodyParser.json());
       res.sendFile(path.join(__dirname, 'private', 'help.html'))
   })
 
-
+  app.get('/weekly_calendar.html', function (req, res) {
+      res.sendFile(path.join(__dirname, 'private', '/weekly_calendar.html'))
+  })
+  
   app.get('/admin/query/:queryName',  async function (req, res) {
     if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor') && req.params.queryName == 'navbar') {
       res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
@@ -151,6 +154,9 @@ app.use(bodyParser.json());
     } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
       res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
 
+    } else if (req.params.queryName == 'calendars') {
+      res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
+      
     } else {
       res.send(_failedRequest('get'));
     }
