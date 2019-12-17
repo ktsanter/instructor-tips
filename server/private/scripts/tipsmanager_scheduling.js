@@ -144,7 +144,7 @@ class TipScheduling {
     
     for (var i = 0; i < calendar.length; i++) {
       var cRow = calendar[i];
-      if (cRow.termname == termName) {
+      if (cRow.termname == termName && cRow.week != 998 && cRow.week != 999) {
         organizedCalendar[cRow.week][cRow.starttype] = cRow.firstday;
       }
     }

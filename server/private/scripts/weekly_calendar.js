@@ -108,7 +108,7 @@ const app = function () {
     const MAX_TERM_LENGTH = 18;
     var container = CreateElement.createDiv(null, 'single-calendar');
     
-    container.appendChild(CreateElement.createDiv(null, 'single-calendar calendar-label', calendarName));
+    container.appendChild(_renderCalendarName(calendarName, calendar));
     
     var table = CreateElement.createTable(null, null);
     container.appendChild(table);
@@ -119,24 +119,44 @@ const app = function () {
     
     var currentWeek = null;
     var today = new Date();
-    console.log(today);
+    
+    if (calendar.hasOwnProperty('998')) {
+      row = _renderCalendarRow('open', calendar[998].firstDay, table);
+      if (today >= new Date(_formatDate(calendar[998].firstDay))) currentWeek = row;
+    }
     
     for (var i = 1; i <= MAX_TERM_LENGTH; i++) {
       if (calendar.hasOwnProperty(i)) {
-        var classList = null;
-        
-        row = CreateElement.createTableRow(null, classList, table);
-        CreateElement.createTableCell(null, null, i, false, row);
-        var dayForWeek = _formatDate(calendar[i].firstDay);
-        CreateElement.createTableCell(null, null, dayForWeek, false, row);
-        
-        if (today >= new Date(dayForWeek)) currentWeek = row;
+        row = _renderCalendarRow(i, calendar[i].firstDay, table);
+        if (today >= new Date(_formatDate(calendar[i].firstDay))) currentWeek = row;
       }
     }
     
+    if (calendar.hasOwnProperty('999')) {
+      row = _renderCalendarRow('close', calendar[999].firstDay, table);
+      if (today >= new Date(_formatDate(calendar[999].firstDay))) currentWeek = row;      
+    }
+
     if (currentWeek != null) currentWeek.classList.add('currentweek');
     
     return container;
+  }
+  
+  function _renderCalendarName(calendarName, calendar) {
+    var container = CreateElement.createDiv(null, 'single-calendar calendar-label');
+    
+    container.appendChild(CreateElement.createSpan(null, 'calendar-name', calendarName));
+    
+    return container;
+  }
+  
+  function _renderCalendarRow(weekNumber, firstDay, table) {
+    var row = CreateElement.createTableRow(null, null, table);
+    CreateElement.createTableCell(null, null, weekNumber, false, row);
+    var dayForWeek = _formatDate(firstDay);
+    CreateElement.createTableCell(null, null, dayForWeek, false, row);
+    
+    return row;
   }
   
 	//-----------------------------------------------------------------------------
@@ -261,7 +281,8 @@ const app = function () {
     if (_isValidDate(formatted)) {
       formatted = '';
       if (d != null & d != '') {
-        var objDate = new Date(d);
+        //var objDate = new Date(d);
+        var objDate = new Date(d.slice(0,4) + ',' + d.slice(5, 7) + ',' + d.slice(-2));
         var day = ('00' + objDate.getDate()).slice(-2);
         var month = ('00' + (objDate.getMonth() + 1)).slice(-2);
         var year = ('0000' + objDate.getFullYear()).slice(-2);

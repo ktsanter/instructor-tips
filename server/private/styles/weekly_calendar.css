@@ -40,11 +40,20 @@ body {
 .single-calendar {
   display: inline-block;
   margin-top: 0.6em;
-  margin-right: 0.8em;
+  margin-right: 1.2em;
 }
 
 .single-calendar .calendar-label {
+  padding-bottom: 0.2em;
+}
+
+.single-calendar .calendar-name {
   font-weight: bold;
+}
+
+.single-calendar .calendar-daterange {
+  font-size: 0.9em;
+  padding-left: 0.4em;
 }
 
 .single-calendar table {

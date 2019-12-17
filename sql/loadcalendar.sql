@@ -77,6 +77,20 @@ select concat('deleting existing data for ', @loadschoolyear, ' from calendar...
 delete from calendar where schoolyear  = @loadschoolyear;
 
 #---------------------------------------------------
+select 'inserting start and end dates as weeks 998 and 999...'  as comment;
+insert into calendar(termid, schoolyear, week, firstday, starttype)
+select t.termid, c.schoolyear, 998 as week, str_to_date(c.startdate, '%c/%e/%Y') as firstday, c.starttype
+from calendar_staging as c, term as t
+where c.termname = t.termname
+  and c.schoolyear = @loadschoolyear;
+
+insert into calendar(termid, schoolyear, week, firstday, starttype)
+select t.termid, c.schoolyear, 999 as week, str_to_date(c.enddate, '%c/%e/%Y') as firstday, c.starttype
+from calendar_staging as c, term as t
+where c.termname = t.termname
+  and c.schoolyear = @loadschoolyear;
+
+#---------------------------------------------------
 select 'inserting weeks 1 through 10 for semester, trimester, summer...'  as comment;
 insert into calendar(termid, schoolyear, week, firstday, starttype)
 select t.termid, c.schoolyear, 1 as week, str_to_date(c.week1, '%c/%e/%Y') as firstday, c.starttype
