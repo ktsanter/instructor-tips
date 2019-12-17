@@ -345,6 +345,27 @@ module.exports = internal.dbAdminInsert = class {
                 '"' + startType + '" ' +                
               ') ';
           }
+
+          queryList[i + '-' + j + '-start'] = 
+            'insert into calendar (termid, schoolyear, week, firstday, starttype) ' +
+            'values ( ' +
+              termInfo.termid + ', ' +
+              '"' + schoolYearName + '", ' +
+              998 + ', ' +
+              '"' + defaultFirstDay + '", ' +
+              '"' + startType + '" ' +                
+            ') ';
+          
+
+          queryList[i + '-' + j + '-end'] = 
+            'insert into calendar (termid, schoolyear, week, firstday, starttype) ' +
+            'values ( ' +
+              termInfo.termid + ', ' +
+              '"' + schoolYearName + '", ' +
+              999 + ', ' +
+              '"' + defaultFirstDay + '", ' +
+              '"' + startType + '" ' +                
+            ') ';          
         }
       }
       

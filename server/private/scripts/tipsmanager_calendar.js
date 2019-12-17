@@ -75,13 +75,21 @@ class TipCalendar {
       if (!organized.hasOwnProperty(schoolYear)) organized[schoolYear] = {};
       if (!organized[schoolYear].hasOwnProperty(termName)) organized[schoolYear][termName] = {};
       if (!organized[schoolYear][termName].hasOwnProperty(startType)) organized[schoolYear][termName][startType] = {};
-      organized[schoolYear][termName][startType][week] = {"firstDay": firstDay, "referenceRow": calendarData[i]};
-      
+
+      if (week == 998) {
+        organized[schoolYear][termName][startType].startDate = {"firstDay": firstDay, "referenceRow": calendarData[i]};
+        
+      } else if (week == 999) {
+        organized[schoolYear][termName][startType].endDate = {"firstDay": firstDay, "referenceRow": calendarData[i]};
+        
+      } else {
+        organized[schoolYear][termName][startType][week] = {"firstDay": firstDay, "referenceRow": calendarData[i]};
+      }
       selectionSet.add(this._buildSelectionFromComponents(schoolYear, termName, startType));
     }
     
     organized.selectionList = Array.from(selectionSet);
-    
+
     return organized;
   }
   
@@ -166,23 +174,27 @@ class TipCalendar {
     if (selection) {
       var components = this._getComponentsFromSelection(selection);
       var calendar = this._calendarInfo[components.schoolYear][components.termName][components.startType];
-      var numWeeks = Object.keys(calendar).length;
+      var numWeeks = Object.keys(calendar).length - 2;
       
+      container.appendChild(this._renderWeek('open', calendar.startDate, false, true));
       for (var i = 1; i <= numWeeks; i++) {
-        container.appendChild(this._renderWeek(i, calendar[i], (i < numWeeks)));
+        container.appendChild(this._renderWeek(i, calendar[i], (i < numWeeks), false));
       }
+      container.appendChild(this._renderWeek('close', calendar.endDate, false, true));
       
       this._markOutOfSequence(container);
     }
   }
   
-  _renderWeek(weekNumber, weekInfo, includeDropFill) {
-    var container = CreateElement.createDiv(null, 'calendar-week');
+  _renderWeek(weekLabel, weekInfo, includeDropFill, isStartEndDate) {
+    var classList = 'calendar-week';
+    if (isStartEndDate) classList = 'calendar-week-startend';    
+    var container = CreateElement.createDiv(null, classList);
     container.referenceRow = weekInfo.referenceRow;
     container.addEventListener('mouseenter', (e) => {return this._weekEnterExit(e, true);});
     container.addEventListener('mouseleave', (e) => {return this._weekEnterExit(e, false);});
     
-    container.appendChild(CreateElement.createDiv(null, 'calendar-weeknumber', 'week ' + weekNumber));
+    container.appendChild(CreateElement.createDiv(null, 'calendar-weeknumber', weekLabel));
     
     var elemFirstDay = CreateElement.createTextInput(null, 'calendar-weekfirstday', weekInfo.firstDay);
     container.appendChild(elemFirstDay);
@@ -264,6 +276,14 @@ class TipCalendar {
     var elemWeekList = this._container.getElementsByClassName('calendar-week');
     var updateData = [];
     
+    for (var i = 0; i < elemWeekList.length; i++) {
+      var elemWeek = elemWeekList[i];
+      var calendarId = elemWeek.referenceRow.calendarid;
+      var firstDay = elemWeek.getElementsByClassName('calendar-weekfirstday')[0].value;
+      updateData.push({'calendarid': calendarId, 'firstday': firstDay});
+    }
+    
+    elemWeekList = this._container.getElementsByClassName('calendar-week-startend');
     for (var i = 0; i < elemWeekList.length; i++) {
       var elemWeek = elemWeekList[i];
       var calendarId = elemWeek.referenceRow.calendarid;
