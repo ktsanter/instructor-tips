@@ -111,6 +111,31 @@ INSERT INTO usercourse (userid, courseid, termgroupid)
 SELECT NULL as userid, NULL as courseid, termgroupid
 FROM termgroup;
 
+
+#-------------------------------------------------------------
+#-- category
+#-------------------------------------------------------------
+select "loading category" as comment;
+
+INSERT INTO category (categorytext) SELECT 'course prep';
+INSERT INTO category (categorytext) SELECT 'course launch';
+INSERT INTO category (categorytext) SELECT 'progress check';
+INSERT INTO category (categorytext) SELECT 'check-in / concerns';
+INSERT INTO category (categorytext) SELECT 'ESR';
+INSERT INTO category (categorytext) SELECT 'engagement';
+INSERT INTO category (categorytext) SELECT 'reminder';
+INSERT INTO category (categorytext) SELECT 'course end';
+INSERT INTO category (categorytext) SELECT 'reflection';
+
+#-------------------------------------------------------------
+#-- keyword
+#-------------------------------------------------------------
+select "loading keyword" as comment;
+
+INSERT INTO keyword (keywordtext) SELECT 'reminder';
+INSERT INTO keyword (keywordtext) SELECT 'check-in';
+INSERT INTO keyword (keywordtext) SELECT 'activity';
+
 #-------------------------------------------------------------
 #-- tip
 #-------------------------------------------------------------
@@ -147,6 +172,33 @@ create table tipweek_staging as
 insert into tip(userid, tiptext) 
   select NULL as userid, tiptext
   from tip_staging;
+
+#-------------------------------------------------------------
+#-- tip2
+#-------------------------------------------------------------
+select "loading tip2" as comment;
+
+drop table if exists tip2_staging;
+
+CREATE TABLE tip2_staging
+(
+  tiptext   varchar(1000) NOT NULL ,
+  categorytext      varchar(100) NOT NULL 
+);
+
+load data local infile 'initial_load_data/tipdata2_instructorscorner.txt'
+into table tip2_staging
+FIELDS TERMINATED BY '|'
+LINES TERMINATED BY '\r\n'
+(tiptext, categorytext);
+
+insert into tip2(tiptext, categoryid)
+select ts.tiptext, c.categoryid
+from 
+  tip2_staging as ts, 
+  category as c 
+  where 
+    ts.categorytext = c.categorytext;
 
 #-------------------------------------------------------------
 #-- mappedtip

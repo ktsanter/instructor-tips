@@ -1,0 +1,53 @@
+.dnd-colorscheme {
+  --MVwhite: #ffffff;
+  --MVblack: #000000;
+	--MVdeepteal: #093c44;
+	--MVdarkteal: #115e6e;
+	--MVlightteal: #2f8d98;
+	--MVgreen: #b5cd34;
+	--MVorange: #f7941e;
+  --MVdarkgray: #414042;
+  --MVlightgray: #6d6e71;
+}
+
+body {
+	color: var(--MVblack);
+	background-color: var(--MVwhite);
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	margin-left: 12px;
+	margin-right: 12px;
+}
+
+.dnd-header {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--MVwhite);
+  background-color: var(--MVlightteal);
+  border: 1px solid var(--MVdeepteal);
+  border-radius: 8px;
+  padding-left: 0.3em;
+  margin-bottom: 0.2em;
+}
+
+.dnd-content {
+}
+
+.dnd-source {
+  border: 1px solid var(--MVdeepteal);
+  display: inline-block;
+  vertical-align: top;
+  padding: 0.2em;
+  margin-right: 1em;
+}
+
+.dnd-dest {
+  border: 1px solid var(--MVdeepteal);
+  display: inline-block;
+  vertical-align: top;
+  padding: 0.2em;
+}
+
+.dnd-contentlabel {
+  font-weight: bold;
+}
