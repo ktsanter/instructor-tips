@@ -17,10 +17,10 @@ const app = function () {
     
     navOptions: [
       'courseselection', 'scheduling', 'editing', 'calendarui',
-      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars',
+      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'categories', 'tipcategories',
       'manageshared', 'settings'
     ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'categories', 'tipcategories']
   };
   
 	//---------------------------------------
@@ -108,7 +108,9 @@ const app = function () {
             {label: 'Term', callback: () => {return _navDispatch('terms');}},
             {label: 'Course', callback: () => {return _navDispatch('courses');}},
             {label: 'UserCourse', callback: () => {return _navDispatch('usercourses');}},
-            {label: 'Calendar', callback: () => {return _navDispatch('calendars');}}
+            {label: 'Calendar', callback: () => {return _navDispatch('calendars');}},
+            {label: 'Categories', callback: () => {return _navDispatch('categories');}},
+            {label: 'TipCategories', callback: () => {return _navDispatch('tipcategories');}}
           ]
         }
       );

@@ -54,6 +54,12 @@ module.exports = internal.dbAdminDelete = class {
     } else if (params.queryName == 'schoolyear-calendar') {
       dbResult = await this._deleteSchoolYearCalendar(params, postData);
       
+    } else if (params.queryName == 'categories') {
+      dbResult = await this._deleteCategory(params, postData);
+      
+    } else if (params.queryName == 'tipcategories') {
+      dbResult = await this._deleteTipCategory(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -264,4 +270,42 @@ module.exports = internal.dbAdminDelete = class {
     
     return result;
   }
+  
+  async _deleteCategory(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from category ' +
+                'where categoryid = ' + postData.categoryid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _deleteTipCategory(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from tipcategory ' +
+                'where tipcategoryid = ' + postData.tipcategoryid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
 }

@@ -54,6 +54,12 @@ module.exports = internal.dbAdminUpdate = class {
     } else if (params.queryName == 'schoolyear-calendar') {
       dbResult = await this._updateSchoolYearCalendar(params, postData);
       
+    } else if (params.queryName == 'categories') {
+      dbResult = await this._updateCategory(params, postData);
+      
+    } else if (params.queryName == 'tipcategories') {
+      dbResult = await this._updateTipCategory(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -329,4 +335,47 @@ module.exports = internal.dbAdminUpdate = class {
 
     return result;
   }
+  
+  async _updateCategory(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'update category ' +
+                'set ' +
+                  'categorytext = "' + postData.categorytext + '" ' + 
+                'where categoryid = ' + postData.categoryid;
+    
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _updateTipCategory(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'update tipcategory ' +
+                'set ' +
+                  'tipid = ' + postData.tipid + ', ' + 
+                  'categoryid = ' + postData.categoryid + ' ' +
+                'where tipcategoryid = ' + postData.tipcategoryid;
+    
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
 }

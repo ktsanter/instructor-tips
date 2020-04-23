@@ -103,25 +103,6 @@ CREATE TABLE usercourse
   CONSTRAINT FOREIGN KEY (termgroupid) REFERENCES termgroup (termgroupid) ON DELETE CASCADE
 );
 
-CREATE TABLE category
-(
-  categoryid        int unsigned NOT NULL AUTO_INCREMENT ,
-  categorytext      varchar(100) NOT NULL ,
-
-
-  PRIMARY KEY (categoryid),
-  CONSTRAINT UNIQUE (categorytext)
-);
-
-CREATE TABLE keyword
-(
-  keywordid        int unsigned NOT NULL AUTO_INCREMENT ,
-  keywordtext      varchar(100) NOT NULL ,
-
-
-  PRIMARY KEY (keywordid),
-  CONSTRAINT UNIQUE (keywordtext)
-);
 
 CREATE TABLE tip
 (
@@ -138,24 +119,31 @@ CREATE TABLE tip2
 (
   tipid     int unsigned NOT NULL AUTO_INCREMENT ,
   tiptext   varchar(1000) NOT NULL ,
-  categoryid int unsigned NOT NULL ,
 
   PRIMARY KEY (tipid),
-  CONSTRAINT UNIQUE (tiptext),
-  CONSTRAINT FOREIGN KEY (categoryid) REFERENCES category (categoryid) ON DELETE CASCADE
+  CONSTRAINT UNIQUE (tiptext)
 );
 
-CREATE TABLE tipkeyword
+CREATE TABLE category
 (
-  tipkeywordid  int unsigned NOT NULL AUTO_INCREMENT ,
+  categoryid        int unsigned NOT NULL AUTO_INCREMENT ,
+  categorytext      varchar(100) NOT NULL ,
+
+
+  PRIMARY KEY (categoryid),
+  CONSTRAINT UNIQUE (categorytext)
+);
+
+CREATE TABLE tipcategory
+(
+  tipcategoryid  int unsigned NOT NULL AUTO_INCREMENT ,
   tipid         int unsigned NULL ,
-  keywordid     int unsigned NULL ,
+  categoryid     int unsigned NULL ,
 
-
-  PRIMARY KEY (tipkeywordid),
-  CONSTRAINT UNIQUE (tipid, keywordid),
-  CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip (tipid) ON DELETE CASCADE,
-  CONSTRAINT FOREIGN KEY (keywordid) REFERENCES keyword (keywordid) ON DELETE CASCADE
+  PRIMARY KEY (tipcategoryid),
+  CONSTRAINT UNIQUE (tipid, categoryid),
+  CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip2 (tipid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (categoryid) REFERENCES category (categoryid) ON DELETE CASCADE
 );
 
 CREATE TABLE mappedtip

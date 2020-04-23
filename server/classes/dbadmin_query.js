@@ -51,6 +51,12 @@ module.exports = internal.dbAdminQuery = class {
     } else if (params.queryName == 'calendars') {
       dbResult = await this._getCalendar(params);
       
+    } else if (params.queryName == 'categories') {
+      dbResult = await this._getCategories(params);
+      
+    } else if (params.queryName == 'tipcategories') {
+      dbResult = await this._getTipCategories(params);
+      
     } else if (params.queryName == 'navbar') {
       dbResult = await this._getNavbar(params, sessionInfo);
       
@@ -425,6 +431,37 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
   
+  async _getCategories(params) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      categories:
+        'select ' +
+          'c.categoryid, c.categorytext ' +
+        'from category as c ' +
+        'order by c.categorytext '
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.primaryKey = 'categoryid',
+      result.insertUpdateFields = [
+        {categorytext: 'text'}
+      ],
+      result.displayFields = ['categorytext'];
+      result.data = queryResults.data.categories,
+      result.constraints = {};
+      
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
   async _getNavbar(params, sessionInfo) {
     var result = this._queryFailureResult();
     
@@ -436,4 +473,51 @@ module.exports = internal.dbAdminQuery = class {
 
     return result;
   }
+  
+  async _getTipCategories(params) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      tipcategories: 
+        'select tc.tipcategoryid, tc.tipid, tc.categoryid, t.tiptext, c.categorytext ' +
+        'from tipcategory as tc, tip2 as t, category as c ' +
+        'where tc.tipid = t.tipid ' +
+        '  and tc.categoryid = c.categoryid ' +
+        'order by t.tiptext, c.categorytext',
+      tips: 
+        'select tipid, tiptext ' +
+        'from tip2 ' +
+        'order by tiptext',
+      categories:
+        'select categoryid, categorytext ' +
+        'from category ' +
+        'order by categorytext'
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.primaryKey = 'tipcategoryid',
+      result.insertUpdateFields = [
+        {tipid: 'foreignkey'},
+        {categoryid: 'foreignkey'}
+      ],      
+      result.displayFields = ['tiptext', 'categorytext'];
+      result.data = queryResults.data.tipcategories,
+      result.constraints = {
+        foreignKeys: {
+          tipid: {data: 'tips', displayField: 'tiptext'},
+          categoryid: {data: 'categories', displayField: 'categorytext'}
+        },
+        tips: queryResults.data.tips,
+        categories: queryResults.data.categories
+      };
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
 }

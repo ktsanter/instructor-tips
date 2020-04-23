@@ -128,15 +128,6 @@ INSERT INTO category (categorytext) SELECT 'course end';
 INSERT INTO category (categorytext) SELECT 'reflection';
 
 #-------------------------------------------------------------
-#-- keyword
-#-------------------------------------------------------------
-select "loading keyword" as comment;
-
-INSERT INTO keyword (keywordtext) SELECT 'reminder';
-INSERT INTO keyword (keywordtext) SELECT 'check-in';
-INSERT INTO keyword (keywordtext) SELECT 'activity';
-
-#-------------------------------------------------------------
 #-- tip
 #-------------------------------------------------------------
 select "loading tip" as comment;
@@ -192,13 +183,23 @@ FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
 (tiptext, categorytext);
 
-insert into tip2(tiptext, categoryid)
-select ts.tiptext, c.categoryid
+insert into tip2(tiptext)
+select ts.tiptext
+from tip2_staging as ts;
+
+#-------------------------------------------------------------
+#-- tipcategory
+#-------------------------------------------------------------
+select "loading tipcategory" as comment;
+
+insert into tipcategory(tipid, categoryid)
+select t.tipid, c.categoryid
 from 
-  tip2_staging as ts, 
+  tip2_staging as ts,
+  tip2 as t,  
   category as c 
-  where 
-    ts.categorytext = c.categorytext;
+  where ts.tiptext = t.tiptext
+    and ts.categorytext = c.categorytext;
 
 #-------------------------------------------------------------
 #-- mappedtip
