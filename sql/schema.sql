@@ -119,6 +119,7 @@ CREATE TABLE tip2
 (
   tipid     int unsigned NOT NULL AUTO_INCREMENT ,
   tiptext   varchar(1000) NOT NULL ,
+  common   boolean NOT NULL ,
 
   PRIMARY KEY (tipid),
   CONSTRAINT UNIQUE (tiptext)
@@ -144,6 +145,18 @@ CREATE TABLE tipcategory
   CONSTRAINT UNIQUE (tipid, categoryid),
   CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip2 (tipid) ON DELETE CASCADE,
   CONSTRAINT FOREIGN KEY (categoryid) REFERENCES category (categoryid) ON DELETE CASCADE
+);
+
+CREATE TABLE tipuser
+(
+  tipuserid  int unsigned NOT NULL AUTO_INCREMENT ,
+  tipid         int unsigned NULL ,
+  userid     int unsigned NULL ,
+
+  PRIMARY KEY (tipuserid),
+  CONSTRAINT UNIQUE (tipid, userid),
+  CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip2 (tipid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
 );
 
 CREATE TABLE mappedtip
@@ -225,6 +238,14 @@ CREATE TRIGGER trigger_newcourse
     INSERT usercourse (userid, courseid, termgroupid)
     SELECT NULL AS userid, new.courseid, termgroup.termgroupid
     FROM termgroup;
+    
+#-- add common tips for new users
+CREATE TRIGGER trigger_newusercommontips
+  AFTER INSERT ON user FOR EACH ROW
+    INSERT tipuser (userid, tipid)
+    SELECT new.userid, tipid
+    FROM tip2 as t
+    WHERE t.common;
     
 #--------------------------------------------------------------------------
 #-- views

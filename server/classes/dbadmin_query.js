@@ -51,11 +51,17 @@ module.exports = internal.dbAdminQuery = class {
     } else if (params.queryName == 'calendars') {
       dbResult = await this._getCalendar(params);
       
+    } else if (params.queryName == 'tips') {
+      dbResult = await this._getTips(params);
+      
     } else if (params.queryName == 'categories') {
       dbResult = await this._getCategories(params);
       
     } else if (params.queryName == 'tipcategories') {
       dbResult = await this._getTipCategories(params);
+      
+    } else if (params.queryName == 'tipusers') {
+      dbResult = await this._getTipUsers(params);
       
     } else if (params.queryName == 'navbar') {
       dbResult = await this._getNavbar(params, sessionInfo);
@@ -431,6 +437,38 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
   
+  async _getTips(params) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      tips:
+        'select ' +
+          't.tipid, t.tiptext, t.common ' +
+        'from tip2 as t ' +
+        'order by t.tiptext '
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.primaryKey = 'tipid',
+      result.insertUpdateFields = [
+        {tiptext: 'text'},
+        {common: 'boolean'}
+      ],
+      result.displayFields = ['tiptext', 'common'];
+      result.data = queryResults.data.tips,
+      result.constraints = {};
+      
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
   async _getCategories(params) {
     var result = this._queryFailureResult();
     
@@ -513,6 +551,53 @@ module.exports = internal.dbAdminQuery = class {
         },
         tips: queryResults.data.tips,
         categories: queryResults.data.categories
+      };
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+
+  async _getTipUsers(params) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      tipusers: 
+        'select tu.tipuserid, tu.tipid, tu.userid, t.tiptext, u.username ' +
+        'from tipuser as tu, tip2 as t, user as u ' +
+        'where tu.tipid = t.tipid ' +
+        '  and tu.userid = u.userid ' +
+        'order by u.username, t.tiptext',
+      tips: 
+        'select tipid, tiptext ' +
+        'from tip2 ' +
+        'order by tiptext',
+      users:
+        'select userid, username ' +
+        'from user ' +
+        'order by username'
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.primaryKey = 'tipuserid',
+      result.insertUpdateFields = [
+        {tipid: 'foreignkey'},
+        {userid: 'foreignkey'}
+      ],      
+      result.displayFields = ['username', 'tiptext'];
+      result.data = queryResults.data.tipusers,
+      result.constraints = {
+        foreignKeys: {
+          tipid: {data: 'tips', displayField: 'tiptext'},
+          userid: {data: 'users', displayField: 'username'}
+        },
+        tips: queryResults.data.tips,
+        users: queryResults.data.users
       };
     } else {
       result.details = queryResults.details;

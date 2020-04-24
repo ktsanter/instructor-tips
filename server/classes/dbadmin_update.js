@@ -54,11 +54,17 @@ module.exports = internal.dbAdminUpdate = class {
     } else if (params.queryName == 'schoolyear-calendar') {
       dbResult = await this._updateSchoolYearCalendar(params, postData);
       
+    } else if (params.queryName == 'tips') {
+      dbResult = await this._updateTip(params, postData);
+      
     } else if (params.queryName == 'categories') {
       dbResult = await this._updateCategory(params, postData);
       
     } else if (params.queryName == 'tipcategories') {
       dbResult = await this._updateTipCategory(params, postData);
+      
+    } else if (params.queryName == 'tipusers') {
+      dbResult = await this._updateTipUser(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -336,6 +342,28 @@ module.exports = internal.dbAdminUpdate = class {
     return result;
   }
   
+  async _updateTip(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'update tip2 ' +
+                'set ' +
+                  'tiptext = "' + postData.tiptext + '", ' + 
+                  'common = ' + (postData.common ? 1 : 0) + ' ' + 
+                'where tipid = ' + postData.tipid;
+    
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+    
   async _updateCategory(params, postData) {
     var result = this._queryFailureResult();
     
@@ -356,7 +384,7 @@ module.exports = internal.dbAdminUpdate = class {
     
     return result;
   }  
-  
+
   async _updateTipCategory(params, postData) {
     var result = this._queryFailureResult();
     
@@ -365,6 +393,28 @@ module.exports = internal.dbAdminUpdate = class {
                   'tipid = ' + postData.tipid + ', ' + 
                   'categoryid = ' + postData.categoryid + ' ' +
                 'where tipcategoryid = ' + postData.tipcategoryid;
+    
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _updateTipUser(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'update tipuser ' +
+                'set ' +
+                  'tipid = ' + postData.tipid + ', ' + 
+                  'userid = ' + postData.userid + ' ' +
+                'where tipuserid = ' + postData.tipuserid;
     
     var queryResults = await this._dbQuery(query);
     

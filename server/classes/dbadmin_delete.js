@@ -54,11 +54,17 @@ module.exports = internal.dbAdminDelete = class {
     } else if (params.queryName == 'schoolyear-calendar') {
       dbResult = await this._deleteSchoolYearCalendar(params, postData);
       
+    } else if (params.queryName == 'tips') {
+      dbResult = await this._deleteTip(params, postData);
+      
     } else if (params.queryName == 'categories') {
       dbResult = await this._deleteCategory(params, postData);
       
     } else if (params.queryName == 'tipcategories') {
       dbResult = await this._deleteTipCategory(params, postData);
+      
+    } else if (params.queryName == 'tipusers') {
+      dbResult = await this._deleteTipUser(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -271,6 +277,25 @@ module.exports = internal.dbAdminDelete = class {
     return result;
   }
   
+  async _deleteTip(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from tip2 ' +
+                'where tipid = ' + postData.tipid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
   async _deleteCategory(params, postData) {
     var result = this._queryFailureResult();
 
@@ -308,4 +333,24 @@ module.exports = internal.dbAdminDelete = class {
     
     return result;
   }  
+  
+  
+  async _deleteTipUser(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from tipuser ' +
+                'where tipuserid = ' + postData.tipuserid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
 }

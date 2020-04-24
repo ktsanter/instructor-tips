@@ -57,8 +57,14 @@ module.exports = internal.dbAdminInsert = class {
     } else if (params.queryName == 'categories') {
       dbResult = await this._insertCategory(params, postData);
       
+    } else if (params.queryName == 'tips') {
+      dbResult = await this._insertTip(params, postData);
+      
     } else if (params.queryName == 'tipcategories') {
       dbResult = await this._insertTipCategory(params, postData);
+      
+    } else if (params.queryName == 'tipusers') {
+      dbResult = await this._insertTipUser(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -389,6 +395,28 @@ module.exports = internal.dbAdminInsert = class {
     return result;
   }
   
+  async _insertTip(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'insert into tip2 (tiptext, common) ' +
+                'values (' +
+                  '"' + postData.tiptext + '", ' + 
+                  (postData.common ? 1 : 0) + ' ' +
+                ')';
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
   async _insertCategory(params, postData) {
     var result = this._queryFailureResult();
     
@@ -417,6 +445,28 @@ module.exports = internal.dbAdminInsert = class {
                 'values (' +
                   postData.tipid + ', ' + 
                   postData.categoryid + 
+                ')';
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _insertTipUser(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'insert into tipuser (tipid, userid) ' +
+                'values (' +
+                  postData.tipid + ', ' + 
+                  postData.userid + 
                 ')';
     
     var queryResults = await this._dbQuery(query);

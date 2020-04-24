@@ -17,10 +17,10 @@ const app = function () {
     
     navOptions: [
       'courseselection', 'scheduling', 'editing', 'calendarui',
-      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'categories', 'tipcategories',
+      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'tips', 'categories', 'tipcategories', 'tipusers',
       'manageshared', 'settings'
     ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'categories', 'tipcategories']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'tips', 'categories', 'tipcategories', 'tipusers']
   };
   
 	//---------------------------------------
@@ -109,8 +109,10 @@ const app = function () {
             {label: 'Course', callback: () => {return _navDispatch('courses');}},
             {label: 'UserCourse', callback: () => {return _navDispatch('usercourses');}},
             {label: 'Calendar', callback: () => {return _navDispatch('calendars');}},
+            {label: 'Tips', callback: () => {return _navDispatch('tips');}},
             {label: 'Categories', callback: () => {return _navDispatch('categories');}},
-            {label: 'TipCategories', callback: () => {return _navDispatch('tipcategories');}}
+            {label: 'TipCategories', callback: () => {return _navDispatch('tipcategories');}},
+            {label: 'TipUsers', callback: () => {return _navDispatch('tipusers');}}
           ]
         }
       );

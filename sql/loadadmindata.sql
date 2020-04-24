@@ -183,8 +183,8 @@ FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
 (tiptext, categorytext);
 
-insert into tip2(tiptext)
-select ts.tiptext
+insert into tip2(tiptext, common)
+select ts.tiptext, TRUE
 from tip2_staging as ts;
 
 #-------------------------------------------------------------
@@ -201,6 +201,17 @@ from
   where ts.tiptext = t.tiptext
     and ts.categorytext = c.categorytext;
 
+#-------------------------------------------------------------
+#-- tipuser
+#-------------------------------------------------------------
+select "loading tipuser" as comment;
+
+insert into tipuser(tipid, userid)
+select t.tipid, u.userid
+from 
+  tip2 as t,
+  user as u;
+  
 #-------------------------------------------------------------
 #-- mappedtip
 #-------------------------------------------------------------
