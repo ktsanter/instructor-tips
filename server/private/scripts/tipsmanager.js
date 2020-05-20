@@ -34,7 +34,7 @@ const app = function () {
     page.body.appendChild(page.maincontainer);
 
     await _renderPage();
-    _navDispatch('scheduling');
+    _navDispatch('scheduling2');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -81,8 +81,9 @@ const app = function () {
       title: appInfo.appName,
       
       items: [
-        {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
-        {label: 'Courses', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
+        {label: 'Scheduling (orig)', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
+        {label: 'Scheduling', callback: () => {return _navDispatch('scheduling2');}, subitems: null, rightjustify: false},
+        {label: 'Courses (orig)', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
         {label: htmlForLogin, callback: null, subitems: null, rightjustify: true}
       ],
       
@@ -95,8 +96,8 @@ const app = function () {
     };
     
     if (allowAdmin) {
-      navConfig.items.splice(2, 0, {label: 'Tip Editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false});
-      navConfig.items.splice(3, 0, {label: 'Calendar', callback: () => {return _navDispatch('calendarui');}, subitems: null, rightjustify: false});
+      navConfig.items.splice(2, 0, {label: 'Tip Editing (orig)', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false});
+      navConfig.items.splice(3, 0, {label: 'Calendars (orig)', callback: () => {return _navDispatch('calendarui');}, subitems: null, rightjustify: false});
 
       navConfig.items.push(
         {label: 'Admin', callback: null, 
@@ -132,6 +133,11 @@ const app = function () {
     });
     container.appendChild(await settings.scheduling.render());
     
+    settings.scheduling2 = new TipScheduling2({
+      callback: () => {return _sharedScheduleChange();}
+    });
+    container.appendChild(await settings.scheduling2.render());
+
     settings.editing = new TipEditing();
     container.appendChild(await settings.editing.render());
 

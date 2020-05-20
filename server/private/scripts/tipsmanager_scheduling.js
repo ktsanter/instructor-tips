@@ -7,7 +7,7 @@
 class TipScheduling {
   constructor(config) {
     this._version = '0.01';
-    this._title = 'Scheduling';
+    this._title = 'Scheduling (orig)';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     this._HIGHLIGHT_CLASS = 'tipschedule-highlight';

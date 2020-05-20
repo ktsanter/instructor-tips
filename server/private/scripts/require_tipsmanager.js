@@ -3,8 +3,10 @@ define(function (require) {
   require('tipsmanager_filter');
   require('tipsmanager_courses');
   require('tipsmanager_scheduling');
+  require('tipsmanager_scheduling2');
   require('tipsmanager_schedulingedit');
   require('tipsmanager_schedulingshare');
+  require('tipsmanager_schedulingcontrol');
   require('tipsmanager_manageshared');
   require('tipsmanager_settings');
   require('tipsmanager_calendar');

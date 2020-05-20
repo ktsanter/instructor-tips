@@ -7,7 +7,7 @@
 class TipCalendar {
   constructor(config) {
     this._version = '0.01';
-    this._title = 'Calendars';
+    this._title = 'Calendars (orig)';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     

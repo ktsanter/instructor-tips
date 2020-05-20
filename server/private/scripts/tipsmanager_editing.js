@@ -7,7 +7,7 @@
 class TipEditing {
   constructor() {
     this._version = '0.01';
-    this._title = 'Editing';
+    this._title = 'Editing (orig)';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     

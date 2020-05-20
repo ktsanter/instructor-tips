@@ -7,7 +7,7 @@
 class TipCourseSelection {
   constructor() {
     this._version = '0.01';
-    this._title = 'Course/Term selection';
+    this._title = 'Course/Term selection (orig)';
     
     this._HIDE_CLASS = 'tipmanager-hide';
     

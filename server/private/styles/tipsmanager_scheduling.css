@@ -17,6 +17,14 @@
   }
 }
 
+.tipschedule-selection {
+  border: 1px solid green;
+}
+
+.tipschedule-contents {
+  border: 1px solid blue;
+}
+
 /*-----------------------
  * weekly tip boxes
  *-----------------------*/
