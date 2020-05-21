@@ -66,6 +66,12 @@ module.exports = internal.dbAdminInsert = class {
     } else if (params.queryName == 'tipusers') {
       dbResult = await this._insertTipUser(params, postData);
       
+    } else if (params.queryName == 'admin_schedules') {
+      dbResult = await this._insertSchedule(params, postData);
+      
+    } else if (params.queryName == 'scheduletips') {
+      dbResult = await this._insertScheduleTips(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -467,6 +473,53 @@ module.exports = internal.dbAdminInsert = class {
                 'values (' +
                   postData.tipid + ', ' + 
                   postData.userid + 
+                ')';
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+
+  async _insertSchedule(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'insert into schedule (userid, schedulename, schedulelength) ' +
+                'values (' +
+                  postData.userid + ', ' + 
+                  '"' + postData.schedulename + '", ' + 
+                  postData.schedulelength + 
+                ')';
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+
+  async _insertScheduleTips(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'insert into scheduletip (scheduleid, tipid, tipstate, schedulelocation) ' +
+                'values (' +
+                  postData.scheduleid + ', ' + 
+                  postData.tipid + ', ' + 
+                  postData.tipstate + ', ' + 
+                  postData.schedulelocation + 
                 ')';
     
     var queryResults = await this._dbQuery(query);

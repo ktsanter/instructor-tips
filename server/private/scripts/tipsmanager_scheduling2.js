@@ -15,7 +15,7 @@ class TipScheduling2 {
     this._config = config;
     this._callback = config.callback;
     
-    this._tipFilter = new TipManagerSchedulingControl('scheduling2', () => {return this.update();});
+    this._control = null;
 
     this._container = null;
   }
@@ -30,7 +30,10 @@ class TipScheduling2 {
     this._notice.setNotice('');
 
     this._container.appendChild(this._renderTitle());
-    this._container.appendChild(this._renderScheduleControl());
+
+    this._control = new TipManagerSchedulingControl(() => {return this.update();});
+    this._container.appendChild(this._control.render(this._notice));
+
     this._container.appendChild(this._renderContents());
     
     return this._container;
@@ -39,13 +42,6 @@ class TipScheduling2 {
   _renderTitle() {
     var container = CreateElement.createDiv(null, 'tipmanager-title');
     container.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
-    
-    return container;
-  }
-
-  _renderScheduleControl() {
-    var container = CreateElement.createDiv(null, 'tipschedule-selection');
-    container.appendChild(CreateElement.createSpan(null, null, '[selection]'));
     
     return container;
   }
@@ -75,7 +71,6 @@ class TipScheduling2 {
   }
 
   async update(reRenderControls) {
-    console.log('update ' + reRenderControls);
     this._prepContainerForUpdate();
   }
  

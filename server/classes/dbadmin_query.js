@@ -61,7 +61,13 @@ module.exports = internal.dbAdminQuery = class {
       dbResult = await this._getTipCategories(params);
       
     } else if (params.queryName == 'tipusers') {
-      dbResult = await this._getTipUsers(params);
+      dbResult = await this._getTipUsers(params);      
+      
+    } else if (params.queryName == 'admin_schedules') {
+      dbResult = await this._getAdminSchedules(params);
+      
+    } else if (params.queryName == 'scheduletips') {
+      dbResult = await this._getScheduleTips(params);
       
     } else if (params.queryName == 'navbar') {
       dbResult = await this._getNavbar(params, sessionInfo);
@@ -500,6 +506,98 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
   
+  async _getAdminSchedules(params) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      schedules: 
+        'select s.scheduleid, s.userid, s.schedulename, s.schedulelength, u.username ' +
+        'from schedule as s, user as u ' +
+        'where s.userid = u.userid ' + 
+        'order by u.username, s.schedulename ',
+
+      users:
+        'select userid, username ' +
+        'from user ' +
+        'order by username'
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.primaryKey = 'scheduleid',
+      result.insertUpdateFields = [
+        {userid: 'foreignkey'},
+        {schedulename: 'text'},
+        {schedulelength: 'text'}
+      ],
+      result.displayFields = ['schedulename', 'username', 'schedulelength'];
+      result.data = queryResults.data.schedules,
+      result.constraints = {
+        foreignKeys: {
+          userid: {data: 'users', displayField: 'username', allownull: false}
+        },
+        users: queryResults.data.users
+      };
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+  async _getScheduleTips(params) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      scheduletips: 
+        'select st.scheduletipid, st.scheduleid, st.tipid, st.tipstate, st.schedulelocation, s.schedulename ' +
+        'from scheduletip as st, schedule as s ' +
+        'where st.scheduleid = s.scheduleid ' +
+        'order by s.schedulename, st.schedulelocation ',
+
+      schedules: 
+        'select scheduleid, schedulename, userid ' +
+        'from schedule ' +
+        'order by userid, schedulename',
+        
+      tips: 
+        'select tipid, tiptext ' +
+        'from tip2 ' +
+        'order by tiptext'
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.primaryKey = 'scheduletipid',
+      result.insertUpdateFields = [
+        {scheduleid: 'foreignkey'},
+        {tipid: 'foreignkey'},
+        {tipstate: 'text'},
+        {schedulelocation: 'text'}
+      ],
+      result.displayFields = ['scheduleid', 'tipid', 'tipstate', 'schedulelocation'];
+      result.data = queryResults.data.scheduletips,
+      result.constraints = {
+        foreignKeys: {
+          scheduleid: {data: 'schedules', displayField: 'schedulename', allownull: false},
+          tipid: {data: 'tips', displayField: 'tiptext', allownull: false}
+        },
+        schedules: queryResults.data.schedules,
+        tips: queryResults.data.tips
+      };
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
   async _getNavbar(params, sessionInfo) {
     var result = this._queryFailureResult();
     

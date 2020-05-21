@@ -18,12 +18,14 @@ class TipManagerSchedulingControl {
   //--------------------------------------------------------------
   // rendering
   //--------------------------------------------------------------
-  async render(notice) {
+  render(notice) {
     this._notice = notice;
     
     while (this._container.firstChild) {
       this._container.removeChild(this._container.firstChild);
     }
+    
+    this._container.appendChild(this._buildUI());
         
     return this._container;
   }
@@ -38,10 +40,44 @@ class TipManagerSchedulingControl {
     }
   }
     
-  _updateFiltering() {
+  _buildUI() {
+    var container = CreateElement.createDiv(null, null);
+    
+    var valueList = [];
+    var scheduleList = ['schedule aaa', 'schedule bbb']; // temporary - pull from DB
+    for (var i = 0; i < scheduleList.length; i++) {
+      valueList.push({id: i, value: scheduleList[i], textval: scheduleList[i]});
+    }    
+    var handler = (e) => {return this._handleScheduleSelect(e);};
+    container.appendChild(CreateElement.createSelect(null, 'schedulecontrol-select select-css', handler, valueList));
+
+    handler = (e) => {return this._handleScheduleAdd(e);};
+    container.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon far fa-plus-square', 'add new schedule', handler));
+    
+    handler = (e) => {return this._handleBrowseTips(e);};   
+    var elem = this._createSliderSwitch('browse tips', 'browse tips', 'schedulecontrol-browse', handler, false);
+    elem.title = 'search and select from tip list';
+    container.appendChild(elem);
+        
+    return container;
+  }
+  
+  //--------------------------------------------------------------
+  // handlers
+  //--------------------------------------------------------------
+  _handleScheduleSelect(e) {
+    console.log('_handleScheduleSelect ' + e.target.value);
     this._updateCallback();
   }
         
+  _handleScheduleAdd() {
+    console.log('_handleScheduleAdd');
+  }
+  
+  _handleBrowseTips(e) {
+    console.log('_handleBrowseTips ' + this._getSliderValue(e.target.parentNode));
+  }
+  
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------
@@ -62,10 +98,6 @@ class TipManagerSchedulingControl {
       }
     }
   }
-  
-  //--------------------------------------------------------------
-  // handlers
-  //--------------------------------------------------------------
   
   //--------------------------------------------------------------
   // slider switch

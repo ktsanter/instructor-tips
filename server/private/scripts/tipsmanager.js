@@ -16,11 +16,11 @@ const app = function () {
     logoutURL: '/usermanagement/logout',
     
     navOptions: [
-      'courseselection', 'scheduling', 'editing', 'calendarui',
-      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'tips', 'categories', 'tipcategories', 'tipusers',
+      'courseselection', 'scheduling', 'scheduling2', 'editing', 'calendarui',
+      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'tips', 'categories', 'tipcategories', 'tipusers', 'admin_schedules', 'scheduletips',
       'manageshared', 'settings'
     ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'tips', 'categories', 'tipcategories', 'tipusers']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'tips', 'categories', 'tipcategories', 'tipusers', 'admin_schedules', 'scheduletips']
   };
   
 	//---------------------------------------
@@ -105,15 +105,19 @@ const app = function () {
             {label: 'User', callback: () => {return _navDispatch('users');}},
             {label: 'Privilege', callback: () => {return _navDispatch('privileges');}},
             {label: 'UserPrivilege', callback: () => {return _navDispatch('userprivileges');}},
+            /*
             {label: 'TermGroup', callback: () => {return _navDispatch('termgroups');}},
             {label: 'Term', callback: () => {return _navDispatch('terms');}},
             {label: 'Course', callback: () => {return _navDispatch('courses');}},
             {label: 'UserCourse', callback: () => {return _navDispatch('usercourses');}},
             {label: 'Calendar', callback: () => {return _navDispatch('calendars');}},
+            */
             {label: 'Tips', callback: () => {return _navDispatch('tips');}},
             {label: 'Categories', callback: () => {return _navDispatch('categories');}},
             {label: 'TipCategories', callback: () => {return _navDispatch('tipcategories');}},
-            {label: 'TipUsers', callback: () => {return _navDispatch('tipusers');}}
+            {label: 'TipUsers', callback: () => {return _navDispatch('tipusers');}},
+            {label: 'Schedules', callback: () => {return _navDispatch('admin_schedules');}},
+            {label: 'ScheduleTips', callback: () => {return _navDispatch('scheduletips');}}
           ]
         }
       );

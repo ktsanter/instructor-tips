@@ -66,6 +66,12 @@ module.exports = internal.dbAdminUpdate = class {
     } else if (params.queryName == 'tipusers') {
       dbResult = await this._updateTipUser(params, postData);
       
+    } else if (params.queryName == 'admin_schedules') {
+      dbResult = await this._updateSchedule(params, postData);
+      
+    } else if (params.queryName == 'scheduletips') {
+      dbResult = await this._updateScheduleTip(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -415,6 +421,53 @@ module.exports = internal.dbAdminUpdate = class {
                   'tipid = ' + postData.tipid + ', ' + 
                   'userid = ' + postData.userid + ' ' +
                 'where tipuserid = ' + postData.tipuserid;
+    
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _updateSchedule(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'update schedule ' +
+                'set ' +
+                  'userid = ' + postData.userid + ', ' +
+                  'schedulename = "' + postData.schedulename + '", ' + 
+                  'schedulelength = ' + postData.schedulelength + ' ' +
+                'where scheduleid = ' + postData.scheduleid;
+                
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _updateScheduleTip(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'update scheduletip ' +
+                'set ' +
+                  'scheduleid = ' + postData.scheduleid + ', ' + 
+                  'tipid = ' + postData.tipid + ', ' + 
+                  'tipstate = ' + postData.tipstate + ', ' + 
+                  'schedulelocation = ' + postData.schedulelocation + ' ' +
+                'where scheduletipid = ' + postData.scheduletipid;
     
     var queryResults = await this._dbQuery(query);
     

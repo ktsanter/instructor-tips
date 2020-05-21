@@ -11,6 +11,20 @@
   display: none;
 }
 
+.schedulecontrol-select {
+  display: inline-block !important;
+}
+
+.schedulecontrol-icon {
+  font-size: 1.4em;
+  margin-left: 0.2em;
+  margin-right: 1.0em;
+  vertical-align: text-bottom;
+  cursor: pointer;
+}
+
+/*------------------------------------------------*/
+
 .tipfilter-coursetoggle-container {
   /*display: inline-block;*/
   border: 1px solid blue;

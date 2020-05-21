@@ -159,6 +159,33 @@ CREATE TABLE tipuser
   CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
 );
 
+CREATE TABLE schedule
+(
+  scheduleid  int unsigned NOT NULL AUTO_INCREMENT ,
+  userid      int unsigned NOT NULL ,
+  schedulename     varchar(1000) NOT NULL ,
+  schedulelength    int unsigned NOT NULL ,
+
+  PRIMARY KEY (scheduleid),
+  CONSTRAINT UNIQUE (userid, schedulename),
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
+);
+
+CREATE TABLE scheduletip
+(
+  scheduletipid  int unsigned NOT NULL AUTO_INCREMENT ,
+  scheduleid      int unsigned NOT NULL ,
+  tipid      int unsigned NOT NULL ,
+  tipstate     int unsigned NOT NULL ,
+  schedulelocation     int unsigned NOT NULL ,
+
+  PRIMARY KEY (scheduletipid),
+  CONSTRAINT UNIQUE (scheduleid, tipid),
+  CONSTRAINT FOREIGN KEY (scheduleid) REFERENCES schedule (scheduleid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip2 (tipid) ON DELETE CASCADE
+);
+
+#------- orig version --------------------
 CREATE TABLE mappedtip
 (
   mappedtipid      int unsigned NOT NULL AUTO_INCREMENT,

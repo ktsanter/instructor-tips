@@ -66,6 +66,12 @@ module.exports = internal.dbAdminDelete = class {
     } else if (params.queryName == 'tipusers') {
       dbResult = await this._deleteTipUser(params, postData);
       
+    } else if (params.queryName == 'admin_schedules') {
+      dbResult = await this._deleteSchedule(params, postData);
+      
+    } else if (params.queryName == 'scheduletips') {
+      dbResult = await this._deleteScheduleTip(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -333,13 +339,50 @@ module.exports = internal.dbAdminDelete = class {
     
     return result;
   }  
-  
-  
+    
   async _deleteTipUser(params, postData) {
     var result = this._queryFailureResult();
 
     var query = 'delete from tipuser ' +
                 'where tipuserid = ' + postData.tipuserid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
+    
+  async _deleteSchedule(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from schedule ' +
+                'where scheduleid = ' + postData.scheduleid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
+    
+  async _deleteScheduleTip(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from scheduletip ' +
+                'where scheduletipid = ' + postData.scheduletipid;
 
     var queryResults = await this._dbQuery(query);
     
