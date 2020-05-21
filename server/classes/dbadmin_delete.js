@@ -36,24 +36,6 @@ module.exports = internal.dbAdminDelete = class {
     } else if (params.queryName == 'userprivileges') {
       dbResult = await this._deleteUserPrivilege(params, postData);
       
-    } else if (params.queryName == 'termgroups') {
-      dbResult = await this._deleteTermGroup(params, postData);
-      
-    } else if (params.queryName == 'terms') {
-      dbResult = await this._deleteTerm(params, postData);
-      
-    } else if (params.queryName == 'courses') {
-      dbResult = await this._deleteCourse(params, postData);
-      
-    } else if (params.queryName == 'usercourses') {
-      dbResult = await this._deleteUserCourse(params, postData);
-      
-    } else if (params.queryName == 'calendars') {
-      dbResult = await this._deleteCalendar(params, postData);
-      
-    } else if (params.queryName == 'schoolyear-calendar') {
-      dbResult = await this._deleteSchoolYearCalendar(params, postData);
-      
     } else if (params.queryName == 'tips') {
       dbResult = await this._deleteTip(params, postData);
       
@@ -62,9 +44,6 @@ module.exports = internal.dbAdminDelete = class {
       
     } else if (params.queryName == 'tipcategories') {
       dbResult = await this._deleteTipCategory(params, postData);
-      
-    } else if (params.queryName == 'tipusers') {
-      dbResult = await this._deleteTipUser(params, postData);
       
     } else if (params.queryName == 'admin_schedules') {
       dbResult = await this._deleteSchedule(params, postData);
@@ -169,124 +148,10 @@ module.exports = internal.dbAdminDelete = class {
     return result;
   }
 
-  async _deleteTermGroup(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'delete from termgroup ' +
-                'where termgroupid = ' + postData.termgroupid;
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _deleteTerm(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'delete from term ' +
-                'where termid = ' + postData.termid;
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _deleteCourse(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'delete from course ' + 
-                'where courseid = ' + postData.courseid;
-                
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _deleteUserCourse(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'delete from usercourse ' +
-                'where usercourseid = ' + postData.usercourseid;
-                
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _deleteCalendar(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'delete from calendar ' +
-                'where calendarid = ' + postData.calendarid;
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _deleteSchoolYearCalendar(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'delete from calendar ' +
-                'where schoolyear = "' + postData.schoolyear + '" ';
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
   async _deleteTip(params, postData) {
     var result = this._queryFailureResult();
 
-    var query = 'delete from tip2 ' +
+    var query = 'delete from tip ' +
                 'where tipid = ' + postData.tipid;
 
     var queryResults = await this._dbQuery(query);
@@ -339,25 +204,6 @@ module.exports = internal.dbAdminDelete = class {
     
     return result;
   }  
-    
-  async _deleteTipUser(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'delete from tipuser ' +
-                'where tipuserid = ' + postData.tipuserid;
-
-    var queryResults = await this._dbQuery(query);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }    
     
   async _deleteSchedule(params, postData) {
     var result = this._queryFailureResult();

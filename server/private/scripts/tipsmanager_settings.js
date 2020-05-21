@@ -64,11 +64,11 @@ class Settings {
     container.appendChild(titleContainer);
     titleContainer.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', 'Notification settings'));
     
-    var elemSharedSchedule = this._createSliderSwitch('shared schedules', 'shared schedules', 'notification-control sharedschedule', handler);
+    var elemSharedSchedule = CreateElement.createSliderSwitch('shared schedules', 'shared schedules', 'notification-control sharedschedule', handler);
     this._setSliderValue(elemSharedSchedule, notificationData.sharedschedule);
     elemSharedSchedule.title = 'receive email notifications when a schedule is shared with you';
 
-    var elemPushReminders = this._createSliderSwitch('reminders', 'reminders', 'notification-control pushreminders', handler);
+    var elemPushReminders = CreateElement.createSliderSwitch('reminders', 'reminders', 'notification-control pushreminders', handler);
     this._setSliderValue(elemPushReminders, notificationData.pushreminders);
     elemPushReminders.title = 'receive weekly reminders about your schedule';
 
@@ -191,65 +191,6 @@ class Settings {
     
     elemForm.submit();
   }
-  
-  //--------------------------------------------------------------
-  // slider switch
-  //--------------------------------------------------------------
-  _createSliderSwitch(dataOnLabel, dataOffLabel, addedClassList, handler, useTwoChoice) {
-    var classList = 'switch';
-    if (useTwoChoice) {
-      classList += ' switch-two-choice';
-    } else {
-      classList += ' switch-yes-no';
-    }
-    if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
-    var container = CreateElement._createElement('label', null, classList);
-    
-    
-    var elemCheckbox = CreateElement._createElement('input', null, 'switch-input');
-    elemCheckbox.type = 'checkbox';
-    container.appendChild(elemCheckbox);
-    if (handler) elemCheckbox.addEventListener('click', e => handler(e));
-    
-    var elemDataSpan = CreateElement.createSpan(null, 'switch-label');
-    container.appendChild(elemDataSpan);
-    elemDataSpan.setAttribute('data-on', dataOnLabel);
-    elemDataSpan.setAttribute('data-off', dataOffLabel);
-    
-    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
-    return container;
-  }
-
-  _createSliderRadio(groupName, dataOnLabel, dataOffLabel, addedClassList, handler) {
-    var classList = 'switch switch-yes-no';
-    if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
-    var container = CreateElement._createElement('label', null, classList);
-    
-    
-    var elemRadio = CreateElement._createElement('input', null, 'switch-input');
-    elemRadio.type = 'radio';
-    elemRadio.name = groupName;
-    container.appendChild(elemRadio);
-    if (handler) elemRadio.addEventListener('click', e => handler(e));
-    
-    var elemDataSpan = CreateElement.createSpan(null, 'switch-label');
-    container.appendChild(elemDataSpan);
-    elemDataSpan.setAttribute('data-on', dataOnLabel);
-    elemDataSpan.setAttribute('data-off', dataOffLabel);
-    
-    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
-    return container;
-  }
-
-  _getSliderValue(elem) {
-    var elemInput = elem.getElementsByClassName('switch-input')[0];    
-    return elemInput.checked;
-  }
-
-  _setSliderValue(elem, checked) {
-    var elemInput = elem.getElementsByClassName('switch-input')[0];
-    elemInput.checked = checked;
-  }
     
   //--------------------------------------------------------------
   // utility methods
@@ -259,6 +200,16 @@ class Settings {
       elem.removeChild(elem.firstChild);
     }
   }  
+  
+  _getSliderValue(elem) {
+    var elemInput = elem.getElementsByClassName('switch-input')[0];    
+    return elemInput.checked;
+  }
+
+  _setSliderValue(elem, checked) {
+    var elemInput = elem.getElementsByClassName('switch-input')[0];
+    elemInput.checked = checked;
+  }
   
   //--------------------------------------------------------------
   // db functions

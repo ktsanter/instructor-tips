@@ -16,11 +16,11 @@ const app = function () {
     logoutURL: '/usermanagement/logout',
     
     navOptions: [
-      'courseselection', 'scheduling', 'scheduling2', 'editing', 'calendarui',
-      'privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'tips', 'categories', 'tipcategories', 'tipusers', 'admin_schedules', 'scheduletips',
+      'scheduling',
+      'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips',
       'manageshared', 'settings'
     ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'termgroups', 'terms', 'courses', 'usercourses', 'calendars', 'tips', 'categories', 'tipcategories', 'tipusers', 'admin_schedules', 'scheduletips']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'categories', 'tips', 'tipcategories', 'admin_schedules', 'scheduletips']
   };
   
 	//---------------------------------------
@@ -34,7 +34,7 @@ const app = function () {
     page.body.appendChild(page.maincontainer);
 
     await _renderPage();
-    _navDispatch('scheduling2');
+    _navDispatch('scheduling');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -61,7 +61,7 @@ const app = function () {
 
     var allowAdmin = queryResults.data.navbar.allowadmin;
     
-    var sharedScheduleCount = await _getNumberOfSharedSchedules();
+    var sharedScheduleCount = 0;//await _getNumberOfSharedSchedules();
     var elemCount = CreateElement.createDiv(null, 'tipmanager-schedulecount', '')
     elemCount.style.display = 'none';
     var elemCount2 = CreateElement.createSpan(null, 'tipmanager-schedulecount2', '')
@@ -81,9 +81,7 @@ const app = function () {
       title: appInfo.appName,
       
       items: [
-        {label: 'Scheduling (orig)', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
-        {label: 'Scheduling', callback: () => {return _navDispatch('scheduling2');}, subitems: null, rightjustify: false},
-        {label: 'Courses (orig)', callback: () => {return _navDispatch('courseselection');}, subitems: null, rightjustify: false},
+        {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: htmlForLogin, callback: null, subitems: null, rightjustify: true}
       ],
       
@@ -96,26 +94,15 @@ const app = function () {
     };
     
     if (allowAdmin) {
-      navConfig.items.splice(2, 0, {label: 'Tip Editing (orig)', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false});
-      navConfig.items.splice(3, 0, {label: 'Calendars (orig)', callback: () => {return _navDispatch('calendarui');}, subitems: null, rightjustify: false});
-
       navConfig.items.push(
         {label: 'Admin', callback: null, 
           subitems: [
             {label: 'User', callback: () => {return _navDispatch('users');}},
             {label: 'Privilege', callback: () => {return _navDispatch('privileges');}},
             {label: 'UserPrivilege', callback: () => {return _navDispatch('userprivileges');}},
-            /*
-            {label: 'TermGroup', callback: () => {return _navDispatch('termgroups');}},
-            {label: 'Term', callback: () => {return _navDispatch('terms');}},
-            {label: 'Course', callback: () => {return _navDispatch('courses');}},
-            {label: 'UserCourse', callback: () => {return _navDispatch('usercourses');}},
-            {label: 'Calendar', callback: () => {return _navDispatch('calendars');}},
-            */
-            {label: 'Tips', callback: () => {return _navDispatch('tips');}},
             {label: 'Categories', callback: () => {return _navDispatch('categories');}},
+            {label: 'Tips', callback: () => {return _navDispatch('tips');}},
             {label: 'TipCategories', callback: () => {return _navDispatch('tipcategories');}},
-            {label: 'TipUsers', callback: () => {return _navDispatch('tipusers');}},
             {label: 'Schedules', callback: () => {return _navDispatch('admin_schedules');}},
             {label: 'ScheduleTips', callback: () => {return _navDispatch('scheduletips');}}
           ]
@@ -128,25 +115,11 @@ const app = function () {
   
   async function _renderSubContainers() {
     var container = CreateElement.createDiv(null, null);
-    
-    settings.courseselection = new TipCourseSelection();
-    container.appendChild(settings.courseselection.render());
-    
+        
     settings.scheduling = new TipScheduling({
       callback: () => {return _sharedScheduleChange();}
     });
     container.appendChild(await settings.scheduling.render());
-    
-    settings.scheduling2 = new TipScheduling2({
-      callback: () => {return _sharedScheduleChange();}
-    });
-    container.appendChild(await settings.scheduling2.render());
-
-    settings.editing = new TipEditing();
-    container.appendChild(await settings.editing.render());
-
-    settings.calendarui = new TipCalendar();
-    container.appendChild(await settings.calendarui.render());
 
     settings.manageshared = new TipSchedulingShareManagement({
       callback: () => {return _sharedScheduleChange();}

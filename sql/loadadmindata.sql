@@ -1,9 +1,6 @@
 #------------------------------------------------------------
 #-- initial admin data load
 #------------------------------------------------------------
-#--- NOTE: the order matters here because of the course 
-#---       and user triggers
-#------------------------------------------------------------
 
 select "loading admin data..." as comment;
 
@@ -11,28 +8,14 @@ USE instructortips;
 
 select "deleting from tables" as comment;
 
-DELETE FROM usertipfilter;
 DELETE FROM userprivilege;
 DELETE FROM privilege;
 DELETE FROM user;
-DELETE FROM usercourse;
-DELETE FROM course;
-DELETE FROM term;
-DELETE FROM termgroup;
+DELETE from tipcategory;
+DELETE from scheduletip;
+DELETE FROM category;
 DELETE FROM tip;
-DELETE FROM mappedtip;
-DELETE from usertipstatus;
-
-#-------------------------------------------------------------
-#-- termgroup
-#-------------------------------------------------------------
-select "loading termgroup" as comment;
-
-load data local infile 'initial_load_data/termgroup.txt'
-into table termgroup
-FIELDS TERMINATED BY '|'
-LINES TERMINATED BY '\r\n'
-(termgroupname, termlength);
+DELETE FROM schedule;
 
 #-------------------------------------------------------------
 #-- privilege
@@ -82,37 +65,6 @@ INSERT INTO userprivilege (userid, privilegeid)
   WHERE user.usershortname = 'test_instructor' and privilege.privilegename = 'instructor';
 
 #-------------------------------------------------------------
-#-- course
-#-------------------------------------------------------------
-select "loading course" as comment;
-load data local infile 'initial_load_data/course.txt'
-into table course
-FIELDS TERMINATED BY '|'
-LINES TERMINATED BY '\r\n'
-(coursename, ap);
-
-#-------------------------------------------------------------
-#-- term
-#-------------------------------------------------------------
-select "loading term" as comment;
-INSERT INTO term (termname, termgroupid) SELECT 'Sem 1', termgroupid FROM termgroup where termgroupname = 'semester';
-INSERT INTO term (termname, termgroupid) SELECT 'Sem 2', termgroupid FROM termgroup where termgroupname = 'semester';
-INSERT INTO term (termname, termgroupid) SELECT 'Tri 1', termgroupid FROM termgroup where termgroupname = 'trimester';
-INSERT INTO term (termname, termgroupid) SELECT 'Tri 2', termgroupid FROM termgroup where termgroupname = 'trimester';
-INSERT INTO term (termname, termgroupid) SELECT 'Tri 3', termgroupid FROM termgroup where termgroupname = 'trimester';
-INSERT INTO term (termname, termgroupid) SELECT 'Summer', termgroupid FROM termgroup where termgroupname = 'summer';
-
-#-------------------------------------------------------------
-#-- usercourse
-#-------------------------------------------------------------
-select "loading usercourse" as comment;
-
-INSERT INTO usercourse (userid, courseid, termgroupid) 
-SELECT NULL as userid, NULL as courseid, termgroupid
-FROM termgroup;
-
-
-#-------------------------------------------------------------
 #-- category
 #-------------------------------------------------------------
 select "loading category" as comment;
@@ -132,60 +84,23 @@ INSERT INTO category (categorytext) SELECT 'reflection';
 #-------------------------------------------------------------
 select "loading tip" as comment;
 
-
-#--- load "all course" public tips from Instructors Corner (semester only)
-create table if not exists tipinitial_staging as
-  select *
-  from tip
-  where 1 != 1;
-  
-delete from tipinitial_staging;
-
-load data local infile 'initial_load_data/tipdata_instructorscorner.txt'
-into table tipinitial_staging
-FIELDS TERMINATED BY '|'
-LINES TERMINATED BY '\r\n'
-(tiptext)
-set userid = null;
-
 drop table if exists tip_staging;
-create table tip_staging as
-  select distinct substring(tiptext from 13) as tiptext
-  from tipinitial_staging;
-  
-drop table if exists tipweek_staging;
-create table tipweek_staging as 
-  select 
-    cast(substring(tiptext from 10 for 2) as int) as week,
-    substring(tiptext from 13) as tiptext
-  from tipinitial_staging;    
 
-insert into tip(userid, tiptext) 
-  select NULL as userid, tiptext
-  from tip_staging;
-
-#-------------------------------------------------------------
-#-- tip2
-#-------------------------------------------------------------
-select "loading tip2" as comment;
-
-drop table if exists tip2_staging;
-
-CREATE TABLE tip2_staging
+CREATE TABLE tip_staging
 (
   tiptext   varchar(1000) NOT NULL ,
   categorytext      varchar(100) NOT NULL 
 );
 
 load data local infile 'initial_load_data/tipdata2_instructorscorner.txt'
-into table tip2_staging
+into table tip_staging
 FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
 (tiptext, categorytext);
 
-insert into tip2(tiptext, common)
+insert into tip(tiptext, common)
 select ts.tiptext, TRUE
-from tip2_staging as ts;
+from tip_staging as ts;
 
 #-------------------------------------------------------------
 #-- tipcategory
@@ -195,54 +110,8 @@ select "loading tipcategory" as comment;
 insert into tipcategory(tipid, categoryid)
 select t.tipid, c.categoryid
 from 
-  tip2_staging as ts,
-  tip2 as t,  
+  tip_staging as ts,
+  tip as t,  
   category as c 
   where ts.tiptext = t.tiptext
     and ts.categorytext = c.categorytext;
-
-#-------------------------------------------------------------
-#-- tipuser
-#-------------------------------------------------------------
-select "loading tipuser" as comment;
-
-insert into tipuser(tipid, userid)
-select t.tipid, u.userid
-from 
-  tip2 as t,
-  user as u;
-  
-#-------------------------------------------------------------
-#-- mappedtip
-#-------------------------------------------------------------
-select "loading mappedtip" as comment;
-
-insert into mappedtip(tipid, usercourseid, week)
-select t.tipid, uc.usercourseid, tw.week 
-from tip as t, tipweek_staging as tw, usercourse as uc
-where t.tiptext = tw.tiptext
-  and uc.userid is NULL
-  and uc.courseid is NULL
-  and uc.termgroupid in (
-    select termgroupid
-    from termgroup
-    where termgroupname = 'semester'
-  );
-
-/*
-#--- map shared general tips from Instructors Corner (semester only)
-insert into mappedtip (tipid, usercourseid, week)
-select 
-  tipid, 
-  usercourseid,
-  cast(substring(tiptext from 10 for 2) as int) as week
-from tip, usercourse
-where tiptext like "[staging %"
-  and usercourse.userid is NULL
-  and usercourse.courseid is NULL
-  and usercourse.termgroupid in (
-    select termgroupid
-    from termgroup
-    where termgroupname = 'semester'
-);
-*/

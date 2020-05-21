@@ -35,22 +35,7 @@ module.exports = internal.dbAdminQuery = class {
       
     } else if (params.queryName == 'userprivileges') {
       dbResult = await this._getUserPrivileges(params);
-      
-    } else if (params.queryName == 'termgroups') {
-      dbResult = await this._getTermGroups(params);
-      
-    } else if (params.queryName == 'terms') {
-      dbResult = await this._getTerms(params);
-      
-    } else if (params.queryName == 'courses') {
-      dbResult = await this._getCourses(params);
-      
-    } else if (params.queryName == 'usercourses') {
-      dbResult = await this._getUserCourse(params);
-      
-    } else if (params.queryName == 'calendars') {
-      dbResult = await this._getCalendar(params);
-      
+            
     } else if (params.queryName == 'tips') {
       dbResult = await this._getTips(params);
       
@@ -59,9 +44,6 @@ module.exports = internal.dbAdminQuery = class {
       
     } else if (params.queryName == 'tipcategories') {
       dbResult = await this._getTipCategories(params);
-      
-    } else if (params.queryName == 'tipusers') {
-      dbResult = await this._getTipUsers(params);      
       
     } else if (params.queryName == 'admin_schedules') {
       dbResult = await this._getAdminSchedules(params);
@@ -243,205 +225,6 @@ module.exports = internal.dbAdminQuery = class {
     
     return result;
   }
-
-  async _getTermGroups(params) {
-    var result = this._queryFailureResult();
-    
-    var queryList = {
-      termgroups: 
-        'select termgroupid, termgroupname, termlength ' +
-        'from termgroup ' +
-        'order by termgroupname'
-    };
-    
-    var queryResults = await this._dbQueries(queryList);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.primaryKey = 'termgroupid',
-      result.insertUpdateFields = [
-        {termgroupname: 'text'},
-        {termlength: 'text'}
-      ],
-      result.displayFields = ['termgroupname', 'termlength'];
-      result.data = queryResults.data.termgroups,
-      result.constraints = {};
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _getTerms(params) {
-    var result = this._queryFailureResult();
-    
-    var queryList = {
-      terms: 
-        'select termid, termname, term.termgroupid, termgroup.termgroupname ' +
-        'from term, termgroup ' +
-        'where term.termgroupid = termgroup.termgroupid ' +
-        'order by termname',
-      termgroups:
-        'select termgroupid, termgroupname ' +
-        'from termgroup'
-    };
-    
-    var queryResults = await this._dbQueries(queryList);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.primaryKey = 'termid',
-      result.insertUpdateFields = [
-        {termname: 'text'},
-        {termgroupid: 'foreignkey'}
-      ],
-      result.displayFields = ['termname', 'termgroupname'];
-      result.data = queryResults.data.terms,
-      result.constraints = {
-        foreignKeys: {
-          termgroupid: {data: 'termgroups', displayField: 'termgroupname'}
-        },
-        termgroups: queryResults.data.termgroups
-      };
- 
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _getCourses(params) {
-    var result = this._queryFailureResult();
-    
-    var queryList = {
-      courses: 
-        'select courseid, coursename, ap ' +
-        'from course ' +
-        'order by coursename'
-    };
-    
-    var queryResults = await this._dbQueries(queryList);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.primaryKey = 'courseid',
-      result.insertUpdateFields = [
-        {coursename: 'text'},
-        {ap: 'boolean'}
-      ],
-      result.displayFields = ['coursename', 'ap'];
-      result.data = queryResults.data.courses,
-      result.constraints = {};
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _getUserCourse(params) {
-    var result = this._queryFailureResult();
-    
-    var queryList = {
-      usercourses: 
-        'select usercourseid, courseid, coursename, ap, termgroupid, termgroupname, userid, username ' +
-        'from viewusercourse ' +
-        'order by username, coursename, termgroupname ',
-
-      courses: 
-        'select courseid, coursename, ap ' +
-        'from course ' +
-        'order by coursename',
-      termgroups: 
-        'select termgroupid, termgroupname, termlength ' +
-        'from termgroup ' +
-        'order by termgroupname',
-      users:
-        'select userid, username ' +
-        'from user ' +
-        'order by username'
-    };
-    
-    var queryResults = await this._dbQueries(queryList);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.primaryKey = 'usercourseid',
-      result.insertUpdateFields = [
-        {userid: 'foreignkey'},
-        {courseid: 'foreignkey'},
-        {termgroupid: 'foreignkey'}
-      ],
-      result.displayFields = ['username', 'coursename', 'termgroupname'];
-      result.data = queryResults.data.usercourses,
-      result.constraints = {
-        foreignKeys: {
-          userid: {data: 'users', displayField: 'username', allownull: true},
-          courseid: {data: 'courses', displayField: 'coursename', allownull: true},
-          termgroupid: {data: 'termgroups', displayField: 'termgroupname'}
-        },
-        courses: queryResults.data.courses,
-        termgroups: queryResults.data.termgroups,
-        users: queryResults.data.users
-      };
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _getCalendar(params) {
-    var result = this._queryFailureResult();
-    
-    var queryList = {
-      calendars:
-        'select ' +
-          'c.calendarid, c.termid, c.schoolyear, c.starttype, c.week, date_format(c.firstday, "%Y-%m-%d") as firstday, ' +
-          't.termid, t.termname ' +
-        'from calendar as c, term as t ' +
-        'where c.termid = t.termid ' +
-        'order by c.schoolyear, t.termname, c.starttype, c.week, c.firstday ',
-        
-      terms:
-        'select termid, termname ' +
-        'from term ' +
-        'order by termname '
-    };
-    
-    var queryResults = await this._dbQueries(queryList);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.primaryKey = 'calendarid',
-      result.insertUpdateFields = [
-        {termid: 'foreignkey'},
-        {schoolyear: 'text'},
-        {week: 'text'},
-        {firstday: 'text'},
-        {starttype: 'text'}
-      ],
-      result.displayFields = ['schoolyear', 'termname', 'starttype', 'week', 'firstday'];
-      result.data = queryResults.data.calendars,
-      result.constraints = {
-        foreignKeys: {
-          termid: {data: 'terms', displayField: 'termname', allownull: false}
-        },
-        terms: queryResults.data.terms
-      };
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
   
   async _getTips(params) {
     var result = this._queryFailureResult();
@@ -450,7 +233,7 @@ module.exports = internal.dbAdminQuery = class {
       tips:
         'select ' +
           't.tipid, t.tiptext, t.common ' +
-        'from tip2 as t ' +
+        'from tip as t ' +
         'order by t.tiptext '
     };
     
@@ -565,7 +348,7 @@ module.exports = internal.dbAdminQuery = class {
         
       tips: 
         'select tipid, tiptext ' +
-        'from tip2 ' +
+        'from tip ' +
         'order by tiptext'
     };
     
@@ -616,13 +399,13 @@ module.exports = internal.dbAdminQuery = class {
     var queryList = {
       tipcategories: 
         'select tc.tipcategoryid, tc.tipid, tc.categoryid, t.tiptext, c.categorytext ' +
-        'from tipcategory as tc, tip2 as t, category as c ' +
+        'from tipcategory as tc, tip as t, category as c ' +
         'where tc.tipid = t.tipid ' +
         '  and tc.categoryid = c.categoryid ' +
         'order by t.tiptext, c.categorytext',
       tips: 
         'select tipid, tiptext ' +
-        'from tip2 ' +
+        'from tip ' +
         'order by tiptext',
       categories:
         'select categoryid, categorytext ' +
@@ -649,53 +432,6 @@ module.exports = internal.dbAdminQuery = class {
         },
         tips: queryResults.data.tips,
         categories: queryResults.data.categories
-      };
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }  
-
-  async _getTipUsers(params) {
-    var result = this._queryFailureResult();
-    
-    var queryList = {
-      tipusers: 
-        'select tu.tipuserid, tu.tipid, tu.userid, t.tiptext, u.username ' +
-        'from tipuser as tu, tip2 as t, user as u ' +
-        'where tu.tipid = t.tipid ' +
-        '  and tu.userid = u.userid ' +
-        'order by u.username, t.tiptext',
-      tips: 
-        'select tipid, tiptext ' +
-        'from tip2 ' +
-        'order by tiptext',
-      users:
-        'select userid, username ' +
-        'from user ' +
-        'order by username'
-    };
-    
-    var queryResults = await this._dbQueries(queryList);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.primaryKey = 'tipuserid',
-      result.insertUpdateFields = [
-        {tipid: 'foreignkey'},
-        {userid: 'foreignkey'}
-      ],      
-      result.displayFields = ['username', 'tiptext'];
-      result.data = queryResults.data.tipusers,
-      result.constraints = {
-        foreignKeys: {
-          tipid: {data: 'tips', displayField: 'tiptext'},
-          userid: {data: 'users', displayField: 'username'}
-        },
-        tips: queryResults.data.tips,
-        users: queryResults.data.users
       };
     } else {
       result.details = queryResults.details;

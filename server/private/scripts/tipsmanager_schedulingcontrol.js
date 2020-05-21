@@ -55,7 +55,7 @@ class TipManagerSchedulingControl {
     container.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon far fa-plus-square', 'add new schedule', handler));
     
     handler = (e) => {return this._handleBrowseTips(e);};   
-    var elem = this._createSliderSwitch('browse tips', 'browse tips', 'schedulecontrol-browse', handler, false);
+    var elem = CreateElement.createSliderSwitch('browse tips', 'browse tips', 'schedulecontrol-browse', handler, false);
     elem.title = 'search and select from tip list';
     container.appendChild(elem);
         
@@ -75,7 +75,7 @@ class TipManagerSchedulingControl {
   }
   
   _handleBrowseTips(e) {
-    console.log('_handleBrowseTips ' + this._getSliderValue(e.target.parentNode));
+    console.log('_handleBrowseTips ' + e.target.checked);
   }
   
   //--------------------------------------------------------------
@@ -98,66 +98,7 @@ class TipManagerSchedulingControl {
       }
     }
   }
-  
-  //--------------------------------------------------------------
-  // slider switch
-  //--------------------------------------------------------------
-  _createSliderSwitch(dataOnLabel, dataOffLabel, addedClassList, handler, useTwoChoice) {
-    var classList = 'switch';
-    if (useTwoChoice) {
-      classList += ' switch-two-choice';
-    } else {
-      classList += ' switch-yes-no';
-    }
-    if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
-    var container = CreateElement._createElement('label', null, classList);
     
-    
-    var elemCheckbox = CreateElement._createElement('input', null, 'switch-input');
-    elemCheckbox.type = 'checkbox';
-    container.appendChild(elemCheckbox);
-    if (handler) elemCheckbox.addEventListener('click', e => handler(e));
-    
-    var elemDataSpan = CreateElement.createSpan(null, 'switch-label');
-    container.appendChild(elemDataSpan);
-    elemDataSpan.setAttribute('data-on', dataOnLabel);
-    elemDataSpan.setAttribute('data-off', dataOffLabel);
-    
-    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
-    return container;
-  }
-
-  _createSliderRadio(groupName, dataOnLabel, dataOffLabel, addedClassList, handler) {
-    var classList = 'switch switch-yes-no';
-    if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
-    var container = CreateElement._createElement('label', null, classList);
-    
-    
-    var elemRadio = CreateElement._createElement('input', null, 'switch-input');
-    elemRadio.type = 'radio';
-    elemRadio.name = groupName;
-    container.appendChild(elemRadio);
-    if (handler) elemRadio.addEventListener('click', e => handler(e));
-    
-    var elemDataSpan = CreateElement.createSpan(null, 'switch-label');
-    container.appendChild(elemDataSpan);
-    elemDataSpan.setAttribute('data-on', dataOnLabel);
-    elemDataSpan.setAttribute('data-off', dataOffLabel);
-    
-    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
-    return container;
-  }
-
-  _getSliderValue(elem) {
-    var elemInput = elem.getElementsByClassName('switch-input')[0];    
-    return elemInput.checked;
-  }
-
-  _setSliderValue(elem, checked) {
-    var elemInput = elem.getElementsByClassName('switch-input')[0];
-    elemInput.checked = checked;
-  }
-  
   //--------------------------------------------------------------
   // db functions
   //--------------------------------------------------------------     

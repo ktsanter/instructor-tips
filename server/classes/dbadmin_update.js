@@ -36,24 +36,6 @@ module.exports = internal.dbAdminUpdate = class {
     } else if (params.queryName == 'userprivileges') {
       dbResult = await this._updateUserPrivilege(params, postData);
       
-    } else if (params.queryName == 'termgroups') {
-      dbResult = await this._updateTermGroup(params, postData);
-      
-    } else if (params.queryName == 'terms') {
-      dbResult = await this._updateTerm(params, postData);
-      
-    } else if (params.queryName == 'courses') {
-      dbResult = await this._updateCourse(params, postData);
-      
-    } else if (params.queryName == 'usercourses') {
-      dbResult = await this._updateUserCourse(params, postData);
-      
-    } else if (params.queryName == 'calendars') {
-      dbResult = await this._updateCalendar(params, postData);
-      
-    } else if (params.queryName == 'schoolyear-calendar') {
-      dbResult = await this._updateSchoolYearCalendar(params, postData);
-      
     } else if (params.queryName == 'tips') {
       dbResult = await this._updateTip(params, postData);
       
@@ -62,9 +44,6 @@ module.exports = internal.dbAdminUpdate = class {
       
     } else if (params.queryName == 'tipcategories') {
       dbResult = await this._updateTipCategory(params, postData);
-      
-    } else if (params.queryName == 'tipusers') {
-      dbResult = await this._updateTipUser(params, postData);
       
     } else if (params.queryName == 'admin_schedules') {
       dbResult = await this._updateSchedule(params, postData);
@@ -209,149 +188,10 @@ module.exports = internal.dbAdminUpdate = class {
     return result;
   }
 
-  async _updateTermGroup(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'update termgroup ' +
-                'set ' +
-                  'termgroupname = "' + postData.termgroupname + '", ' +
-                  'termlength = ' + postData.termlength + ' ' +
-                'where termgroupid = ' + postData.termgroupid;
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _updateTerm(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'update term ' +
-                'set ' +
-                  'termname = "' + postData.termname + '", ' +
-                  'termgroupid = ' + postData.termgroupid + ' ' +
-                'where termid = ' + postData.termid;
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _updateCourse(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'update course ' +
-                'set ' + 
-                  'coursename = "' + postData.coursename + '", ' + 
-                  'ap = ' + postData.ap + ' ' +
-                'where courseid = ' + postData.courseid;
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _updateUserCourse(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'update usercourse ' +
-                'set ' +
-                  'userid = ' + postData.userid + ', ' + 
-                  'courseid = ' + postData.courseid + ', ' +
-                  'termgroupid = ' + postData.termgroupid + ' ' +
-                'where coursetermid = ' + postData.coursetermid;
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _updateCalendar(params, postData) {
-    var result = this._queryFailureResult();
-
-    var query = 'update calendar ' +
-                'set ' +
-                  'termid = ' + postData.termid + ',' +
-                  'schoolyear = "' + postData.schoolyear + '", ' +
-                  'week = ' + postData.week + ', ' +
-                  'firstday = "' + postData.firstday + '", ' +
-                  'starttype = "' + postData.starttype + '" ' +
-                'where calendarid = ' + postData.calendarid;
-                
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _updateSchoolYearCalendar(params, postData) {
-    var result = this._queryFailureResult();
-
-    var queryList = {};
-    for (var i = 0; i < postData.updateData.length; i++) {
-      var item = postData.updateData[i];
-      queryList[item.calendarid] = 
-        'update calendar ' +
-        'set firstday = "' + item.firstday + '" ' +
-        'where calendarid = ' + item.calendarid + ' '
-    }
-        
-    var queryResults = await this._dbQueries(queryList);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-
-    return result;
-  }
-  
   async _updateTip(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'update tip2 ' +
+    var query = 'update tip ' +
                 'set ' +
                   'tiptext = "' + postData.tiptext + '", ' + 
                   'common = ' + (postData.common ? 1 : 0) + ' ' + 
@@ -399,28 +239,6 @@ module.exports = internal.dbAdminUpdate = class {
                   'tipid = ' + postData.tipid + ', ' + 
                   'categoryid = ' + postData.categoryid + ' ' +
                 'where tipcategoryid = ' + postData.tipcategoryid;
-    
-    var queryResults = await this._dbQuery(query);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }  
-  
-  async _updateTipUser(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'update tipuser ' +
-                'set ' +
-                  'tipid = ' + postData.tipid + ', ' + 
-                  'userid = ' + postData.userid + ' ' +
-                'where tipuserid = ' + postData.tipuserid;
     
     var queryResults = await this._dbQuery(query);
     

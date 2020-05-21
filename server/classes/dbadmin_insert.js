@@ -35,25 +35,7 @@ module.exports = internal.dbAdminInsert = class {
       
     } else if (params.queryName == 'userprivileges') {
       dbResult = await this._insertUserPrivilege(params, postData);
-      
-    } else if (params.queryName == 'termgroups') {
-      dbResult = await this._insertTermGroup(params, postData);
-      
-    } else if (params.queryName == 'terms') {
-      dbResult = await this._insertTerm(params, postData);
-      
-    } else if (params.queryName == 'courses') {
-      dbResult = await this._insertCourse(params, postData);
-      
-    } else if (params.queryName == 'usercourses') {
-      dbResult = await this._insertUserCourse(params, postData);
-      
-    } else if (params.queryName == 'calendars') {
-      dbResult = await this._insertCalendar(params, postData);
-      
-    } else if (params.queryName == 'schoolyear-calendar') {
-      dbResult = await this._insertSchoolYearCalendar(params, postData);
-      
+            
     } else if (params.queryName == 'categories') {
       dbResult = await this._insertCategory(params, postData);
       
@@ -62,9 +44,6 @@ module.exports = internal.dbAdminInsert = class {
       
     } else if (params.queryName == 'tipcategories') {
       dbResult = await this._insertTipCategory(params, postData);
-      
-    } else if (params.queryName == 'tipusers') {
-      dbResult = await this._insertTipUser(params, postData);
       
     } else if (params.queryName == 'admin_schedules') {
       dbResult = await this._insertSchedule(params, postData);
@@ -209,202 +188,10 @@ module.exports = internal.dbAdminInsert = class {
     return result;
   }
 
-  async _insertTermGroup(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into termgroup (termgroupname, termlength) ' +
-                'values (' +
-                  '"' + postData.termgroupname + '", ' + 
-                  '"' + postData.termlength + '"' + 
-                ')';
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _insertTerm(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into term (termname, termgroupid) ' +
-                'values (' +
-                  '"' + postData.termname + '", ' + 
-                  '"' + postData.termgroupid + '"' + 
-                ')';
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-
-  async _insertCourse(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into course (coursename, ap) ' +
-                'values (' +
-                  '"' + postData.coursename + '", ' + 
-                  '' + postData.ap + '' + 
-                ')';
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _insertUserCourse(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into usercourse (userid, courseid, termgroupid) ' +
-                'values (' +
-                  '' + postData.userid + ', ' +
-                  '' + postData.courseid + ', ' + 
-                  '' + postData.termgroupid + '' + 
-                ')';
-
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _insertCalendar(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into calendar (termid, schoolyear, week, firstday, starttype) ' +
-                'values (' +
-                  '' + postData.termid + ', ' +
-                  '"' + postData.schoolyear + '", ' + 
-                  '' + postData.week + ', ' + 
-                  '"' + postData.firstday + '", ' + 
-                  '"' + postData.starttype + '" ' + 
-                ')';
-
-    var queryResults = await this._dbQuery(query);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
-  async _insertSchoolYearCalendar(params, postData) {
-    var result = this._queryFailureResult();
-    var startTypeList = {
-      'semester': ['start1', 'start2', 'ap'],
-      'trimester':['start1', 'start2'],
-      'summer': ['start1']
-    }
-    
-    var query = 
-      'select ' +
-        'tg.termgroupname, tg.termlength, ' +
-        't.termid, t.termname ' +
-      'from termgroup as tg, term as t ' +
-      'where tg.termgroupid = t.termgroupid ';
-      
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      var schoolYearName = postData.schoolyear;
-      var defaultFirstDay = '2000-01-01';
-      var queryList = {};
-      
-      for (var i = 0; i < queryResults.data.length; i++) {
-        var termInfo = queryResults.data[i];
-        var arrStartTypes = startTypeList[termInfo.termgroupname];
-        
-        for (var j = 0; j < arrStartTypes.length; j++) {
-          var startType = arrStartTypes[j];
-          
-          for (var week = 1; week <= termInfo.termlength; week++) {
-            queryList[i + '-' + j + '-' + week] = 
-              'insert into calendar (termid, schoolyear, week, firstday, starttype) ' +
-              'values ( ' +
-                termInfo.termid + ', ' +
-                '"' + schoolYearName + '", ' +
-                week + ', ' +
-                '"' + defaultFirstDay + '", ' +
-                '"' + startType + '" ' +                
-              ') ';
-          }
-
-          queryList[i + '-' + j + '-start'] = 
-            'insert into calendar (termid, schoolyear, week, firstday, starttype) ' +
-            'values ( ' +
-              termInfo.termid + ', ' +
-              '"' + schoolYearName + '", ' +
-              998 + ', ' +
-              '"' + defaultFirstDay + '", ' +
-              '"' + startType + '" ' +                
-            ') ';
-          
-
-          queryList[i + '-' + j + '-end'] = 
-            'insert into calendar (termid, schoolyear, week, firstday, starttype) ' +
-            'values ( ' +
-              termInfo.termid + ', ' +
-              '"' + schoolYearName + '", ' +
-              999 + ', ' +
-              '"' + defaultFirstDay + '", ' +
-              '"' + startType + '" ' +                
-            ') ';          
-        }
-      }
-      
-      queryResults = await this._dbQueries(queryList);
-    }
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
   async _insertTip(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into tip2 (tiptext, common) ' +
+    var query = 'insert into tip (tiptext, common) ' +
                 'values (' +
                   '"' + postData.tiptext + '", ' + 
                   (postData.common ? 1 : 0) + ' ' +
@@ -466,28 +253,6 @@ module.exports = internal.dbAdminInsert = class {
     return result;
   }  
   
-  async _insertTipUser(params, postData) {
-    var result = this._queryFailureResult();
-    
-    var query = 'insert into tipuser (tipid, userid) ' +
-                'values (' +
-                  postData.tipid + ', ' + 
-                  postData.userid + 
-                ')';
-    
-    var queryResults = await this._dbQuery(query);
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }  
-
   async _insertSchedule(params, postData) {
     var result = this._queryFailureResult();
     

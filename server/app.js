@@ -142,10 +142,6 @@ app.use(bodyParser.json());
   app.get('/help.html', function (req, res) {
       res.sendFile(path.join(__dirname, 'private', 'help.html'))
   })
-
-  app.get('/weekly_calendar.html', function (req, res) {
-      res.sendFile(path.join(__dirname, 'private', '/weekly_calendar.html'))
-  })
   
   app.get('/admin/query/:queryName',  async function (req, res) {
     if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor') && req.params.queryName == 'navbar') {

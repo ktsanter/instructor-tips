@@ -1,12 +1,12 @@
 "use strict";
 //-----------------------------------------------------------------------------------
-// Student infoDeck Chrome extension
+// general purpose element creation and manipulation
 //-----------------------------------------------------------------------------------
 // TODO: 
 //-----------------------------------------------------------------------------------
 class CreateElement {
   constructor () {
-    this._version = '0.05';
+    this._version = '1.00';
   }
       
   static _createElement(elemType, id, classList) {
@@ -278,5 +278,54 @@ class CreateElement {
     }
     
     return elem;
+  }
+  
+  //--------------------------------------------------------------
+  // slider switch
+  //--------------------------------------------------------------
+  static createSliderSwitch(dataOnLabel, dataOffLabel, addedClassList, handler, useTwoChoice) {
+    var classList = 'switch';
+    if (useTwoChoice) {
+      classList += ' switch-two-choice';
+    } else {
+      classList += ' switch-yes-no';
+    }
+    if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
+    var container = CreateElement._createElement('label', null, classList);
+    
+    
+    var elemCheckbox = CreateElement._createElement('input', null, 'switch-input');
+    elemCheckbox.type = 'checkbox';
+    container.appendChild(elemCheckbox);
+    if (handler) elemCheckbox.addEventListener('click', e => handler(e));
+    
+    var elemDataSpan = CreateElement.createSpan(null, 'switch-label');
+    container.appendChild(elemDataSpan);
+    elemDataSpan.setAttribute('data-on', dataOnLabel);
+    elemDataSpan.setAttribute('data-off', dataOffLabel);
+    
+    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
+    return container;
+  }
+
+  static createSliderRadio(groupName, dataOnLabel, dataOffLabel, addedClassList, handler) {
+    var classList = 'switch switch-yes-no';
+    if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
+    var container = CreateElement._createElement('label', null, classList);
+    
+    
+    var elemRadio = CreateElement._createElement('input', null, 'switch-input');
+    elemRadio.type = 'radio';
+    elemRadio.name = groupName;
+    container.appendChild(elemRadio);
+    if (handler) elemRadio.addEventListener('click', e => handler(e));
+    
+    var elemDataSpan = CreateElement.createSpan(null, 'switch-label');
+    container.appendChild(elemDataSpan);
+    elemDataSpan.setAttribute('data-on', dataOnLabel);
+    elemDataSpan.setAttribute('data-off', dataOffLabel);
+    
+    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
+    return container;
   }
 }
