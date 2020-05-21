@@ -1,7 +1,9 @@
 //-----------------------------------------------------------------------------------
 // TipManagerSchedulingControl class
 //-----------------------------------------------------------------------------------
-// TODO: 
+// TODO: load select list from DB
+// TODO: add new / edit / delete features
+// TODO: add browse tips
 //-----------------------------------------------------------------------------------
 
 class TipManagerSchedulingControl {
@@ -18,14 +20,14 @@ class TipManagerSchedulingControl {
   //--------------------------------------------------------------
   // rendering
   //--------------------------------------------------------------
-  render(notice) {
+  async render(notice) {
     this._notice = notice;
     
     while (this._container.firstChild) {
       this._container.removeChild(this._container.firstChild);
     }
     
-    this._container.appendChild(this._buildUI());
+    this._container.appendChild(await this._buildUI());
         
     return this._container;
   }
@@ -40,13 +42,18 @@ class TipManagerSchedulingControl {
     }
   }
     
-  _buildUI() {
+  async _buildUI() {
     var container = CreateElement.createDiv(null, null);
+
+    var scheduleList = [];
+    var queryResults = await this._doGetQuery('tipmanager/query', 'schedule-list');
+    if (queryResults.success) {
+      scheduleList = queryResults.schedules;
+    }
     
     var valueList = [];
-    var scheduleList = ['schedule aaa', 'schedule bbb']; // temporary - pull from DB
     for (var i = 0; i < scheduleList.length; i++) {
-      valueList.push({id: i, value: scheduleList[i], textval: scheduleList[i]});
+      valueList.push({id: i, value: scheduleList[i].scheduleid, textval: scheduleList[i].schedulename});
     }    
     var handler = (e) => {return this._handleScheduleSelect(e);};
     container.appendChild(CreateElement.createSelect(null, 'schedulecontrol-select select-css', handler, valueList));
@@ -58,7 +65,7 @@ class TipManagerSchedulingControl {
     var elem = CreateElement.createSliderSwitch('browse tips', 'browse tips', 'schedulecontrol-browse', handler, false);
     elem.title = 'search and select from tip list';
     container.appendChild(elem);
-        
+    
     return container;
   }
   

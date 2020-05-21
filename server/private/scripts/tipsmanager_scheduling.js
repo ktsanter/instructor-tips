@@ -32,7 +32,7 @@ class TipScheduling {
     this._container.appendChild(this._renderTitle());
 
     this._control = new TipManagerSchedulingControl(() => {return this.update();});
-    this._container.appendChild(this._control.render(this._notice));
+    this._container.appendChild(await this._control.render(this._notice));
 
     this._container.appendChild(this._renderContents());
     

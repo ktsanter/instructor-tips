@@ -3,6 +3,7 @@
 // tip management DB interface
 //---------------------------------------------------------------
 // TODO: add logic based on user privileges
+// TODO: refactor for new DB
 //---------------------------------------------------------------
 const internal = {};
 
@@ -51,6 +52,9 @@ module.exports = internal.TipManager = class {
       
     } else if (params.queryName == 'notificationoptions') {
       dbResult = await this._getUserNotificationOptions(params, userInfo);
+      
+    } else if (params.queryName == 'schedule-list') {
+      dbResult = await this._getScheduleList(params, postData, userInfo);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -285,6 +289,30 @@ module.exports = internal.TipManager = class {
       } else {
         result.usercourseexists = true;
       }
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  async _getScheduleList(params, postData, userInfo) {
+    var result = this._queryFailureResult(); 
+    
+    var queryList = {};
+
+    queryList.schedules =
+      'SELECT scheduleid, userid, schedulename, schedulelength ' +
+      'FROM schedule ' +
+      'WHERE userid = ' + userInfo.userId;
+              
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.schedules = queryResults.data.schedules;
 
     } else {
       result.details = queryResults.details;
