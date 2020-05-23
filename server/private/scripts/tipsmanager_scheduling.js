@@ -50,8 +50,9 @@ class TipScheduling {
   }
 
   _renderContents() {
+    console.log('renderContents');
     var container = CreateElement.createDiv(null, 'tipschedule-contents');
-    container.appendChild(CreateElement.createSpan(null, null, '[contents]'));
+    container.appendChild(CreateElement.createSpan(null, null));
     
     return container;
   }
@@ -81,15 +82,45 @@ class TipScheduling {
     this._prepContainerForUpdate();
     
     if (controlState.scheduleid > 0) {
-      //console.log('load schedule contents');
+      await this._loadScheduleContents(controlState.scheduleid);
     }
   }
  
   _prepContainerForUpdate() {
-    var contents = this._container.getElementsByClassName('tipschedule-content')[0];
+    var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
     if (contents) {
-      this._container.removeChild(contents);
+      this._removeChildren(contents);
     }
+  }
+  
+  async _loadScheduleContents(scheduleId) {
+    var queryResults = await this._doPostQuery('tipmanager/query', 'schedule-details', {scheduleid: scheduleId});
+    if (!queryResults.success) return;
+    
+    var scheduleOverview = queryResults.data.schedule;
+    var scheduleDetails = queryResults.data.scheduledetails;
+    
+    var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
+    
+    for (var i = 0; i <= scheduleOverview.schedulelength; i++) {
+      contents.appendChild(this._renderScheduleWeek(scheduleOverview, scheduleDetails, i));
+    }
+  }
+  
+  _renderScheduleWeek(overview, details, weeknum) {
+    var container = CreateElement.createDiv(null, null);
+    
+    var label = 'week ' + weeknum;
+    if (weeknum == 0) {
+      label += ' (before term starts)';
+    } else {
+      var dateForWeek = this._addDays(overview.schedulestartdate, (weeknum - 1) * 7);
+      label +=  ' (' + this._formatDate(dateForWeek) + ')';
+    }
+    
+    container.innerHTML = label;
+    
+    return container;
   }
   
   //--------------------------------------------------------------
@@ -127,6 +158,12 @@ class TipScheduling {
     }
   }  
 
+  _addDays(theDate, days) {
+    var d = new Date(theDate);
+    d.setDate(d.getDate()  + days);
+    return d;
+  }
+  
   _formatDate(theDate) {
     var formattedDate = theDate;
     
