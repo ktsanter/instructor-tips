@@ -78,12 +78,9 @@ app.use(bodyParser.json());
   const dbAdminDeleteClass = require('./classes/dbadmin_delete')
   const dbAdminDelete = new dbAdminDeleteClass(mariadb, 'instructortips');
 
-//---------- tip manager and filter
+//---------- tip manager
   const dbTipManagerClass = require('./classes/tipmanager')
   const dbTipManager = new dbTipManagerClass(mariadb, 'instructortips', userManagement);
-
-  const dbTipFilterClass = require('./classes/tipfilter')
-  const dbTipFilter = new dbTipFilterClass(mariadb, 'instructortips', userManagement);
 
 //---------- bolerplate response for failed request
   function _failedRequest(requestType) {
@@ -153,15 +150,6 @@ app.use(bodyParser.json());
     } else if (req.params.queryName == 'calendars') {
       res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
       
-    } else {
-      res.send(_failedRequest('get'));
-    }
-  })
-
-  app.get('/tipmanager/filter/query/:queryName', async function (req, res) {
-    if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-      res.send(await dbTipFilter.doQuery(req.params, req.body, userManagement.getUserInfo(req.session)));
-
     } else {
       res.send(_failedRequest('get'));
     }
@@ -244,16 +232,7 @@ app.use(bodyParser.json());
 
   app.post('/tipmanager/delete/:queryName', async function (req, res) {
     if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-      res.send(await dbTipManager.doDelete(req.params, req.body));
-
-    } else {
-      res.send(_failedRequest('post'));
-    }
-  })
-
-  app.post('/tipmanager/filter/update/:queryName', async function (req, res) {
-    if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-      res.send(await dbTipFilter.doUpdate(req.params, req.body, userManagement.getUserInfo(req.session)));
+      res.send(await dbTipManager.doDelete(req.params, req.body, userManagement.getUserInfo(req.session)));
 
     } else {
       res.send(_failedRequest('post'));

@@ -84,6 +84,7 @@ CREATE TABLE schedule
   userid      int unsigned NOT NULL ,
   schedulename     varchar(1000) NOT NULL ,
   schedulelength    int unsigned NOT NULL ,
+  schedulestartdate    varchar(50) NOT NULL ,
 
   PRIMARY KEY (scheduleid),
   CONSTRAINT UNIQUE (userid, schedulename),
@@ -104,10 +105,28 @@ CREATE TABLE scheduletip
   CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip (tipid) ON DELETE CASCADE
 );
 
+CREATE TABLE controlstate
+(
+  controlstateid  int unsigned NOT NULL AUTO_INCREMENT ,
+  userid      int unsigned NOT NULL ,
+  controlgroup varchar(50) NOT NULL,
+  state     varchar(1000) NOT NULL,
+
+  PRIMARY KEY (controlstateid),
+  CONSTRAINT UNIQUE (userid, controlgroup),
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------
 select "creating triggers" as comment;
+    
+#-- add default scheduling control state for new users
+CREATE TRIGGER trigger_newuser
+  AFTER INSERT ON user FOR EACH ROW
+    INSERT controlstate (userid, controlgroup, state)
+    SELECT new.userid, 'scheduling' AS courseid, '{"scheduleid": null, "showbrowse": false}' as state;
     
 #--------------------------------------------------------------------------
 #-- views

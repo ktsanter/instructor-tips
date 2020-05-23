@@ -1,0 +1,13 @@
+/*-------------------------------------------------------------------
+ * styling for TipBrowse class
+ *------------------------------------------------------------------*/
+
+.tipbrowse {
+  border: 1px solid red;
+  display: inline-block;
+}
+
+.tipbrowse-hide {
+  display: none;
+}
+

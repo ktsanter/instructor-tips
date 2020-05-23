@@ -3,6 +3,7 @@ define(function (require) {
   require('tipsmanager_scheduling');
   require('tipsmanager_schedulingshare');
   require('tipsmanager_schedulingcontrol');
+  require('tipsmanager_tipbrowse');
   require('tipsmanager_manageshared');
   require('tipsmanager_settings');
   require('dbadmincontainer');
@@ -13,6 +14,7 @@ define(function (require) {
   require('sqldbinterface');
   require('markdowntohtml');
   require('dbadmintableedit');
+  require('dialogcontainer');
   
   document.addEventListener('DOMContentLoaded', app.init());
 });

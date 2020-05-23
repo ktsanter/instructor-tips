@@ -1,6 +1,7 @@
 /*-------------------------------------------------------------------
  * styling for TipScheduling class
  *------------------------------------------------------------------*/
+
 .tipschedule-icon {
   font-size: 1.2em;
   margin-right: 2px;
@@ -23,6 +24,7 @@
 
 .tipschedule-contents {
   border: 1px solid blue;
+  display: inline-block;
 }
 
 /*-----------------------

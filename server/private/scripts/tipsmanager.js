@@ -17,10 +17,10 @@ const app = function () {
     
     navOptions: [
       'scheduling',
-      'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips',
+      'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates',
       'manageshared', 'settings'
     ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'categories', 'tips', 'tipcategories', 'admin_schedules', 'scheduletips']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'categories', 'tips', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates']
   };
   
 	//---------------------------------------
@@ -100,11 +100,12 @@ const app = function () {
             {label: 'User', callback: () => {return _navDispatch('users');}},
             {label: 'Privilege', callback: () => {return _navDispatch('privileges');}},
             {label: 'UserPrivilege', callback: () => {return _navDispatch('userprivileges');}},
-            {label: 'Categories', callback: () => {return _navDispatch('categories');}},
-            {label: 'Tips', callback: () => {return _navDispatch('tips');}},
-            {label: 'TipCategories', callback: () => {return _navDispatch('tipcategories');}},
-            {label: 'Schedules', callback: () => {return _navDispatch('admin_schedules');}},
-            {label: 'ScheduleTips', callback: () => {return _navDispatch('scheduletips');}}
+            {label: 'Category', callback: () => {return _navDispatch('categories');}},
+            {label: 'Tip', callback: () => {return _navDispatch('tips');}},
+            {label: 'TipCategory', callback: () => {return _navDispatch('tipcategories');}},
+            {label: 'Schedule', callback: () => {return _navDispatch('admin_schedules');}},
+            {label: 'ScheduleTip', callback: () => {return _navDispatch('scheduletips');}},
+            {label: 'ControlState', callback: () => {return _navDispatch('controlstates');}}
           ]
         }
       );

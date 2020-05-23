@@ -31,10 +31,13 @@ class TipScheduling {
 
     this._container.appendChild(this._renderTitle());
 
-    this._control = new TipManagerSchedulingControl(() => {return this.update();});
+    this._control = new TipManagerSchedulingControl((params) => {return this.update(params);});
     this._container.appendChild(await this._control.render(this._notice));
 
     this._container.appendChild(this._renderContents());
+
+    this._browse = new TipBrowse((params) => {return this.update(params);});
+    this._container.appendChild(await this._browse.render(this._notice));
     
     return this._container;
   }
@@ -71,10 +74,17 @@ class TipScheduling {
   }
 
   async update(reRenderControls) {
+    await this._control.update();
+    
+    var controlState = this._control.state();;
+    this._browse.show(this._control.state().showbrowse);
     this._prepContainerForUpdate();
+    
+    if (controlState.scheduleid > 0) {
+      //console.log('load schedule contents');
+    }
   }
  
-  
   _prepContainerForUpdate() {
     var contents = this._container.getElementsByClassName('tipschedule-content')[0];
     if (contents) {

@@ -254,6 +254,16 @@ class CreateElement {
     return elem;
   }
   
+  static createDatePicker(id, classList, value, minval, maxval) {
+    var elem = CreateElement._createElement('input', id, classList);
+    elem.type = 'date';
+    if (value != null) elem.value = value;
+    if (minval != null) elem.min = minval;
+    if (maxval != null) elem.max = maxval;
+    
+    return elem;
+  }
+  
   static createIframe(id, classList, src, width, height, allowfullscreen) {
     var elem = CreateElement._createElement('iframe', id, classList);
     elem.src = src;
@@ -327,5 +337,15 @@ class CreateElement {
     
     container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
     return container;
+  }
+  
+   static getSliderValue(elem) {
+    var elemInput = elem.getElementsByClassName('switch-input')[0];    
+    return elemInput.checked;
+  }
+
+  static setSliderValue(elem, checked) {
+    var elemInput = elem.getElementsByClassName('switch-input')[0];
+    elemInput.checked = checked;
   }
 }

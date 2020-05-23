@@ -51,6 +51,9 @@ module.exports = internal.dbAdminDelete = class {
     } else if (params.queryName == 'scheduletips') {
       dbResult = await this._deleteScheduleTip(params, postData);
       
+    } else if (params.queryName == 'controlstates') {
+      dbResult = await this._deleteControlState(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -229,6 +232,25 @@ module.exports = internal.dbAdminDelete = class {
 
     var query = 'delete from scheduletip ' +
                 'where scheduletipid = ' + postData.scheduletipid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
+    
+  async _deleteControlState(params, postData) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from controlstate ' +
+                'where controlstateid = ' + postData.controlstateid;
 
     var queryResults = await this._dbQuery(query);
     

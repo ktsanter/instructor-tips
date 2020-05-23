@@ -51,6 +51,9 @@ module.exports = internal.dbAdminQuery = class {
     } else if (params.queryName == 'scheduletips') {
       dbResult = await this._getScheduleTips(params);
       
+    } else if (params.queryName == 'controlstates') {
+      dbResult = await this._getControlStates(params, sessionInfo);
+      
     } else if (params.queryName == 'navbar') {
       dbResult = await this._getNavbar(params, sessionInfo);
       
@@ -294,7 +297,7 @@ module.exports = internal.dbAdminQuery = class {
     
     var queryList = {
       schedules: 
-        'select s.scheduleid, s.userid, s.schedulename, s.schedulelength, u.username ' +
+        'select s.scheduleid, s.userid, s.schedulename, s.schedulelength, s.schedulestartdate, u.username ' +
         'from schedule as s, user as u ' +
         'where s.userid = u.userid ' + 
         'order by u.username, s.schedulename ',
@@ -314,9 +317,10 @@ module.exports = internal.dbAdminQuery = class {
       result.insertUpdateFields = [
         {userid: 'foreignkey'},
         {schedulename: 'text'},
-        {schedulelength: 'text'}
+        {schedulelength: 'text'},
+        {schedulestartdate: 'text'}
       ],
-      result.displayFields = ['schedulename', 'username', 'schedulelength'];
+      result.displayFields = ['schedulename', 'username', 'schedulelength', 'schedulestartdate'];
       result.data = queryResults.data.schedules,
       result.constraints = {
         foreignKeys: {
@@ -439,4 +443,46 @@ module.exports = internal.dbAdminQuery = class {
     
     return result;
   }  
+
+  async _getControlStates(params) {
+    var result = this._queryFailureResult();
+    
+    var queryList = {
+      controlstates: 
+        'select cs.controlstateid, cs.userid, cs.controlgroup, cs.state, u.username ' +
+        'from controlstate as cs, user as u ' +
+        'where cs.userid = .u.userid ' +
+        'order by u.userid, cs.controlgroup ',
+
+      users: 
+        'select userid, username ' +
+        'from user ' +
+        'order by userid'
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.primaryKey = 'controlstateid',
+      result.insertUpdateFields = [
+        {userid: 'foreignkey'},
+        {controlgroup: 'text'},
+        {state: 'text'}
+      ],
+      result.displayFields = ['controlstateid', 'username', 'controlgroup', 'state'];
+      result.data = queryResults.data.controlstates,
+      result.constraints = {
+        foreignKeys: {
+          userid: {data: 'users', displayField: 'username', allownull: false}
+        },
+        users: queryResults.data.users
+      };
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
 }

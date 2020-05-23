@@ -49,7 +49,10 @@ module.exports = internal.dbAdminInsert = class {
       dbResult = await this._insertSchedule(params, postData);
       
     } else if (params.queryName == 'scheduletips') {
-      dbResult = await this._insertScheduleTips(params, postData);
+      dbResult = await this._insertScheduleTip(params, postData);
+      
+    } else if (params.queryName == 'controlstates') {
+      dbResult = await this._insertControlState(params, postData);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -256,11 +259,12 @@ module.exports = internal.dbAdminInsert = class {
   async _insertSchedule(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into schedule (userid, schedulename, schedulelength) ' +
+    var query = 'insert into schedule (userid, schedulename, schedulelength, schedulestartdate) ' +
                 'values (' +
                   postData.userid + ', ' + 
                   '"' + postData.schedulename + '", ' + 
-                  postData.schedulelength + 
+                  postData.schedulelength + ', ' +
+                  '"' + postData.schedulestartdate + '" ' +
                 ')';
     
     var queryResults = await this._dbQuery(query);
@@ -276,7 +280,7 @@ module.exports = internal.dbAdminInsert = class {
     return result;
   }  
 
-  async _insertScheduleTips(params, postData) {
+  async _insertScheduleTip(params, postData) {
     var result = this._queryFailureResult();
     
     var query = 'insert into scheduletip (scheduleid, tipid, tipstate, schedulelocation) ' +
@@ -287,6 +291,30 @@ module.exports = internal.dbAdminInsert = class {
                   postData.schedulelocation + 
                 ')';
     
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _insertControlState(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'insert into controlstate (userid, controlgroup, state)' +
+                'values (' +
+                  postData.userid + ', ' + 
+                  '"' + postData.controlgroup + '", ' + 
+                  '"' + postData.state + '" ' +
+                ')';
+    
+    console.log(query);
     var queryResults = await this._dbQuery(query);
 
     if (queryResults.success) {

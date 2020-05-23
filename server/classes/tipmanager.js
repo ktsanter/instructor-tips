@@ -56,6 +56,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'schedule-list') {
       dbResult = await this._getScheduleList(params, postData, userInfo);
       
+    } else if (params.queryName == 'controlstate-scheduling') {
+      dbResult = await this._getControlState(params, postData, userInfo, 'scheduling');
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -66,8 +69,11 @@ module.exports = internal.TipManager = class {
   async doInsert(params, postData, gMailer, userInfo) {
     var dbResult = this._queryFailureResult();
     
-   if (params.queryName == 'tip') {
+    if (params.queryName == 'tip') {
       dbResult = await this._insertTip(params, postData, userInfo);
+      
+    } else if (params.queryName == 'schedule') {
+      dbResult = await this._insertSchedule(params, postData, userInfo);
       
     } else if (params.queryName == 'storesharedschedule') {
       dbResult = await this._storeSharedSchedule(params, postData, gMailer, userInfo);
@@ -88,6 +94,12 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tip') {
       dbResult = await this._updateTip(params, postData);
 
+    } else if (params.queryName == 'schedule') {
+      dbResult = await this._updateSchedule(params, postData, userInfo);
+
+    } else if (params.queryName == 'controlstate-scheduling') {
+      dbResult = await this._updateControlState(params, postData, userInfo, 'scheduling');
+
     } else if (params.queryName == 'singletipstatus') {
       dbResult = await this._updateSingleTipStatus(params, postData, userInfo);
             
@@ -107,12 +119,15 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }  
 
-  async doDelete(params, postData) {
+  async doDelete(params, postData, userInfo) {
     var dbResult = this._queryFailureResult();
     
    if (params.queryName == 'tip') {
       dbResult = await this._deleteTip(params, postData);
       
+    } else if (params.queryName == 'schedule') {
+      dbResult = await this._deleteSchedule(params, postData, userInfo);
+            
     } else if (params.queryName == 'tipschedule-unmaptip') {
       dbResult = await this._unmapTip(params, postData);
             
@@ -303,7 +318,7 @@ module.exports = internal.TipManager = class {
     var queryList = {};
 
     queryList.schedules =
-      'SELECT scheduleid, userid, schedulename, schedulelength ' +
+      'SELECT scheduleid, userid, schedulename, schedulelength, schedulestartdate ' +
       'FROM schedule ' +
       'WHERE userid = ' + userInfo.userId;
               
@@ -313,6 +328,31 @@ module.exports = internal.TipManager = class {
       result.success = true;
       result.details = 'query succeeded';
       result.schedules = queryResults.data.schedules;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  async _getControlState(params, postData, userInfo, controlGroup) {
+    var result = this._queryFailureResult(); 
+    
+    var queryList = {};
+
+    queryList.controlstate =
+      'SELECT state ' +
+      'FROM controlstate ' +
+      'WHERE userid = ' + userInfo.userId + ' ' +
+        'AND controlgroup = "' + controlGroup + '" ';
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.controlstate = queryResults.data.controlstate;
 
     } else {
       result.details = queryResults.details;
@@ -837,7 +877,7 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------
-    async _insertTip(params, postData, userInfo) {
+  async _insertTip(params, postData, userInfo) {
     var result = this._queryFailureResult();   
     
     var userId = userInfo.userId;
@@ -866,6 +906,41 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
+  async _insertSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();  
+    
+    var query = 'insert into schedule (userid, schedulename, schedulelength, schedulestartdate) ' +
+                'values (' +
+                  userInfo.userId + ', ' + 
+                  '"' + postData.schedulename + '", ' +
+                  postData.schedulelength + ', ' + 
+                '"' + postData.schedulestartdate + '" ' +                   
+                ')';
+    
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      query = 'select scheduleid ' +
+              'from schedule ' +
+              'where schedulename = "' + postData.schedulename + '" ';
+      queryResults = await this._dbQuery(query);
+      
+      if (queryResults.success) {
+        result.success = true;
+        result.details = 'insert succeeded';
+        result.data = queryResults.data[0];
+        
+      } else {
+        result.details = queryResults.details;
+      }
+        
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+
 //---------------------------------------------------------------
 // specific update methods
 //---------------------------------------------------------------
@@ -925,6 +1000,77 @@ module.exports = internal.TipManager = class {
     }
     
     return result;
+  }  
+  
+  async _updateSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var query = 'update schedule ' +
+                'set ' +
+                  'schedulename = "' + postData.schedulename + '", ' +
+                  'schedulelength = ' + postData.schedulelength + ', ' +
+                  'schedulestartdate = "' + postData.schedulestartdate + '" ' +
+                'where scheduleid = ' + postData.scheduleid;
+
+    var queryResults = await this._dbQuery(query);
+    console.log('_updateSchedule: deal with changed schedule length');
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _updateControlState(params, postData, userInfo, controlGroup) {
+    var result = this._queryFailureResult();
+    
+    var state = '{' +
+      '\\"scheduleid\\": ' + postData.scheduleid + ', ' + 
+      '\\"showbrowse\\": ' + postData.showbrowse + 
+    '}'
+
+    var query = 'update controlstate ' +
+                'set ' +
+                  'state = "' + state + '" ' +
+                'where userid = ' + userInfo.userId + ' ' +
+                '  and controlgroup = "' + controlGroup + '" ';
+
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+    /*
+    var tipText = this._sanitizeText(postData.tiptext);
+    var query = 'update tip ' +
+                'set ' +
+                  'tiptext = "' + tipText + '", ' +
+                  'userid = ' + postData.userid + ' ' +
+                'where tipid = ' + postData.tipid;
+
+    var queryResults = await this._dbQuery(query);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+    */
   }  
   
   async _updateSingleTipStatus(params, postData, userInfo) {
@@ -1130,6 +1276,26 @@ module.exports = internal.TipManager = class {
 
     var query = 'delete from tip ' +
                 'where tipid = ' + postData.tipid;
+
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _deleteSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var query = 'delete from schedule ' +
+                'where scheduleid = ' + postData.scheduleid + ' ' +
+                  'and userid = ' + userInfo.userId ;
 
     var queryResults = await this._dbQuery(query);
     

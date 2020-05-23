@@ -51,6 +51,9 @@ module.exports = internal.dbAdminUpdate = class {
     } else if (params.queryName == 'scheduletips') {
       dbResult = await this._updateScheduleTip(params, postData);
       
+    } else if (params.queryName == 'controlstates') {
+      dbResult = await this._updateControlState(params, postData);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -260,9 +263,10 @@ module.exports = internal.dbAdminUpdate = class {
                 'set ' +
                   'userid = ' + postData.userid + ', ' +
                   'schedulename = "' + postData.schedulename + '", ' + 
-                  'schedulelength = ' + postData.schedulelength + ' ' +
+                  'schedulelength = ' + postData.schedulelength + ', ' +
+                  'schedulestartdate = "' + postData.schedulestartdate + '" ' + 
                 'where scheduleid = ' + postData.scheduleid;
-                
+    
     var queryResults = await this._dbQuery(query);
     
     if (queryResults.success) {
@@ -286,6 +290,29 @@ module.exports = internal.dbAdminUpdate = class {
                   'tipstate = ' + postData.tipstate + ', ' + 
                   'schedulelocation = ' + postData.schedulelocation + ' ' +
                 'where scheduletipid = ' + postData.scheduletipid;
+    
+    var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _updateControlState(params, postData) {
+    var result = this._queryFailureResult();
+    
+    var query = 'update controlstate ' +
+                'set ' +
+                  'userid = ' + postData.userid + ', ' + 
+                  'controlgroup = "' + postData.controlgroup + '", ' + 
+                  'state = "' + postData.state + '" ' +
+                'where controlstateid = ' + postData.controlstateid;
     
     var queryResults = await this._dbQuery(query);
     
