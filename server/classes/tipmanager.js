@@ -72,6 +72,12 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'notificationoptions') {
       dbResult = await this._updateUserNotificationOptions(params, postData, userInfo);
             
+    } else if (params.queryName == 'tipstate') {
+      dbResult = await this._updateScheduleTipState(params, postData, userInfo);
+            
+    } else if (params.queryName == 'tiplocation') {
+      dbResult = await this._updateScheduleTipLocation(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -236,7 +242,7 @@ module.exports = internal.TipManager = class {
             
       scheduledetails:
         'select ' +  
-          'st.tipstate, st.schedulelocation, ' +
+          'st.scheduletipid, st.tipstate, st.schedulelocation, st.schedulesublocation, ' +
           't.tipid, t.tiptext ' +
           'from schedule as s, scheduletip as st, tip as t ' +
           'where s.scheduleid = ' + postData.scheduleid + ' ' +
@@ -381,7 +387,57 @@ module.exports = internal.TipManager = class {
     
     return result;    
   }
-      
+  
+  async _updateScheduleTipState(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var query;
+    var queryResults;
+    
+    query =
+      'update scheduletip ' +
+      'set ' + 
+        'tipstate = ' + postData.tipstate + ' ' +
+      'where scheduletipid = ' + postData.scheduletipid + ' ';
+    
+    queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;    
+  }
+  
+  async _updateScheduleTipLocation(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var query;
+    var queryResults;
+    
+    query =
+      'update scheduletip ' +
+      'set ' + 
+        'schedulelocation = ' + postData.schedulelocation + ' ' +
+      'where scheduletipid = ' + postData.scheduletipid + ' ';
+
+    queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;    
+  }
+  
 //---------------------------------------------------------------
 // specific delete methods
 //---------------------------------------------------------------

@@ -283,12 +283,13 @@ module.exports = internal.dbAdminInsert = class {
   async _insertScheduleTip(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into scheduletip (scheduleid, tipid, tipstate, schedulelocation) ' +
+    var query = 'insert into scheduletip (scheduleid, tipid, tipstate, schedulelocation, schedulesublocation) ' +
                 'values (' +
                   postData.scheduleid + ', ' + 
                   postData.tipid + ', ' + 
                   postData.tipstate + ', ' + 
-                  postData.schedulelocation + 
+                  postData.schedulelocation + ', ' + 
+                  postData.schedulesublocation + 
                 ')';
     
     var queryResults = await this._dbQuery(query);

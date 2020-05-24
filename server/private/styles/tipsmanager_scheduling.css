@@ -1,7 +1,6 @@
 /*-------------------------------------------------------------------
  * styling for TipScheduling class
  *------------------------------------------------------------------*/
-
 .tipschedule-icon {
   font-size: 1.2em;
   margin-right: 2px;
@@ -16,15 +15,6 @@
   .tipschedule-content {
     width: 60%;
   }
-}
-
-.tipschedule-selection {
-  border: 1px solid green;
-}
-
-.tipschedule-contents {
-  border: 1px solid blue;
-  display: inline-block;
 }
 
 /*-----------------------
@@ -100,6 +90,7 @@
 /*-----------------------
  * add/edit/update 
  *-----------------------*/
+ /*
 .tipschedule-icon-add {
   float:right;
   padding-right: 3px;
@@ -158,10 +149,11 @@
 .tipschedule-highlight .tipschedule-controls {
   background-color: var(--bgSecondaryChoice) !important;
 }
-
+*/
 /*-----------------------
  * schedule share 
  *-----------------------*/
+ /*
 .tipschedule-share {
   margin-top: 1.0em;
   margin-bottom: 1.6em;
@@ -209,3 +201,4 @@
   padding-top: 0.7em;
   padding-left: 0.5em;
 }
+*/

@@ -7,12 +7,13 @@
 //-----------------------------------------------------------------------------------
 
 class TipManagerSchedulingControl {
-  constructor(updateCallback) {
+  constructor(params) {
     this._version = '0.01';
     
     this._HIDE_CLASS = 'schedulecontrol-hide';
     
-    this._updateCallback = updateCallback;
+    this._disableCallback = params.disableCallback;
+    this._updateCallback = params.updateCallback;
     this._scheduleInfo = {};
 
     this._container = CreateElement.createDiv(null, 'schedulecontrol');
@@ -173,6 +174,8 @@ class TipManagerSchedulingControl {
     if (!makeVisible) {
       mainUIContainer.classList.add(this._HIDE_CLASS);
     }    
+    
+    this._disableCallback(!makeVisible);
   }
   
   //------------------------------------------
