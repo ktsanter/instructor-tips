@@ -289,7 +289,8 @@ module.exports = internal.dbAdminUpdate = class {
                   'tipid = ' + postData.tipid + ', ' + 
                   'tipstate = ' + postData.tipstate + ', ' + 
                   'schedulelocation = ' + postData.schedulelocation + ', ' +
-                  'schedulesublocation = ' + postData.schedulesublocation + ' ' +
+                  'previousitem = ' + postData.previousitem + ', ' +
+                  'nextitem = ' + postData.nextitem + ' ' +
                 'where scheduletipid = ' + postData.scheduletipid;
     
     var queryResults = await this._dbQuery(query);

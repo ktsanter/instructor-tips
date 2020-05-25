@@ -46,7 +46,7 @@ module.exports = internal.dbAdminQuery = class {
       dbResult = await this._getTipCategories(params);
       
     } else if (params.queryName == 'admin_schedules') {
-      dbResult = await this._getAdminSchedules(params);
+      dbResult = await this._getSchedules(params);
       
     } else if (params.queryName == 'scheduletips') {
       dbResult = await this._getScheduleTips(params);
@@ -292,7 +292,7 @@ module.exports = internal.dbAdminQuery = class {
     return result;
   }
   
-  async _getAdminSchedules(params) {
+  async _getSchedules(params) {
     var result = this._queryFailureResult();
     
     var queryList = {
@@ -340,10 +340,12 @@ module.exports = internal.dbAdminQuery = class {
     
     var queryList = {
       scheduletips: 
-        'select st.scheduletipid, st.scheduleid, st.tipid, st.tipstate, st.schedulelocation, st.schedulesublocation, s.schedulename ' +
+        'select st.scheduletipid, st.scheduleid, st.tipid, st.tipstate, ' +
+        'st.schedulelocation, st.previousitem, st.nextitem, ' + 
+        's.schedulename ' +
         'from scheduletip as st, schedule as s ' +
         'where st.scheduleid = s.scheduleid ' +
-        'order by s.schedulename, st.schedulelocation, st.schedulesublocation ',
+        'order by s.schedulename, st.schedulelocation ',
 
       schedules: 
         'select scheduleid, schedulename, userid ' +
@@ -367,9 +369,10 @@ module.exports = internal.dbAdminQuery = class {
         {tipid: 'foreignkey'},
         {tipstate: 'text'},
         {schedulelocation: 'text'},
-        {schedulesublocation: 'text'}
+        {previousitem: 'text'},
+        {nextitem: 'text'}
       ],
-      result.displayFields = ['scheduleid', 'tipid', 'tipstate', 'schedulelocation', 'schedulesublocation'];
+      result.displayFields = ['scheduleid', 'tipid', 'tipstate', 'schedulelocation', 'previousitem', 'nextitem'];
       result.data = queryResults.data.scheduletips,
       result.constraints = {
         foreignKeys: {

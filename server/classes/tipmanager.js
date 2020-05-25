@@ -75,8 +75,8 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tipstate') {
       dbResult = await this._updateScheduleTipState(params, postData, userInfo);
             
-    } else if (params.queryName == 'tiplocation') {
-      dbResult = await this._updateScheduleTipLocation(params, postData, userInfo);
+    } else if (params.queryName == 'movetip') {
+      dbResult = await this._moveTip(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -242,7 +242,7 @@ module.exports = internal.TipManager = class {
             
       scheduledetails:
         'select ' +  
-          'st.scheduletipid, st.tipstate, st.schedulelocation, st.schedulesublocation, ' +
+          'st.scheduletipid, st.tipstate, st.schedulelocation, st.previousitem, st.nextitem, ' +
           't.tipid, t.tiptext ' +
           'from schedule as s, scheduletip as st, tip as t ' +
           'where s.scheduleid = ' + postData.scheduleid + ' ' +
@@ -259,7 +259,7 @@ module.exports = internal.TipManager = class {
       result.details = 'query succeeded';
       result.data = {
         schedule: queryResults.data.schedule[0],
-        scheduledetails: queryResults.data.scheduledetails
+        scheduledetails: this._orderScheduleDetails(queryResults.data.scheduledetails, queryResults.data.schedule[0].schedulelength)
       };
       result.constraints = {};
     } else {
@@ -268,6 +268,58 @@ module.exports = internal.TipManager = class {
     
     return result;
   }     
+  
+  _orderScheduleDetails(details, scheduleLength) {
+    var detailsByLocation = {};
+    for (var i = 0; i <= scheduleLength; i++) {
+      detailsByLocation[i] = [];
+    }
+
+    for (var i = 0; i < details.length; i++) {
+      var item = details[i];
+      detailsByLocation[item.schedulelocation].push(item);
+    }
+    
+    var orderedDetails = {};
+    for (var key in detailsByLocation) {
+      orderedDetails[key] = this._orderSingleWeek(detailsByLocation[key]);
+    }
+ 
+    return orderedDetails;
+  }
+  
+  _orderSingleWeek(items) {
+    var ordered = [];
+    
+    var firstItem = null;
+    for (var i = 0; i < items.length && !firstItem; i++) {
+      if (items[i].previousitem == -1) firstItem = items[i];
+    }
+    if (firstItem) {
+      ordered.push(firstItem);
+      var currentItem = firstItem;
+      while (currentItem.nextitem != -1) {
+        var nextItem = this._findItemById(items, currentItem.nextitem);
+        if (nextItem != null) {
+          ordered.push(nextItem);
+          currentItem = nextItem;
+        } else {
+          break; // something wrong with the linked list
+        }
+      }
+    }   
+    
+    return ordered;
+  }
+  
+  _findItemById(items, id) {
+    var item = null;
+    for (var i = 0; i < items.length && !item; i++) {
+      if (items[i].scheduletipid == id) item = items[i];
+    }
+
+    return item;
+  }
   
 //---------------------------------------------------------------
 // specific insert methods
@@ -413,19 +465,69 @@ module.exports = internal.TipManager = class {
     return result;    
   }
   
-  async _updateScheduleTipLocation(params, postData, userInfo) {
+  async _moveTip(params, postData, userInfo) {
     var result = this._queryFailureResult();
 
-    var query;
+    var query, queryList;
     var queryResults;
-    
-    query =
-      'update scheduletip ' +
-      'set ' + 
-        'schedulelocation = ' + postData.schedulelocation + ' ' +
-      'where scheduletipid = ' + postData.scheduletipid + ' ';
 
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._getScheduleTipLinks(postData.scheduletipid);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var scheduleTipId = postData.scheduletipid;
+    var previousId = queryResults.data.previousitem;
+    var nextId = queryResults.data.nextitem;
+    var moveAfterId = postData.moveafterid;
+    var moveBeforeId = postData.movebeforeid;
+    var newLocation = postData.schedulelocation;
+
+    // remove from current linked list
+    if (previousId == -1 && nextId == -1) {
+      // nothing to do
+      
+    } else if (previousId == -1) {
+      // get next item and make it first
+      queryList = {
+        q1: 
+          'update scheduletip ' +
+          'set previousitem = -1 ' +
+           'where scheduletipid = ' + nextId
+      };
+      
+    } else if (nextId == -1) {
+      // get previous item and make it last
+      queryList = {
+        q1: 
+          'update scheduletip ' +
+          'set nextitem = -1 ' +
+           'where scheduletipid = ' + previousId
+      };
+      
+    } else {
+      // hook up previous and next items
+      queryList = {
+        q1:
+          'update scheduletip ' +
+          'set nextitem = ' + nextId + ' ' +
+           'where scheduletipid = ' + previousId,
+        q2:
+          'update scheduletip ' +
+          'set previousitem = ' + previousId + ' ' + 
+           'where scheduletipid = ' + nextId
+      };
+    }
+    
+
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    queryResults = await this._linkScheduleTip(scheduleTipId, newLocation, moveAfterId, moveBeforeId);
     
     if (queryResults.success) {
       result.success = true;
@@ -435,6 +537,125 @@ module.exports = internal.TipManager = class {
       result.details = queryResults.details;
     }
     
+    return result;    
+  }
+  
+  async _getScheduleTipLinks(scheduleTipId) {
+    var result = this._queryFailureResult();
+
+    var query;
+    var queryResults;
+       
+    query =
+      'select previousitem, nextitem ' +
+      'from scheduletip ' +
+      'where ' + 
+        'scheduletipid = ' + scheduleTipId;
+        
+    queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.data = {previousitem: queryResults.data[0].previousitem, nextitem: queryResults.data[0].nextitem};
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+  
+  async _linkScheduleTip(scheduleTipId, scheduleLocation, afterId, beforeId) {
+    var result = this._queryFailureResult();
+    
+    var queryList;
+    var queryResults;
+    
+    if (afterId == -1 && beforeId == -1) {
+      // add as only item in list
+      queryList = {
+        q1:
+          'update scheduletip ' +
+          'set ' +
+            'schedulelocation = ' + scheduleLocation + ', ' +
+            'previousitem = -1, ' +
+            'nextitem = -1 ' +
+          'where scheduletipid = ' + scheduleTipId
+      };
+      
+    } else if (afterId == -1) {
+      // add as first item in list
+      queryList = {
+        q1:
+          'update scheduletip ' + 
+          'set ' +
+            'schedulelocation = ' + scheduleLocation + ', ' +
+            'previousitem = -1, ' +
+            'nextitem = ' + beforeId + ' ' +
+          'where scheduletipid = ' + scheduleTipId,
+          
+        q2:
+          'update scheduletip ' + 
+          'set ' +
+            'previousitem = ' + scheduleTipId + ' ' +
+          'where scheduletipid = ' + beforeId
+      };
+      
+    } else if (beforeId == -1) {
+      // add as last item in list
+      queryList = {
+        q1:
+          'update scheduletip ' + 
+          'set ' +
+            'schedulelocation = ' + scheduleLocation + ', ' +
+            'previousitem = ' + afterId + ', ' +
+            'nextitem = -1 ' +
+          'where scheduletipid = ' + scheduleTipId,
+          
+        q2:
+          'update scheduletip ' + 
+          'set ' +
+            'nextitem = ' + scheduleTipId + ' ' +
+          'where scheduletipid = ' + afterId
+      };
+      
+    } else {
+      // add between two items in list
+      queryList = {
+        q1:
+          'update scheduletip ' + 
+          'set ' +
+            'schedulelocation = ' + scheduleLocation + ', ' +
+            'previousitem = ' + afterId + ', ' +
+            'nextitem = ' + beforeId + ' ' +
+          'where scheduletipid = ' + scheduleTipId,
+          
+        q2:
+          'update scheduletip ' + 
+          'set ' +
+            'nextitem = ' + scheduleTipId + ' ' +
+          'where scheduletipid = ' + afterId,
+          
+        q3:
+          'update scheduletip ' + 
+          'set ' +
+            'previousitem = ' + scheduleTipId + ' ' +
+          'where scheduletipid = ' + beforeId
+          
+      };
+    }
+    
+    console.log(queryList);
+    
+    queryResults = await this._dbQueries(queryList);
+    if (queryResults.success) {
+      result.success = true;
+      
+    } else {
+      console.log(queryResults);
+      result.details = queryResults.details;
+    }
+
     return result;    
   }
   

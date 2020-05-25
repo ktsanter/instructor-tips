@@ -98,7 +98,8 @@ CREATE TABLE scheduletip
   tipid      int unsigned NOT NULL ,
   tipstate     int unsigned NOT NULL ,
   schedulelocation     int unsigned NOT NULL ,
-  schedulesublocation     int unsigned NOT NULL ,
+  previousitem     int  NOT NULL ,
+  nextitem     int  NOT NULL ,
 
   PRIMARY KEY (scheduletipid),
   CONSTRAINT UNIQUE (scheduleid, tipid),
