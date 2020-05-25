@@ -471,18 +471,49 @@ module.exports = internal.TipManager = class {
     var query, queryList;
     var queryResults;
 
-    queryResults = await this._getScheduleTipLinks(postData.scheduletipid);
+    var scheduleTipId = postData.scheduletipid;
+    var moveAfterId = postData.moveafterid;
+    var moveBeforeId = postData.movebeforeid;
+    var newLocation = postData.schedulelocation;
+    
+    if (scheduleTipId == moveBeforeId || scheduleTipId == moveAfterId) {
+      result.success = false;
+      result.data = null;
+      result.details = "move failed: id=" + scheduleTipId + " after=" + moveAfterId + " before=" + moveBeforeId;
+      return result;
+    }
+    
+    queryResults = await this._unlinkScheduleTip(scheduleTipId);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
     }
     
-    var scheduleTipId = postData.scheduletipid;
+    queryResults = await this._linkScheduleTip(scheduleTipId, newLocation, moveAfterId, moveBeforeId);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;    
+  }
+  
+  async _unlinkScheduleTip(scheduleTipId) {
+    var result = this._queryFailureResult();
+    
+    var query, queryList;
+    
+    var queryResults = await this._getScheduleTipLinks(scheduleTipId);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
     var previousId = queryResults.data.previousitem;
     var nextId = queryResults.data.nextitem;
-    var moveAfterId = postData.moveafterid;
-    var moveBeforeId = postData.movebeforeid;
-    var newLocation = postData.schedulelocation;
 
     // remove from current linked list
     if (previousId == -1 && nextId == -1) {
@@ -519,48 +550,14 @@ module.exports = internal.TipManager = class {
            'where scheduletipid = ' + nextId
       };
     }
-    
 
     queryResults = await this._dbQueries(queryList);
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
-    
-    queryResults = await this._linkScheduleTip(scheduleTipId, newLocation, moveAfterId, moveBeforeId);
-    
     if (queryResults.success) {
       result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;    
-  }
-  
-  async _getScheduleTipLinks(scheduleTipId) {
-    var result = this._queryFailureResult();
-
-    var query;
-    var queryResults;
-       
-    query =
-      'select previousitem, nextitem ' +
-      'from scheduletip ' +
-      'where ' + 
-        'scheduletipid = ' + scheduleTipId;
-        
-    queryResults = await this._dbQuery(query);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.data = {previousitem: queryResults.data[0].previousitem, nextitem: queryResults.data[0].nextitem};
       
     } else {
       result.details = queryResults.details;
-    }
+    }    
 
     return result;
   }
@@ -645,8 +642,6 @@ module.exports = internal.TipManager = class {
       };
     }
     
-    console.log(queryList);
-    
     queryResults = await this._dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
@@ -658,6 +653,31 @@ module.exports = internal.TipManager = class {
 
     return result;    
   }
+  
+  async _getScheduleTipLinks(scheduleTipId) {
+    var result = this._queryFailureResult();
+
+    var query;
+    var queryResults;
+       
+    query =
+      'select previousitem, nextitem ' +
+      'from scheduletip ' +
+      'where ' + 
+        'scheduletipid = ' + scheduleTipId;
+        
+    queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.data = {previousitem: queryResults.data[0].previousitem, nextitem: queryResults.data[0].nextitem};
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
   
 //---------------------------------------------------------------
 // specific delete methods

@@ -14,7 +14,7 @@ class TipScheduling {
     
     this._tipStateIconClass = [
       'weeklytip-icon far fa-square',
-      'weeklytip-icon fas fa-check-circle'
+      'weeklytip-icon fas fa-check-square'
     ];
     
     this._config = config;
@@ -133,7 +133,8 @@ class TipScheduling {
     container.appendChild(this._renderScheduleWeekHeader(overview, details, weeknum));
     container.appendChild(this._renderScheduleWeekItems(overview, details, weeknum));
     
-    container.addEventListener('dragover', (e) => {this._allowTipDrop(e);});
+    container.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
+    container.addEventListener('dragover', (e) => {this._handleDragOver(e);});
     container.addEventListener('drop', (e) => {this._finishTipDrop(e);});
 
     return container;
@@ -242,6 +243,8 @@ class TipScheduling {
   }
   
   async _moveTip(id, destinationInfo) {
+    if (id == destinationInfo.moveafterid || id == destinationInfo.movebeforeid) return;
+    
     var moveParams = {
       scheduletipid: id,
       schedulelocation: destinationInfo.schedulelocation,
@@ -262,23 +265,49 @@ class TipScheduling {
     var itemInfo = e.target.itemInfo;
     if (!itemInfo) {
       e.preventDefault();
+      
     } else {
       e.dataTransfer.setData('text', JSON.stringify(itemInfo));
+      var elem = CreateElement.createDiv(null, 'weeklytip-dragtarget', '&nbsp; ');
+      elem.border = '1px solid red';
+      this._dragTarget = elem;
     }
   }
   
-  _allowTipDrop(e) {
+  _handleDragEnter(e) {
+    e.preventDefault();
+    var destContainer= this._getDropLocation(e.target).dropcontainer;
+
+    if (destContainer.classList.contains('weeklytip')) {
+      var elemLabel = destContainer.getElementsByClassName('weeklytip-contents')[0];
+      destContainer.insertBefore(this._dragTarget, elemLabel);
+      this._dragTarget.targetNode = destContainer;
+      
+    } else if (destContainer.classList.contains('weeklytip-container')) {
+      destContainer.appendChild(this._dragTarget);
+      this._dragTarget.targetNode = destContainer;
+
+    } else {
+      this._dragTarget.targetNode = null;
+    }
+    
+    return false;
+  }
+  
+  _handleDragOver(e) {
     e.preventDefault();
   }
   
   async _finishTipDrop(e) {
     e.preventDefault();
+    this._dragTarget.parentNode.removeChild(this._dragTarget);
+
     var data = e.dataTransfer.getData('text');
     if (!data) return;
     
     var itemInfo = JSON.parse(data);
     
-    var destinationInfo = this._getDropLocation(e.target);
+    var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
     await this._moveTip(itemInfo.scheduletipid, destinationInfo);
   }  
   
@@ -319,7 +348,7 @@ class TipScheduling {
       }
     }
     
-    return {schedulelocation: scheduleLocation, moveafterid: idOfPrevious, movebeforeid: idOfNext};
+    return {schedulelocation: scheduleLocation, moveafterid: idOfPrevious, movebeforeid: idOfNext, dropcontainer: node};
   }
   
   //--------------------------------------------------------------

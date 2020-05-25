@@ -49,6 +49,11 @@
 .weeklytip-contents div:nth-of-type(even):not(.tipschedule-controls) {
   background-color: var(--bgQuaternaryEmphasis);
 }
+
+.weeklytip div.weeklytip-dragtarget {
+  background-color: var(--bgTertiaryChoice) !important;
+  border: 1px solid var(--bgPrimaryChoice) !important;
+}
     
 .weeklytip-icon {
   cursor: pointer;
