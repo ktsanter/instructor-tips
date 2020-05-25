@@ -91,6 +91,9 @@ module.exports = internal.TipManager = class {
     if (params.queryName == 'schedule') {
       dbResult = await this._deleteSchedule(params, postData, userInfo);
             
+    } else if (params.queryName == 'scheduletip') {
+      dbResult = await this._deleteScheduleTip(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -514,7 +517,7 @@ module.exports = internal.TipManager = class {
     
     var previousId = queryResults.data.previousitem;
     var nextId = queryResults.data.nextitem;
-
+    
     // remove from current linked list
     if (previousId == -1 && nextId == -1) {
       // nothing to do
@@ -667,7 +670,7 @@ module.exports = internal.TipManager = class {
         'scheduletipid = ' + scheduleTipId;
         
     queryResults = await this._dbQuery(query);
-    
+
     if (queryResults.success) {
       result.success = true;
       result.data = {previousitem: queryResults.data[0].previousitem, nextitem: queryResults.data[0].nextitem};
@@ -690,6 +693,33 @@ module.exports = internal.TipManager = class {
                   'and userid = ' + userInfo.userId ;
 
     var queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _deleteScheduleTip(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+ 
+    var scheduleTipId = postData.scheduletipid;
+    
+    var queryResults = await this._unlinkScheduleTip(scheduleTipId);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var query = 'delete from scheduletip ' +
+                'where scheduletipid = ' + scheduleTipId;
+    
+    queryResults = await this._dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;

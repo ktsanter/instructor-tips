@@ -1,6 +1,10 @@
 /*-------------------------------------------------------------------
  * styling for TipScheduling class
  *------------------------------------------------------------------*/
+.tipschedule {
+  position: relative;
+}
+
 .tipschedule-icon {
   font-size: 1.2em;
   margin-right: 2px;
@@ -70,6 +74,23 @@
   display: inline-block;
   padding-top: 4px;
   padding-bottom: 4px;
+}
+
+.weeklytip-trashcontainer {
+  position: fixed;
+  bottom: 1.0em;
+  right: 1.0em;
+  color: var(--bgTertiaryEmphasis);
+  background-color: var(--bgOverall);
+  border: 2px solid var(--bgSecondaryChoice);
+  border-radius: 6px;
+  font-size: 2em;
+  padding: 0.3em 0.2em;
+}
+
+.weeklytip-trashcontainer.highlight {
+  color: black;
+  background-color: var(--bgSecondaryChoice);
 }
 
 @media screen and (pointer: fine) {

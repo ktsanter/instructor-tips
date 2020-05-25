@@ -134,6 +134,7 @@ class TipScheduling {
     container.appendChild(this._renderScheduleWeekItems(overview, details, weeknum));
     
     container.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
+    container.addEventListener('dragend', (e) => {this._handleDragEnd(e);});
     container.addEventListener('dragover', (e) => {this._handleDragOver(e);});
     container.addEventListener('drop', (e) => {this._finishTipDrop(e);});
 
@@ -258,6 +259,13 @@ class TipScheduling {
     }
   }
   
+  async _removeTip(id) {  
+    var queryResults = await this._doPostQuery('tipmanager/delete', 'scheduletip', {scheduletipid: id});
+    if (queryResults.success) {
+      this.update(false);
+    }
+  }  
+  
   //--------------------------------------------------------------
   // drag and drop for tips
   //--------------------------------------------------------------  
@@ -265,20 +273,33 @@ class TipScheduling {
     var itemInfo = e.target.itemInfo;
     if (!itemInfo) {
       e.preventDefault();
+      this._dragTarget = null;
       
     } else {
       e.dataTransfer.setData('text', JSON.stringify(itemInfo));
       var elem = CreateElement.createDiv(null, 'weeklytip-dragtarget', '&nbsp; ');
       elem.border = '1px solid red';
       this._dragTarget = elem;
+      
+      this._trashTarget = CreateElement.createDiv(null, 'weeklytip-trashcontainer');
+      this._trashTarget.appendChild(CreateElement.createIcon(null, 'weeklytip-trashicon far fa-trash-alt trash', 'add new schedule', null));
+      this._container.appendChild(this._trashTarget);
+      this._trashTarget.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
+      this._trashTarget.addEventListener('dragend', (e) => {this._handleDragEnd(e);});
+      this._trashTarget.addEventListener('dragover', (e) => {this._handleDragOver(e);});
+      this._trashTarget.addEventListener('drop', (e) => {this._finishTipDrop(e);});
     }
   }
   
   _handleDragEnter(e) {
     e.preventDefault();
+    
     var destContainer= this._getDropLocation(e.target).dropcontainer;
 
-    if (destContainer.classList.contains('weeklytip')) {
+    if (destContainer.classList.contains('weeklytip-trashcontainer')) {
+      this._dragTarget.style.display = 'none';
+      
+    } else if (destContainer.classList.contains('weeklytip')) {
       var elemLabel = destContainer.getElementsByClassName('weeklytip-contents')[0];
       destContainer.insertBefore(this._dragTarget, elemLabel);
       this._dragTarget.targetNode = destContainer;
@@ -288,27 +309,52 @@ class TipScheduling {
       this._dragTarget.targetNode = destContainer;
 
     } else {
+      console.log(destContainer);
       this._dragTarget.targetNode = null;
     }
     
     return false;
   }
   
+  _handleDragEnd(e) {
+    if (this._dragTarget) {
+      this._dragTarget.parentNode.removeChild(this._dragTarget);
+      this._dragTarget = null;
+    }
+    
+    if (this._trashTarget) {
+      this._trashTarget.parentNode.removeChild(this._trashTarget);
+      this._trashTarget = null;
+    }
+  }
+  
   _handleDragOver(e) {
     e.preventDefault();
+    var destContainer = this._getDropLocation(e.target).dropcontainer;
+    if (this._dragTarget && destContainer.classList.contains('weeklytip-trashcontainer')) {
+      this._highlightTipTrash(true);
+      
+    } else {
+      this._dragTarget.style.display = 'block';
+      this._highlightTipTrash(false);
+    }
   }
   
   async _finishTipDrop(e) {
     e.preventDefault();
-    this._dragTarget.parentNode.removeChild(this._dragTarget);
 
     var data = e.dataTransfer.getData('text');
     if (!data) return;
     
     var itemInfo = JSON.parse(data);
     
-    var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
-    await this._moveTip(itemInfo.scheduletipid, destinationInfo);
+    if (this._getDropLocation(e.target).dropcontainer.classList.contains('weeklytip-trashcontainer')) {
+      await this._removeTip(itemInfo.scheduletipid);
+
+    } else {
+      var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
+      await this._moveTip(itemInfo.scheduletipid, destinationInfo);
+    }
   }  
   
   _getDropLocation(elem) {
@@ -316,6 +362,12 @@ class TipScheduling {
     var droppedOnWeek = false;
     var droppedOnTip = false;
     var scheduleLocation, idOfPrevious, idOfNext;
+    
+    if (elem.classList.contains('weeklytip-trashcontainer')) {
+      return {dropcontainer: this._trashTarget};
+    } else if (elem.classList.contains('weeklytip-trashicon')) {
+      return {dropcontainer: this._trashTarget};
+    }
     
     for (var limit = 0; limit < 20 && !(droppedOnWeek || droppedOnTip); limit++) {
       droppedOnWeek = node.classList.contains('weeklytip');
@@ -349,6 +401,21 @@ class TipScheduling {
     }
     
     return {schedulelocation: scheduleLocation, moveafterid: idOfPrevious, movebeforeid: idOfNext, dropcontainer: node};
+  }
+  
+  _handleScheduleTipTrash(e) {}
+  
+  _highlightTipTrash(highlight) {
+    var elem = this._trashTarget;
+    
+    if (!highlight) {
+        if (elem.classList.contains('highlight')) {
+          elem.classList.remove('highlight');
+        }
+        
+    } else {
+      elem.classList.add('highlight');
+    }
   }
   
   //--------------------------------------------------------------
