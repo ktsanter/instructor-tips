@@ -15,8 +15,32 @@
   display: inline-block !important;
 }
 
+.schedulecontrol-options {
+  display: inline-block;
+  margin-left: 0.2em;
+  margin-right: 2em;
+  padding: 0.4em 0;
+  border: 1px solid var(--bgPrimaryEmphasis);
+  background-color: var(--bgSecondaryEmphasis);
+}
+
+.schedulecontrol-options.notshown {
+  border: none;
+  background-color: var(--bgOverall);
+  color: var(--bgTertiaryEmphasis);
+}
+
+.schedulecontrol-suboptions {
+  display: inline-block;
+  margin-left: 0.4em;
+}
+
+.schedulecontrol-suboptions.notshown {
+  display: none;
+}
+
 .schedulecontrol-icon {
-  font-size: 1.4em;
+  font-size: 1.2em;
   margin-left: 0.2em;
   vertical-align: text-bottom;
   cursor: pointer;
