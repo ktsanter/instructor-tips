@@ -3,12 +3,39 @@
  *------------------------------------------------------------------*/
 
 .tipbrowse {
-  border: 1px solid red;
+  border: 1px solid var(--bgPrimaryEmphasis);
   position: fixed;
-  margin-left: 50%;
+  margin-left: 52%;
+  height: 80%;
+  width: 45%;
 }
 
 .tipbrowse-hide {
   display: none;
 }
 
+.tipbrowse .tipbrowse-title {
+  margin-bottom: 6px;
+}
+
+.tipbrowse .tipbrowse-titletext {
+  font-weight: bold;
+  font-size: 1.1em;
+  padding-right: 6px;
+}
+
+.tipbrowse .tipbrowse-contents {
+  height: 90%;
+}
+
+.tipbrowse .tipbrowse-filter {}
+
+.tipbrowse .tipbrowse-results {
+  overflow-x: hidden;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.tipbrowse .tipbrowse-results .tip {
+  border: 1px solid var(--bgPrimaryEmphasis);
+}

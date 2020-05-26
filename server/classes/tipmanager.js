@@ -40,6 +40,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'schedule-details') {
       dbResult = await this._getScheduleDetails(params, postData, userInfo);
       
+    } else if (params.queryName == 'tiplist') {
+      dbResult = await this._getTipList(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -324,6 +327,29 @@ module.exports = internal.TipManager = class {
     return item;
   }
   
+  async _getTipList(params, postData, userInfo) {
+    var result = this._queryFailureResult();   
+    
+    var queryList = {
+      tiplist: 
+        'select tipid, tiptext, common ' +
+        'from tip ' +
+        'where common = 1 '
+    };
+    
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data.tiplist,
+      result.constraints = {};
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------
