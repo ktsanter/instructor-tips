@@ -78,8 +78,11 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tipstate') {
       dbResult = await this._updateScheduleTipState(params, postData, userInfo);
             
-    } else if (params.queryName == 'movetip') {
-      dbResult = await this._moveTip(params, postData, userInfo);
+    } else if (params.queryName == 'movescheduletip') {
+      dbResult = await this._moveScheduleTip(params, postData, userInfo);
+            
+    } else if (params.queryName == 'addscheduletip') {
+      dbResult = await this._addScheduleTip(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -494,7 +497,7 @@ module.exports = internal.TipManager = class {
     return result;    
   }
   
-  async _moveTip(params, postData, userInfo) {
+  async _moveScheduleTip(params, postData, userInfo) {
     var result = this._queryFailureResult();
 
     var query, queryList;
@@ -528,6 +531,49 @@ module.exports = internal.TipManager = class {
     }
     
     return result;    
+  }
+  
+  async _addScheduleTip(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var query, queryList;
+    var queryResults;
+
+    result.details = 'TBD';
+    return result;
+    //var scheduleTipId = postData.scheduletipid;
+    // make new schedule tip
+    // link schedule tip
+  
+  /*
+    var moveAfterId = postData.moveafterid;
+    var moveBeforeId = postData.movebeforeid;
+    var newLocation = postData.schedulelocation;
+    
+    if (scheduleTipId == moveBeforeId || scheduleTipId == moveAfterId) {
+      result.success = false;
+      result.data = null;
+      result.details = "move failed: id=" + scheduleTipId + " after=" + moveAfterId + " before=" + moveBeforeId;
+      return result;
+    }
+    
+    queryResults = await this._unlinkScheduleTip(scheduleTipId);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    queryResults = await this._linkScheduleTip(scheduleTipId, newLocation, moveAfterId, moveBeforeId);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+*/    
   }
   
   async _unlinkScheduleTip(scheduleTipId) {

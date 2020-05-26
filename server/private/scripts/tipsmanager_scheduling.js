@@ -277,7 +277,25 @@ class TipScheduling {
     }
   }
   
+  async _addTip(id, destinationInfo) {
+    console.log('add');
+    if (id == destinationInfo.moveafterid || id == destinationInfo.movebeforeid) return;
+    
+    var addParams = {
+      scheduletipid: id,
+      schedulelocation: destinationInfo.schedulelocation,
+      moveafterid: destinationInfo.moveafterid,
+      movebeforeid: destinationInfo.movebeforeid
+    };
+    
+    var queryResults = await this._doPostQuery('tipmanager/update', 'addscheduletip', addParams);
+    if (queryResults.success) {
+      this.update(false);
+    }
+  }
+  
   async _moveTip(id, destinationInfo) {
+    console.log('move');
     if (id == destinationInfo.moveafterid || id == destinationInfo.movebeforeid) return;
     
     var moveParams = {
@@ -287,12 +305,12 @@ class TipScheduling {
       movebeforeid: destinationInfo.movebeforeid
     };
     
-    var queryResults = await this._doPostQuery('tipmanager/update', 'movetip', moveParams);
+    var queryResults = await this._doPostQuery('tipmanager/update', 'movescheduletip', moveParams);
     if (queryResults.success) {
       this.update(false);
     }
   }
-  
+    
   async _removeTip(id) {  
     var queryResults = await this._doPostQuery('tipmanager/delete', 'scheduletip', {scheduletipid: id});
     if (queryResults.success) {
@@ -317,17 +335,15 @@ class TipScheduling {
       elem.border = '1px solid red';
       this._dragTarget = elem;
       
-      this._trashTarget = CreateElement.createDiv(null, 'weeklytip-trashcontainer');
-      this._trashTarget.appendChild(CreateElement.createIcon(null, 'weeklytip-trashicon far fa-trash-alt trash', 'add new schedule', null));
-      this._container.appendChild(this._trashTarget);
-      this._trashTarget.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
-      //this._trashTarget.addEventListener('dragend', (e) => {this._handleDragEnd(e);});
-      this._trashTarget.addEventListener('dragover', (e) => {this._handleDragOver(e);});
-      this._trashTarget.addEventListener('drop', (e) => {this._finishTipDrop(e);});
+      if (itemInfo.dragtype == 'move') {
+        this._trashTarget = CreateElement.createDiv(null, 'weeklytip-trashcontainer');
+        this._trashTarget.appendChild(CreateElement.createIcon(null, 'weeklytip-trashicon far fa-trash-alt trash', 'add new schedule', null));
+        this._container.appendChild(this._trashTarget);
+        this._trashTarget.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
+        this._trashTarget.addEventListener('dragover', (e) => {this._handleDragOver(e);});
+        this._trashTarget.addEventListener('drop', (e) => {this._finishTipDrop(e);});
+      }
     }
-    
-    console.log('start');
-    console.log(this._dragTarget);
     
     return true;
   }
@@ -388,14 +404,17 @@ class TipScheduling {
     if (!data) return;
     
     var itemInfo = JSON.parse(data);
-    console.log('finish: ' + JSON.stringify(itemInfo));
     
     if (this._getDropLocation(e.target).dropcontainer.classList.contains('weeklytip-trashcontainer')) {
-      //await this._removeTip(itemInfo.scheduletipid);
+      await this._removeTip(itemInfo.scheduletipid);
 
-    } else {
+    } else if (itemInfo.dragtype == 'move') {
       var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
-      //await this._moveTip(itemInfo.scheduletipid, destinationInfo);
+      await this._moveTip(itemInfo.scheduletipid, destinationInfo);
+
+    } else if (itemInfo.dragtype == 'add') {
+      var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
+      await this._addTip(itemInfo.scheduleid, destinationInfo);
     }
   }  
   
@@ -445,10 +464,9 @@ class TipScheduling {
     return {schedulelocation: scheduleLocation, moveafterid: idOfPrevious, movebeforeid: idOfNext, dropcontainer: node};
   }
   
-  _handleScheduleTipTrash(e) {}
-  
   _highlightTipTrash(highlight) {
     var elem = this._trashTarget;
+    if (!elem) return;
     
     if (!highlight) {
         if (elem.classList.contains('highlight')) {

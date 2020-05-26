@@ -59,8 +59,6 @@ class TipBrowse {
   }
   
   async update() {
-    console.log('TipBrowse.update');
-    
     var resultContainer = this._container.getElementsByClassName('tipbrowse-results')[0];
 
     var tipList = await this._getTipList();
@@ -98,7 +96,6 @@ class TipBrowse {
   // handlers
   //--------------------------------------------------------------
   _dragstartHandler(e) {
-    console.log(e.target);
     if (!e.target.classList.contains('tip')) {
       e.preventDefault();
       return false;
