@@ -1,7 +1,8 @@
 //-----------------------------------------------------------------------------------
 // TipScheduling class
 //-----------------------------------------------------------------------------------
-// TODO: 
+// TODO: debug drag/drop disable - is it an inheritance thing?
+// TODO: consider drag handle for scheduleip items
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {
@@ -83,13 +84,26 @@ class TipScheduling {
   async update(reRenderControls) {
     if (reRenderControls) await this._control.update();
     
-    var controlState = this._control.state();;
-    this._browse.show(this._control.state().showbrowse);
+    var controlState = this._control.state();
+    
+    this._configureBrowseDisplay(controlState.showbrowse);
+    
     this._prepContainerForUpdate();
     
     if (controlState.scheduleid > 0) {
       await this._loadScheduleContents(controlState.scheduleid);
     }
+  }
+  
+  _configureBrowseDisplay(showbrowse) { 
+    var container = this._container.getElementsByClassName('tipschedule-contents')[0];  
+    if (showbrowse) {
+      container.classList.add('browse');
+    } else {
+      if (container.classList.contains('browse')) container.classList.remove('browse');
+    }
+    
+    this._browse.show(showbrowse);
   }
  
   _prepContainerForUpdate() {
@@ -226,10 +240,24 @@ class TipScheduling {
   
   _disableContents(disable) {
     var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
-    contents.style.opacity = disable ? 0.5 : 1.0;
+    contents.style.opacity = disable ? 0.3 : 1.0;
     this._disableElement(contents, disable, true);
+    this._disableTipScheduleDragging(disable);    
   }
   
+  _disableTipScheduleDragging(disable) {
+    var scheduleTipContainers = this._container.getElementsByClassName('weeklytip-container');
+    for (var i = 0; i < scheduleTipContainers.length; i++) {
+      var container = scheduleTipContainers[i];
+      container.draggable = !disable;
+    }
+  }
+  
+  _foo(e) {
+    console.log('foo');
+    return false;
+  }
+    
   async _tipStateChange(e) {
     if (e.target.disabled) return;
     

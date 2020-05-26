@@ -5,6 +5,11 @@
   position: relative;
 }
 
+.tipschedule-contents.browse {
+  width: 50%;
+  float: left;
+}
+
 .tipschedule-icon {
   font-size: 1.2em;
   margin-right: 2px;
@@ -15,12 +20,13 @@
   font-size: 1.4em;
 }
 
+/*
 @media screen and (pointer: fine) {
   .tipschedule-content {
     width: 60%;
   }
 }
-
+*/
 /*-----------------------
  * weekly tip boxes
  *-----------------------*/
@@ -113,69 +119,6 @@
   display: none;
 }
 
-/*-----------------------
- * add/edit/update 
- *-----------------------*/
- /*
-.tipschedule-icon-add {
-  float:right;
-  padding-right: 3px;
-}
-
-.tipschedule-icon-edit {
-  padding-left: 2px;
-  padding-right: 2px;
-  padding-top: 3px;
-}
-
-.tipschedule-edit {
-  background-color:var(--bgQuaternaryEmphasis);
-  border: 1px solid #093c44;
-  margin-left: -5px;
-}
-
-.tipschedule-edit-container {
-  margin-top: 2px;
-  margin-bottom: 2px;
-}
-
-.tipschedule-add-text {
-  width: 90%;
-}
-
-.tipschedule-edit-container .tipschedule-add-text.edit {
-  margin-left: 25px;
-}
-
-.tipschedule-add-select {
-  width: 89%;
-}
-
-.tipschedule-add-choice {
-  vertical-align: top;
-}
-
-.tipschedule-editicon {
-  cursor: pointer;
-  font-size: 1.5em;
-  padding-right: 6px;  
-}
-
-.tipschedule-controls {
-  display: inline-block;
-  float: right;
-  background-color: inherit !important;
-}
-
-.tipschedule-highlight {
-  background-color: var(--bgSecondaryChoice) !important;
-  color: white;
-}
-
-.tipschedule-highlight .tipschedule-controls {
-  background-color: var(--bgSecondaryChoice) !important;
-}
-*/
 /*-----------------------
  * schedule share 
  *-----------------------*/

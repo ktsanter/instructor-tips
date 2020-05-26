@@ -115,7 +115,7 @@ const app = function () {
   }
   
   async function _renderSubContainers() {
-    var container = CreateElement.createDiv(null, null);
+    var container = CreateElement.createDiv(null, 'primary-subcontainer');
         
     settings.scheduling = new TipScheduling({
       callback: () => {return _sharedScheduleChange();}

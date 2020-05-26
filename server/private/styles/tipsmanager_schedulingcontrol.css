@@ -17,22 +17,34 @@
 
 .schedulecontrol-options {
   display: inline-block;
+  border: 1px solid black;
   margin-left: 0.2em;
   margin-right: 2em;
-  padding: 0.4em 0;
-  border: 1px solid var(--bgPrimaryEmphasis);
-  background-color: var(--bgSecondaryEmphasis);
+  padding: 0 0;
 }
 
 .schedulecontrol-options.notshown {
+  background-color: transparent;
   border: none;
-  background-color: var(--bgOverall);
-  color: var(--bgTertiaryEmphasis);
+}
+
+.schedulecontrol-iconcontainer {
+  display: inline-block;
+  color: black;
+  background-color: var(--bgSecondaryChoice);
+  border: 1px solid black;
+  padding: 0.28em 0.1em 0.28em 0;
+  margin: -0.1em;
+}
+
+.schedulecontrol-iconcontainer.notshown {
+  color: gray;
+  background-color: transparent;
+  border: 1px solid transparent;
 }
 
 .schedulecontrol-suboptions {
   display: inline-block;
-  margin-left: 0.4em;
 }
 
 .schedulecontrol-suboptions.notshown {
@@ -41,13 +53,14 @@
 
 .schedulecontrol-icon {
   font-size: 1.2em;
-  margin-left: 0.2em;
-  vertical-align: text-bottom;
+  margin-left: 0.4em;
+  margin-right: 0.4em;
+  vertical-align: middle;
   cursor: pointer;
 }
 
-.schedulecontrol-icon.trash {
-  margin-right: 1.0em;
+.schedulecontrol-icon.subicon {
+  font-size: 1.0em;
 }
 
 .schedulecontrol-icon.disable {

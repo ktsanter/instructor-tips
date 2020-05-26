@@ -104,21 +104,24 @@ class TipManagerSchedulingControl {
 
     var subcontainer = CreateElement.createDiv(null, 'schedulecontrol-options notshown');
     container.appendChild(subcontainer);
+
+    var iconcontainer = CreateElement.createDiv(null, 'schedulecontrol-iconcontainer notshown');
+    subcontainer.appendChild(iconcontainer);
     
     handler = (e) => {return this._handleScheduleFlyout(e);};
-    subcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon fas fa-cog', 'add/edit/delete schedule', handler));
+    iconcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon fas fa-cog', 'add/edit/delete schedule', handler));
     
     var subsubcontainer = CreateElement.createDiv(null, 'schedulecontrol-suboptions notshown');
     subcontainer.appendChild(subsubcontainer);
 
     handler = (e) => {return this._handleScheduleAdd(e);};
-    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon far fa-plus-square', 'add new schedule', handler));
+    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon far fa-plus-square', 'add new schedule', handler));
     
     handler = (e) => {return this._handleScheduleRename(e);};
-    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon fas fa-edit', 'edit schedule parameters', handler));
+    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon fas fa-edit', 'edit schedule parameters', handler));
     
     handler = (e) => {return this._handleScheduleDelete(e);};
-    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon far fa-trash-alt trash', 'delete this schedule', handler));
+    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon far fa-trash-alt trash', 'delete this schedule', handler));
     
     handler = (e) => {return this._handleBrowseTips(e);};   
     var elemBrowse = CreateElement.createSliderSwitch('browse tips', 'browse tips', 'schedulecontrol-browse', handler, false);
@@ -276,14 +279,17 @@ class TipManagerSchedulingControl {
   }
         
   _handleScheduleFlyout(e) {
-    var container = e.target.parentNode;
+    var container = e.target.parentNode.parentNode;
+    var iconcontainer = container.getElementsByClassName('schedulecontrol-iconcontainer')[0];
     var subcontainer = container.getElementsByClassName('schedulecontrol-suboptions')[0];
     
     if (subcontainer.classList.contains('notshown')) {
       container.classList.remove('notshown');
+      iconcontainer.classList.remove('notshown');
       subcontainer.classList.remove('notshown');
     } else {
       container.classList.add('notshown');
+      iconcontainer.classList.add('notshown');
       subcontainer.classList.add('notshown');
     }
   }
