@@ -46,6 +46,7 @@
   background-color: var(--bgPrimaryEmphasis);
   padding-top: 6px;
   padding-bottom: 6px;
+  padding-left: 0.2em;
 }
 
 .weeklytip-label-text {}
@@ -61,7 +62,7 @@
 }
 
 .weeklytip div.weeklytip-dragtarget {
-  background-color: var(--bgTertiaryChoice) !important;
+  background-color: var(--bgSecondaryChoice) !important;
   border: 1px solid var(--bgPrimaryChoice) !important;
 }
     
@@ -117,6 +118,59 @@
 
 .hide-weeklytip-contents {
   display: none;
+}
+
+.weeklytip-config {
+  float: right;
+  padding-right: 0.4em;
+  opacity: 0;
+}
+
+.weeklytip-config:hover {
+  opacity: 1;
+}
+
+.weeklytip-config-icon {
+  font-size: 1.2em;
+  vertical-align: middle;
+  padding: 0 0.2em;
+}
+
+.tipschedule-newtip {
+  display: block;
+  background-color: var(--bgSecondaryChoice);
+  border: 1px solid var(--bgPrimaryEmphasis);
+}
+
+.tipschedule-newtip.notshown {
+  display: none;
+}
+
+.tipschedule-newtip .tipschedule-newtip-inputcontainer {
+  display: inline-block;
+  width: 90%;
+  padding-top: 0.2em;
+}
+
+.tipschedule-newtip .tipschedule-newtip-input {
+  width: 100%;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;  
+  margin-left: 0.2em;
+}
+
+.tipschedule-newtip .tipschedule-newtip-controlcontainer {
+  float: right;
+}
+
+.tipschedule-newtip .tipschedule-newtip-control {
+  font-size: 1.2em;
+  vertical-align: middle;
+  padding: 0 0.2em;
+}
+
+.tipschedule-newtip .tipschedule-newtip-control.disabled{
+  color: #c0c0c0;
 }
 
 /*-----------------------

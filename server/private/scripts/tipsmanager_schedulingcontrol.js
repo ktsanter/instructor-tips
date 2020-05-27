@@ -118,10 +118,10 @@ class TipManagerSchedulingControl {
     subcontainer.appendChild(subsubcontainer);
 
     handler = (e) => {return this._handleScheduleAdd(e);};
-    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon add far fa-plus-square', 'add new schedule', handler));
+    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon add far fa-plus-square', 'create new schedule', handler));
     
     handler = (e) => {return this._handleScheduleRename(e);};
-    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon edit fas fa-edit', 'edit schedule parameters', handler));
+    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon edit fas fa-edit', 'edit the parameters for this schedule', handler));
     
     handler = (e) => {return this._handleScheduleDelete(e);};
     subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon delete far fa-trash-alt trash', 'delete this schedule', handler));

@@ -56,6 +56,9 @@ module.exports = internal.TipManager = class {
     if (params.queryName == 'schedule') {
       dbResult = await this._insertSchedule(params, postData, userInfo);
       
+    } else if (params.queryName == 'addscheduleweek') {
+      dbResult = await this._addScheduleWeek(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -84,6 +87,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'addscheduletip') {
       dbResult = await this._addScheduleTip(params, postData, userInfo);
             
+    } else if (params.queryName == 'addtipandscheduletip') {
+      dbResult = await this._addTipAndScheduleTip(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -99,6 +105,9 @@ module.exports = internal.TipManager = class {
             
     } else if (params.queryName == 'scheduletip') {
       dbResult = await this._deleteScheduleTip(params, postData, userInfo);
+            
+    } else if (params.queryName == 'removescheduleweek') {
+      dbResult = await this._removeScheduleWeek(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -600,7 +609,65 @@ module.exports = internal.TipManager = class {
     } else {
       result.details = queryResults.details;
     }
+      
+    return result;
+  }
   
+  async _addTipAndScheduleTip(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    
+    var queryList;
+    var queryResults;
+    
+    queryList = {
+      checkforduplicate:
+        'select tipid ' +
+        'from tip ' +
+        'where tiptext = "' + postData.tiptext + '" ' +
+          'and userid = ' + userInfo.userId
+    }
+    
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    } else if (queryResults.data.checkforduplicate.length > 0) {
+      result.details = 'duplicate tip for user';
+      return result;
+    }
+    
+    queryList = {
+      addTip: 
+        'insert into tip (tiptext, userid, common) ' +
+        'values (' +
+          '"' + postData.tiptext + '", ' +
+          userInfo.userId + ', ' +
+          'FALSE' + ' ' +
+        ')',
+        
+      getTipId:
+        'select tipid ' +
+        'from tip ' +
+        'where tiptext = "' + postData.tiptext + '" ' +
+          'and userid = ' + userInfo.userId
+    };
+            
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    postData.tipid = queryResults.data.getTipId[0].tipid;
+    var addResult = await this._addScheduleTip(params, postData, userInfo);
+    
+    if (addResult.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+    } else {
+      result.details = addResult.details;
+    }
+    
     return result;
   }
   
@@ -782,6 +849,37 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
+  async _addScheduleWeek(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var queryList;
+    var queryResults;
+    
+    queryList = {
+      updateLength:
+        'update schedule ' +
+        'set schedulelength = schedulelength + 1 ' +
+        'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and userid = ' + userInfo.userId,
+          
+      updateLocations:
+        'update scheduletip ' +
+        'set schedulelocation = schedulelocation + 1 ' +
+        'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and schedulelocation > ' + postData.afterweek + ' '
+    };
+    
+    queryResults = await this._dbQueries(queryList);
+    if (queryResults.success) {
+      result.success = true;
+      
+    } else {
+      result.details = queryResults.details;
+    }    
+  
+    return result;
+  }
+  
 //---------------------------------------------------------------
 // specific delete methods
 //---------------------------------------------------------------
@@ -832,6 +930,43 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
+  async _removeScheduleWeek(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var queryList;
+    var queryResults;
+    
+    queryList = {
+      updateLength:
+        'update schedule ' +
+        'set schedulelength = schedulelength - 1 ' +
+        'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and userid = ' + userInfo.userId,
+          
+      removeScheduleTips:
+        'delete from scheduletip ' + 
+        'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and schedulelocation = ' + postData.week,
+          
+      updateLocations:
+        'update scheduletip ' +
+        'set schedulelocation = schedulelocation - 1 ' +
+        'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and schedulelocation > ' + postData.week + ' ',
+          
+    };
+    
+    queryResults = await this._dbQueries(queryList);
+    if (queryResults.success) {
+      result.success = true;
+      
+    } else {
+      result.details = queryResults.details;
+    }   
+    
+    return result;
+  }
+
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------

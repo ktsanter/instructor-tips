@@ -3,8 +3,6 @@
 //-----------------------------------------------------------------------------------
 // TODO: debug drag/drop disable - is it an inheritance thing?
 // TODO: consider drag handle for scheduleip items
-// TODO: consider add/delete week option
-// TODO: create new tip from scheduler
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {
@@ -23,6 +21,7 @@ class TipScheduling {
     this._callback = config.callback;
     
     this._control = null;
+    this._newTipContainer = null;
 
     this._container = null;
   }
@@ -52,6 +51,8 @@ class TipScheduling {
     this._browse = new TipBrowse(updateCallback, dragstartCallback, dragendCallback);
     this._container.appendChild(await this._browse.render(this._notice));
     
+    this._container.appendChild(this._renderNewTipContainer());
+    
     return this._container;
   }
   
@@ -64,6 +65,28 @@ class TipScheduling {
 
   _renderContents() {
     var container = CreateElement.createDiv(null, 'tipschedule-contents');
+    
+    return container;
+  }
+  
+  _renderNewTipContainer() {
+    var container = CreateElement.createDiv(null, 'tipschedule-newtip notshown');
+    this._newTipContainer = container;
+    
+    var subcontainer = CreateElement.createDiv(null, 'tipschedule-newtip-inputcontainer');
+    container.appendChild(subcontainer);
+    
+    var elemTipInput = CreateElement.createTextArea(null, 'tipschedule-newtip-input');
+    subcontainer.appendChild(elemTipInput);
+    elemTipInput.placeholder = 'text for new tip';
+    elemTipInput.addEventListener('input', (e) => {this._handleNewTipEdit(e);});
+    
+    subcontainer = CreateElement.createDiv(null, 'tipschedule-newtip-controlcontainer');
+    container.appendChild(subcontainer);
+    var handler = (e) => {this._handleAddTipCompletion(e, true);};
+    subcontainer.appendChild(CreateElement.createIcon(null, 'tipschedule-newtip-control savenewtip far fa-check-square disabled', 'save', handler));
+    handler = (e) => {this._handleAddTipCompletion(e, false);};
+    subcontainer.appendChild(CreateElement.createIcon(null, 'tipschedule-newtip-control cancelnewtip far fa-window-close', 'cancel', handler));
     
     return container;
   }
@@ -162,10 +185,11 @@ class TipScheduling {
   _renderScheduleWeekHeader(overview, details, weeknum) {
     var container = CreateElement.createDiv(null, 'weeklytip-label');
     
-    var label = 'week ' + weeknum;
+    var label;
     if (weeknum == 0) {
-      label += ' (before term starts)';
+      label = 'before the term starts';
     } else {
+      label = 'week ' + weeknum;
       var dateForWeek = this._addDays(overview.schedulestartdate, (weeknum - 1) * 7 + 1);
       label +=  ' (' + this._formatDate(dateForWeek) + ')';
     }
@@ -173,6 +197,23 @@ class TipScheduling {
     var elemLabel = CreateElement.createSpan(null, null, label)
     container.appendChild(elemLabel);
     elemLabel.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', 'expand/collapse week', (e) => {return this._toggleWeeklyBoxCollapse(e);}));
+    
+    container.appendChild(this._renderScheduleWeekConfig(weeknum));
+    
+    return container;
+  }
+  
+  _renderScheduleWeekConfig(weeknum) {
+    var container = CreateElement.createDiv(null, 'weeklytip-config');
+    
+    var handler = (e) => {this._handleConfigChoice(e, 'addtip');}
+    container.appendChild(CreateElement.createIcon(null, 'weeklytip-config-icon addtip far fa-plus-square', 'add new tip to this week', handler));
+
+    handler = (e) => {this._handleConfigChoice(e, 'addweek');}
+    container.appendChild(CreateElement.createIcon(null, 'weeklytip-config-icon addweek far fa-calendar-plus', 'add new week after this one', handler));
+
+    handler = (e) => {this._handleConfigChoice(e, 'removeweek');}
+    container.appendChild(CreateElement.createIcon(null, 'weeklytip-config-icon removeweek far fa-calendar-minus', 'remove this week', handler));
     
     return container;
   }
@@ -273,6 +314,80 @@ class TipScheduling {
     }
   }
   
+  async _handleConfigChoice(e, choiceType) {
+    var elemIcon = e.target;
+    var elemWeeklyTip = elemIcon.parentNode.parentNode.parentNode;
+    var weekNum = elemWeeklyTip.weeknum;
+    
+    var scheduleId = this._control.state().scheduleid;
+    
+    if (choiceType == 'addtip') {
+      elemWeeklyTip.appendChild(this._newTipContainer);
+      if (this._newTipContainer.classList.contains('notshown')) this._newTipContainer.classList.remove('notshown');
+      this._newTipContainer.getElementsByClassName('tipschedule-newtip-input')[0].value = '';
+      this._newTipContainer.getElementsByClassName('savenewtip')[0].classList.add('disabled');
+      this._newTipContainer.weekNum = weekNum;
+      
+    } else if (choiceType == 'addweek') {
+      var queryResults = await this._doPostQuery('tipmanager/insert', 'addscheduleweek', {scheduleid: scheduleId, afterweek: weekNum});
+      if (queryResults.success) {
+        this.update(false);
+      }
+      
+    } else if (choiceType == 'removeweek') {
+      var msg = 'Week #' + weekNum + ' will be deleted along with any tips it contains.';
+      msg += '\n\nContinue with removing week #' + weekNum + '?';
+      
+      if (confirm(msg)) {
+        var queryResults = await this._doPostQuery('tipmanager/delete', 'removescheduleweek', {scheduleid: scheduleId, week: weekNum});
+        if (queryResults.success) {
+          this.update(false);
+        }
+      }
+    }
+  }
+  
+  _handleNewTipEdit(e) {
+    var elemIconContainer = this._container.getElementsByClassName('tipschedule-newtip-controlcontainer')[0];
+    var elemIcon = elemIconContainer.getElementsByClassName('savenewtip')[0];
+    if (elemIcon.classList.contains('disabled')) elemIcon.classList.remove('disabled');
+    if (e.target.value.trim().length == 0) elemIcon.classList.add('disabled');
+  }
+  
+  async _handleAddTipCompletion(e, saveNewTip) {
+    if (saveNewTip) {
+      var tipText = this._newTipContainer.getElementsByClassName('tipschedule-newtip-input')[0].value;
+      var weekNum = this._newTipContainer.weekNum;
+      var scheduleId = this._control.state().scheduleid;
+      var moveAfterId = -1;
+      
+      var elemWeekContents = this._newTipContainer.previousSibling;
+      if (elemWeekContents.childElementCount > 0) {
+        moveAfterId = elemWeekContents.lastChild.itemInfo.scheduletipid;
+      }
+      
+      var addParams = {
+        tiptext: tipText,
+        scheduleid: this._control.state().scheduleid,
+        schedulelocation: weekNum,
+        moveafterid: moveAfterId,
+        movebeforeid: -1
+      }
+      
+      var queryResults = await this._doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams);
+      if (queryResults.success) {
+        this.update(false);
+        //{success: false, details: "*ERROR: in dbPost, "duplicate tip for user""}
+      } else if (queryResults.details = '*ERROR: in dbPost, "duplicate tip for user"') {
+        this._notice.setNotice('');
+        alert('You already have a tip available with this text.  Please use the "browse" feature to select it');
+        await this.update(false);
+      }
+    }
+    
+    this._newTipContainer.classList.add('notshown');
+  }
+  
   async _addTip(tipId, destinationInfo) {
     var addParams = {
       tipid: tipId,
@@ -330,7 +445,7 @@ class TipScheduling {
       
       if (itemInfo.dragtype == 'move') {
         this._trashTarget = CreateElement.createDiv(null, 'weeklytip-trashcontainer');
-        this._trashTarget.appendChild(CreateElement.createIcon(null, 'weeklytip-trashicon far fa-trash-alt trash', 'add new schedule', null));
+        this._trashTarget.appendChild(CreateElement.createIcon(null, 'weeklytip-trashicon far fa-trash-alt trash', null, null));
         this._container.appendChild(this._trashTarget);
         this._trashTarget.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
         this._trashTarget.addEventListener('dragover', (e) => {this._handleDragOver(e);});
@@ -546,6 +661,7 @@ class TipScheduling {
       resultData = requestResult;
       this._notice.setNotice('');
     } else {
+      resultData.details = requestResult.details;
       this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
     }
     
