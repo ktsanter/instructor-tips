@@ -4,6 +4,7 @@
 // TODO: debug drag/drop disable - is it an inheritance thing?
 // TODO: consider drag handle for scheduleip items
 // TODO: consider add/delete week option
+// TODO: create new tip from scheduler
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {
@@ -288,8 +289,7 @@ class TipScheduling {
   }
   
   async _moveTip(scheduleTipId, destinationInfo) {
-    console.log('move');
-    if (id == destinationInfo.moveafterid || id == destinationInfo.movebeforeid) return;
+    if (scheduleTipId == destinationInfo.moveafterid || scheduleTipId == destinationInfo.movebeforeid) return;
     
     var moveParams = {
       scheduletipid: scheduleTipId,
@@ -299,7 +299,7 @@ class TipScheduling {
     };
     
     var queryResults = await this._doPostQuery('tipmanager/update', 'movescheduletip', moveParams);
-    if (queryResults.success) {
+    if (queryResults.success || queryResult.details == 'tip is already assigned to week') {
       this.update(false);
     }
   }
@@ -371,7 +371,6 @@ class TipScheduling {
       this._dragTarget.targetNode = destContainer;
 
     } else {
-      console.log(destContainer);
       this._dragTarget.targetNode = null;
     }
     

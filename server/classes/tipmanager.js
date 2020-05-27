@@ -337,7 +337,9 @@ module.exports = internal.TipManager = class {
       tiplist: 
         'select tipid, tiptext, common ' +
         'from tip ' +
-        'where common = 1 '
+        'where common = 1 ' +
+          'or userid = ' + userInfo.userId + ' ' +
+       'order by tiptext'
     };
     
     var queryResults = await this._dbQueries(queryList);
@@ -536,11 +538,31 @@ module.exports = internal.TipManager = class {
   async _addScheduleTip(params, postData, userInfo) {
     var result = this._queryFailureResult();
 
-    var query, queryList;
+    var queryList;
     var queryResults;
+    
+    queryList = {
+      checkforduplicate:
+        'select scheduletipid ' +
+        'from scheduletip ' +
+        'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and tipid = ' + postData.tipid + ' ' +
+          'and schedulelocation = ' + postData.schedulelocation
+    };
 
-    // make new schedule tip and retrieve its pkey
-    var queryList = {
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.detail;
+      return result;
+    }
+    
+    if (queryResults.data.checkforduplicate.length > 0) {
+      result.details = 'tip is already assigned to week';
+      result.success = true;
+      return result;
+    }
+
+    queryList = {
       makescheduletip:
         'insert into scheduletip (' +
           'scheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem ' +
@@ -551,46 +573,26 @@ module.exports = internal.TipManager = class {
           postData.schedulelocation + ', ' +
           '-1, ' +
           '-1 ' + 
-        ')'
-      
-/*      
-      getscheduletip: // get last insert
+        ')',
+        
+      getscheduletip: 
         'select ' +
           'scheduletipid ' +
         'from scheduletip ' +
-        'where
-*/
+        'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and tipid = ' + postData.tipid + ' ' +
+          'and schedulelocation = ' + postData.schedulelocation
     }
     
-    console.log(queryList.makescheduletip);
     queryResults = await this._dbQueries(queryList);
-    console.log(queryResults);
-    
-    // link schedule tip
-  
-    return result;
-  /*
-    var scheduleId = postData.scheduleid;
-    var tipId = postData.tipid;
-    var scheduleLocation = postData.scheduleLocation;
-    var moveAfterId = postData.moveafterid;
-    var moveBeforeId = postData.movebeforeid;
-    var newLocation = postData.schedulelocation;
-    
-    if (scheduleTipId == moveBeforeId || scheduleTipId == moveAfterId) {
-      result.success = false;
-      result.data = null;
-      result.details = "move failed: id=" + scheduleTipId + " after=" + moveAfterId + " before=" + moveBeforeId;
-      return result;
-    }
-    
-    queryResults = await this._unlinkScheduleTip(scheduleTipId);
     if (!queryResults.success) {
-      result.details = queryResults.details;
+      result.details = queryResults.detail;
       return result;
     }
     
-    queryResults = await this._linkScheduleTip(scheduleTipId, newLocation, moveAfterId, moveBeforeId);
+    var scheduleTipId = queryResults.data.getscheduletip[0].scheduletipid;
+    
+    queryResults = await this._linkScheduleTip(scheduleTipId, postData.schedulelocation, postData.moveafterid, postData.movebeforeid);
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';
@@ -598,9 +600,8 @@ module.exports = internal.TipManager = class {
     } else {
       result.details = queryResults.details;
     }
-    
+  
     return result;
-*/    
   }
   
   async _unlinkScheduleTip(scheduleTipId) {

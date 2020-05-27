@@ -51,9 +51,10 @@ CREATE TABLE tip
   tipid     int unsigned NOT NULL AUTO_INCREMENT ,
   tiptext   varchar(1000) NOT NULL ,
   common   boolean NOT NULL ,
+  userid    int unsigned NULL,
 
   PRIMARY KEY (tipid),
-  CONSTRAINT UNIQUE (tiptext)
+  CONSTRAINT UNIQUE (tiptext, userid)
 );
 
 CREATE TABLE category
@@ -102,7 +103,7 @@ CREATE TABLE scheduletip
   nextitem     int  NOT NULL ,
 
   PRIMARY KEY (scheduletipid),
-  CONSTRAINT UNIQUE (scheduleid, tipid),
+  CONSTRAINT UNIQUE (scheduleid, tipid, schedulelocation),
   CONSTRAINT FOREIGN KEY (scheduleid) REFERENCES schedule (scheduleid) ON DELETE CASCADE,
   CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip (tipid) ON DELETE CASCADE
 );

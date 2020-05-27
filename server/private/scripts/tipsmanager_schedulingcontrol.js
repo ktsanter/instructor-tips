@@ -71,11 +71,13 @@ class TipManagerSchedulingControl {
     var elemSelect = this._container.getElementsByClassName('schedulecontrol-select')[0];
     var elemBrowse = this._container.getElementsByClassName('schedulecontrol-browse')[0];
 
-    return {
+    var currentState = {
       scheduleid: elemSelect.selectedIndex < 0 ? null : elemSelect.value,
       schedulename: elemSelect.selectedIndex < 0 ? "" : elemSelect.options[elemSelect.selectedIndex].text,      
       showbrowse: CreateElement.getSliderValue(elemBrowse)
     };
+    
+    return currentState;
   }
     
   async _buildUI() {
@@ -104,24 +106,25 @@ class TipManagerSchedulingControl {
 
     var subcontainer = CreateElement.createDiv(null, 'schedulecontrol-options notshown');
     container.appendChild(subcontainer);
+    subcontainer.addEventListener('mouseover', (e) => {return this._optionsFlyout(true);});
+    subcontainer.addEventListener('mouseout', (e) => {return this._optionsFlyout(false);});
 
     var iconcontainer = CreateElement.createDiv(null, 'schedulecontrol-iconcontainer notshown');
     subcontainer.appendChild(iconcontainer);
     
-    handler = (e) => {return this._handleScheduleFlyout(e);};
-    iconcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon fas fa-cog', 'add/edit/delete schedule', handler));
+    iconcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon fas fa-cog', 'add/edit/delete schedule'));
     
     var subsubcontainer = CreateElement.createDiv(null, 'schedulecontrol-suboptions notshown');
     subcontainer.appendChild(subsubcontainer);
 
     handler = (e) => {return this._handleScheduleAdd(e);};
-    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon far fa-plus-square', 'add new schedule', handler));
+    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon add far fa-plus-square', 'add new schedule', handler));
     
     handler = (e) => {return this._handleScheduleRename(e);};
-    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon fas fa-edit', 'edit schedule parameters', handler));
+    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon edit fas fa-edit', 'edit schedule parameters', handler));
     
     handler = (e) => {return this._handleScheduleDelete(e);};
-    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon far fa-trash-alt trash', 'delete this schedule', handler));
+    subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon delete far fa-trash-alt trash', 'delete this schedule', handler));
     
     handler = (e) => {return this._handleBrowseTips(e);};   
     var elemBrowse = CreateElement.createSliderSwitch('browse tips', 'browse tips', 'schedulecontrol-browse', handler, false);
@@ -164,10 +167,26 @@ class TipManagerSchedulingControl {
         if (state.scheduleid != null) {
           elemSelect.value = state.scheduleid;
         }
+        this._disableOptions(state.scheduleid == null);
         
         var elemBrowse = this._container.getElementsByClassName('schedulecontrol-browse')[0];
-        CreateElement.setSliderValue(elemBrowse, state.showbrowse);
+        CreateElement.setSliderValue(elemBrowse, state.scheduleid && state.showbrowse);
+        elemBrowse.style.visibility = state.scheduleid ? 'visible' : 'hidden';
+        
       }
+    }
+  }
+  
+  _disableOptions(disable) {
+    var elemOptionIcons = this._container.getElementsByClassName('schedulecontrol-suboptions')[0];
+    var elemEdit = elemOptionIcons.getElementsByClassName('edit')[0];
+    var elemDelete = elemOptionIcons.getElementsByClassName('delete')[0];
+    
+    if (elemEdit.classList.contains('disable')) elemEdit.classList.remove('disable');
+    if (elemDelete.classList.contains('disable')) elemDelete.classList.remove('disable');
+    if (disable) {
+      elemEdit.classList.add('disable');
+      elemDelete.classList.add('disable');
     }
   }
   
@@ -213,6 +232,7 @@ class TipManagerSchedulingControl {
       await this.update();
     }
 
+    await this._updateCallback(false);
     this._showMainUI(true);
   }
   
@@ -244,7 +264,7 @@ class TipManagerSchedulingControl {
     };
 
     var queryResult = await this._doPostQuery('tipmanager/update', 'schedule', queryParams);
-    this._updateCallback(false);
+    await this._updateCallback(false);
     this._showMainUI(true);
   }
   
@@ -262,7 +282,13 @@ class TipManagerSchedulingControl {
   async _finishDelete(params) {
     var queryParams = {scheduleid: params.scheduleid};
     var queryResult = await this._doPostQuery('tipmanager/delete', 'schedule', queryParams);
-    this._updateCallback(false);
+    if (!queryResult.success) return;
+    
+    var newState = this.state();
+    newState.scheduleid = null;
+    await this._saveState(newState);
+    await this.update();    
+    await this._updateCallback(false);
     this._showMainUI(true);
   }
   
@@ -277,13 +303,13 @@ class TipManagerSchedulingControl {
     await this._saveState(this.state());
     this._updateCallback(false);
   }
-        
-  _handleScheduleFlyout(e) {
-    var container = e.target.parentNode.parentNode;
+  
+  _optionsFlyout(showContents) {
+    var container = this._container.getElementsByClassName('schedulecontrol-options')[0];
     var iconcontainer = container.getElementsByClassName('schedulecontrol-iconcontainer')[0];
     var subcontainer = container.getElementsByClassName('schedulecontrol-suboptions')[0];
     
-    if (subcontainer.classList.contains('notshown')) {
+    if (showContents) {
       container.classList.remove('notshown');
       iconcontainer.classList.remove('notshown');
       subcontainer.classList.remove('notshown');

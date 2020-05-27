@@ -121,7 +121,10 @@ class DialogContainer {
     else console.log('unrecognized dialog type: ' + dialogType);    
   }
   
-  _updateAdd(params) {}
+  _updateAdd(params) {
+    var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];
+    elemName.value = '';
+  }
   
   _updateRename(params) {
     var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];

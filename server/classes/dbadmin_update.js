@@ -197,7 +197,8 @@ module.exports = internal.dbAdminUpdate = class {
     var query = 'update tip ' +
                 'set ' +
                   'tiptext = "' + postData.tiptext + '", ' + 
-                  'common = ' + (postData.common ? 1 : 0) + ' ' + 
+                  'common = ' + (postData.common ? 1 : 0) + ', ' + 
+                  'userid = ' + (postData.common ? 'NULL' : postData.userid) + ' ' +
                 'where tipid = ' + postData.tipid;
     
     var queryResults = await this._dbQuery(query);

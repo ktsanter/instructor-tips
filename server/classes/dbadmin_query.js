@@ -235,9 +235,14 @@ module.exports = internal.dbAdminQuery = class {
     var queryList = {
       tips:
         'select ' +
-          't.tipid, t.tiptext, t.common ' +
+          't.tipid, t.tiptext, t.common, t.userid ' +
         'from tip as t ' +
-        'order by t.tiptext '
+        'order by t.tiptext ',
+        
+      users: 
+        'select userid, usershortname, username ' +
+        'from user ' +
+        'order by username'
     };
     
     var queryResults = await this._dbQueries(queryList);
@@ -248,11 +253,17 @@ module.exports = internal.dbAdminQuery = class {
       result.primaryKey = 'tipid',
       result.insertUpdateFields = [
         {tiptext: 'text'},
-        {common: 'boolean'}
+        {common: 'boolean'},
+        {userid: 'foreignkey'}        
       ],
-      result.displayFields = ['tiptext', 'common'];
+      result.displayFields = ['tiptext', 'common', 'userid'];
       result.data = queryResults.data.tips,
-      result.constraints = {};
+      result.constraints = {
+        foreignKeys: {
+          userid: {data: 'users', displayField: 'username'}
+        },
+        users: queryResults.data.users
+      };
       
     } else {
       result.details = queryResults.details;

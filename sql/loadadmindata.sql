@@ -98,8 +98,8 @@ FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
 (tiptext, categorytext);
 
-insert into tip(tiptext, common)
-select ts.tiptext, TRUE
+insert into tip(tiptext, common, userid)
+select ts.tiptext, TRUE, NULL
 from tip_staging as ts;
 
 #-------------------------------------------------------------

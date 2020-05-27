@@ -194,10 +194,11 @@ module.exports = internal.dbAdminInsert = class {
   async _insertTip(params, postData) {
     var result = this._queryFailureResult();
     
-    var query = 'insert into tip (tiptext, common) ' +
+    var query = 'insert into tip (tiptext, common, userid) ' +
                 'values (' +
                   '"' + postData.tiptext + '", ' + 
-                  (postData.common ? 1 : 0) + ' ' +
+                  (postData.common ? 1 : 0) + ', ' +
+                  (postData.common ? 'NULL' : postData.userid) + ' ' +
                 ')';
     
     var queryResults = await this._dbQuery(query);

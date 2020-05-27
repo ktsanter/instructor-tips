@@ -17,6 +17,7 @@
 
 .schedulecontrol-options {
   display: inline-block;
+  background-color: white;
   border: 1px solid black;
   margin-left: 0.2em;
   margin-right: 2em;
@@ -61,8 +62,13 @@
 
 .schedulecontrol-icon.subicon {
   font-size: 1.0em;
+  margin-left: 0.6em;
 }
 
-.schedulecontrol-icon.disable {
- background-color: gray;
+.schedulecontrol-icon.subicon.disable {
+  color: #c0c0c0;
+}
+
+.schedulecontrol-browse {
+  visibility: hidden;
 }
