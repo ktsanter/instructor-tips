@@ -539,13 +539,40 @@ module.exports = internal.TipManager = class {
     var query, queryList;
     var queryResults;
 
-    result.details = 'TBD';
-    return result;
-    //var scheduleTipId = postData.scheduletipid;
-    // make new schedule tip
+    // make new schedule tip and retrieve its pkey
+    var queryList = {
+      makescheduletip:
+        'insert into scheduletip (' +
+          'scheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem ' +
+        ') values (' +
+          postData.scheduleid + ', ' +
+          postData.tipid + ', ' +
+          '0, ' + 
+          postData.schedulelocation + ', ' +
+          '-1, ' +
+          '-1 ' + 
+        ')'
+      
+/*      
+      getscheduletip: // get last insert
+        'select ' +
+          'scheduletipid ' +
+        'from scheduletip ' +
+        'where
+*/
+    }
+    
+    console.log(queryList.makescheduletip);
+    queryResults = await this._dbQueries(queryList);
+    console.log(queryResults);
+    
     // link schedule tip
   
+    return result;
   /*
+    var scheduleId = postData.scheduleid;
+    var tipId = postData.tipid;
+    var scheduleLocation = postData.scheduleLocation;
     var moveAfterId = postData.moveafterid;
     var moveBeforeId = postData.movebeforeid;
     var newLocation = postData.schedulelocation;

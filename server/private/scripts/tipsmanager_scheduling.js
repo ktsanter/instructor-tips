@@ -258,11 +258,6 @@ class TipScheduling {
       container.draggable = !disable;
     }
   }
-  
-  _foo(e) {
-    console.log('foo');
-    return false;
-  }
     
   async _tipStateChange(e) {
     if (e.target.disabled) return;
@@ -277,12 +272,10 @@ class TipScheduling {
     }
   }
   
-  async _addTip(id, destinationInfo) {
-    console.log('add');
-    if (id == destinationInfo.moveafterid || id == destinationInfo.movebeforeid) return;
-    
+  async _addTip(tipId, destinationInfo) {
     var addParams = {
-      scheduletipid: id,
+      tipid: tipId,
+      scheduleid: this._control.state().scheduleid,
       schedulelocation: destinationInfo.schedulelocation,
       moveafterid: destinationInfo.moveafterid,
       movebeforeid: destinationInfo.movebeforeid
@@ -294,12 +287,12 @@ class TipScheduling {
     }
   }
   
-  async _moveTip(id, destinationInfo) {
+  async _moveTip(scheduleTipId, destinationInfo) {
     console.log('move');
     if (id == destinationInfo.moveafterid || id == destinationInfo.movebeforeid) return;
     
     var moveParams = {
-      scheduletipid: id,
+      scheduletipid: scheduleTipId,
       schedulelocation: destinationInfo.schedulelocation,
       moveafterid: destinationInfo.moveafterid,
       movebeforeid: destinationInfo.movebeforeid
@@ -414,7 +407,7 @@ class TipScheduling {
 
     } else if (itemInfo.dragtype == 'add') {
       var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
-      await this._addTip(itemInfo.scheduleid, destinationInfo);
+      await this._addTip(itemInfo.tipId, destinationInfo);
     }
   }  
   
