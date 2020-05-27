@@ -124,6 +124,7 @@ class DialogContainer {
   _updateAdd(params) {
     var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];
     elemName.value = '';
+    elemName.focus();
   }
   
   _updateRename(params) {
@@ -134,6 +135,7 @@ class DialogContainer {
     elemName.scheduleId = params.scheduleid; 
     elemLength.value = params.schedulelength; 
     elemStart.value = params.schedulestartdate;    
+    elemName.focus();
   }
 
   _updateDelete(params) {

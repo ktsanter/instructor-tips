@@ -291,6 +291,7 @@ class TipScheduling {
     contents.style.opacity = disable ? 0.3 : 1.0;
     this._disableElement(contents, disable, true);
     this._disableTipScheduleDragging(disable);    
+    this._newTipContainer.classList.add('notshown');
   }
   
   _disableTipScheduleDragging(disable) {
@@ -327,6 +328,7 @@ class TipScheduling {
       this._newTipContainer.getElementsByClassName('tipschedule-newtip-input')[0].value = '';
       this._newTipContainer.getElementsByClassName('savenewtip')[0].classList.add('disabled');
       this._newTipContainer.weekNum = weekNum;
+      this._newTipContainer.getElementsByClassName('tipschedule-newtip-input')[0].focus();
       
     } else if (choiceType == 'addweek') {
       var queryResults = await this._doPostQuery('tipmanager/insert', 'addscheduleweek', {scheduleid: scheduleId, afterweek: weekNum});
@@ -377,7 +379,7 @@ class TipScheduling {
       var queryResults = await this._doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams);
       if (queryResults.success) {
         this.update(false);
-        //{success: false, details: "*ERROR: in dbPost, "duplicate tip for user""}
+
       } else if (queryResults.details = '*ERROR: in dbPost, "duplicate tip for user"') {
         this._notice.setNotice('');
         alert('You already have a tip available with this text.  Please use the "browse" feature to select it');

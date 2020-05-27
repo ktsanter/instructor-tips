@@ -212,8 +212,8 @@ class TipManagerSchedulingControl {
   //------------------------------------------
   _startAdd() {
     this._showMainUI(false);
-    this._addDialog.update();
     this._addDialog.show(true);
+    this._addDialog.update();
   }
   
   async _finishAdd(params) {
@@ -246,13 +246,13 @@ class TipManagerSchedulingControl {
     
     var schedId = this.state().scheduleid;
     var sched = this._scheduleInfo[schedId];
+    this._renameDialog.show(true);
     this._renameDialog.update({
       scheduleid: schedId,
       schedulename: this.state().schedulename,
       schedulelength: sched.schedulelength,
       schedulestartdate: sched.schedulestartdate
     });
-    this._renameDialog.show(true);
   }
   
   async _finishRename(params) {
