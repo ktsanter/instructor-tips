@@ -37,6 +37,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'controlstate-scheduling') {
       dbResult = await this._getControlState(params, postData, userInfo, 'scheduling');
       
+    } else if (params.queryName == 'controlstate-filtering') {
+      dbResult = await this._getControlState(params, postData, userInfo, 'filtering');
+      
     } else if (params.queryName == 'schedule-details') {
       dbResult = await this._getScheduleDetails(params, postData, userInfo);
       
@@ -74,6 +77,9 @@ module.exports = internal.TipManager = class {
 
     } else if (params.queryName == 'controlstate-scheduling') {
       dbResult = await this._updateControlState(params, postData, userInfo, 'scheduling');
+
+    } else if (params.queryName == 'controlstate-filtering') {
+      dbResult = await this._updateControlState(params, postData, userInfo, 'filtering');
 
     } else if (params.queryName == 'notificationoptions') {
       dbResult = await this._updateUserNotificationOptions(params, postData, userInfo);
@@ -208,8 +214,7 @@ module.exports = internal.TipManager = class {
       'WHERE userid = ' + userInfo.userId + ' ' +
         'AND controlgroup = "' + controlGroup + '" ';
     
-    var queryResults = await this._dbQueries(queryList);
-    
+    var queryResults = await this._dbQueries(queryList);    
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -342,13 +347,23 @@ module.exports = internal.TipManager = class {
   async _getTipList(params, postData, userInfo) {
     var result = this._queryFailureResult();   
     
+    console.log(postData);
+
     var queryList = {
       tiplist: 
-        'select tipid, tiptext, common ' +
-        'from tip ' +
-        'where common = 1 ' +
-          'or userid = ' + userInfo.userId + ' ' +
-       'order by tiptext'
+        // common tips and those owned by user
+        'select tipid, tiptext, common, userid ' + 
+        'from view_tipsandcategories ' + 
+        'where common  ' + 
+           'or userid = ' + userInfo.userId + ' ' + 
+           
+        'union ' + 
+
+        // tips used on one of the user's schedules (includes shared)
+        'select tus.tipid, vtc.tiptext, vtc.common, vtc.userid ' + 
+        'from view_tipsusedinschedule as tus, view_tipsandcategories as vtc ' + 
+        'where tus.tipid = vtc.tipid ' + 
+          'and tus.userid = ' + userInfo.userId + ' '
     };
     
     var queryResults = await this._dbQueries(queryList);
@@ -431,18 +446,13 @@ module.exports = internal.TipManager = class {
   
   async _updateControlState(params, postData, userInfo, controlGroup) {
     var result = this._queryFailureResult();
-    
-    var state = '{' +
-      '\\"scheduleid\\": ' + postData.scheduleid + ', ' + 
-      '\\"showbrowse\\": ' + postData.showbrowse + 
-    '}'
 
     var query = 'update controlstate ' +
                 'set ' +
-                  'state = "' + state + '" ' +
+                  'state = "' + this._sanitizeText(JSON.stringify(postData)) + '" ' +
                 'where userid = ' + userInfo.userId + ' ' +
                 '  and controlgroup = "' + controlGroup + '" ';
-
+                
     var queryResults = await this._dbQuery(query);
 
     if (queryResults.success) {

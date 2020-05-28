@@ -101,9 +101,6 @@ class TipManagerSchedulingControl {
       };
     }    
     
-    var handler = (e) => {return this._handleScheduleSelect(e);};
-    container.appendChild(CreateElement.createSelect(null, 'schedulecontrol-select select-css', handler, valueList));
-
     var subcontainer = CreateElement.createDiv(null, 'schedulecontrol-options notshown');
     container.appendChild(subcontainer);
     subcontainer.addEventListener('mouseover', (e) => {return this._optionsFlyout(true);});
@@ -126,6 +123,9 @@ class TipManagerSchedulingControl {
     handler = (e) => {return this._handleScheduleDelete(e);};
     subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon delete far fa-trash-alt trash', 'delete this schedule', handler));
     
+    var handler = (e) => {return this._handleScheduleSelect(e);};
+    container.appendChild(CreateElement.createSelect(null, 'schedulecontrol-select select-css', handler, valueList));
+
     handler = (e) => {return this._handleBrowseTips(e);};   
     var elemBrowse = CreateElement.createSliderSwitch('browse tips', 'browse tips', 'schedulecontrol-browse', handler, false);
     elemBrowse.title = 'search and select from tip list';

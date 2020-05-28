@@ -1,0 +1,37 @@
+/*-------------------------------------------------------------------
+ * styling for TipFilter class
+ *------------------------------------------------------------------*/
+
+.tipfilter {
+  border: 1px solid var(--bgPrimaryEmphasis);
+}
+
+.tipfilter .tipfilter-inputs {
+  display: inline-block;
+  width: 90%;
+}
+
+.tipfilter .tipfilter-inputs .tipfilter-label {
+  display: inline-block;
+  width: 15%;
+}
+
+.tipfilter .tipfilter-inputs input {
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+  width: 80%;
+}
+
+.tipfilter .tipfilter-controls {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.tipfilter .tipfilter-controls .tipfilter-icon {
+  border: 1px solid var(--bgSecondaryChoice);
+  background-color: var(--bgSecondaryChoice);
+  font-size: 1.2em;
+  margin-top: 0.8em;
+  color: white;
+  padding: 0.2em;
+}

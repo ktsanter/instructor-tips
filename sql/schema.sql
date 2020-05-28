@@ -126,12 +126,37 @@ CREATE TABLE controlstate
 select "creating triggers" as comment;
     
 #-- add default scheduling control state for new users
-CREATE TRIGGER trigger_newuser
+CREATE TRIGGER trigger_newuser_controlstate1
   AFTER INSERT ON user FOR EACH ROW
     INSERT controlstate (userid, controlgroup, state)
     SELECT new.userid, 'scheduling' AS courseid, '{"scheduleid": null, "showbrowse": false}' as state;
+    
+#-- add default tip browse filter control state for new users
+CREATE TRIGGER trigger_newuser_controlstate2
+  AFTER INSERT ON user FOR EACH ROW
+    INSERT controlstate (userid, controlgroup, state)
+    SELECT new.userid, 'filtering' AS courseid, '{"search": "", "keywords": []}' as state;
     
 #--------------------------------------------------------------------------
 #-- views
 #--------------------------------------------------------------------------
 select "creating views" as comment;
+
+#-- combine tip and category info
+create view view_tipsandcategories as
+  select t.tipid, t.userid, t.tiptext, t.common, jtc.categoryid, jtc.categorytext
+  from tip as t 
+  left outer join (
+    select tc.tipid, tc.categoryid, c.categorytext
+    from tipcategory as tc, category as c
+    where tc.categoryid = c.categoryid
+  ) as jtc on (
+    t.tipid = jtc.tipid
+  );
+
+#-- get tips used on schedules by user (this includes shared)
+create view view_tipsusedinschedule as
+  select st.tipid, s.userid 
+  from schedule as s, scheduletip as st
+  where s.scheduleid = st.scheduleid;
+

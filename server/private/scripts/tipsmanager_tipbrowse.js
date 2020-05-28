@@ -27,6 +27,10 @@ class TipBrowse {
     this._notice.setNotice('');
     
     this._container.appendChild(this._renderTitle());
+    
+    var filterConfig = {updateCallback: (params) => {this._updateFromFilter(params);}};
+    this._tipFilter = new TipFilter(filterConfig);
+    
     this._container.appendChild(await this._renderContents());
         
     return this._container;
@@ -52,14 +56,18 @@ class TipBrowse {
   async _renderContents() {
     var container = CreateElement.createDiv(null, 'tipbrowse-contents');
     
-    container.appendChild(CreateElement.createDiv(null, 'tipbrowse-filter', '[browse filter settings]'));
+    container.appendChild(this._tipFilter.render(this._notice));
     container.appendChild(CreateElement.createDiv(null, 'tipbrowse-results', '[browse results]'));
     
     return container;
   }
   
-  async update() {
+  async update(skipTipFilterUpdate) {
+    console.log('TipBrowse -> update: ' + skipTipFilterUpdate);
+    
     var resultContainer = this._container.getElementsByClassName('tipbrowse-results')[0];
+    
+    if (!skipTipFilterUpdate) await this._tipFilter.update();
 
     var tipList = await this._getTipList();
     if (!tipList) return;
@@ -84,10 +92,24 @@ class TipBrowse {
   async _getTipList() {
     var result = null;
     
-    var queryResults = await this._doGetQuery('tipmanager/query', 'tiplist');
+    var filterSettings = this._tipFilter.getFilterState();
+    console.log('_getTipList');
+    console.log(filterSettings);
+    
+    var queryResults = await this._doPostQuery('tipmanager/query', 'tiplist', filterSettings);
     if (queryResults.success) {
       result = queryResults.data;
+      result = result.sort(function(a, b) {
+        if (a.tiptext.toLowerCase() > b.tiptext.toLowerCase()) {
+          return 1;
+        } else if (a.tiptext.toLowerCase() < b.tiptext.toLowerCase()) {
+          return -1;
+        }
+        return 0;
+      });
     }
+    
+    console.log(result);
     
     return result;
   }
@@ -95,6 +117,10 @@ class TipBrowse {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------
+  _updateFromFilter(params) {
+    this.update(true);
+  }
+  
   _dragstartHandler(e) {
     if (!e.target.classList.contains('tip')) {
       e.preventDefault();
