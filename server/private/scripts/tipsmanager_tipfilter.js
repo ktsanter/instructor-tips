@@ -26,8 +26,6 @@ class TipFilter {
     this._container.appendChild(this._renderInputs());
     this._container.appendChild(this._renderControls());
     
-    //just in case: <i class="fas fa-filter"></i>
-    
     return this._container;
   }
   
@@ -72,7 +70,6 @@ class TipFilter {
   // updating
   //--------------------------------------------------------------
   async update() {
-    console.log('TipFilter -> update');
     var state = await this._loadFilterStateFromDB();
     this._setFilterState(state);
   }
@@ -81,7 +78,6 @@ class TipFilter {
   // show/hide
   //--------------------------------------------------------------
   show(makeVisible) {   
-    console.log('TipFilter -> show: ' + makeVisible);
     if (this._container.classList.contains(this._HIDE_CLASS)) {
       this._container.classList.remove(this._HIDE_CLASS);
     }
@@ -89,6 +85,10 @@ class TipFilter {
     if (!makeVisible) {
       this._container.classList.add(this._HIDE_CLASS);
     }
+  }
+  
+  toggleShow() {
+    this.show(this._container.classList.contains(this._HIDE_CLASS));
   }
 
   //--------------------------------------------------------------

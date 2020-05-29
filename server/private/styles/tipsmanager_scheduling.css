@@ -52,12 +52,21 @@
 .weeklytip-label-text {}
 
 .weeklytip-contents {
-  background-color: white;
-  border: 1px solid #9999;
-  padding-left: 4px;
+  background-color: var(--bgOverall);
 }
 
-.weeklytip-contents div:nth-of-type(even):not(.tipschedule-controls) {
+.weeklytip-container {
+  border: 1px solid #dddd;
+  border-radius: 4px 0 0 4px;
+  padding-left: 0.4em;
+  margin-bottom: 1px;
+}
+  
+.weeklytip-container.eventip {
+  background-color: white;
+}
+
+.weeklytip-container.oddtip {
   background-color: var(--bgQuaternaryEmphasis);
 }
 

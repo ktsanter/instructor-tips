@@ -227,8 +227,9 @@ class TipScheduling {
     
     for (var i = 0; i < itemsForWeek.length; i++) {      
       var item = itemsForWeek[i];
-      
-      var subcontainer = CreateElement.createDiv(null, 'weeklytip-container');
+
+      var classString = 'weeklytip-container ' + ((i % 2 == 0) ? 'eventip' : 'oddtip');      
+      var subcontainer = CreateElement.createDiv(null, classString);
       container.appendChild(subcontainer);
       subcontainer.draggable = true;
       subcontainer.addEventListener('dragstart', (e) => {this._startTipDrag(e)});
@@ -416,7 +417,7 @@ class TipScheduling {
     };
     
     var queryResults = await this._doPostQuery('tipmanager/update', 'movescheduletip', moveParams);
-    if (queryResults.success || queryResult.details == 'tip is already assigned to week') {
+    if (queryResults.success || queryResults.details == 'tip is already assigned to week') {
       this.update(false);
     }
   }

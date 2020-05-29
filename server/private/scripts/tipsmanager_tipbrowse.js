@@ -49,6 +49,12 @@ class TipBrowse {
   _renderTitle() {
     var container = CreateElement.createDiv(null, 'tipbrowse-title');
     container.appendChild(CreateElement.createSpan(null, 'tipbrowse-titletext', this._title));
+
+    var subcontainer = CreateElement.createDiv(null, 'tipbrowse-filter-container');
+    container.appendChild(subcontainer);
+    
+    var handler = (e) => {this._handleFilterToggle(e)};
+    subcontainer.appendChild(CreateElement.createIcon(null, 'tipbrowse-filtertoggle fas fa-filter', 'show/hide filter', handler));
     
     return container;
   }
@@ -63,8 +69,6 @@ class TipBrowse {
   }
   
   async update(skipTipFilterUpdate) {
-    console.log('TipBrowse -> update: ' + skipTipFilterUpdate);
-    
     var resultContainer = this._container.getElementsByClassName('tipbrowse-results')[0];
     
     if (!skipTipFilterUpdate) await this._tipFilter.update();
@@ -80,21 +84,44 @@ class TipBrowse {
     container.tipList = tipList;
     
     for (var i = 0; i < tipList.length; i++) {
-      var elemTip = CreateElement.createDiv(null, 'tip', MarkdownToHTML.convert(tipList[i].tiptext));
+      var subcontainer = CreateElement.createDiv(null, 'tipbrowse-tip');
+      container.appendChild(subcontainer);
+      
+      subcontainer.appendChild(this._renderDragHandle(tipList[i].tipid, i % 2 == 0));
+
+      var classString = 'tipbrowse-tip-details' + (i % 2 == 0 ? ' eventip' : ' oddtip');
+      var elemTip = CreateElement.createDiv(null, classString, MarkdownToHTML.convert(tipList[i].tiptext));
+      subcontainer.appendChild(elemTip);
+      
+      /*
       elemTip.tipId = tipList[i].tipid;
       elemTip.draggable = true;
       elemTip.addEventListener('dragstart', (e) => {this._dragstartHandler(e)});
       elemTip.addEventListener('dragend', (e) => {this._dragendHandler(e)});
-      container.appendChild(elemTip);
+      */
     }
   }
   
+  _renderDragHandle(tipId, evenTip) {
+    var classString = 'tipbrowse-draghandle';
+    classString += evenTip ? ' eventip' : ' oddtip';
+    var container = CreateElement.createDiv(null, classString);
+    
+    var handler = (e) => {this.test(e)};
+    container.tipId = tipId;
+    container.draggable = true;
+    container.addEventListener('dragstart', (e) => {this._dragstartHandler(e)});
+    container.addEventListener('dragend', (e) => {this._dragendHandler(e)});
+    
+    container.appendChild(CreateElement.createIcon(null, 'tipbrowse-draghandle-icon fas fa-grip-vertical', null, null));
+    
+    return container;
+  }
+
   async _getTipList() {
     var result = null;
     
     var filterSettings = this._tipFilter.getFilterState();
-    console.log('_getTipList');
-    console.log(filterSettings);
     
     var queryResults = await this._doPostQuery('tipmanager/query', 'tiplist', filterSettings);
     if (queryResults.success) {
@@ -109,20 +136,22 @@ class TipBrowse {
       });
     }
     
-    console.log(result);
-    
     return result;
   }
   
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------
+  _handleFilterToggle(e) {
+    this._tipFilter.toggleShow();
+  }
+  
   _updateFromFilter(params) {
     this.update(true);
   }
   
   _dragstartHandler(e) {
-    if (!e.target.classList.contains('tip')) {
+    if (!e.target.classList.contains('tipbrowse-draghandle')) {
       e.preventDefault();
       return false;
     }
@@ -143,7 +172,7 @@ class TipBrowse {
   }
   
   _dragendHandler(e) {
-    if (!e.target.classList.contains('tip')) return false;
+    if (!e.target.classList.contains('tipbrowse-draghandle')) return false;
     return this._dragendCallback(e);
   }
   //--------------------------------------------------------------

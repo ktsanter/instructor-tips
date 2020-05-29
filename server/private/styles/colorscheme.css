@@ -5,6 +5,7 @@
 .instructortips-colorscheme {
   --bgOverall: #eee; /*-- very light gray --*/
   --bgPrimaryEmphasis: #8d8741;  /*-- khaki green --*/
+  --bgPrimaryEmphasis_trans: rgba(141,135,65, 0.6);
   --bgSecondaryEmphasis: #daad86;  /*-- medium sand --*/
   --bgTertiaryEmphasis: #c9c9c9;  /*-- medium gray --*/
   --bgQuaternaryEmphasis: #f2f2f2; /*-- light gray --*/
