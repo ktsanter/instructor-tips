@@ -44,7 +44,7 @@
   color: transparent;
 }
 
-.tipschedule .tipschedule-contents .tipschedule-draghandle:hover {
+.tipschedule .tipschedule-contents .tipschedule-draghandle:hover:not(.during-drag) {
   color: white;
   background-color: var(--bgTertiaryEmphasis);  
 }
@@ -103,7 +103,7 @@
 .weeklytip-container .weeklytip-state {
   display: flex;
   align-items: center;
-  padding: 0.2em 0.4em;
+  padding: 0.2em 0.6em 0.2em 0.2em;
 }
 
 .weeklytip-container .weeklytip-state.eventip {
@@ -112,6 +112,10 @@
 
 .weeklytip-container .weeklytip-state.oddtip {
   background-color: var(--bgQuaternaryEmphasis);
+}
+
+.weeklytip-icon {
+  cursor: pointer;
 }
 
 .weeklytip-container .weeklytip-sub {
@@ -127,19 +131,15 @@
   background-color: var(--bgQuaternaryEmphasis);
 }
 
-.weeklytip div.weeklytip-dragtarget {
+.weeklytip .weeklytip-dragtarget {
   background-color: var(--bgSecondaryChoice) !important;
-  border: 1px solid var(--bgPrimaryChoice) !important;
+  border-left: 1px solid var(--itemBorder);
+  border-top: 1px solid var(--itemBorder);
+  border-bottom: 1px solid var(--itemBorder);
+  border-radius: 4px 0px 0px 4px;
+  height: 1.8em;  
 }
     
-.weeklytip-icon {
-  cursor: pointer;
-}
-
-.weeklytip-icon.far.fa-square {
-  padding-right: 12px;
-}
-
 .weeklytip-singletip {
   display: inline-block;
   padding: 0.2em 0.4em 0.2em 0;

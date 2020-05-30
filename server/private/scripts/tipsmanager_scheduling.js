@@ -178,7 +178,6 @@ class TipScheduling {
     container.appendChild(this._renderScheduleWeekItems(overview, details, weeknum));
     
     container.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
-    container.addEventListener('dragleave', (e) => {this._handleDragLeave(e);});
     container.addEventListener('dragover', (e) => {this._handleDragOver(e);});
     container.addEventListener('drop', (e) => {this._finishTipDrop(e);});
 
@@ -237,9 +236,9 @@ class TipScheduling {
       
       var itemInfo = item;
       item['dragtype'] = 'move';
-      container.itemInfo = item;
       
       subcontainer.itemInfo = item;
+      
       subcontainer.appendChild(this._renderDragHandle((i % 2 == 0), itemInfo, subcontainer));
       subcontainer.appendChild(this._renderTipState(this._tipStateIconClass[item.tipstate], (i % 2 == 0), tipIconHandler));
 
@@ -340,11 +339,22 @@ class TipScheduling {
     }
     */
   }
+  
+  _disableDragHandles(disable, exception) {
+    var elemDragHandles = this._container.getElementsByClassName('tipschedule-draghandle');
+    for (var i = 0; i < elemDragHandles.length; i++) {
+      var elem = elemDragHandles[i];
+      if (elem != exception) {
+        if (elem.classList.contains('during-drag')) elem.classList.remove('during-drag');
+        if (disable) elem.classList.add('during-drag');
+      }
+    }
+  }
     
   async _tipStateChange(e) {
     if (e.target.disabled) return;
     
-    var itemInfo = e.target.parentNode.itemInfo;
+    var itemInfo = e.target.parentNode.parentNode.itemInfo;
     
     var newTipState = 1;
     if (itemInfo.tipstate == 1) newTipState = 0;
@@ -492,6 +502,8 @@ class TipScheduling {
         this._trashTarget.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
         this._trashTarget.addEventListener('dragover', (e) => {this._handleDragOver(e);});
         this._trashTarget.addEventListener('drop', (e) => {this._finishTipDrop(e);});
+        
+        this._disableDragHandles(true, e.target);
       }
     }
     
@@ -501,7 +513,6 @@ class TipScheduling {
   _handleDefaultDragEnter(e) {
     var elemTarget = e.target;
     
-    console.log(e.target);
     var dragTargetClassSet = new Set([
       'weeklytip', 'weeklytip-container', 'weeklytip-label', 'weeklytip-collapse',
       'tipschedule-draghandle', 'tipschedule-draghandle-icon',
@@ -538,6 +549,8 @@ class TipScheduling {
     if (this._elemDragging && this._elemDragging.classList.contains('dragging')) {
       this._elemDragging.classList.remove('dragging');
     }
+    
+    this._disableDragHandles(false);    
   }
   
   _handleDragEnter(e) {
@@ -565,27 +578,6 @@ class TipScheduling {
     if (this._elemDragging) this._elemDragging.classList.add('dragging');
     
     return false;
-  }
-  
-  _handleDragLeave(e) {
-    /*
-    if (this._dragTarget) {
-      if (this._dragTarget.targetNode) {
-        console.log('leaving ' + this._dragTarget.targetNode.classList[0]);
-        this._dragTarget.style.display = 'none';
-      } else {
-        console.log('leaving ' + 'null targetNode');
-      }
-    }
-    */
-    /*
-    if (this._dragTarget) {
-      var destContainer = this._getDropLocation(e.target).dropcontainer;
-      //console.log(destContainer.classList);
-      //console.log(this._dragTarget.targetNode.classList);
-      if (this._dragTarget.targetNode != destContainer) this._dragTarget.style.display = 'none';
-    }
-    */
   }
   
   _handleDragOver(e) {
@@ -620,14 +612,11 @@ class TipScheduling {
 
     } else if (itemInfo.dragtype == 'move') {
       var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
-      console.log(destinationInfo);
-
-      
+      await this._moveTip(itemInfo.scheduletipid, destinationInfo);
 
     } else if (itemInfo.dragtype == 'add') {
       var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
-      console.log('add drop ignored');
-     // await this._addTip(itemInfo.tipId, destinationInfo);
+      await this._addTip(itemInfo.tipId, destinationInfo);
     }
   }  
   
