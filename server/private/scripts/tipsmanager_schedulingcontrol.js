@@ -193,6 +193,8 @@ class TipManagerSchedulingControl {
   async _saveState(stateToSave) {
     var elemBrowse = this._container.getElementsByClassName('schedulecontrol-browse')[0];
     elemBrowse.style.visibility = stateToSave.scheduleid ? 'visible' : 'hidden';
+    
+    this._disableOptions(stateToSave.scheduleid == null);
 
     await this._doPostQuery('tipmanager/update', 'controlstate-scheduling', stateToSave);
   }
