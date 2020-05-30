@@ -1,8 +1,7 @@
 //-----------------------------------------------------------------------------------
 // TipScheduling class
 //-----------------------------------------------------------------------------------
-// TODO: debug drag/drop disable - is it an inheritance thing?
-// TODO: consider drag handle for scheduleip items
+// TODO: 
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {
@@ -323,31 +322,13 @@ class TipScheduling {
   
   _disableContents(disable) {
     var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
-    contents.style.opacity = disable ? 0.3 : 1.0;
-    this._disableElement(contents, disable, true);
-    this._disableTipScheduleDragging(disable);    
-    this._newTipContainer.classList.add('notshown');
-  }
-  
-  _disableTipScheduleDragging(disable) {
-    console.log('update how _disableTipScheduleDragging works');
-    /*
-    var scheduleTipContainers = this._container.getElementsByClassName('weeklytip-container');
-    for (var i = 0; i < scheduleTipContainers.length; i++) {
-      var container = scheduleTipContainers[i];
-      container.draggable = !disable;
-    }
-    */
-  }
-  
-  _disableDragHandles(disable, exception) {
-    var elemDragHandles = this._container.getElementsByClassName('tipschedule-draghandle');
-    for (var i = 0; i < elemDragHandles.length; i++) {
-      var elem = elemDragHandles[i];
-      if (elem != exception) {
-        if (elem.classList.contains('during-drag')) elem.classList.remove('during-drag');
-        if (disable) elem.classList.add('during-drag');
-      }
+    if (disable) {
+      contents.style.display = 'none';
+      this._browse.show(false);
+      
+    } else {
+      contents.style.display = 'block'
+      this._browse.show(this._control.state().showbrowse);
     }
   }
     
@@ -502,8 +483,6 @@ class TipScheduling {
         this._trashTarget.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
         this._trashTarget.addEventListener('dragover', (e) => {this._handleDragOver(e);});
         this._trashTarget.addEventListener('drop', (e) => {this._finishTipDrop(e);});
-        
-        this._disableDragHandles(true, e.target);
       }
     }
     
@@ -549,8 +528,6 @@ class TipScheduling {
     if (this._elemDragging && this._elemDragging.classList.contains('dragging')) {
       this._elemDragging.classList.remove('dragging');
     }
-    
-    this._disableDragHandles(false);    
   }
   
   _handleDragEnter(e) {

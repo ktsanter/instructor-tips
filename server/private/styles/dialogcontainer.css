@@ -12,9 +12,7 @@
   display: none;
 }
 
-.dialogcontainer-title {
-  font-weight: bold;
-}
+.dialogcontainer-title {}
 
 .dialogcontainer-message {
   margin-bottom: 0.3em;

@@ -164,6 +164,7 @@ class TipManagerSchedulingControl {
         var state = JSON.parse(queryResults.controlstate[0].state);
         
         var elemSelect = this._container.getElementsByClassName('schedulecontrol-select')[0];
+        elemSelect.value = -1;
         if (state.scheduleid != null) {
           elemSelect.value = state.scheduleid;
         }
@@ -172,7 +173,6 @@ class TipManagerSchedulingControl {
         var elemBrowse = this._container.getElementsByClassName('schedulecontrol-browse')[0];
         CreateElement.setSliderValue(elemBrowse, state.scheduleid && state.showbrowse);
         elemBrowse.style.visibility = state.scheduleid ? 'visible' : 'hidden';
-        
       }
     }
   }
@@ -191,6 +191,9 @@ class TipManagerSchedulingControl {
   }
   
   async _saveState(stateToSave) {
+    var elemBrowse = this._container.getElementsByClassName('schedulecontrol-browse')[0];
+    elemBrowse.style.visibility = stateToSave.scheduleid ? 'visible' : 'hidden';
+
     await this._doPostQuery('tipmanager/update', 'controlstate-scheduling', stateToSave);
   }
   
@@ -232,7 +235,7 @@ class TipManagerSchedulingControl {
       await this.update();
     }
 
-    await this._updateCallback(false);
+    await this._updateCallback(true);
     this._showMainUI(true);
   }
   
@@ -264,7 +267,7 @@ class TipManagerSchedulingControl {
     };
 
     var queryResult = await this._doPostQuery('tipmanager/update', 'schedule', queryParams);
-    await this._updateCallback(false);
+    await this._updateCallback(true);
     this._showMainUI(true);
   }
   
@@ -288,7 +291,7 @@ class TipManagerSchedulingControl {
     newState.scheduleid = null;
     await this._saveState(newState);
     await this.update();    
-    await this._updateCallback(false);
+    await this._updateCallback(true);
     this._showMainUI(true);
   }
   
