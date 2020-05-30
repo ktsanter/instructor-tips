@@ -53,6 +53,8 @@ class TipScheduling {
     
     this._container.appendChild(this._renderNewTipContainer());
     
+    this._container.addEventListener('dragenter', (e) => {this._handleDefaultDragEnter(e);});
+    
     return this._container;
   }
   
@@ -176,6 +178,7 @@ class TipScheduling {
     container.appendChild(this._renderScheduleWeekItems(overview, details, weeknum));
     
     container.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
+    container.addEventListener('dragleave', (e) => {this._handleDragLeave(e);});
     container.addEventListener('dragover', (e) => {this._handleDragOver(e);});
     container.addEventListener('drop', (e) => {this._finishTipDrop(e);});
 
@@ -231,19 +234,51 @@ class TipScheduling {
       var classString = 'weeklytip-container ' + ((i % 2 == 0) ? 'eventip' : 'oddtip');      
       var subcontainer = CreateElement.createDiv(null, classString);
       container.appendChild(subcontainer);
-      subcontainer.draggable = true;
-      subcontainer.addEventListener('dragstart', (e) => {this._startTipDrag(e)});
-      subcontainer.addEventListener('dragend', (e) => {this._handleDragEnd(e);});
       
       var itemInfo = item;
-      item['dragtype'] = 'move',
+      item['dragtype'] = 'move';
+      container.itemInfo = item;
+      
       subcontainer.itemInfo = item;
-      subcontainer.appendChild(CreateElement.createIcon(null, this._tipStateIconClass[item.tipstate], 'change tip status', tipIconHandler));
-      subcontainer.appendChild(CreateElement.createDiv(null, 'weeklytip-singletip', MarkdownToHTML.convert(item.tiptext)));
+      subcontainer.appendChild(this._renderDragHandle((i % 2 == 0), itemInfo, subcontainer));
+      subcontainer.appendChild(this._renderTipState(this._tipStateIconClass[item.tipstate], (i % 2 == 0), tipIconHandler));
+
+      var classString = 'weeklytip-sub ';
+      classString += (i % 2 == 0) ? 'eventip' : 'oddtip';
+      var subsubcontainer = CreateElement.createDiv(null, classString);
+      subcontainer.appendChild(subsubcontainer);
+      subsubcontainer.appendChild(CreateElement.createDiv(null, 'weeklytip-singletip', MarkdownToHTML.convert(item.tiptext)));
     }
     
     return container;
   }
+  
+  _renderDragHandle(evenTip, itemInfo, elemItem) {
+    var classString = 'tipschedule-draghandle';
+    classString += evenTip ? ' eventip' : ' oddtip';
+    var container = CreateElement.createDiv(null, classString);
+
+    container.itemInfo = itemInfo;
+    container.elemItem = elemItem;
+    
+    container.draggable = true;
+    container.addEventListener('dragstart', (e) => {this._startTipDrag(e)});
+    container.addEventListener('dragend', (e) => {this._handleDragEnd(e)});
+
+    container.appendChild(CreateElement.createIcon(null, 'tipschedule-draghandle-icon fas fa-grip-vertical', null, null));
+    
+    return container;
+  }
+
+  _renderTipState(tipState, evenTip, tipIconHandler) {
+    var classString = 'weeklytip-state ';
+    classString += evenTip ? 'eventip': 'oddtip';
+    var container = CreateElement.createDiv(null, classString);
+    
+    container.appendChild(CreateElement.createIcon(null, tipState, 'change tip status', tipIconHandler));
+    
+    return container;
+  }    
 
   //--------------------------------------------------------------
   // handlers
@@ -296,11 +331,14 @@ class TipScheduling {
   }
   
   _disableTipScheduleDragging(disable) {
+    console.log('update how _disableTipScheduleDragging works');
+    /*
     var scheduleTipContainers = this._container.getElementsByClassName('weeklytip-container');
     for (var i = 0; i < scheduleTipContainers.length; i++) {
       var container = scheduleTipContainers[i];
       container.draggable = !disable;
     }
+    */
   }
     
   async _tipStateChange(e) {
@@ -434,19 +472,20 @@ class TipScheduling {
   //--------------------------------------------------------------  
   _startTipDrag(e) {
     var itemInfo = e.target.itemInfo;
+    this._elemDragging = null;
     
     if (!itemInfo) {
       e.preventDefault();
       this._dragTarget = null;
       return false;
       
-    } else {
+    } else {      
       e.dataTransfer.setData('text', JSON.stringify(itemInfo));
-      var elem = CreateElement.createDiv(null, 'weeklytip-dragtarget', '&nbsp; ');
-      elem.border = '1px solid red';
-      this._dragTarget = elem;
+      this._dragTarget = CreateElement.createDiv(null, 'weeklytip-dragtarget', '&nbsp; ');
       
       if (itemInfo.dragtype == 'move') {
+        this._elemDragging = e.target.elemItem;
+
         this._trashTarget = CreateElement.createDiv(null, 'weeklytip-trashcontainer');
         this._trashTarget.appendChild(CreateElement.createIcon(null, 'weeklytip-trashicon far fa-trash-alt trash', null, null));
         this._container.appendChild(this._trashTarget);
@@ -459,15 +498,45 @@ class TipScheduling {
     return true;
   }
   
+  _handleDefaultDragEnter(e) {
+    var elemTarget = e.target;
+    
+    console.log(e.target);
+    var dragTargetClassSet = new Set([
+      'weeklytip', 'weeklytip-container', 'weeklytip-label', 'weeklytip-collapse',
+      'tipschedule-draghandle', 'tipschedule-draghandle-icon',
+      'weeklytip-singletip', 'weeklytip-state', 'weeklytip-icon', 'weekly-tip-sub'
+    ]);
+    
+    if (elemTarget.classList.length == 0) {
+      if (elemTarget.parentNode && elemTarget.parentNode.classList.contains('weeklytip-singletip')) {
+        elemTarget = elemTarget.parentNode;
+      }
+    }
+    
+    var passThrough = (elemTarget.classList.length == 0);
+    for (var i = 0; i < elemTarget.classList.length && !passThrough; i++) {
+      passThrough = dragTargetClassSet.has(elemTarget.classList[i]);
+    }
+    
+    if (!passThrough && this._dragTarget && this._dragTarget.targetNode) {
+      this._dragTarget.style.display = 'none';
+    }
+  }
+  
   _handleDragEnd(e) {
-    if (this._dragTarget) {
+    if (this._dragTarget && this._dragTarget.parentNode) {
       this._dragTarget.parentNode.removeChild(this._dragTarget);
       this._dragTarget = null;
     }
     
-    if (this._trashTarget) {
+    if (this._trashTarget && this._trashTarget.parentNode) {
       this._trashTarget.parentNode.removeChild(this._trashTarget);
       this._trashTarget = null;
+    }
+    
+    if (this._elemDragging && this._elemDragging.classList.contains('dragging')) {
+      this._elemDragging.classList.remove('dragging');
     }
   }
   
@@ -475,7 +544,7 @@ class TipScheduling {
     e.preventDefault();
     
     var destContainer= this._getDropLocation(e.target).dropcontainer;
-
+    
     if (destContainer.classList.contains('weeklytip-trashcontainer')) {
       this._dragTarget.style.display = 'none';
       
@@ -485,18 +554,43 @@ class TipScheduling {
       this._dragTarget.targetNode = destContainer;
       
     } else if (destContainer.classList.contains('weeklytip-container')) {
-      destContainer.appendChild(this._dragTarget);
+      destContainer.parentNode.insertBefore(this._dragTarget, destContainer.nextSibling);
       this._dragTarget.targetNode = destContainer;
 
     } else {
+      this._dragTarget.style.display = 'none';
       this._dragTarget.targetNode = null;
     }
+    
+    if (this._elemDragging) this._elemDragging.classList.add('dragging');
     
     return false;
   }
   
+  _handleDragLeave(e) {
+    /*
+    if (this._dragTarget) {
+      if (this._dragTarget.targetNode) {
+        console.log('leaving ' + this._dragTarget.targetNode.classList[0]);
+        this._dragTarget.style.display = 'none';
+      } else {
+        console.log('leaving ' + 'null targetNode');
+      }
+    }
+    */
+    /*
+    if (this._dragTarget) {
+      var destContainer = this._getDropLocation(e.target).dropcontainer;
+      //console.log(destContainer.classList);
+      //console.log(this._dragTarget.targetNode.classList);
+      if (this._dragTarget.targetNode != destContainer) this._dragTarget.style.display = 'none';
+    }
+    */
+  }
+  
   _handleDragOver(e) {
     e.preventDefault();
+
     var destContainer = this._getDropLocation(e.target).dropcontainer;
     if (this._dragTarget && destContainer.classList.contains('weeklytip-trashcontainer')) {
       this._highlightTipTrash(true);
@@ -505,9 +599,15 @@ class TipScheduling {
       this._dragTarget.style.display = 'block';
       this._highlightTipTrash(false);
     }
+
+    if (this._elemDragging) this._elemDragging.classList.add('dragging');
   }
   
   async _finishTipDrop(e) {
+    if (this._elemDragging && this._elemDragging.classList.contains('dragging')) {
+      this._elemDragging.classList.remove('dragging');
+      this._elemDragging = null;
+    }
     e.preventDefault();
 
     var data = e.dataTransfer.getData('text');
@@ -520,17 +620,19 @@ class TipScheduling {
 
     } else if (itemInfo.dragtype == 'move') {
       var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
-      await this._moveTip(itemInfo.scheduletipid, destinationInfo);
+      console.log(destinationInfo);
+
+      
 
     } else if (itemInfo.dragtype == 'add') {
       var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
-      await this._addTip(itemInfo.tipId, destinationInfo);
+      console.log('add drop ignored');
+     // await this._addTip(itemInfo.tipId, destinationInfo);
     }
   }  
   
   _getDropLocation(elem) {
-    var node = elem;
-    var droppedOnWeek = false;
+    var droppedOnWeekLabel = false;
     var droppedOnTip = false;
     var scheduleLocation, idOfPrevious, idOfNext;
     
@@ -540,13 +642,17 @@ class TipScheduling {
       return {dropcontainer: this._trashTarget};
     }
     
-    for (var limit = 0; limit < 20 && !(droppedOnWeek || droppedOnTip); limit++) {
-      droppedOnWeek = node.classList.contains('weeklytip');
+    if (elem.classList.contains('weeklytip')) elem = elem.getElementsByClassName('weeklytip-label')[0];
+    var node = elem;
+    
+    for (var limit = 0; limit < 20 && node.nodeName != 'BODY' && !(droppedOnWeekLabel || droppedOnTip); limit++) {
+      droppedOnWeekLabel = node.classList.contains('weeklytip-label');
       droppedOnTip = node.classList.contains('weeklytip-container');
-      if (!(droppedOnWeek || droppedOnTip)) node = node.parentNode;
+      if (!(droppedOnWeekLabel || droppedOnTip)) node = node.parentNode;
     }
     
-    if (droppedOnWeek) {
+    if (droppedOnWeekLabel) {
+      node = node.parentNode;
       scheduleLocation = node.weeknum;
       idOfPrevious = -1;
       if (node.itemList.length == 0) {

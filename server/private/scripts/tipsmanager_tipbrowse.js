@@ -92,13 +92,6 @@ class TipBrowse {
       var classString = 'tipbrowse-tip-details' + (i % 2 == 0 ? ' eventip' : ' oddtip');
       var elemTip = CreateElement.createDiv(null, classString, MarkdownToHTML.convert(tipList[i].tiptext));
       subcontainer.appendChild(elemTip);
-      
-      /*
-      elemTip.tipId = tipList[i].tipid;
-      elemTip.draggable = true;
-      elemTip.addEventListener('dragstart', (e) => {this._dragstartHandler(e)});
-      elemTip.addEventListener('dragend', (e) => {this._dragendHandler(e)});
-      */
     }
   }
   
