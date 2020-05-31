@@ -1,7 +1,9 @@
 /*------------------------------------------------------------
  * style settings for LookupInput class
  *------------------------------------------------------------*/
-.lookupinput {}
+.lookupinput {
+  display: inline-block;
+}
 
 .lookupinput.lookupinput-hide {
   display: none;
@@ -32,9 +34,7 @@
 
 .lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer {}
 
-.lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer input {
-  background-color: lightyellow;
-}
+.lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer input {}
 
 .lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer input:focus {
   outline: none;
@@ -82,6 +82,7 @@
   border: 1px solid #5e97f2;
   border-radius: 6px;
   min-width: 6.0em;
+  margin-bottom: 0.1em;
 }  
 
 .lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem:hover {

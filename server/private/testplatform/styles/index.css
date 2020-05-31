@@ -11,11 +11,12 @@
 	--MVorange: #f7941e;
   --MVdarkgray: #414042;
   --MVlightgray: #6d6e71;
+  --bgOverall: #eee;
 }
 
 body {
 	color: var(--MVblack);
-	background-color: var(--MVwhite);
+	background-color: var(--bgOverall);
 	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	font-size: 13px;
 }
@@ -30,4 +31,12 @@ body {
 
 .testplatform .testplatform-controls {
   padding-bottom: 0.4em;
+}
+
+.testplatform .testplatform-controls .testplatform-controls-button {
+  background-color: var(--MVlightteal);
+  color: var(--MVwhite);
+  border: 1px solid var(--MVdeepteal);
+  border-radius: 6px;
+  margin-right: 0.2em;
 }

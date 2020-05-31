@@ -60,9 +60,9 @@ const app = function () {
   
   function _renderTestContent() {
     var params = {
-      label: 'choose from',
+      //label: 'choose from',
       valueList: ['bob', 'bill', 'fred', 'frannie'],
-      selectedValueList: [],
+      selectedValueList: ['bill', 'fred'], //[],
       changeCallback: (params) => {_testCallback(params);}
     };
     
