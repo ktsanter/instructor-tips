@@ -7,22 +7,32 @@
   display: none;
 }
 
+/*---------------------------------------------
+ * label
+ *---------------------------------------------*/
 .lookupinput .lookupinput-label {
   display: inline-block;
   vertical-align: top;
+  padding-right: 0.4em;
 }
 
+/*---------------------------------------------
+ * input element and its container
+ *---------------------------------------------*/
 .lookupinput .lookupinput-inputcontainer {
   display: inline-block;
-  width: 50%;
+  vertical-align: top;
+  padding-right: 0.4em;
 }
 
-.lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer {
-  border: 1px solid black;
+.lookupinput .lookupinput-inputcontainer .lookupinput-errortext {
+  color: red;
+  font-style: italic;
 }
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer {}
 
 .lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer input {
-  border: 0;
   background-color: lightyellow;
 }
 
@@ -30,10 +40,16 @@
   outline: none;
 }
 
+/*---------------------------------------------
+ * input item container and items
+ *---------------------------------------------*/
 .lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer {
   border: 1px solid black;
   border-top: none;
-  width: 25%;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer.lookupinput-hide {
+  display: none;
 }
 
 .lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer.nomatches {
@@ -52,5 +68,42 @@
 
 .lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer .lookupinput-item.notshown {
   display: none;
+}
+
+/*---------------------------------------------
+ * selected item container and items
+ *---------------------------------------------*/
+.lookupinput .lookupinput-selectedcontainer {
+  display: inline-block;
+}
+
+.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem {
+  background-color: transparent;
+  border: 1px solid #5e97f2;
+  border-radius: 6px;
+  min-width: 6.0em;
+}  
+
+.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem:hover {
+  background-color: #cbdaf2;
+}  
+
+.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem .lookupinput-selecteditemvalue {
+  display: inline-block;
+  padding: 0.2em 0.2em;
+}
+
+.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem .lookupinput-selecteditemcontrol {
+  display: inline-block;
+  float: right;
+}
+
+.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem .lookupinput-selecteditemcontrol .lookupinput-selecteditemicon {
+  color: transparent;
+  padding: 0.4em 0.2em;
+}
+
+.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem .lookupinput-selecteditemcontrol .lookupinput-selecteditemicon:hover {
+  color: black;
 }
 

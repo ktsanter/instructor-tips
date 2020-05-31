@@ -33,6 +33,7 @@ const app = function () {
     container.appendChild(_renderTitle());
     container.appendChild(_renderControls());
     container.appendChild(_renderTestContent());
+    container.appendChild(_renderTestOuput());
     
     return container;
   }
@@ -50,9 +51,9 @@ const app = function () {
     container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'show', null, handler));
     var handler = (e, showValue) => {_handleShowButton(e, false)};
     container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'hide', null, handler));
-
-    handler = (e) => {_handleUpdateButton(e)};
-    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'update', null, handler));
+    
+    handler = (e) => {_handleValueButton(e)};
+    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'value', null, handler));
     
     return container;
   }
@@ -60,9 +61,9 @@ const app = function () {
   function _renderTestContent() {
     var params = {
       label: 'choose from',
-      initialValue: 'initial',
       valueList: ['bob', 'bill', 'fred', 'frannie'],
-      selectedValueList: ['bill', 'fred']
+      selectedValueList: [],
+      changeCallback: (params) => {_testCallback(params);}
     };
     
     if (params.valueList) params.valueList = params.valueList.sort();
@@ -74,6 +75,12 @@ const app = function () {
     
     return elem;
   }
+  
+  function _renderTestOuput() {
+    var container = CreateElement.createDiv(null, 'testplatform-output');
+    
+    return container;
+  }
  
   //---------------------------------------
 	// handlers
@@ -82,8 +89,14 @@ const app = function () {
     this._lookupInput.show(showValue);
   }
 
-  function _handleUpdateButton(e) {
-    this._lookupInput.update();
+  function _handleValueButton(e) {
+    var value = this._lookupInput.value();
+    var elemOutput = page.maincontainer.getElementsByClassName('testplatform-output')[0];
+    elemOutput.innerHTML = JSON.stringify(value);
+  }
+  
+  function _testCallback(params) {
+    console.log('test callback: ' + JSON.stringify(params));
   }
   
   //---------------------------------------
