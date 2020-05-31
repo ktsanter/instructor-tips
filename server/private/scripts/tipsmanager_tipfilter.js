@@ -36,7 +36,7 @@ class TipFilter {
     var subcontainer = CreateElement.createDiv('tipfilter-search');
     container.appendChild(subcontainer);
     
-    var elem = CreateElement.createDiv(null, 'tipfilter-label', 'contains ');
+    var elem = CreateElement.createDiv(null, 'tipfilter-label', 'contains');
     subcontainer.appendChild(elem);
 
     elem = CreateElement.createTextInput(null, 'tipfilter-search-input');
@@ -47,14 +47,23 @@ class TipFilter {
     subcontainer = CreateElement.createDiv('tipfilter-keyword');
     container.appendChild(subcontainer);
 
-    var elem = CreateElement.createDiv(null, 'tipfilter-label', 'keyword(s) ');
+    var elem = CreateElement.createDiv(null, 'tipfilter-label', 'keyword');
     subcontainer.appendChild(elem);
 
-    var elem = CreateElement.createTextInput(null, 'tipfilter-keyword-input');
-    subcontainer.appendChild(elem);
-    elem.placeholder = 'keywords, comma-separated';
+    var params = {
+      valueList: ['bob', 'bill', 'fred', 'frannie', 'barnabas', 'bubba', 'george', 'harry', 'ginnie'],
+      selectedValueList: [],
+      changeCallback: (params) => {this._testCallback(params);}      
+    }
+    this._keywordInput = new LookupInput(params);
+    subcontainer.appendChild(this._keywordInput.render());
+    this._keywordInput.show(true);
     
     return container;
+  }
+  
+  _testCallback(params) {
+    console.log(params);
   }
   
   _renderControls() {
@@ -96,11 +105,11 @@ class TipFilter {
   //--------------------------------------------------------------
   getFilterState() {
     var valSearch = this._container.getElementsByClassName('tipfilter-search-input')[0].value;
-    var valKeywords = this._container.getElementsByClassName('tipfilter-keyword-input')[0].value;
+    var valKeywords = this._keywordInput.value();
     
     var filterState = {
       search: valSearch,
-      keywords: this._buildArrayFromString(valKeywords, ',')
+      keywords: valKeywords
     }
     
     return filterState;
@@ -110,8 +119,8 @@ class TipFilter {
     var elemSearch = this._container.getElementsByClassName('tipfilter-search-input')[0];
     var elemKeywords = this._container.getElementsByClassName('tipfilter-keyword-input')[0];
 
-    elemSearch.value = filterState.search;
-    elemKeywords.value = this._buildStringFromArray(filterState.keywords, ',');    
+    elemSearch.value = filterState.search;   
+    this._keywordInput.setSelectedValues(filterState.keywords);
   }
   
   async _loadFilterStateFromDB() {

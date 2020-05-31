@@ -52,8 +52,11 @@ const app = function () {
     var handler = (e, showValue) => {_handleShowButton(e, false)};
     container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'hide', null, handler));
     
-    handler = (e) => {_handleValueButton(e)};
-    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'value', null, handler));
+    handler = (e) => {_handleValueButton(e, 'get')};
+    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'get value', null, handler));
+    
+    handler = (e) => {_handleValueButton(e, 'set')};
+    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'set value', null, handler));
     
     return container;
   }
@@ -61,7 +64,7 @@ const app = function () {
   function _renderTestContent() {
     var params = {
       //label: 'choose from',
-      valueList: ['bob', 'bill', 'fred', 'frannie'],
+      valueList: ['bob', 'bill', 'fred', 'frannie', 'barnabas', 'bubba', 'george', 'harry', 'ginnie'],
       selectedValueList: ['bill', 'fred'], //[],
       changeCallback: (params) => {_testCallback(params);}
     };
@@ -89,10 +92,15 @@ const app = function () {
     this._lookupInput.show(showValue);
   }
 
-  function _handleValueButton(e) {
-    var value = this._lookupInput.value();
-    var elemOutput = page.maincontainer.getElementsByClassName('testplatform-output')[0];
-    elemOutput.innerHTML = JSON.stringify(value);
+  function _handleValueButton(e, operation) {
+    if (operation == 'get') {
+      var value = this._lookupInput.value();
+      var elemOutput = page.maincontainer.getElementsByClassName('testplatform-output')[0];
+      elemOutput.innerHTML = JSON.stringify(value);
+      
+    } else if (operation == 'set') {
+      this._lookupInput.setSelectedValues(['fred']);
+    }
   }
   
   function _testCallback(params) {

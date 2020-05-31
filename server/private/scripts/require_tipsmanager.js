@@ -16,6 +16,7 @@ define(function (require) {
   require('markdowntohtml');
   require('dbadmintableedit');
   require('dialogcontainer');
+  require('lookupinput');
   
   document.addEventListener('DOMContentLoaded', app.init());
 });

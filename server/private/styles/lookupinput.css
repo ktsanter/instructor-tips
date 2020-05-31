@@ -3,7 +3,7 @@
  *------------------------------------------------------------*/
 .lookupinput {
   display: inline-block;
-  max-width: 30%;
+  max-width: 80%; /* note this is context-dependent */
 }
 
 .lookupinput.lookupinput-hide {
