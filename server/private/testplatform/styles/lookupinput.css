@@ -1,0 +1,56 @@
+/*------------------------------------------------------------
+ * style settings for LookupInput class
+ *------------------------------------------------------------*/
+.lookupinput {}
+
+.lookupinput.lookupinput-hide {
+  display: none;
+}
+
+.lookupinput .lookupinput-label {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.lookupinput .lookupinput-inputcontainer {
+  display: inline-block;
+  width: 50%;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer {
+  border: 1px solid black;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer input {
+  border: 0;
+  background-color: lightyellow;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer input:focus {
+  outline: none;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer {
+  border: 1px solid black;
+  border-top: none;
+  width: 25%;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer.nomatches {
+  border: none;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer .lookupinput-item {
+  border: 1px solid transparent;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer .lookupinput-item:hover {
+  background-color: #cbdaf2;
+  border: 1px solid #5e97f2;
+  border-radius: 6px;
+}
+
+.lookupinput .lookupinput-inputcontainer .lookupinput-itemcontainer .lookupinput-item.notshown {
+  display: none;
+}
+

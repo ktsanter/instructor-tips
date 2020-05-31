@@ -1,0 +1,33 @@
+/*------------------------------------------------------------
+ * style settings for Test Platform project
+ *------------------------------------------------------------*/
+.colorscheme {
+  --MVwhite: #ffffff;
+  --MVblack: #000000;
+	--MVdeepteal: #093c44;
+	--MVdarkteal: #115e6e;
+	--MVlightteal: #2f8d98;
+	--MVgreen: #b5cd34;
+	--MVorange: #f7941e;
+  --MVdarkgray: #414042;
+  --MVlightgray: #6d6e71;
+}
+
+body {
+	color: var(--MVblack);
+	background-color: var(--MVwhite);
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.testplatform {}
+
+.testplatform .testplatform-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  padding-bottom: 0.4em;
+}
+
+.testplatform .testplatform-controls {
+  padding-bottom: 0.4em;
+}
