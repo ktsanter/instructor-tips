@@ -1,0 +1,9 @@
+add tip editing dialog
+- add / edit
+- adjust privileges based on common, userid, used in other schedules, etc.
+
+- add tip editing menu option?
+
+- schedule sharing
+
+- push notifications
