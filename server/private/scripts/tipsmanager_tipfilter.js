@@ -16,20 +16,19 @@ class TipFilter {
   //--------------------------------------------------------------
   // rendering
   //--------------------------------------------------------------
-  render(notice) {
+  async render(notice) {
     this._notice = notice;
     
     while (this._container.firstChild) {
       this._container.removeChild(this._container.firstChild);
     }
 
-    this._container.appendChild(this._renderInputs());
-    this._container.appendChild(this._renderControls());
+    this._container.appendChild(await this._renderInputs());
     
     return this._container;
   }
   
-  _renderInputs() {
+  async _renderInputs() {
     var container = CreateElement.createDiv(null, 'tipfilter-inputs');
 
    // search
@@ -47,31 +46,20 @@ class TipFilter {
     subcontainer = CreateElement.createDiv('tipfilter-keyword');
     container.appendChild(subcontainer);
 
-    var elem = CreateElement.createDiv(null, 'tipfilter-label', 'keyword');
+    var elem = CreateElement.createDiv(null, 'tipfilter-label', 'category');
     subcontainer.appendChild(elem);
 
+    var valuesToSelectFrom = await this._loadCategoryListFromDB();
+    console.log(valuesToSelectFrom);
     var params = {
-      valueList: ['bob', 'bill', 'fred', 'frannie', 'barnabas', 'bubba', 'george', 'harry', 'ginnie'],
+      valueList: valuesToSelectFrom,
       selectedValueList: [],
-      changeCallback: (params) => {this._testCallback(params);}      
+      changeCallback: (params) => {this._handleCategoryChange(params);}      
     }
     this._keywordInput = new LookupInput(params);
     subcontainer.appendChild(this._keywordInput.render());
     this._keywordInput.show(true);
     
-    return container;
-  }
-  
-  _testCallback(params) {
-    console.log(params);
-  }
-  
-  _renderControls() {
-    var container = CreateElement.createDiv(null, 'tipfilter-controls');
-    
-    var handler = (e) => {this._handleRetrieveTips(e)};
-    container.appendChild(CreateElement.createIcon(null, 'tipfilter-icon fas fa-search', 'retrieve tips', handler));
-
     return container;
   }
   
@@ -82,6 +70,14 @@ class TipFilter {
     var state = await this._loadFilterStateFromDB();
     this._setFilterState(state);
   }
+  
+  async _retrieveTips(e) {
+    var filterState = this.getFilterState();
+    await this._saveFilterStateToDB(filterState);
+    
+    this._config.updateCallback(true);
+  }
+
 
   //--------------------------------------------------------------
   // show/hide
@@ -117,7 +113,7 @@ class TipFilter {
   
   _setFilterState(filterState) {
     var elemSearch = this._container.getElementsByClassName('tipfilter-search-input')[0];
-    var elemKeywords = this._container.getElementsByClassName('tipfilter-keyword-input')[0];
+    var elems = this._container.getElementsByClassName('tipfilter-keyword-input')[0];
 
     elemSearch.value = filterState.search;   
     this._keywordInput.setSelectedValues(filterState.keywords);
@@ -143,13 +139,28 @@ class TipFilter {
   }
   
   //--------------------------------------------------------------
-  // handlers
+  // category processing
   //--------------------------------------------------------------   
-  async _handleRetrieveTips(e) {
-    var filterState = this.getFilterState();
-    await this._saveFilterStateToDB(filterState);
+  async _loadCategoryListFromDB() {
+    var categoryList = null;
     
-    this._config.updateCallback();
+    var queryResults = await this._doGetQuery('tipmanager/query', 'categorylist');
+    if (queryResults.success) {
+      var data = queryResults.categorylist;
+      categoryList = [];
+      for (var i = 0; i < data.length; i++) {
+        categoryList.push(data[i].categorytext);
+      }
+    };
+    
+    return categoryList;
+  }
+    
+  //--------------------------------------------------------------
+  // handlers
+  //--------------------------------------------------------------     
+  async _handleCategoryChange(params) {
+    await this._retrieveTips();
   }
   
   //--------------------------------------------------------------

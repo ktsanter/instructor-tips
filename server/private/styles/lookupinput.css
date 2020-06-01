@@ -3,7 +3,7 @@
  *------------------------------------------------------------*/
 .lookupinput {
   display: inline-block;
-  max-width: 80%; /* note this is context-dependent */
+  max-width: 80%;
 }
 
 .lookupinput.lookupinput-hide {
@@ -100,14 +100,10 @@
 .lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem {
   display: inline-block;
   background-color: transparent;
-  border: 1px solid #5e97f2;
+  border: 1px solid #659dbd;
   border-radius: 6px;
   margin-bottom: 0.1em;
   margin-right: 0.1em;
-}  
-
-.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem:hover {
-  background-color: #cbdaf2;
 }  
 
 .lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem .lookupinput-selecteditemvalue {
@@ -125,7 +121,11 @@
   padding: 0.4em 0.2em;
 }
 
-.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem .lookupinput-selecteditemcontrol .lookupinput-selecteditemicon:hover {
-  color: black;
+.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem .lookupinput-selecteditemcontrol .lookupinput-selecteditemicon.lookupinput-selecteditemhover {
+  color: #aaa;
 }
 
+.lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem .lookupinput-selecteditemcontrol .lookupinput-selecteditemicon.lookupinput-selecteditemhover:hover {
+  color: white;
+  background-color: #659dbd;
+}

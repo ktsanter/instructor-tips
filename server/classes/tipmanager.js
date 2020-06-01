@@ -46,6 +46,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tiplist') {
       dbResult = await this._getTipList(params, postData, userInfo);
       
+    } else if (params.queryName == 'categorylist') {
+      dbResult = await this._getCategoryList(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -379,6 +382,31 @@ module.exports = internal.TipManager = class {
     
     return result;
   }
+  
+  async _getCategoryList(params, postData, userInfo) {
+    var result = this._queryFailureResult(); 
+    
+    var queryList = {};
+
+    queryList.categorylist =
+      'SELECT categorytext ' +
+      'FROM category ' +
+      'ORDER BY categorytext';
+              
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.categorylist = queryResults.data.categorylist;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+    
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------

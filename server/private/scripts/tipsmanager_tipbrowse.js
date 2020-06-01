@@ -62,7 +62,7 @@ class TipBrowse {
   async _renderContents() {
     var container = CreateElement.createDiv(null, 'tipbrowse-contents');
     
-    container.appendChild(this._tipFilter.render(this._notice));
+    container.appendChild(await this._tipFilter.render(this._notice));
     container.appendChild(CreateElement.createDiv(null, 'tipbrowse-results', '[browse results]'));
     
     return container;

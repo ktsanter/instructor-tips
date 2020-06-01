@@ -12,7 +12,7 @@ class LookupInput {
     var params = initialParams ? initialParams : {};
     this._config = {
       label: params.label,
-      valueList: params.valueList,
+      valueList: this._sortStringsIgnoreCase(params.valueList),
       selectedValueList: params.selectedValueList,
       changeCallback: params.changeCallback
     };
@@ -104,6 +104,8 @@ class LookupInput {
   
   _renderSelectedItem(value) {
     var container = CreateElement.createDiv(null, 'lookupinput-selecteditem');
+    container.addEventListener('mouseover', (e) => {this._handleSelectedItemHover(e, true)});
+    container.addEventListener('mouseleave', (e) => {this._handleSelectedItemHover(e, false)});
     
     container.appendChild(CreateElement.createDiv(null, 'lookupinput-selecteditemvalue', value));
     
@@ -189,7 +191,7 @@ class LookupInput {
     var valueList = this._config.selectedValueList;
     var valueSet = new Set(valueList);
     valueSet.add(value);
-    valueList = Array.from(valueSet).sort();
+    valueList = this._sortStringsIgnoreCase(Array.from(valueSet));
     this._config.selectedValueList = valueList;
     
     if (this._config.changeCallback) this._config.changeCallback(this._config.selectedValueList);
@@ -201,7 +203,7 @@ class LookupInput {
     var valueList = this._config.selectedValueList;
     var valueSet = new Set(valueList);
     if (valueSet.has(value)) valueSet.delete(value);
-    valueList = Array.from(valueSet).sort();
+    valueList = this._sortStringsIgnoreCase(Array.from(valueSet));
     this._config.selectedValueList = valueList;
 
     if (this._config.changeCallback) this._config.changeCallback(this._config.selectedValueList);
@@ -261,6 +263,26 @@ class LookupInput {
     this._updateDisplayedSelectedItems();
   }
   
+  _handleSelectedItemHover(e, enter) {
+    var node = e.target;
+
+    if (!node.classList.contains('lookupinput-selecteditem')) {
+      node = node.parentNode;
+
+      if (!node.classList.contains('lookupinput-selecteditem')) {
+        node = node.parentNode;
+
+        if (!node.classList.contains('lookupinput-selecteditem')) {
+          console.log('no bueno');
+          return;
+        }
+      }
+    }
+    
+    node = node.getElementsByClassName('lookupinput-selecteditemicon')[0];
+    this._setClass(node, 'lookupinput-selecteditemhover', enter);
+  }
+  
   //--------------------------------------------------------------
   // utility
   //-------------------------------------------------------------- 
@@ -273,5 +295,17 @@ class LookupInput {
     while (elem.firstChild) {
       elem.removeChild(elem.firstChild);
     }
+  }
+  
+  _sortStringsIgnoreCase(arr) {
+    return arr.sort(function(a, b) {
+      if (a.toLowerCase() > b.toLowerCase()) {
+        return 1;
+      } else if (a.toLowerCase() < b.toLowerCase()) {
+        return -1;
+      }
+      return 0;
+    });
+    
   }
 }
