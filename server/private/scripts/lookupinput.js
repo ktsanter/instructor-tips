@@ -209,6 +209,11 @@ class LookupInput {
     if (this._config.changeCallback) this._config.changeCallback(this._config.selectedValueList);
   }
   
+  _clearInputValue() {
+    var elemInput = this._container.getElementsByClassName('lookupinput-input')[0];
+    elemInput.value = '';
+  }
+  
   //--------------------------------------------------------------
   // show/hide
   //--------------------------------------------------------------
@@ -228,6 +233,7 @@ class LookupInput {
   _handleItemClick(e) {
     var elemItem = e.target;
     this._addSelectedItem(elemItem.lookupInputText);
+    this._clearInputValue();
     this._updateDisplayedSelectedItems();
 
     this._hideInputItems(this);

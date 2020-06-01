@@ -152,13 +152,14 @@ class TipScheduling {
     var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
     contents.appendChild(CreateElement.createIcon(
       'collapseAll', 
-      'tipschedule-icon collapse-icon far fa-minus-square', 
+      'tipschedule-icon collapse-icon fas fa-angle-double-right', 
       'collapse all weeks', 
       (e) => {return this._collapseAllWeeks(e);}
     ));
     contents.appendChild(CreateElement.createIcon(
       'expandAll', 
-      'tipschedule-icon collapse-icon far fa-plus-square', 
+      //<i class="fas fa-angle-double-right"></i>
+      'tipschedule-icon collapse-icon fas fa-angle-double-down', 
       'expand all weeks', 
       (e) => {return this._expandAllWeeks(e);}
     ));
@@ -184,7 +185,9 @@ class TipScheduling {
   }
   
   _renderScheduleWeekHeader(overview, details, weeknum) {
+    var handler = (e) => {return this._toggleWeeklyBoxCollapse(e);}
     var container = CreateElement.createDiv(null, 'weeklytip-label');
+    container.addEventListener('click', handler);
     
     var label;
     if (weeknum == 0) {
@@ -197,7 +200,7 @@ class TipScheduling {
     
     var elemLabel = CreateElement.createSpan(null, null, label)
     container.appendChild(elemLabel);
-    elemLabel.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', 'expand/collapse week', (e) => {return this._toggleWeeklyBoxCollapse(e);}));
+    elemLabel.appendChild(CreateElement.createIcon(null, 'fas fa-caret-down weeklytip-collapse-icon', 'expand/collapse week'));
     
     container.appendChild(this._renderScheduleWeekConfig(weeknum));
     
@@ -310,11 +313,21 @@ class TipScheduling {
   }
   
   _toggleWeeklyBoxCollapse(e) {
-    if (e.target.disabled) return;
+    var node = e.target;
+    var elemContents = null;
+    var elemIcon;
     
-    var elemContents = e.target.parentNode.parentNode.parentNode.getElementsByClassName('weeklytip-contents')[0];
-    var elemIcon = e.target;
+    for (var i = 0; i < 6 && !elemContents; i++) {
+      if (node.classList.contains('weeklytip')) {
+        elemContents = node.getElementsByClassName('weeklytip-contents')[0];
+        elemIcon = node.getElementsByClassName('weeklytip-collapse-icon')[0];
+      } else {
+        node = node.parentNode;
+      }
+    }
 
+    if (!elemContents) return;
+    
     elemContents.classList.toggle('hide-weeklytip-contents');
     elemIcon.classList.toggle('fa-caret-right');
     elemIcon.classList.toggle('fa-caret-down');

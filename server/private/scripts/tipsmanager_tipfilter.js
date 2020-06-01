@@ -50,7 +50,6 @@ class TipFilter {
     subcontainer.appendChild(elem);
 
     var valuesToSelectFrom = await this._loadCategoryListFromDB();
-    console.log(valuesToSelectFrom);
     var params = {
       valueList: valuesToSelectFrom,
       selectedValueList: [],

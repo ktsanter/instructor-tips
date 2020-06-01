@@ -51,7 +51,7 @@ class DialogContainer {
     subContainer.appendChild(elemScheduleStart);
 
     var handler = (me) => {this._handleConfirm(this);};
-    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'save', 'save', handler);
+    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'create', 'create new schedule', handler);
     elem.disabled = true;
     container.appendChild(elem);
 
@@ -73,10 +73,6 @@ class DialogContainer {
     elemScheduleName.placeholder = 'schedule name';
     elemScheduleName.addEventListener('input', (e) => {this._handleScheduleName(e);});
     subContainer.appendChild(elemScheduleName);
-    
-    var elemScheduleLength = CreateElement.createSpinner(null, 'dialogcontainer-spinner', 20, 1, 40, 1);
-    elemScheduleLength.title = 'schedule length';
-    subContainer.appendChild(elemScheduleLength);
 
     var todayFormatted = this._formatDate(new Date());
     var elemScheduleStart = CreateElement.createDatePicker(null, 'dialogcontainer-date', 'dummy', '2020-01-01', '2050-12-31');
@@ -84,7 +80,7 @@ class DialogContainer {
     subContainer.appendChild(elemScheduleStart);
 
     var handler = (me) => {this._handleConfirm(this);};
-    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'save', 'save', handler);
+    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'save', 'save schedule changes', handler);
     elem.disabled = false;
     container.appendChild(elem);
 
@@ -129,11 +125,9 @@ class DialogContainer {
   
   _updateRename(params) {
     var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];
-    var elemLength = this._container.getElementsByClassName('dialogcontainer-spinner')[0];
     var elemStart = this._container.getElementsByClassName('dialogcontainer-date')[0];
     elemName.value = params.schedulename;
     elemName.scheduleId = params.scheduleid; 
-    elemLength.value = params.schedulelength; 
     elemStart.value = params.schedulestartdate;    
     elemName.focus();
   }
@@ -180,13 +174,11 @@ class DialogContainer {
       
     } else if (dialogType == 'rename-schedule') {
       var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];
-      var elemLength = this._container.getElementsByClassName('dialogcontainer-spinner')[0];
       var elemStart = this._container.getElementsByClassName('dialogcontainer-date')[0];
 
       callbackData = {
         scheduleid: elemName.scheduleId, 
         schedulename: elemName.value,
-        schedulelength: elemLength.value,
         schedulestart: elemStart.value
       };
       

@@ -264,7 +264,6 @@ class TipManagerSchedulingControl {
     var queryParams = {
       scheduleid: params.scheduleid,
       schedulename: params.schedulename,
-      schedulelength: params.schedulelength,
       schedulestartdate: params.schedulestart
     };
 

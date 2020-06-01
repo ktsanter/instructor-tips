@@ -454,12 +454,11 @@ module.exports = internal.TipManager = class {
     var query = 'update schedule ' +
                 'set ' +
                   'schedulename = "' + postData.schedulename + '", ' +
-                  'schedulelength = ' + postData.schedulelength + ', ' +
+                  // don't allow length change here 'schedulelength = ' + postData.schedulelength + ', ' +
                   'schedulestartdate = "' + postData.schedulestartdate + '" ' +
                 'where scheduleid = ' + postData.scheduleid;
 
     var queryResults = await this._dbQuery(query);
-    console.log('_updateSchedule: deal with changed schedule length');
 
     if (queryResults.success) {
       result.success = true;

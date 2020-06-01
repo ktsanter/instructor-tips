@@ -6,19 +6,30 @@
   --itemBorder: #dddd;
 }
 
+.tipschedule-contents {
+  width: 50%;
+}
+
 .tipschedule-contents.browse {
   float: left;
-  width: 50%;
 }
 
 .tipschedule-icon {
   font-size: 1.2em;
-  margin-right: 2px;
+  margin-right: 0.2em;
   cursor: pointer;
 }
 
 .tipschedule-icon.collapse-icon {
-  font-size: 1.4em;
+  font-size: 1.0em;
+  background-color: var(--bgSecondaryChoice);
+  padding: 0.2em;
+  margin-bottom: 0.2em;
+  border: 1px solid #aaa;
+  color: white;
+  border-radius: 4px;
+  width: 0.8em;
+  text-align: center;
 }
 
 .tipschedule .tipschedule-contents .tipschedule-draghandle {
@@ -67,16 +78,13 @@
  .weeklytip-collapse-icon {
   font-size: 1.2em;
   cursor: pointer;
-  padding-left: 2px;
-  width: 14px;   
+  padding-left: 0.4em;   
 }
  
 .weeklytip-label {
   color: white;
   background-color: var(--bgPrimaryEmphasis);
-  padding-top: 6px;
-  padding-bottom: 6px;
-  padding-left: 0.2em;
+  padding: 0.4em 0 0.4em 0.2em;
 }
 
 .weeklytip-label-text {}
@@ -89,7 +97,7 @@
   display: flex;
   border: 1px solid var(--itemBorder);
   border-radius: 4px 0 0 4px;
-  margin-bottom: 1px;
+  margin-bottom: 0.1em;
 }
   
 .weeklytip-container.eventip.div {
@@ -177,7 +185,7 @@
 */
 
 .weeklytip-singletip p {
-  margin-top: 0px;
+  margin-top: 0;
 }
 
 .hide-weeklytip-contents {
