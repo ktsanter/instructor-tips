@@ -41,6 +41,7 @@ class TipFilter {
     elem = CreateElement.createTextInput(null, 'tipfilter-search-input');
     subcontainer.appendChild(elem);
     elem.placeholder = 'search for text';
+    elem.addEventListener('input', (e) => {this._handleSearchChange();});
     
     // keywords
     subcontainer = CreateElement.createDiv('tipfilter-keyword');
@@ -157,7 +158,11 @@ class TipFilter {
     
   //--------------------------------------------------------------
   // handlers
-  //--------------------------------------------------------------     
+  //--------------------------------------------------------------
+  async _handleSearchChange() {
+    await this._retrieveTips();
+  }
+  
   async _handleCategoryChange(params) {
     await this._retrieveTips();
   }

@@ -118,8 +118,7 @@ class TipBrowse {
     
     var queryResults = await this._doPostQuery('tipmanager/query', 'tiplist', filterSettings);
     if (queryResults.success) {
-      result = queryResults.data;
-      result = result.sort(function(a, b) {
+      result = queryResults.data.sort(function(a, b) {
         if (a.tiptext.toLowerCase() > b.tiptext.toLowerCase()) {
           return 1;
         } else if (a.tiptext.toLowerCase() < b.tiptext.toLowerCase()) {

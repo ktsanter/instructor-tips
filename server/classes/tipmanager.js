@@ -350,23 +350,23 @@ module.exports = internal.TipManager = class {
   async _getTipList(params, postData, userInfo) {
     var result = this._queryFailureResult();   
     
-    console.log(postData);
-
     var queryList = {
       tiplist: 
         // common tips and those owned by user
-        'select tipid, tiptext, common, userid ' + 
+        'select tipid, tiptext, common, userid, categorytext ' + 
         'from view_tipsandcategories ' + 
-        'where common  ' + 
-           'or userid = ' + userInfo.userId + ' ' + 
+        'where (common  ' + 
+           'or userid = ' + userInfo.userId + ') ' +
+           'and tiptext like "%' + postData.search + '%" ' +           
            
         'union ' + 
 
         // tips used on one of the user's schedules (includes shared)
-        'select tus.tipid, vtc.tiptext, vtc.common, vtc.userid ' + 
+        'select tus.tipid, vtc.tiptext, vtc.common, vtc.userid, vtc.categorytext ' + 
         'from view_tipsusedinschedule as tus, view_tipsandcategories as vtc ' + 
         'where tus.tipid = vtc.tipid ' + 
-          'and tus.userid = ' + userInfo.userId + ' '
+          'and tus.userid = ' + userInfo.userId + ' ' +
+          'and vtc.tiptext like "%' + postData.search + '%" '
     };
     
     var queryResults = await this._dbQueries(queryList);
@@ -374,13 +374,53 @@ module.exports = internal.TipManager = class {
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.data = queryResults.data.tiplist,
+      result.data = this._filterTipList(queryResults.data.tiplist, postData.keywords),
       result.constraints = {};
     } else {
       result.details = queryResults.details;
     }
     
     return result;
+  }
+  
+  _filterTipList(tipList, keywords) {
+    var filteredList = [];
+    
+    var consolidatedList = {};
+    for (var i = 0; i < tipList.length; i++) {
+      var tipItem = tipList[i];
+      if (!consolidatedList[tipItem.tipid]) {
+        consolidatedList[tipItem.tipid] = {
+          tipid: tipItem.tipid,
+          tiptext: tipItem.tiptext,
+          common: tipItem.common,
+          userid: tipItem.userid,
+          categorylist: []
+        };
+      }
+      
+      consolidatedList[tipItem.tipid].categorylist.push(tipItem.categorytext);
+    }
+    
+    for (var id in consolidatedList) {
+      var consolidatedItem = consolidatedList[id];
+      var categorySet = new Set(consolidatedItem.categorylist);
+
+      var passesFilter = true;
+      for (var j = 0; j < keywords.length && passesFilter; j++) {
+        passesFilter = categorySet.has(keywords[j]);
+      }
+      if (passesFilter) {
+        filteredList.push({
+          tipid: consolidatedItem.tipid,
+          tiptext: consolidatedItem.tiptext,
+          common: consolidatedItem.common,
+          userid: consolidatedItem.userid
+        });
+      }
+    }
+    
+    return filteredList;
   }
   
   async _getCategoryList(params, postData, userInfo) {
