@@ -167,7 +167,21 @@ class DialogContainer {
   _renderEditTip() {
     var container = CreateElement.createDiv(null, 'dialogcontainer-edittip');
     
-    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-title', 'Edit tip'));
+    container.appendChild(this._renderTitle('Edit tip'));
+    
+    var subContainer;
+        
+    // confirm/cancel controls
+    subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub');
+    container.appendChild(subContainer);
+    
+    var handler = (me) => {this._handleConfirm(this);};
+    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'create', 'create new tip', handler);
+    elem.disabled = true;
+    subContainer.appendChild(elem);
+
+    handler = (me) => {this._handleCancel(this);};
+    subContainer.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'cancel', 'cancel', handler));
     
     return container;
   }
@@ -238,6 +252,7 @@ class DialogContainer {
   
   _updateEditTip(params) {
     console.log('_updateEditTip ' + JSON.stringify(params));
+    this._container.getElementsByClassName('confirm')[0].disabled = false; // for testing only -> move to input handler
   }
 
   //--------------------------------------------------------------
@@ -294,6 +309,9 @@ class DialogContainer {
         params: this._config.params
       };
 
+    } else if (dialogType == 'edit-tip') {
+      callbackData = {dummy: 'none'};
+      
     } else {
       console.log('unrecognized dialog type: ' + dialogType); 
     }

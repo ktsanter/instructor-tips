@@ -139,6 +139,27 @@
   background-color: var(--bgQuaternaryEmphasis);
 }
 
+.weeklytip-container .weeklytip-controls {
+}
+
+.weeklytip-container .weeklytip-controls.eventip {
+  background-color: white;
+}
+
+.weeklytip-container .weeklytip-controls.oddtip {
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.weeklytip-container .weeklytip-controls .weeklytip-controls-icon {
+  padding-left: 0.4em;
+  padding-right: 0.2em;
+  opacity: 0;
+}
+
+.weeklytip-container .weeklytip-controls .weeklytip-controls-icon:hover {
+  opacity: 1;
+}
+
 .weeklytip .weeklytip-dragtarget {
   background-color: var(--bgSecondaryChoice) !important;
   border-left: 1px solid var(--itemBorder);

@@ -59,6 +59,14 @@ class TipScheduling {
     });
     this._container.appendChild(this._addTipDialog.render());
 
+    this._editTipDialog = new DialogContainer({
+      dialogtype: 'edit-tip',
+      confirmcallback: (arg) => {this._finishEditTip(arg)},
+      cancelcallback: () => {this._cancelEditTip()},
+      categorylist: categoryList
+    });
+    this._container.appendChild(this._editTipDialog.render());
+
     this._container.addEventListener('dragenter', (e) => {this._handleDefaultDragEnter(e);});
     
     return this._container;
@@ -158,7 +166,6 @@ class TipScheduling {
     ));
     contents.appendChild(CreateElement.createIcon(
       'expandAll', 
-      //<i class="fas fa-angle-double-right"></i>
       'tipschedule-icon collapse-icon fas fa-angle-double-down', 
       'expand all weeks', 
       (e) => {return this._expandAllWeeks(e);}
@@ -210,13 +217,13 @@ class TipScheduling {
   _renderScheduleWeekConfig(weeknum) {
     var container = CreateElement.createDiv(null, 'weeklytip-config');
     
-    var handler = (e) => {this._handleConfigChoice(e, 'addtip');}
+    var handler = (e) => {this._handleConfigChoice(e, 'addtip');};
     container.appendChild(CreateElement.createIcon(null, 'weeklytip-config-icon addtip far fa-plus-square', 'add new tip to this week', handler));
 
-    handler = (e) => {this._handleConfigChoice(e, 'addweek');}
+    handler = (e) => {this._handleConfigChoice(e, 'addweek');};
     container.appendChild(CreateElement.createIcon(null, 'weeklytip-config-icon addweek far fa-calendar-plus', 'add new week after this one', handler));
 
-    handler = (e) => {this._handleConfigChoice(e, 'removeweek');}
+    handler = (e) => {this._handleConfigChoice(e, 'removeweek');};
     container.appendChild(CreateElement.createIcon(null, 'weeklytip-config-icon removeweek far fa-calendar-minus', 'remove this week', handler));
     
     return container;
@@ -249,6 +256,13 @@ class TipScheduling {
       var subsubcontainer = CreateElement.createDiv(null, classString);
       subcontainer.appendChild(subsubcontainer);
       subsubcontainer.appendChild(CreateElement.createDiv(null, 'weeklytip-singletip', MarkdownToHTML.convert(item.tiptext)));
+
+      classString = 'weeklytip-controls ';
+      classString += (i % 2 == 0) ? 'eventip' : 'oddtip';
+      subsubcontainer = CreateElement.createDiv(null, classString);
+      subcontainer.appendChild(subsubcontainer);
+      var handler = (e) => {this._handleConfigChoice(e, 'edittip');};
+      subsubcontainer.appendChild(CreateElement.createIcon(null, 'weeklytip-controls-icon far fa-edit', 'edit tip', handler));
     }
     
     return container;
@@ -385,7 +399,12 @@ class TipScheduling {
         moveafterid: moveAfterId,
         movebeforeid: -1
       });
-        
+      
+    } else if (choiceType == 'edittip') {    
+      this._disableContents(true);
+      this._control.show(false);
+      this._editTipDialog.show(true);
+      this._editTipDialog.update({});
       
     } else if (choiceType == 'addweek') {
       var queryResults = await this._doPostQuery('tipmanager/insert', 'addscheduleweek', {scheduleid: scheduleId, afterweek: weekNum});
@@ -432,11 +451,23 @@ class TipScheduling {
   }
   
   _cancelAddTip() {
-    console.log('_cancelAddTip');
     this._disableContents(false);
     this._control.show(true);
   }
   
+  async _finishEditTip(info) { 
+    console.log('_finishEditTip ' + JSON.stringify(info));
+
+    this._disableContents(false);
+    this._control.show(true);    
+  }
+  
+  _cancelEditTip() {
+    console.log('_cancelEditTip');
+    this._disableContents(false);
+    this._control.show(true);
+  }
+
   async _addTip(tipId, destinationInfo) {
     var addParams = {
       tipid: tipId,
@@ -680,6 +711,11 @@ class TipScheduling {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
+  _setClass(elem, className, add) {
+    if (elem.classList.contains(className)) elem.classList.remove(className);
+    if (add) elem.classList.add(className);
+  }
+  
   _removeChildren(elem) {
     while (elem.firstChild) {
       elem.removeChild(elem.firstChild);
