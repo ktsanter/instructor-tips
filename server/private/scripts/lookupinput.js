@@ -10,9 +10,11 @@ class LookupInput {
     this._HIDE_CLASS = 'lookupinput-hide';
     
     var params = initialParams ? initialParams : {};
+
     this._config = {
       label: params.label,
-      valueList: this._sortStringsIgnoreCase(params.valueList),
+      placeholderValue: params.placeholder,
+      valueList: (params.valueList ? this._sortStringsIgnoreCase(params.valueList) : null),
       selectedValueList: params.selectedValueList,
       changeCallback: params.changeCallback
     };

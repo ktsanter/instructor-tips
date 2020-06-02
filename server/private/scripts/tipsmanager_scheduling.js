@@ -50,8 +50,15 @@ class TipScheduling {
     this._browse = new TipBrowse(updateCallback, dragstartCallback, dragendCallback);
     this._container.appendChild(await this._browse.render(this._notice));
     
-    this._container.appendChild(this._renderNewTipContainer());
-    
+    var categoryList = await this._loadCategoryListFromDB();
+    this._addTipDialog = new DialogContainer({
+      dialogtype: 'add-tip',
+      confirmcallback: (arg) => {this._finishAddTip(arg)},
+      cancelcallback: () => {this._cancelAddTip()},
+      categorylist: categoryList
+    });
+    this._container.appendChild(this._addTipDialog.render());
+
     this._container.addEventListener('dragenter', (e) => {this._handleDefaultDragEnter(e);});
     
     return this._container;
@@ -70,6 +77,7 @@ class TipScheduling {
     return container;
   }
   
+  /*
   _renderNewTipContainer() {
     var container = CreateElement.createDiv(null, 'tipschedule-newtip notshown');
     this._newTipContainer = container;
@@ -91,7 +99,23 @@ class TipScheduling {
     
     return container;
   }
+  */
 
+  async _loadCategoryListFromDB() {
+    var categoryList = null;
+    
+    var queryResults = await this._doGetQuery('tipmanager/query', 'categorylist');
+    if (queryResults.success) {
+      var data = queryResults.categorylist;
+      categoryList = [];
+      for (var i = 0; i < data.length; i++) {
+        categoryList.push(data[i].categorytext);
+      }
+    };
+    
+    return categoryList;
+  }
+  
   //--------------------------------------------------------------
   // updating
   //--------------------------------------------------------------
@@ -359,6 +383,7 @@ class TipScheduling {
   }
   
   async _handleConfigChoice(e, choiceType) {
+    e.stopPropagation();
     var elemIcon = e.target;
     var elemWeeklyTip = elemIcon.parentNode.parentNode.parentNode;
     var weekNum = elemWeeklyTip.weeknum;
@@ -366,12 +391,13 @@ class TipScheduling {
     var scheduleId = this._control.state().scheduleid;
     
     if (choiceType == 'addtip') {
-      elemWeeklyTip.appendChild(this._newTipContainer);
-      if (this._newTipContainer.classList.contains('notshown')) this._newTipContainer.classList.remove('notshown');
-      this._newTipContainer.getElementsByClassName('tipschedule-newtip-input')[0].value = '';
-      this._newTipContainer.getElementsByClassName('savenewtip')[0].classList.add('disabled');
-      this._newTipContainer.weekNum = weekNum;
-      this._newTipContainer.getElementsByClassName('tipschedule-newtip-input')[0].focus();
+      console.log('_handleConfigChoice: add new tip to week #' + weekNum);
+      this._disableContents(true);
+      this._control.show(false);
+      
+      this._addTipDialog.show(true);
+      this._addTipDialog.update(weekNum);
+        
       
     } else if (choiceType == 'addweek') {
       var queryResults = await this._doPostQuery('tipmanager/insert', 'addscheduleweek', {scheduleid: scheduleId, afterweek: weekNum});
@@ -392,13 +418,22 @@ class TipScheduling {
     }
   }
   
-  _handleNewTipEdit(e) {
-    var elemIconContainer = this._container.getElementsByClassName('tipschedule-newtip-controlcontainer')[0];
-    var elemIcon = elemIconContainer.getElementsByClassName('savenewtip')[0];
-    if (elemIcon.classList.contains('disabled')) elemIcon.classList.remove('disabled');
-    if (e.target.value.trim().length == 0) elemIcon.classList.add('disabled');
+  async _finishAddTip(params) {
+    console.log('_finishAddTip ' + JSON.stringify(params));
+    this._disableContents(false);
+    this._control.show(true);
+    
+    // do the saving
   }
   
+  _cancelAddTip() {
+    console.log('_cancelAddTip');
+    this._disableContents(false);
+    this._control.show(true);
+  }
+
+  
+  /*
   async _handleAddTipCompletion(e, saveNewTip) {
     if (saveNewTip) {
       var tipText = this._newTipContainer.getElementsByClassName('tipschedule-newtip-input')[0].value;
@@ -429,9 +464,8 @@ class TipScheduling {
         await this.update(false);
       }
     }
-    
-    this._newTipContainer.classList.add('notshown');
   }
+  */
   
   async _addTip(tipId, destinationInfo) {
     var addParams = {
@@ -676,22 +710,6 @@ class TipScheduling {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-  _disableElement(elem, disable, disableChildren) {
-    elem.disabled = disable;
-
-    if (disableChildren) {
-      var childNodes = elem.getElementsByTagName('*');
-      var elemNamesToDisable = new Set(['I', 'A']);
-      
-      for (var i = 0; i < childNodes.length; i++) {
-        var node = childNodes[i];
-        if (elemNamesToDisable.has(node.nodeName)) {
-          node.disabled = disable;
-        }
-      }
-    }
-  }
-  
   _removeChildren(elem) {
     while (elem.firstChild) {
       elem.removeChild(elem.firstChild);
