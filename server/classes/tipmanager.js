@@ -692,19 +692,17 @@ module.exports = internal.TipManager = class {
   
   async _addTipAndScheduleTip(params, postData, userInfo) {
     var result = this._queryFailureResult();
-    
-    var queryList;
-    var queryResults;
-    
-    queryList = {
+   
+    var queryList = {
       checkforduplicate:
         'select tipid ' +
         'from tip ' +
         'where tiptext = "' + postData.tiptext + '" ' +
-          'and userid = ' + userInfo.userId
+          'and (userid = ' + userInfo.userId + ' or common) '
     }
     
-    queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbQueries(queryList);
+
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -730,13 +728,21 @@ module.exports = internal.TipManager = class {
     };
             
     queryResults = await this._dbQueries(queryList);
+
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
     }
     
     postData.tipid = queryResults.data.getTipId[0].tipid;
-    var addResult = await this._addScheduleTip(params, postData, userInfo);
+    var addResult = await this._addTipCategory(params, postData, userInfo);
+    
+    if (!addResult.success) {
+      result.details = addResult.details;
+      return result;
+    }
+
+    addResult = await this._addScheduleTip(params, postData, userInfo);
     
     if (addResult.success) {
       result.success = true;
@@ -745,6 +751,40 @@ module.exports = internal.TipManager = class {
       result.details = addResult.details;
     }
     
+    return result;
+  }
+  
+  async _addTipCategory(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    
+    var categoryList = postData.category;
+    if (categoryList.length == 0) {
+      result.success = true;
+      return result;
+    }
+    
+    var queryList = {};
+    for (var i = 0; i < categoryList.length; i++) {
+      queryList[i] = 
+        'insert into tipcategory ( ' +
+          'tipid, categoryid ' +
+        ') select ' +
+            postData.tipid + ' as tipid, ' +
+            'categoryid ' +
+          'from category ' + 
+          'where categorytext = "' + postData.category[i] + '"';
+    }
+        
+    var queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'adding tip categories succeeeded';
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
     return result;
   }
   
@@ -894,7 +934,6 @@ module.exports = internal.TipManager = class {
       result.success = true;
       
     } else {
-      console.log(queryResults);
       result.details = queryResults.details;
     }
 

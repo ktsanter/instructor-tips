@@ -38,7 +38,7 @@ class DialogContainer {
   _renderAddSchedule() {
     var container = CreateElement.createDiv(null, 'dialogcontainer-add');
     
-    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-title', 'Create new schedule'));
+    container.appendChild(this._renderTitle('Create new schedule'));
     
     var subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub');
     container.appendChild(subContainer);
@@ -58,13 +58,16 @@ class DialogContainer {
     elemScheduleStart.title = 'first day for schedule';
     subContainer.appendChild(elemScheduleStart);
 
+    subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub confirmcancel');
+    container.appendChild(subContainer);
+    
     var handler = (me) => {this._handleConfirm(this);};
     var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'create', 'create new schedule', handler);
     elem.disabled = true;
-    container.appendChild(elem);
+    subContainer.appendChild(elem);
 
     handler = (me) => {this._handleCancel(this);};
-    container.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'cancel', 'cancel', handler));
+    subContainer.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'cancel', 'cancel', handler));
     
     return container;
   }
@@ -72,7 +75,7 @@ class DialogContainer {
   _renderRenameSchedule() {
     var container = CreateElement.createDiv(null, 'dialogcontainer-rename');
     
-    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-title', 'Edit schedule parameters'));
+    container.appendChild(this._renderTitle('Edit schedule parameters'));
 
     var subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub');
     container.appendChild(subContainer);
@@ -87,13 +90,16 @@ class DialogContainer {
     elemScheduleStart.title = 'first day for schedule';
     subContainer.appendChild(elemScheduleStart);
 
+    subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub confirmcancel');
+    container.appendChild(subContainer);
+
     var handler = (me) => {this._handleConfirm(this);};
     var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'save', 'save schedule changes', handler);
     elem.disabled = false;
-    container.appendChild(elem);
+    subContainer.appendChild(elem);
 
     handler = (me) => {this._handleCancel(this);};
-    container.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'cancel', 'cancel', handler));
+    subContainer.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'cancel', 'cancel', handler));
 
     return container;
   }
@@ -101,7 +107,7 @@ class DialogContainer {
   _renderDeleteSchedule() {
     var container = CreateElement.createDiv(null, 'dialogcontainer-delete');
     
-    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-title', 'Delete schedule'));
+    container.appendChild(this._renderTitle('Delete schedule'));
     
     container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-message'));
 
@@ -117,17 +123,20 @@ class DialogContainer {
   _renderAddTip() {
     var container = CreateElement.createDiv(null, 'dialogcontainer-addtip');
     
-    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-title', 'Add new tip'));
+    container.appendChild(this._renderTitle('Add new tip'));
     
     // tip text input
     var subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub');
     container.appendChild(subContainer);
     
-    var elemTipText = CreateElement.createTextInput(null, 'dialogcontainer-input');
+    var elemTipText = CreateElement.createTextArea(null, 'dialogcontainer-input');
     elemTipText.placeholder = 'tip text';
     elemTipText.addEventListener('input', (e) => {this._handleTipTextChange(e);});
     
     subContainer.appendChild(elemTipText);
+    
+    // tip text preview
+    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-preview'));
     
     // category selection
     var params = {
@@ -159,6 +168,13 @@ class DialogContainer {
     var container = CreateElement.createDiv(null, 'dialogcontainer-edittip');
     
     container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-title', 'Edit tip'));
+    
+    return container;
+  }
+  
+  _renderTitle(titleText) {
+    var container = CreateElement.createDiv(null, 'dialogcontainer-title');
+    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-titletext', 'Add new tip'));
     
     return container;
   }
@@ -207,9 +223,16 @@ class DialogContainer {
   }
   
   _updateAddTip(params) {
-    var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];
-    elemName.value = '';
-    elemName.focus();
+    this._config.params = params;
+
+    var elemTipText = this._container.getElementsByClassName('dialogcontainer-input')[0];
+    elemTipText.value = '';
+    elemTipText.focus();
+    
+    var elemPreview = this._container.getElementsByClassName('dialogcontainer-preview')[0];
+    elemPreview.innerHTML = 'preview';
+    this._setClass(elemPreview, 'preview-default', true);
+
     this._category.setSelectedValues([]);
   }
   
@@ -267,7 +290,8 @@ class DialogContainer {
       
       callbackData = {
         tiptext: elemTipText.value,
-        category: this._category.value()
+        category: this._category.value(),
+        params: this._config.params
       };
 
     } else {
@@ -280,9 +304,9 @@ class DialogContainer {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
-  _handleConfirm(me) {
+  async _handleConfirm(me) {
+    await me._config.confirmcallback(me._packageCallbackData());
     me.show(false);
-    me._config.confirmcallback(me._packageCallbackData());
   }
   
   _handleCancel(me) {
@@ -298,15 +322,23 @@ class DialogContainer {
   _handleTipTextChange(e) {
     var nameValue = e.target.value.trim();
     this._container.getElementsByClassName('confirm')[0].disabled = (nameValue.length <= 0);
+    
+    var elemPreview = this._container.getElementsByClassName('dialogcontainer-preview')[0];
+    elemPreview.innerHTML = MarkdownToHTML.convert(nameValue);
+    if (nameValue.length == 0) elemPreview.innerHTML = 'preview';
+    this._setClass(elemPreview, 'preview-default', nameValue.length == 0);
   }
   
-  _handleCategoryChange(params) {
-    console.log('_handleCategoryChange ' + JSON.stringify(params));
-  }
+  _handleCategoryChange(params) {}
   
   //--------------------------------------------------------------
   // utility
-  //--------------------------------------------------------------   
+  //--------------------------------------------------------------     
+  _setClass(elem, className, add) {
+    if (elem.classList.contains(className)) elem.classList.remove(className);
+    if (add) elem.classList.add(className);
+  }
+  
   _formatDate(d) {
     var y = d.getFullYear();
     var m = ('00' + (d.getMonth() + 1)).slice(-2);

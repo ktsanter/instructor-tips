@@ -29,13 +29,13 @@ body {
 }
 
 .tipmanager-title {
-  margin-bottom: 6px;
+  margin-bottom: 0.4em;
 }
 
-.tipmanager-titletext {
+.tipmanager-title .tipmanager-titletext {
   font-weight: bold;
   font-size: 1.1em;
-  padding-right: 6px;
+  padding-right: 0.4em;
 }
 
 .tipmanager-icon {

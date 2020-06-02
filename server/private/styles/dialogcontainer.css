@@ -1,44 +1,74 @@
 /*-------------------------------------------------------------------
  * styling for DialogContainer class
  *------------------------------------------------------------------*/
-
 .dialogcontainer {
-  padding: 0.1em 0.2em;
-  border: 1px solid var(--bgTertiaryEmphasis);  
-  border-radius: 0.3em;  
+  padding: 0.1em 0.2em; 
 }
 
 .dialogcontainer-hide {
   display: none;
 }
 
-.dialogcontainer-title {}
+.dialogcontainer .dialogcontainer-title {
+  margin-bottom: 0.4em;
+}
 
-.dialogcontainer-message {
+.dialogcontainer .dialogcontainer-title .dialogcontainer-titletext {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+.dialogcontainer .dialogcontainer-message {
   margin-bottom: 0.3em;
 }
 
-button.dialogcontainer.confirmcancel {
+.dialogcontainer .dialogcontainer-sub:not(.confirmcancel) {
+  display: inline-block;
+}
+
+.dialogcontainer .dialogcontainer-preview {
+  display: inline-block;
+  background-color: white;
+  vertical-align: top;
+  width: 20em;
+  min-height: 16.5em;
+  margin-left: 0.4em;
+	padding: .6em 1.4em .5em .8em;
+  border: 1px solid #aaa;
+  border-radius: 0.3em;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);  
+}
+
+.dialogcontainer .dialogcontainer-preview.preview-default {
+  color: #aaa;
+  background-color: transparent;
+}
+
+.dialogcontainer button.dialogcontainer.confirmcancel {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   height: 2.6em;
   width: 5em;
+  margin-top: 0.2em;
+  margin-right: 0.2em;
   color: white;
   background-color: var(--bgSecondaryChoice);
+  border: 1px solid #444;
   border-radius: 0.3em;
   outline: none;
 }
 
-button.dialogcontainer.confirmcancel:disabled {
+.dialogcontainer button.dialogcontainer.confirmcancel:disabled {
   color: black;
   background-color: var(--bgTertiaryEmphasis);
 }
 
-button.dialogcontainer.confirmcancel:active {
+.dialogcontainer button.dialogcontainer.confirmcancel:active {
   color: black;
   background-color: var(--bgQuaternaryEmphasis);
 }
 
-input.dialogcontainer-input {
+.dialogcontainer input.dialogcontainer-input {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	display: inline-block;
 	color: #444;
@@ -51,13 +81,22 @@ input.dialogcontainer-input {
 	border: 1px solid #aaa;
 	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
 	border-radius: .3em;
-	-moz-appearance: none;
-	-webkit-appearance: none;
-	appearance: none;
 	background-color: #fff;
  }
 
-input.dialogcontainer-spinner {
+.dialogcontainer textarea.dialogcontainer-input {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  color: #444;
+  width: 20em;
+  min-height: 16em;
+	padding: .6em 1.4em .5em .8em;
+  border: 1px solid #aaa;
+  border-radius: 0.3em;
+  outline: none;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+}
+
+.dialogcontainer input.dialogcontainer-spinner {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	display: inline-block;
 	color: #444;
@@ -76,7 +115,7 @@ input.dialogcontainer-spinner {
 	background-color: #fff;
  }
 
-input.dialogcontainer-date {
+.dialogcontainer input.dialogcontainer-date {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	display: inline-block;
 	color: #444;
@@ -94,3 +133,25 @@ input.dialogcontainer-date {
 	appearance: none;
 	background-color: #fff;
  }
+ 
+ /*----------------------------------------------------------------
+  * LookupInput (override defaults for class)
+  *----------------------------------------------------------------*/
+.dialogcontainer .lookupinput {
+  display: block;
+  padding-bottom: 0.2em;
+}
+
+.dialogcontainer .lookupinput .lookupinput-inputcontainer .lookupinput-headcontainer .lookupinput-input {
+  width: 12em;
+}
+
+.dialogcontainer .lookupinput .lookupinput-selectedcontainer {
+  display: inline-block;
+}
+
+.dialogcontainer .lookupinput .lookupinput-selectedcontainer .lookupinput-selecteditem {
+  margin-top: 0.5em;
+}
+
+

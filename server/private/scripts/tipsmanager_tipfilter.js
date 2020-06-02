@@ -169,28 +169,8 @@ class TipFilter {
   
   //--------------------------------------------------------------
   // utility
-  //--------------------------------------------------------------
-  _buildStringFromArray(arr, delimiter) {
-    var s = '';
-    
-    for (var i = 0; i < arr.length; i++) {
-      if (i > 0) s += delimiter;
-      s += arr[i].trim();
-    }
-    
-    return s;
-  }    
-    
-  _buildArrayFromString(str, delimiter) {
-    var arr = [];;
-    
-    var tokenized = str.split(delimiter);
-    for (var i = 0; i < tokenized.length; i++) {
-      arr.push(tokenized[i].trim());
-    }
-    
-    return arr;
-  }    
+  //--------------------------------------------------------------      
+   
   //--------------------------------------------------------------
   // db functions
   //--------------------------------------------------------------     

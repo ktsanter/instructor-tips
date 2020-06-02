@@ -76,30 +76,6 @@ class TipScheduling {
     
     return container;
   }
-  
-  /*
-  _renderNewTipContainer() {
-    var container = CreateElement.createDiv(null, 'tipschedule-newtip notshown');
-    this._newTipContainer = container;
-    
-    var subcontainer = CreateElement.createDiv(null, 'tipschedule-newtip-inputcontainer');
-    container.appendChild(subcontainer);
-    
-    var elemTipInput = CreateElement.createTextArea(null, 'tipschedule-newtip-input');
-    subcontainer.appendChild(elemTipInput);
-    elemTipInput.placeholder = 'text for new tip';
-    elemTipInput.addEventListener('input', (e) => {this._handleNewTipEdit(e);});
-    
-    subcontainer = CreateElement.createDiv(null, 'tipschedule-newtip-controlcontainer');
-    container.appendChild(subcontainer);
-    var handler = (e) => {this._handleAddTipCompletion(e, true);};
-    subcontainer.appendChild(CreateElement.createIcon(null, 'tipschedule-newtip-control savenewtip far fa-check-square disabled', 'save', handler));
-    handler = (e) => {this._handleAddTipCompletion(e, false);};
-    subcontainer.appendChild(CreateElement.createIcon(null, 'tipschedule-newtip-control cancelnewtip far fa-window-close', 'cancel', handler));
-    
-    return container;
-  }
-  */
 
   async _loadCategoryListFromDB() {
     var categoryList = null;
@@ -359,12 +335,16 @@ class TipScheduling {
   
   _disableContents(disable) {
     var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
+    var title = this._container.getElementsByClassName('tipmanager-title')[0];
+
     if (disable) {
       contents.style.display = 'none';
+      title.style.display = 'none';
       this._browse.show(false);
       
     } else {
-      contents.style.display = 'block'
+      contents.style.display = 'block';
+      title.style.display = 'block';
       this._browse.show(this._control.state().showbrowse);
     }
   }
@@ -391,12 +371,20 @@ class TipScheduling {
     var scheduleId = this._control.state().scheduleid;
     
     if (choiceType == 'addtip') {
-      console.log('_handleConfigChoice: add new tip to week #' + weekNum);
+      var elemWeeklyTipContents = elemWeeklyTip.getElementsByClassName('weeklytip-contents')[0];
+      var lastWeeklyItem = elemWeeklyTipContents.lastChild;
+      var moveAfterId = (lastWeeklyItem ? lastWeeklyItem.itemInfo.scheduletipid : -1);
+
       this._disableContents(true);
       this._control.show(false);
       
       this._addTipDialog.show(true);
-      this._addTipDialog.update(weekNum);
+      this._addTipDialog.update({
+        scheduleid: this._control.state().scheduleid,
+        weeknum: weekNum, 
+        moveafterid: moveAfterId,
+        movebeforeid: -1
+      });
         
       
     } else if (choiceType == 'addweek') {
@@ -418,12 +406,29 @@ class TipScheduling {
     }
   }
   
-  async _finishAddTip(params) {
-    console.log('_finishAddTip ' + JSON.stringify(params));
-    this._disableContents(false);
-    this._control.show(true);
-    
-    // do the saving
+  async _finishAddTip(info) {    
+    var addParams = {
+      tiptext: info.tiptext,
+      category: info.category,
+      scheduleid: info.params.scheduleid,
+      schedulelocation: info.params.weeknum,
+      moveafterid: info.params.moveafterid,
+      movebeforeid: info.params.movebeforeid
+    };
+
+    var queryResults = await this._doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams);
+    if (queryResults.success) {
+      this.update(false);
+      this._disableContents(false);
+      this._control.show(true);    
+
+    } else if (queryResults.details == '*ERROR: in dbPost, "duplicate tip for user"') {
+      this._notice.setNotice('');
+      this._addTipDialog.show(true);
+      setTimeout(function() {
+        alert('You already have a tip available with this text.');
+      }, 300);
+    }
   }
   
   _cancelAddTip() {
@@ -431,41 +436,6 @@ class TipScheduling {
     this._disableContents(false);
     this._control.show(true);
   }
-
-  
-  /*
-  async _handleAddTipCompletion(e, saveNewTip) {
-    if (saveNewTip) {
-      var tipText = this._newTipContainer.getElementsByClassName('tipschedule-newtip-input')[0].value;
-      var weekNum = this._newTipContainer.weekNum;
-      var scheduleId = this._control.state().scheduleid;
-      var moveAfterId = -1;
-      
-      var elemWeekContents = this._newTipContainer.previousSibling;
-      if (elemWeekContents.childElementCount > 0) {
-        moveAfterId = elemWeekContents.lastChild.itemInfo.scheduletipid;
-      }
-      
-      var addParams = {
-        tiptext: tipText,
-        scheduleid: this._control.state().scheduleid,
-        schedulelocation: weekNum,
-        moveafterid: moveAfterId,
-        movebeforeid: -1
-      }
-      
-      var queryResults = await this._doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams);
-      if (queryResults.success) {
-        this.update(false);
-
-      } else if (queryResults.details = '*ERROR: in dbPost, "duplicate tip for user"') {
-        this._notice.setNotice('');
-        alert('You already have a tip available with this text.  Please use the "browse" feature to select it');
-        await this.update(false);
-      }
-    }
-  }
-  */
   
   async _addTip(tipId, destinationInfo) {
     var addParams = {
