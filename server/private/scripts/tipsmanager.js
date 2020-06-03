@@ -16,9 +16,9 @@ const app = function () {
     logoutURL: '/usermanagement/logout',
     
     navOptions: [
-      'scheduling',
+      'scheduling', 'share', 'notification',
       'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates',
-      'manageshared', 'settings'
+      'settings'
     ],
     adminTypes: ['privileges', 'users', 'userprivileges', 'categories', 'tips', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates']
   };
@@ -27,6 +27,7 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init () {
+    document.title = appInfo.appName;
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
     
@@ -34,7 +35,7 @@ const app = function () {
     page.body.appendChild(page.maincontainer);
 
     await _renderPage();
-    _navDispatch('scheduling');
+    _navDispatch('share');//_navDispatch('scheduling');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -82,11 +83,12 @@ const app = function () {
       
       items: [
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
+        {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false},
+        {label: 'Sharing', callback: () => {return _navDispatch('share');}, subitems: null, rightjustify: false},
         {label: htmlForLogin, callback: null, subitems: null, rightjustify: true}
       ],
       
-      hamburgeritems: [
-        {label: htmlForShared, callback: () => {return _navDispatch('manageshared');}},      
+      hamburgeritems: [     
         {label: 'settings', callback: () => {return _navDispatch('settings');}},      
         {label: 'help', callback: _showHelp},
         {label: 'logout', callback: _doLogout}
@@ -117,15 +119,14 @@ const app = function () {
   async function _renderSubContainers() {
     var container = CreateElement.createDiv(null, 'primary-subcontainer');
         
-    settings.scheduling = new TipScheduling({
-      callback: () => {return _sharedScheduleChange();}
-    });
+    settings.scheduling = new TipScheduling();
     container.appendChild(await settings.scheduling.render());
+    
+    settings.notification = new TipNotification();
+    container.appendChild(await settings.notification.render());
 
-    settings.manageshared = new TipSchedulingShareManagement({
-      callback: () => {return _sharedScheduleChange();}
-    });
-    container.appendChild(await settings.manageshared.render());
+    settings.share = new TipShare();
+    container.appendChild(await settings.share.render());
 
     settings.settings = new Settings();
     container.appendChild(await settings.settings.render());

@@ -1,11 +1,11 @@
 define(function (require) {
   require('tipsmanager');
   require('tipsmanager_scheduling');
-  require('tipsmanager_schedulingshare');
+  require('tipsmanager_notification');
+  require('tipsmanager_share');
   require('tipsmanager_schedulingcontrol');
   require('tipsmanager_tipbrowse');
   require('tipsmanager_tipfilter');
-  require('tipsmanager_manageshared');
   require('tipsmanager_settings');
   require('dbadmincontainer');
   require('dbadmintableedit');

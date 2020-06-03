@@ -120,6 +120,25 @@ CREATE TABLE controlstate
   CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
 );
 
+CREATE TABLE scheduleshare
+(
+  scheduleshareid  int unsigned NOT NULL AUTO_INCREMENT ,
+  scheduleid int unsigned NOT NULL, 
+  userid_from      int unsigned NOT NULL ,
+  userid_to      int unsigned NOT NULL ,
+  comment     varchar(300) NOT NULL,
+  datestamp   varchar(30) NOT NULL,
+
+  PRIMARY KEY (scheduleshareid) ,
+
+  CONSTRAINT UNIQUE (scheduleid, userid_from, userid_to, datestamp) ,
+  CONSTRAINT FOREIGN KEY (scheduleid) REFERENCES schedule (scheduleid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (userid_from) REFERENCES user (userid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (userid_to) REFERENCES user (userid) ON DELETE CASCADE
+);
+
+
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------

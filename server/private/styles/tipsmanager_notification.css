@@ -1,0 +1,15 @@
+/*-------------------------------------------------------------------
+ * styling for TipNotification class
+ *------------------------------------------------------------------*/
+.tipnotification {
+  position: relative;
+  --itemBorder: #dddd;
+}
+
+.tipnotification.tipnotification-hide {
+  display: none;
+}
+
+.tipnotification .tipnotification-contents {
+  border: 1px solid red;
+}

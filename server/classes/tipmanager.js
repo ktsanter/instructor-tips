@@ -49,6 +49,12 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'categorylist') {
       dbResult = await this._getCategoryList(params, postData, userInfo);
       
+    } else if (params.queryName == 'userstosharewith') {
+      dbResult = await this._getUsersToShareWith(params, postData, userInfo);
+      
+    } else if (params.queryName == 'sharedwithuser') {
+      dbResult = await this._getSchedulesSharedWithUser(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -64,6 +70,9 @@ module.exports = internal.TipManager = class {
       
     } else if (params.queryName == 'addscheduleweek') {
       dbResult = await this._addScheduleWeek(params, postData, userInfo);
+            
+    } else if (params.queryName == 'shareschedule') {
+      dbResult = await this._shareSchedule(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -499,6 +508,58 @@ module.exports = internal.TipManager = class {
     
     return result;
   }
+  
+  async _getUsersToShareWith(params, postData, userInfo) {
+    var result = this._queryFailureResult(); 
+    
+    var queryList = {};
+
+    queryList.users =
+      'select userid, username ' +
+      'from user ' +
+      'order by username ';
+    
+    var queryResults = await this._dbQueries(queryList);    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.users = queryResults.data.users;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
+  async _getSchedulesSharedWithUser(params, postData, userInfo) {
+    var result = this._queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select ' +
+        'ss.scheduleshareid, ss.comment, ss.datestamp, ' +
+        's.scheduleid, s.schedulename, ' +
+        'u.username ' +
+      'from scheduleshare as ss, schedule as s, user as u ' +
+      'where ss.scheduleid = s.scheduleid ' +
+        'and ss.userid_to = ' + userInfo.userId + ' ' +
+        'and ss.userid_from = u.userid ';
+        
+    queryResults = await this._dbQuery(query);
+    console.log(queryResults);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
     
 //---------------------------------------------------------------
 // specific insert methods
@@ -537,6 +598,33 @@ module.exports = internal.TipManager = class {
     
     return result;
   }  
+  
+  async _shareSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var query, queryResults;
+    
+    query = 
+      'insert into scheduleshare (scheduleid, userid_from, userid_to, comment, datestamp) ' + 
+      'values (' +
+        postData.scheduleid + ', ' +
+        userInfo.userId + ', ' +
+        postData.userid + ', ' +
+        '"' + postData.comment + '", ' +
+        'NOW() ' +
+      ') '
+      
+    queryResults = await this._dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succceeded';
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
 
 //---------------------------------------------------------------
 // specific update methods

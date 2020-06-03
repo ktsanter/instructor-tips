@@ -1,0 +1,120 @@
+/*-------------------------------------------------------------------
+ * styling for TipShare class
+ *------------------------------------------------------------------*/
+.tipshare {
+  position: relative;
+  --itemBorder: #dddd;
+}
+
+.tipshare.tipshare-hide {
+  display: none;
+}
+
+.tipshare .tipshare-hide {
+  display: none;
+}
+
+.tipshare .tipshare-contents {}
+
+/*-------------------------------------------------------------------
+ * sending
+ *------------------------------------------------------------------*/
+.tipshare .tipshare-contents .tipshare-select {
+  min-width: 16em;
+}
+
+.tipshare .tipshare-contents .tipshare-selectcontainer {
+  margin-top: 1.0em;
+}
+
+.tipshare .tipshare-contents .tipshare-targetcontainer {}
+
+.tipshare .tipshare-contents .tipshare-targetcontainer .tipshare-targetselect {
+  display: inline-block;
+  margin-right: 0.4em;
+}
+
+.tipshare .tipshare-contents .tipshare-targetcontainer .tipshare-comment {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	display: inline-block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 1.4em .5em .8em;
+  width: 30em;
+	box-sizing: border-box;
+	margin: 0;
+  margin-top: 0.3em;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	border-radius: .3em;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #fff;
+}
+
+.tipshare .tipshare-contents .tipshare-confirmcancelcontainer{
+  margin: 0.2em;
+}
+
+.tipshare .tipshare-contents .tipshare-confirmcancelcontainer .confirmcancel {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  height: 2.6em;
+  width: 5em;
+  margin-top: 0.2em;
+  margin-right: 0.2em;
+  color: white;
+  background-color: var(--bgSecondaryChoice);
+  border: 1px solid #444;
+  border-radius: 0.3em;
+  outline: none;
+}
+
+.tipshare .tipshare-contents .tipshare-confirmcancelcontainer .confirmcancel:disabled {
+  color: black;
+  background-color: var(--bgTertiaryEmphasis);  
+}
+
+/*-------------------------------------------------------------------
+ * receiving
+ *------------------------------------------------------------------*/
+ .tipshare .tipshare-contents .tipshare-received {
+   border: 1px solid blue;
+   margin: 0.2em;
+ }
+
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-title {
+   margin: 0.2em;
+ }
+
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-title .tipshare-received-titletext {
+   margin: 0.2em;
+ }
+
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-contents {
+   margin: 0.2em;
+ }
+
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item {
+   border: 1px solid purple;  
+   margin: 0.2em;
+ }
+
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail {
+  display: inline-block;
+  margin: 0.2em;
+}
+
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail.tipshare-date {
+  width: 10em;
+}
+
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail.tipshare-username {
+  width: 16em;
+}
+
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail .tipshare-commenticon {
+  padding: 0em 0.4em;
+}
+
+

@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------------------
 
 class TipScheduling {
-  constructor(config) {
+  constructor() {
     this._version = '0.01';
     this._title = 'Scheduling';
     
@@ -16,12 +16,6 @@ class TipScheduling {
       'weeklytip-icon fas fa-check-square'
     ];
     
-    this._config = config;
-    this._callback = config.callback;
-    
-    this._control = null;
-    this._newTipContainer = null;
-
     this._container = null;
   }
  
@@ -465,14 +459,12 @@ class TipScheduling {
   }
   
   async _finishEditTip(info) { 
-    console.log('_finishEditTip');
     var editParams = {
       tipid: info.params.tipid,
       tiptext: info.tiptext,
       origcategory: info.params.category,
       category: info.category
     }
-    console.log(editParams);
 
     var queryResults = await this._doPostQuery('tipmanager/update', 'tiptextandcategory', editParams);
     if (queryResults.success) {
@@ -483,7 +475,6 @@ class TipScheduling {
   }
   
   _cancelEditTip() {
-    console.log('_cancelEditTip');
     this._disableContents(false);
     this._control.show(true);
   }

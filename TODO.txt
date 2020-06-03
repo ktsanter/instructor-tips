@@ -1,0 +1,7 @@
+- add tip editing menu option?
+
+- schedule sharing
+
+- notification management
+
+- text sanitizing for tips
