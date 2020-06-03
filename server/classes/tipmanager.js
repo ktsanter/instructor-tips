@@ -99,6 +99,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'addtipandscheduletip') {
       dbResult = await this._addTipAndScheduleTip(params, postData, userInfo);
             
+    } else if (params.queryName == 'tiptextandcategory') {
+      dbResult = await this._updateTipTextAndCategory(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -268,24 +271,27 @@ module.exports = internal.TipManager = class {
             
       scheduledetails:
         'select ' +  
-          'st.scheduletipid, st.tipstate, st.schedulelocation, st.previousitem, st.nextitem, ' +
+          'st.scheduletipid, st.tipstate, st.schedulelocation, st.previousitem, st.nextitem, ' + 
+          'vtc.common, vtc.userid, vtc.categorytext, ' +
           't.tipid, t.tiptext ' +
-          'from schedule as s, scheduletip as st, tip as t ' +
+          'from schedule as s, scheduletip as st, tip as t, view_tipsandcategories as vtc ' +
           'where s.scheduleid = ' + postData.scheduleid + ' ' +
             'and s.userid = ' + userInfo.userId + ' ' +
             'and s.scheduleid = st.scheduleid ' +
-            'and st.tipid = t.tipid ',
-        
+            'and st.tipid = t.tipid ' +
+            'and t.tipid = vtc.tipid '
     };
         
     var queryResults = await this._dbQueries(queryList);
     
     if (queryResults.success) {
+      var consolidatedDetails = this._consolidateTipCategories(queryResults.data.scheduledetails, userInfo);
+      
       result.success = true;
       result.details = 'query succeeded';
       result.data = {
         schedule: queryResults.data.schedule[0],
-        scheduledetails: this._orderScheduleDetails(queryResults.data.scheduledetails, queryResults.data.schedule[0].schedulelength)
+        scheduledetails: this._orderScheduleDetails(consolidatedDetails, queryResults.data.schedule[0].schedulelength)
       };
       result.constraints = {};
     } else {
@@ -294,6 +300,53 @@ module.exports = internal.TipManager = class {
     
     return result;
   }     
+  
+  _consolidateTipCategories(scheduleTipList, userInfo) {
+    var tipList = {};
+    for (var i = 0; i < scheduleTipList.length; i++) {
+      var tipId = scheduleTipList[i].tipid;
+      tipList[tipId] = {};
+    }
+    
+    for (var i = 0; i < scheduleTipList.length; i++) {
+      var scheduleTip = scheduleTipList[i];
+      var tip = tipList[scheduleTip.tipid];
+      
+      tip.tiptext = scheduleTip.tiptext;
+      tip.common = scheduleTip.common;
+      tip.userid = scheduleTip.userid;
+      tip.editable = (!scheduleTip.common && scheduleTip.userid == userInfo.userId); 
+
+      if (!tip.hasOwnProperty('categorySet')) tip.categorySet = new Set();
+      var category = scheduleTip.categorytext;
+      if (category) tip.categorySet.add(category);
+      
+      tipList[scheduleTip.tipid] = tip;
+    }
+    
+    var consolidated = {}
+    for (var i = 0; i < scheduleTipList.length; i++) {
+      var scheduleTipId = scheduleTipList[i].scheduletipid;
+      consolidated[scheduleTipId] = {}
+    }
+    for (var i = 0; i < scheduleTipList.length; i++) {
+      var scheduleTip = scheduleTipList[i];
+      var consolidatedScheduleTip = consolidated[scheduleTip.scheduletipid];
+      
+      delete scheduleTip.categorytext;
+      scheduleTip.category = Array.from(tipList[scheduleTip.tipid].categorySet);
+      scheduleTip.editable = tipList[scheduleTip.tipid].editable;
+      
+      consolidated[scheduleTip.scheduletipid] = scheduleTip;
+    }
+    
+    var consolidatedArray = [];
+    for (var id in consolidated) {
+      consolidatedArray.push(consolidated[id]);
+    }
+    
+    return consolidatedArray;
+  }
   
   _orderScheduleDetails(details, scheduleLength) {
     var detailsByLocation = {};
@@ -752,6 +805,97 @@ module.exports = internal.TipManager = class {
     }
     
     return result;
+  }
+  
+  async _updateTipTextAndCategory(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var queryList, queryResults;
+    
+    queryList = {
+      checkifeditable: 
+        'select common, userid ' +
+        'from view_tipsandcategories ' +
+        'where tipid = ' + postData.tipid + ' '
+    };
+
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    var qData = queryResults.data.checkifeditable[0];    
+    var editable = (!qData.common && qData.userid == userInfo.userId);
+    if (!editable) {
+      result.details = 'tip not editable by user';
+      return result;
+    }
+    
+    var origCategorySet = new Set(postData.origcategory);
+    var newCategorySet = new Set(postData.category);
+    var categoriesToRemove  = Array.from(this._difference(origCategorySet, newCategorySet));
+    var categoriesToAdd = Array.from(this._difference(newCategorySet, origCategorySet));
+
+    queryList = {
+      tiptext: 
+        'update tip ' + 
+        'set tiptext = "' + postData.tiptext + '" ' +
+        'where tipid = ' + postData.tipid,
+    };
+    
+    if (categoriesToRemove.length > 0) {
+      queryList.remove = 
+        'delete from tipcategory ' +
+        'where tipcategoryid in ( ' +
+          'select tipcategoryid ' +
+          'from tipcategory as tc, category as c ' +
+          'where tc.categoryid = c.categoryid ' +
+          '  and tc.tipid = ' + postData.tipid + ' '  +
+          '  and c.categorytext ' + this._makeInClauseFromArray(categoriesToRemove, true) + ' ' +
+        ')';
+    }
+    
+    for (var i = 0; i < categoriesToAdd.length; i++) {
+      var categoryText = categoriesToAdd[i];
+      queryList['add' + i] = 
+        'insert into tipcategory(tipid, categoryid) ' +
+          'select ' + postData.tipid + ', categoryid ' +
+          'from category as c ' +
+          'where c.categorytext = "' + categoryText + '" ';
+    }
+    
+    queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  _difference(setA, setB) {
+    let _difference = new Set(setA)
+    for (let elem of setB) {
+        _difference.delete(elem)
+    }
+    return _difference
+  }
+  
+  _makeInClauseFromArray(arr, quoted) {
+    var clause = 'in (';
+    var delim = quoted ? '"' : '';
+    
+    for (var i = 0; i < arr.length; i++) {
+      if (i > 0) clause += ', ';
+      clause += delim + arr[i] + delim;
+    }
+    
+    clause += ') ';
+    
+    return clause;
   }
   
   async _addTipCategory(params, postData, userInfo) {

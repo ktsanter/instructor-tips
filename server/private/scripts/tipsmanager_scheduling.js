@@ -262,7 +262,13 @@ class TipScheduling {
       subsubcontainer = CreateElement.createDiv(null, classString);
       subcontainer.appendChild(subsubcontainer);
       var handler = (e) => {this._handleConfigChoice(e, 'edittip');};
-      subsubcontainer.appendChild(CreateElement.createIcon(null, 'weeklytip-controls-icon far fa-edit', 'edit tip', handler));
+      var classString = 'weeklytip-controls-icon far fa-edit';
+      var title = '';
+      if (itemInfo.editable) {
+        classString += ' editable';
+        title = 'edit tip';
+      }
+      subsubcontainer.appendChild(CreateElement.createIcon(null, classString, title, handler));
     }
     
     return container;
@@ -400,11 +406,14 @@ class TipScheduling {
         movebeforeid: -1
       });
       
-    } else if (choiceType == 'edittip') {    
-      this._disableContents(true);
-      this._control.show(false);
-      this._editTipDialog.show(true);
-      this._editTipDialog.update({});
+    } else if (choiceType == 'edittip') {  
+      var itemInfo = e.target.parentNode.parentNode.itemInfo;
+      if (itemInfo.editable) {
+        this._disableContents(true);
+        this._control.show(false);
+        this._editTipDialog.show(true);
+        this._editTipDialog.update(itemInfo);
+      }
       
     } else if (choiceType == 'addweek') {
       var queryResults = await this._doPostQuery('tipmanager/insert', 'addscheduleweek', {scheduleid: scheduleId, afterweek: weekNum});
@@ -456,10 +465,21 @@ class TipScheduling {
   }
   
   async _finishEditTip(info) { 
-    console.log('_finishEditTip ' + JSON.stringify(info));
+    console.log('_finishEditTip');
+    var editParams = {
+      tipid: info.params.tipid,
+      tiptext: info.tiptext,
+      origcategory: info.params.category,
+      category: info.category
+    }
+    console.log(editParams);
 
-    this._disableContents(false);
-    this._control.show(true);    
+    var queryResults = await this._doPostQuery('tipmanager/update', 'tiptextandcategory', editParams);
+    if (queryResults.success) {
+      this.update(false);
+      this._disableContents(false);
+      this._control.show(true);    
+    }
   }
   
   _cancelEditTip() {

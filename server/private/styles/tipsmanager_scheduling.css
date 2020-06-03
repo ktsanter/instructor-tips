@@ -151,9 +151,14 @@
 }
 
 .weeklytip-container .weeklytip-controls .weeklytip-controls-icon {
+  color: var(--bgTertiaryEmphasis);
   padding-left: 0.4em;
   padding-right: 0.2em;
   opacity: 0;
+}
+
+.weeklytip-container .weeklytip-controls .weeklytip-controls-icon.editable {
+  color: black;
 }
 
 .weeklytip-container .weeklytip-controls .weeklytip-controls-icon:hover {

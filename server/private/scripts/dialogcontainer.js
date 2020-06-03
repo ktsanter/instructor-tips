@@ -3,7 +3,6 @@
 //-------------------------------------------------------------------
 // TODO: 
 //-------------------------------------------------------------------
-
 class DialogContainer {
   constructor(config) {
     this._version = '0.01';
@@ -26,8 +25,8 @@ class DialogContainer {
     else if (dialogType == 'delete-schedule') this._container.appendChild(this._renderDeleteSchedule());
     
     // tip dialogs
-    else if (dialogType == 'add-tip') this._container.appendChild(this._renderAddTip());
-    else if (dialogType == 'edit-tip') this._container.appendChild(this._renderEditTip());
+    else if (dialogType == 'add-tip') this._container.appendChild(this._renderAddEditTip(dialogType));
+    else if (dialogType == 'edit-tip') this._container.appendChild(this._renderAddEditTip(dialogType));
     
     // other
     else console.log('unrecognized dialog type: ' + dialogType);    
@@ -120,10 +119,11 @@ class DialogContainer {
     return container;
   }
   
-  _renderAddTip() {
+  _renderAddEditTip(dialogType) {
     var container = CreateElement.createDiv(null, 'dialogcontainer-addtip');
     
-    container.appendChild(this._renderTitle('Add new tip'));
+    var titleText = (dialogType == 'add-tip' ? 'Add new tip' : 'Edit tip');
+    container.appendChild(this._renderTitle(titleText));
     
     // tip text input
     var subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub');
@@ -153,30 +153,10 @@ class DialogContainer {
     subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub');
     container.appendChild(subContainer);
     
+    var confirmText = (dialogType == 'add-tip' ? 'create' : 'save');
+    var confirmTitle = (dialogType == 'add-tip' ? 'create new tip' : 'save changes');
     var handler = (me) => {this._handleConfirm(this);};
-    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'create', 'create new tip', handler);
-    elem.disabled = true;
-    subContainer.appendChild(elem);
-
-    handler = (me) => {this._handleCancel(this);};
-    subContainer.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'cancel', 'cancel', handler));
-    
-    return container;
-  }
-
-  _renderEditTip() {
-    var container = CreateElement.createDiv(null, 'dialogcontainer-edittip');
-    
-    container.appendChild(this._renderTitle('Edit tip'));
-    
-    var subContainer;
-        
-    // confirm/cancel controls
-    subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub');
-    container.appendChild(subContainer);
-    
-    var handler = (me) => {this._handleConfirm(this);};
-    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'create', 'create new tip', handler);
+    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', confirmText, confirmTitle, handler);
     elem.disabled = true;
     subContainer.appendChild(elem);
 
@@ -188,7 +168,7 @@ class DialogContainer {
   
   _renderTitle(titleText) {
     var container = CreateElement.createDiv(null, 'dialogcontainer-title');
-    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-titletext', 'Add new tip'));
+    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-titletext', titleText));
     
     return container;
   }
@@ -251,9 +231,35 @@ class DialogContainer {
   }
   
   _updateEditTip(params) {
-    console.log('_updateEditTip ' + JSON.stringify(params));
-    this._container.getElementsByClassName('confirm')[0].disabled = false; // for testing only -> move to input handler
+    if (!params.editable) {
+      this._handleCancel(this);
+      return;
+    }
+    
+    this._config.params = params;
+
+    var elemTipText = this._container.getElementsByClassName('dialogcontainer-input')[0];
+    elemTipText.value = params.tiptext;
+    elemTipText.focus();
+
+    this._updateTipTextPreview(params.tiptext);
+    
+    this._category.setSelectedValues(params.category);
+    
+    var elemConfirm = this._container.getElementsByClassName('confirm')[0];
+    elemConfirm.disabled = (params.tiptext.trim().length == 0);
   }
+  
+  _updateTipTextPreview(tipText) {
+    var elemPreview = this._container.getElementsByClassName('dialogcontainer-preview')[0];
+    elemPreview.innerHTML = MarkdownToHTML.convert(tipText);
+    if (tipText.length == 0) elemPreview.innerHTML = 'preview';
+    this._setClass(elemPreview, 'preview-default', tipText.length == 0);
+  }
+  
+  _updateConfirm(enable) {
+    this._container.getElementsByClassName('confirm')[0].disabled = !enable;
+  }  
 
   //--------------------------------------------------------------
   // show/hide
@@ -310,7 +316,13 @@ class DialogContainer {
       };
 
     } else if (dialogType == 'edit-tip') {
-      callbackData = {dummy: 'none'};
+      var elemTipText = this._container.getElementsByClassName('dialogcontainer-input')[0];
+      
+      callbackData = {
+        tiptext: elemTipText.value,
+        category: this._category.value(),
+        params: this._config.params
+      };
       
     } else {
       console.log('unrecognized dialog type: ' + dialogType); 
@@ -334,17 +346,14 @@ class DialogContainer {
   
   _handleScheduleName(e) {
     var nameValue = e.target.value.trim();
-    this._container.getElementsByClassName('confirm')[0].disabled = (nameValue.length <= 0);
+    this._updateConfirm(nameValue.length > 0);
   }
   
   _handleTipTextChange(e) {
-    var nameValue = e.target.value.trim();
-    this._container.getElementsByClassName('confirm')[0].disabled = (nameValue.length <= 0);
+    var tipText = e.target.value.trim();
     
-    var elemPreview = this._container.getElementsByClassName('dialogcontainer-preview')[0];
-    elemPreview.innerHTML = MarkdownToHTML.convert(nameValue);
-    if (nameValue.length == 0) elemPreview.innerHTML = 'preview';
-    this._setClass(elemPreview, 'preview-default', nameValue.length == 0);
+    this._updateTipTextPreview(tipText);
+    this._updateConfirm(tipText.length > 0);
   }
   
   _handleCategoryChange(params) {}
