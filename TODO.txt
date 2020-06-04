@@ -8,3 +8,8 @@
 - notification management
 
 - text sanitizing for tips
+
+- limit string lengths for DB value
+    - schedule names
+    - schedule share comment
+    - tip text

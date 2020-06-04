@@ -128,7 +128,7 @@
 
 .tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail {
   display: inline-block;
-  margin: 0.2em;
+  margin: 0.4em 0.2em 0.2em 0.2em;
   height: 1.5em;
   overflow-x: hidden;
   overflow-y: auto;
@@ -140,7 +140,7 @@
   background-color: var(--bgSecondaryChoice);
   border-radius: 0.3em;
   cursor: pointer;
-  padding: 0.1em 0.3em 0.2em 0.1em;
+  padding: 0.1em 0.3em 0 0.1em;
 }
 
 .tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail.tipshare-date {
@@ -160,8 +160,15 @@
   cursor: pointer;
 }
 
+.tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail .tipshare-commenticon.hide-me {
+  visibility: hidden;
+}
+
 .tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail.tipshare-comment {
   display: block;
+  height: auto;
+  margin-left: 1.9em;
+  margin-bottom: 0.4em;
 }
 
 .tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-received-item .tipshare-detail.tipshare-comment.hide-me {
@@ -176,7 +183,7 @@
   border-radius: 0.3em;
   cursor: pointer;
   padding: 0.2em;
-  margin: 0.1em 0.1em 0 0;
+  margin: 0.4em 0.2em 0 0;
 }
 
 .tipshare .tipshare-contents .tipshare-received .tipshare-received-contents .tipshare-deletecontainer:hover {

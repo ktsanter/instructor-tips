@@ -135,23 +135,23 @@ class TipShare {
     container.appendChild(CreateElement.createDiv(null, 'tipshare-detail tipshare-date', scheduleInfo.datestamp));
     container.appendChild(CreateElement.createDiv(null, 'tipshare-detail tipshare-username', scheduleInfo.username));
     
+    var subContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-commentcontrol');
+    container.appendChild(subContainer);
+    
+    var handler = (e) => {this._handleCommentClick(e)};
+    var classString = 'tipshare-commenticon far fa-comment-dots';
+    if (scheduleInfo.comment.length == 0) classString += ' hide-me';
+    var elemIcon = CreateElement.createIcon(null, classString, 'show/hide comment', handler);
+    subContainer.appendChild(elemIcon);
+
     var elemScheduleName = CreateElement.createDiv(null, 'tipshare-detail tipshare-schedulename', scheduleInfo.schedulename);
     container.appendChild(elemScheduleName);
     
     container.appendChild(this._renderReceivedScheduleItemDelete(scheduleInfo, evenItem));
-
-    if (scheduleInfo.comment.length > 0) {
-      var subContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-commentcontrol');
-      container.appendChild(subContainer);
-      
-      var handler = (e) => {this._handleCommentClick(e)};
-      var elemIcon = CreateElement.createIcon(null, 'tipshare-commenticon far fa-comment-dots', 'show/hide comment', handler);
-      subContainer.appendChild(elemIcon);
-      
-      var commentContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-comment hide-me');
-      container.appendChild(commentContainer);
-      commentContainer.appendChild(CreateElement.createDiv(null, 'tipshare-commenttext', scheduleInfo.comment));
-    }    
+    
+    var commentContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-comment hide-me');
+    container.appendChild(commentContainer);
+    commentContainer.appendChild(CreateElement.createDiv(null, 'tipshare-commenttext', scheduleInfo.comment));
     
     return container;
   }
