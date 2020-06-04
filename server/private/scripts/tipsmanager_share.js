@@ -12,6 +12,7 @@ class TipShare {
     this._HIDE_CLASS = 'tipshare-hide';
 
     this._container = null;
+    this._config = config;
   }
  
   //--------------------------------------------------------------
@@ -125,6 +126,12 @@ class TipShare {
 
     container.scheduleInfo = scheduleInfo;
     
+    var handler = (e) => {this._handleAcceptSchedule(e);};
+    var elemControlContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-control');
+    container.appendChild(elemControlContainer);
+    elemControlContainer.addEventListener('click', handler);
+    elemControlContainer.appendChild(CreateElement.createIcon(null, 'fas fa-file-import', 'accept shared schedule'));
+    
     container.appendChild(CreateElement.createDiv(null, 'tipshare-detail tipshare-date', scheduleInfo.datestamp));
     container.appendChild(CreateElement.createDiv(null, 'tipshare-detail tipshare-username', scheduleInfo.username));
     
@@ -133,7 +140,7 @@ class TipShare {
     
     if (scheduleInfo.comment.length > 0) {
       var handler = (e) => {this._handleCommentClick(e)};
-      var elemIcon = CreateElement.createIcon(null, 'tipshare-commenticon far fa-comment-dots', 'comment', handler);
+      var elemIcon = CreateElement.createIcon(null, 'tipshare-commenticon far fa-comment-dots', 'show/hide comment', handler);
       elemScheduleName.appendChild(elemIcon);
       
       var commentContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-comment hide-me');
@@ -162,7 +169,6 @@ class TipShare {
   }
 
   async update() {
-    console.log('TipShare.update()');
     await this._updateScheduleList();
     await this._updateUserList();
     this._updateConfirm();
@@ -228,7 +234,9 @@ class TipShare {
     this._removeChildren(contents);    
     for (var i = 0; i < sharedSchedules.length; i++) {
       contents.appendChild(this._renderReceivedScheduleItem(sharedSchedules[i], i % 2 == 0));
-    }      
+    }
+    
+    this._config.changeCallback({numSharedSchedules: sharedSchedules.length});
   }
 
   async _shareSchedule(params) {
@@ -237,6 +245,11 @@ class TipShare {
       alert('The schedule has been shared successfully');
       await this._updateReceived();
     }
+  }
+  
+  async _acceptSchedule(params) {
+    console.log('accept schedule ' + JSON.stringify(params));
+    await this._updateReceived();
   }
   
   //--------------------------------------------------------------
@@ -263,6 +276,18 @@ class TipShare {
     var elemComment = e.target.parentNode.parentNode.getElementsByClassName('tipshare-comment')[0];
     this._toggleClass(elemComment, 'hide-me', false);
   }
+  
+  async _handleAcceptSchedule(e) {
+    var node = e.target.parentNode;
+    if (node.classList.contains('tipshare-control')) node = node.parentNode;
+    
+    if (!node.scheduleInfo) {
+      console.log('can\'t find scheduleInfo for e.target');
+      return;
+    }
+
+    await this._acceptSchedule(node.scheduleInfo);
+  }    
   
   //--------------------------------------------------------------
   // utility methods

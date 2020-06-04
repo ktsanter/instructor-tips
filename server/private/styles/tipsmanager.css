@@ -48,14 +48,19 @@ body {
   padding-right: 7px;
 }
 
-.tipmanager-schedulecount {
-  display: inline-block;
+.navbar .navbar-item.navbar-main-item.tipmanager-sharedlabel {
+  position: relative;
+}
+
+.navbar .navbar-item.navbar-main-item .tipmanager-super {
+  position: absolute;
+  top: 0.0em;
+  right: 0.5em;
   background-color: var(--bgSecondaryChoice);
-  border: 1px solid white;
-  border-radius: 50%;
-  margin-left: 0.3em;
-  min-width: 1.0em;
-  padding-right: 0.06em;
+}
+
+.navbar .navbar-item.navbar-main-item .tipmanager-super.hide-me {
+  display: none;
 }
 
 /*------------------------------------------------------------------
