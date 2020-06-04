@@ -545,7 +545,8 @@ module.exports = internal.TipManager = class {
       'from scheduleshare as ss, schedule as s, user as u ' +
       'where ss.scheduleid = s.scheduleid ' +
         'and ss.userid_to = ' + userInfo.userId + ' ' +
-        'and ss.userid_from = u.userid ';
+        'and ss.userid_from = u.userid ' +
+      'order by ss.datestamp desc';
         
     queryResults = await this._dbQuery(query);
     console.log(queryResults);

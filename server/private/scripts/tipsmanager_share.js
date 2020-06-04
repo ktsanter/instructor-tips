@@ -39,12 +39,29 @@ class TipShare {
 
   _renderContents() {
     var container = CreateElement.createDiv(null, 'tipshare-contents');
-    
-    container.appendChild(this._renderScheduleSelect());
-    container.appendChild(this._renderScheduleTargetUI());
-    container.appendChild(this._renderConfirmCancel());
-    
+ 
+    container.appendChild(this._renderSendSchedule());     
     container.appendChild(this._renderReceivedSchedules());
+    
+    return container;
+  }
+  
+  _renderSendSchedule() {
+    var container = CreateElement.createDiv(null, 'tipshare-send');
+    
+    container.appendChild(this._renderSendTitle());
+    container.appendChild(this._renderScheduleSelect());
+    container.appendChild(this._renderScheduleUserSelect());
+    container.appendChild(this._renderConfirmCancel());
+    container.appendChild(this._renderScheduleComment());
+
+    return container;
+  }
+  
+  _renderSendTitle() {
+    var container = CreateElement.createDiv(null, 'tipshare-sendtitle');
+    
+    container.appendChild(CreateElement.createDiv(null, 'tipshare-sendtitletext', 'Share schedule with others'));
     
     return container;
   }
@@ -58,25 +75,33 @@ class TipShare {
     return container;
   }
   
-  _renderScheduleTargetUI() {
-    var container = CreateElement.createDiv(null, 'tipshare-targetcontainer');
+  _renderScheduleUserSelect() {
+    var container = CreateElement.createDiv(null, 'tipshare-usercontainer');
     
-    var elemSelect = CreateElement.createSelect(null, 'tipshare-targetselect tipshare-select', null, []);
+    var elemSelect = CreateElement.createSelect(null, 'tipshare-userselect tipshare-select', null, []);
     container.appendChild(elemSelect);
+    
+    return container;
+  }
+  
+  _renderScheduleComment() {
+    var container = CreateElement.createDiv(null, 'tipshare-commentcontainer');
     
     var elemComment = CreateElement.createTextInput(null, 'tipshare-comment');
     container.appendChild(elemComment);
     elemComment.placeholder = 'comment';
+    elemComment.maxLength = 250;
         
     return container;
   }
   
   _renderConfirmCancel() {
-    var container = CreateElement.createDiv(null, 'tipshare-confirmcancelcontainer');
+    var container = CreateElement.createDiv(null, 'tipshare-confirmcancelcontainer disable-me');
+    container.disabled = true;
     
-    var handler = (me) => {this._handleConfirm(this);};
-    var elem = CreateElement.createButton(null, 'confirmcancel confirm', 'share', 'share the selected schedule', handler);
-    elem.disabled = true;
+    var handler = (e) => {this._handleConfirm(e);};
+    var elem = CreateElement.createIcon(null, 'confirmcancel fas fa-file-export', 'share the selected schedule', handler);
+
     container.appendChild(elem);
     
     return container;
@@ -94,11 +119,11 @@ class TipShare {
     return container;
   }
   
-  _renderSharedSchedule(scheduleInfo) {
-    var container = CreateElement.createDiv(null, 'tipshare-received-item');
+  _renderReceivedScheduleItem(scheduleInfo, evenItem) {
+    var classString = 'tipshare-received-item' +  (evenItem ? ' evenitem' : ' odditem');
+    var container = CreateElement.createDiv(null, classString);
 
     container.scheduleInfo = scheduleInfo;
-    console.log(scheduleInfo);
     
     container.appendChild(CreateElement.createDiv(null, 'tipshare-detail tipshare-date', scheduleInfo.datestamp));
     container.appendChild(CreateElement.createDiv(null, 'tipshare-detail tipshare-username', scheduleInfo.username));
@@ -110,7 +135,10 @@ class TipShare {
       var handler = (e) => {this._handleCommentClick(e)};
       var elemIcon = CreateElement.createIcon(null, 'tipshare-commenticon far fa-comment-dots', 'comment', handler);
       elemScheduleName.appendChild(elemIcon);
-      elemIcon.fullCommentText = scheduleInfo.comment;
+      
+      var commentContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-comment hide-me');
+      container.appendChild(commentContainer);
+      commentContainer.appendChild(CreateElement.createDiv(null, 'tipshare-commenttext', scheduleInfo.comment));
     }
     
     return container;
@@ -134,6 +162,7 @@ class TipShare {
   }
 
   async update() {
+    console.log('TipShare.update()');
     await this._updateScheduleList();
     await this._updateUserList();
     this._updateConfirm();
@@ -173,21 +202,20 @@ class TipShare {
       });
     }    
 
-    var newUserList = CreateElement.createSelect(null, 'tipshare-targetselect tipshare-select select-css', null, selectValueList);
-    var origUserList = this._container.getElementsByClassName('tipshare-targetselect')[0];
+    var newUserList = CreateElement.createSelect(null, 'tipshare-userselect tipshare-select select-css', null, selectValueList);
+    var origUserList = this._container.getElementsByClassName('tipshare-userselect')[0];
     origUserList.parentNode.replaceChild(newUserList, origUserList);
   }
   
   _updateConfirm() {
     var elemSchedule = this._container.getElementsByClassName('tipshare-scheduleselect')[0];
-    var elemUser = this._container.getElementsByClassName('tipshare-targetselect')[0];
-    var elemConfirm = this._container.getElementsByClassName('confirm')[0];
+    var elemUser = this._container.getElementsByClassName('tipshare-userselect')[0];
+    var elemConfirm = this._container.getElementsByClassName('tipshare-confirmcancelcontainer')[0];
     
-    elemConfirm.disabled = ((elemSchedule.selectedIndex < 0) || (elemUser.selectedIndex < 0));
+    this._setClass(elemConfirm, 'disable-me', ((elemSchedule.selectedIndex < 0) || (elemUser.selectedIndex < 0)));
   }
 
   async _updateReceived() {
-    console.log('_updateReceived');
     var queryResults = await this._doGetQuery('tipmanager/query', 'sharedwithuser');
     if (!queryResults.success) return;
     
@@ -199,7 +227,7 @@ class TipShare {
     var contents = this._container.getElementsByClassName('tipshare-received-contents')[0];
     this._removeChildren(contents);    
     for (var i = 0; i < sharedSchedules.length; i++) {
-      contents.appendChild(this._renderSharedSchedule(sharedSchedules[i]));
+      contents.appendChild(this._renderReceivedScheduleItem(sharedSchedules[i], i % 2 == 0));
     }      
   }
 
@@ -207,16 +235,19 @@ class TipShare {
     var queryResults = await this._doPostQuery('tipmanager/insert', 'shareschedule', params);
     if (queryResults.success) {
       alert('The schedule has been shared successfully');
+      await this._updateReceived();
     }
   }
-  
   
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
-  async _handleConfirm(me) {
+  async _handleConfirm(e) {
+    var elemContainer = this._container.getElementsByClassName('tipshare-confirmcancelcontainer')[0];
+    if (elemContainer.classList.contains('disable-me')) return;
+    
     var elemSchedule = this._container.getElementsByClassName('tipshare-scheduleselect')[0];
-    var elemUser = this._container.getElementsByClassName('tipshare-targetselect')[0];
+    var elemUser = this._container.getElementsByClassName('tipshare-userselect')[0];
     var elemComment = this._container.getElementsByClassName('tipshare-comment')[0];
     
     var shareParams = {
@@ -224,13 +255,13 @@ class TipShare {
       userid: elemUser[elemUser.selectedIndex].value,
       comment: elemComment.value
     };
-    
+
     await this._shareSchedule(shareParams);
   }
   
   _handleCommentClick(e) {
-    var commentText = e.target.fullCommentText;
-    alert(commentText + '\n[find better way to display this]');
+    var elemComment = e.target.parentNode.parentNode.getElementsByClassName('tipshare-comment')[0];
+    this._toggleClass(elemComment, 'hide-me', false);
   }
   
   //--------------------------------------------------------------
@@ -241,6 +272,14 @@ class TipShare {
     if (add) elem.classList.add(className);
   }
   
+  _toggleClass(elem, className) {
+    if (elem.classList.contains(className)) {
+      elem.classList.remove(className);
+    } else {
+      elem.classList.add(className);
+    }
+  }
+
   _removeChildren(elem) {
     while (elem.firstChild) {
       elem.removeChild(elem.firstChild);
