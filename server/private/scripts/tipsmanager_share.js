@@ -138,15 +138,33 @@ class TipShare {
     var elemScheduleName = CreateElement.createDiv(null, 'tipshare-detail tipshare-schedulename', scheduleInfo.schedulename);
     container.appendChild(elemScheduleName);
     
+    container.appendChild(this._renderReceivedScheduleItemDelete(scheduleInfo, evenItem));
+
     if (scheduleInfo.comment.length > 0) {
+      var subContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-commentcontrol');
+      container.appendChild(subContainer);
+      
       var handler = (e) => {this._handleCommentClick(e)};
       var elemIcon = CreateElement.createIcon(null, 'tipshare-commenticon far fa-comment-dots', 'show/hide comment', handler);
-      elemScheduleName.appendChild(elemIcon);
+      subContainer.appendChild(elemIcon);
       
       var commentContainer = CreateElement.createDiv(null, 'tipshare-detail tipshare-comment hide-me');
       container.appendChild(commentContainer);
       commentContainer.appendChild(CreateElement.createDiv(null, 'tipshare-commenttext', scheduleInfo.comment));
-    }
+    }    
+    
+    return container;
+  }
+  
+  _renderReceivedScheduleItemDelete(scheduleInfo, evenItem) {
+    var container = CreateElement.createDiv(null, 'tipshare-deletecontainer' + (evenItem ? ' evenitem' : ' odditem'));
+
+    container.scheduleInfo = scheduleInfo;
+    container.addEventListener('click', (e) => {this._handleDelete(e);});
+    
+    
+    var elem = CreateElement.createIcon(null, 'tipshare-delete far fa-trash-alt', 'remove from your list of received schedules');
+    container.appendChild(elem);
     
     return container;
   }
@@ -247,8 +265,16 @@ class TipShare {
     }
   }
   
-  async _acceptSchedule(params) {
-    console.log('accept schedule ' + JSON.stringify(params));
+  async _acceptSharedSchedule(params) {
+    var dbParams = {scheduleshareid: params.scheduleshareid};
+    console.log('accept schedule ' + JSON.stringify(dbParams));
+
+    await this._updateReceived();
+  }
+  
+  async _removeSharedSchedule(params) {
+    var dbParams = {scheduleshareid: params.scheduleshareid};
+    var queryResults = await this._doPostQuery('tipmanager/delete', 'shareschedule', dbParams);
     await this._updateReceived();
   }
   
@@ -286,8 +312,28 @@ class TipShare {
       return;
     }
 
-    await this._acceptSchedule(node.scheduleInfo);
+    await this._acceptSharedSchedule(node.scheduleInfo);
   }    
+  
+  async _handleDelete(e) {
+    var node = e.target;
+    if (node.classList.contains('tipshare-delete')) node = node.parentNode;
+
+    if (!node.scheduleInfo) {
+      console.log('can\'t find scheduleInfo for e.target');
+      return;
+    }
+    
+    var scheduleInfo = node.scheduleInfo;    
+    var msg = 'This shared schedule will be removed:' +
+              '\n"' + scheduleInfo.schedulename + '"' + 
+              '\nshared by ' + scheduleInfo.username +
+              ' on ' + scheduleInfo.datestamp +
+              '\n\nThis can\'t be undone. Continue with removal?';
+    if (!confirm(msg)) return;
+    
+    await this._removeSharedSchedule(node.scheduleInfo);
+  }
   
   //--------------------------------------------------------------
   // utility methods

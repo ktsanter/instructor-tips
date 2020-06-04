@@ -130,6 +130,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'removescheduleweek') {
       dbResult = await this._removeScheduleWeek(params, postData, userInfo);
             
+    } else if (params.queryName == 'shareschedule') {
+      dbResult = await this._deleteSharedSchedule(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -549,7 +552,7 @@ module.exports = internal.TipManager = class {
       'order by ss.datestamp desc';
         
     queryResults = await this._dbQuery(query);
-    console.log(queryResults);
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -1312,6 +1315,32 @@ module.exports = internal.TipManager = class {
     } else {
       result.details = queryResults.details;
     }   
+    
+    return result;
+  }
+
+  
+  async _deleteSharedSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+
+    var queryList;
+    var queryResults;
+    
+    queryList = {
+      scheduleshare:
+        'delete from scheduleshare ' +
+        'where scheduleshareid = ' + postData.scheduleshareid + 
+        '  and userid_to = ' + userInfo.userId
+    };
+    
+    queryResults = await this._dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+    } else {
+      result.details = queryResults.details;
+    }
     
     return result;
   }

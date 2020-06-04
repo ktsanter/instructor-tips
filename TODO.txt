@@ -1,6 +1,9 @@
 - add tip editing menu option?
 
 - schedule sharing
+   - save full set of scheduletips on share send
+   - integrate same on receive
+   - add delete share option
 
 - notification management
 
