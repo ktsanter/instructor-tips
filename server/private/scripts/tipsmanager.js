@@ -128,7 +128,6 @@ const app = function () {
   }
  
   function attachShareCountElement() {
-    console.log('attachShareCountElement');
     var navbarMainItems = page.body.getElementsByClassName('navbar-main-item');
     var elemSharing = null;
     for (var i = 0; i < navbarMainItems.length && !elemSharing; i++) {
@@ -170,7 +169,6 @@ const app = function () {
   }
   
   function _handleShareChange(params) {
-    console.log('_handleShareChange ' + JSON.stringify(params));
     var elem = settings.elemShareCount;
     var count = params.numSharedSchedules;
     

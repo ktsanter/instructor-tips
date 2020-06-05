@@ -28,6 +28,9 @@ class DialogContainer {
     else if (dialogType == 'add-tip') this._container.appendChild(this._renderAddEditTip(dialogType));
     else if (dialogType == 'edit-tip') this._container.appendChild(this._renderAddEditTip(dialogType));
     
+    // schedule sharing dialogs
+    else if (dialogType == 'accept-share') this._container.appendChild(this._renderAcceptShare(dialogType));
+    
     // other
     else console.log('unrecognized dialog type: ' + dialogType);    
     
@@ -166,6 +169,41 @@ class DialogContainer {
     return container;
   }
   
+  _renderAcceptShare() {
+    var container = CreateElement.createDiv(null, 'dialogcontainer-add');
+    
+    container.appendChild(this._renderTitle('Accept shared schedule'));
+    container.appendChild(this._renderSharedScheduleInfo());
+
+    var subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub');
+    container.appendChild(subContainer);
+    
+    var elemScheduleName = CreateElement.createTextInput(null, 'dialogcontainer-input');
+    elemScheduleName.placeholder = 'new schedule name';
+    elemScheduleName.addEventListener('input', (e) => {this._handleScheduleName(e);});
+    
+    subContainer.appendChild(elemScheduleName);
+
+    subContainer = CreateElement.createDiv(null, 'dialogcontainer-sub confirmcancel');
+    container.appendChild(subContainer);
+    
+    var handler = (me) => {this._handleConfirm(this);};
+    var elem = CreateElement.createButton(null, 'dialogcontainer confirmcancel confirm', 'accept', 'accept and create new schedule', handler);
+    elem.disabled = true;
+    subContainer.appendChild(elem);
+
+    handler = (me) => {this._handleCancel(this);};
+    subContainer.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'cancel', 'cancel', handler));
+    
+    return container;
+  }
+  
+  _renderSharedScheduleInfo() {
+    var container = CreateElement.createDiv(null, 'dialogcontainer-sharedschedule');
+    
+    return container;
+  }
+  
   _renderTitle(titleText) {
     var container = CreateElement.createDiv(null, 'dialogcontainer-title');
     container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-titletext', titleText));
@@ -187,6 +225,9 @@ class DialogContainer {
     // tip dialogs
     else if (dialogType == 'add-tip') this._updateAddTip(params); 
     else if (dialogType == 'edit-tip') this._updateEditTip(params); 
+    
+    // schedule sharing dialogs
+    else if (dialogType == 'accept-share') this._updateAcceptShare(params); 
     
     // other
     else console.log('unrecognized dialog type: ' + dialogType);    
@@ -257,6 +298,37 @@ class DialogContainer {
     this._setClass(elemPreview, 'preview-default', tipText.length == 0);
   }
   
+  _updateAcceptShare(params) {
+    var shareInfo = params.scheduleinfo;
+    var container = this._container.getElementsByClassName('dialogcontainer-sharedschedule')[0];
+    var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];
+    
+    this._removeChildren(container);
+    container.sharedScheduleInfo = shareInfo;
+    container.appendChild(this._updateAcceptShareOriginalInfo(shareInfo));
+
+    this._updateConfirm(shareInfo.schedulename.length > 0);
+    elemName.value = 'copy of ' + shareInfo.schedulename;
+    elemName.focus();
+  }
+  
+  _updateAcceptShareOriginalInfo(shareInfo) {
+    var container = CreateElement.createDiv(null, 'dialogcontainer-sharedscheduleinner');
+    
+    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-sharename', '"' + shareInfo.schedulename + '"'));
+    
+    var msg = '<br>shared by ' + shareInfo.username + ' on ' + shareInfo.datestamp;
+    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-sharedby', msg));
+    
+    var comment = shareInfo.comment.trim();
+    if (comment.length > 0) {
+      msg = '<br><em>comment</em>: ' + comment;
+      container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-sharecomment', msg));
+    }
+
+    return container;
+  }
+  
   _updateConfirm(enable) {
     this._container.getElementsByClassName('confirm')[0].disabled = !enable;
   }  
@@ -324,6 +396,15 @@ class DialogContainer {
         params: this._config.params
       };
       
+    } else if (dialogType = 'accept-share') {
+      var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];
+      var elemOrigInfo = this._container.getElementsByClassName('dialogcontainer-sharedschedule')[0];
+      
+      callbackData = {
+        schedulename: elemName.value,
+        sharedcheduleinfo: elemOrigInfo.sharedScheduleInfo
+      };
+      
     } else {
       console.log('unrecognized dialog type: ' + dialogType); 
     }
@@ -364,6 +445,20 @@ class DialogContainer {
   _setClass(elem, className, add) {
     if (elem.classList.contains(className)) elem.classList.remove(className);
     if (add) elem.classList.add(className);
+  }
+  
+  _toggleClass(elem, className) {
+    if (elem.classList.contains(className)) {
+      elem.classList.remove(className);
+    } else {
+      elem.classList.add(className);
+    }
+  }
+
+  _removeChildren(elem) {
+    while (elem.firstChild) {
+      elem.removeChild(elem.firstChild);
+    }
   }
   
   _formatDate(d) {

@@ -19,8 +19,25 @@
   font-size: 1.1em;
 }
 
+.dialogcontainer .dialogcontainer-add {}
+
+.dialogcontainer .dialogcontainer-add .dialogcontainer-sharedschedule {
+  margin: 0.4em 0 0.4em 0.2em;
+}
+
+.dialogcontainer .dialogcontainer-add .dialogcontainer-sharedschedule .dialogcontainer-sharedscheduleinner {
+  display: inline-block;
+  border: 1px solid var(--bgTertiaryEmphasis);
+  border-radius: 0.3em;
+  padding: 0.4em;
+}
+
 .dialogcontainer .dialogcontainer-message {
   margin-bottom: 0.3em;
+}
+
+.dialogcontainer .dialogcontainer-sub.confirmcancel {
+  margin-top: 0.4em;
 }
 
 .dialogcontainer .dialogcontainer-sub:not(.confirmcancel) {
@@ -76,8 +93,7 @@
 	padding: .6em 1.4em .5em .8em;
   width: 20em;
 	box-sizing: border-box;
-	margin: 0;
-  margin-top: 0.3em;
+	margin: 0.3em 0.2em 0 0 ;
 	border: 1px solid #aaa;
 	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
 	border-radius: .3em;
@@ -104,8 +120,7 @@
 	padding: .6em 1.4em .5em .8em;
   width: 5em;
 	box-sizing: border-box;
-	margin: 0;
-  margin-top: 0.3em;
+	margin: 0.3em 0.2em 0 0 ;
 	border: 1px solid #aaa;
 	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
 	border-radius: .3em;
@@ -123,8 +138,7 @@
 	padding: .6em 1.4em .5em .8em;
   width: 12.0em;
 	box-sizing: border-box;
-	margin: 0;
-  margin-top: 0.3em;
+	margin: 0.3em 0.2em 0 0 ;
 	border: 1px solid #aaa;
 	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
 	border-radius: .3em;

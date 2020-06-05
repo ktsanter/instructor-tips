@@ -25,8 +25,14 @@ class TipShare {
     this._notice.setNotice('');
 
     this._container.appendChild(this._renderTitle());
-
     this._container.appendChild(this._renderContents());
+    
+    this._importDialog = new DialogContainer({
+      dialogtype: 'accept-share',
+      confirmcallback: (arg) => {this._finishAcceptSchedule(arg)},
+      cancelcallback: () => {this._cancelAcceptSchedule()}
+    });
+    this._container.appendChild(this._importDialog.render());    
     
     return this._container;
   }
@@ -266,8 +272,13 @@ class TipShare {
   }
   
   async _acceptSharedSchedule(params) {
-    var dbParams = {scheduleshareid: params.scheduleshareid};
-    console.log('accept schedule ' + JSON.stringify(dbParams));
+    var dbParams = {
+      schedulename: params.schedulename,
+      sharedscheduleid: params.sharedcheduleinfo.scheduleid
+    };
+    
+    console.log('accept schedule (DB tbd)');
+    console.log(dbParams);
 
     await this._updateReceived();
   }
@@ -276,6 +287,13 @@ class TipShare {
     var dbParams = {scheduleshareid: params.scheduleshareid};
     var queryResults = await this._doPostQuery('tipmanager/delete', 'shareschedule', dbParams);
     await this._updateReceived();
+  }
+  
+  _showContents(visible) {
+    var elemContents = this._container.getElementsByClassName('tipshare-contents')[0];
+    var elemTitle = this._container.getElementsByClassName('tipmanager-title')[0];
+    elemContents.style.display = (visible ? 'block' : 'none');
+    elemTitle.style.display = (visible ? 'block' : 'none');
   }
   
   //--------------------------------------------------------------
@@ -311,9 +329,24 @@ class TipShare {
       console.log('can\'t find scheduleInfo for e.target');
       return;
     }
-
-    await this._acceptSharedSchedule(node.scheduleInfo);
+    
+    this._showContents(false);
+    
+    this._importDialog.show(true);
+    this._importDialog.update({
+      scheduleinfo: node.scheduleInfo
+    });
   }    
+  
+  async _finishAcceptSchedule(params) {
+    await this._acceptSharedSchedule(params);
+
+    this._showContents(true);
+  }
+  
+  _cancelAcceptSchedule() {
+    this._showContents(true);
+  }
   
   async _handleDelete(e) {
     var node = e.target;

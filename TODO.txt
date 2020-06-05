@@ -13,3 +13,7 @@
     - schedule names
     - schedule share comment
     - tip text
+
+- change landing page back to Scheduling
+
+- handle orphaned shared schedule tips (trigger?)
