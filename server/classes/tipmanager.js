@@ -111,6 +111,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'tiptextandcategory') {
       dbResult = await this._updateTipTextAndCategory(params, postData, userInfo);
             
+    } else if (params.queryName == 'sharedschedule') {
+      dbResult = await this._acceptSharedSchedule(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -542,10 +545,10 @@ module.exports = internal.TipManager = class {
     
     query = 
       'select ' +
-        'ss.scheduleshareid, ss.comment, ss.datestamp, ' +
+        'ss.sharescheduleid, ss.comment, ss.datestamp, ' +
         's.scheduleid, s.schedulename, ' +
         'u.username ' +
-      'from scheduleshare as ss, schedule as s, user as u ' +
+      'from shareschedule as ss, schedule as s, user as u ' +
       'where ss.scheduleid = s.scheduleid ' +
         'and ss.userid_to = ' + userInfo.userId + ' ' +
         'and ss.userid_from = u.userid ' +
@@ -608,18 +611,47 @@ module.exports = internal.TipManager = class {
 
     var query, queryResults;
     
+    var dateStamp = this._getDateStamp();
+    
     query = 
-      'insert into scheduleshare (scheduleid, userid_from, userid_to, comment, datestamp) ' + 
+      'insert into shareschedule (scheduleid, userid_from, userid_to, comment, datestamp) ' + 
       'values (' +
         postData.scheduleid + ', ' +
         userInfo.userId + ', ' +
         postData.userid + ', ' +
         '"' + postData.comment + '", ' +
-        'NOW() ' +
-      ') '
+        '"' + dateStamp + '" ' +
+      ') ';
       
     queryResults = await this._dbQuery(query);
+    if (!queryResults) {
+      result.details = queryResults.details;
+      return result;
+    }
     
+    query =
+      'select sharescheduleid ' +
+      'from shareschedule ' +
+      'where scheduleid = ' + postData.scheduleid + ' ' +
+        'and userid_from = ' + userInfo.userId + ' ' +
+        'and userid_to = ' + postData.userid + ' ' +
+      'order by datestamp desc ';
+    
+    queryResults = await this._dbQuery(query);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var shareScheduleId = queryResults.data[0].sharescheduleid;
+
+    var query = 
+      'insert into sharescheduletip (sharescheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem) ' +
+      'select ' + shareScheduleId + ' as sharescheduleid, tipid, 0 as tipstate, schedulelocation, previousitem, nextitem ' +
+      'from scheduletip ' +
+      'where scheduleid = ' + postData.scheduleid + ' ';
+;      
+    queryResults = await this._dbQuery(query);    
     if (queryResults.success) {
       result.success = true;
       result.details = 'insert succceeded';
@@ -961,6 +993,62 @@ module.exports = internal.TipManager = class {
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  async _acceptSharedSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var queryList, queryResults;    
+
+    queryList = {};
+    
+    queryList.schedule = 
+      'select ' + 
+        userInfo.userId + ' as userid, ' +
+        '"' + postData.schedulename + '" as schedulename, ' +
+        's.schedulelength, ' +
+        's.schedulestartdate ' +
+      'from schedule as s, shareschedule as ss ' +
+      'where s.scheduleid = ss.scheduleid ' +
+        'and ss.sharescheduleid = ' + postData.sharescheduleid;
+        
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+     
+    queryResults = await this._insertSchedule(params, queryResults.data.schedule[0], userInfo);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate schedule name';
+      }
+      return result;
+    }
+    
+    var newScheduleId = queryResults.data.scheduleid;
+    
+    queryList.scheduletips = 
+      'insert into scheduletip (scheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem) ' +
+      'select ' + newScheduleId + ' as scheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem ' +
+      'from sharescheduletip ' +
+      'where sharescheduleid = ' + postData.sharescheduleid + ' ';
+
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    queryResults = await this._deleteSharedSchedule(params, postData, userInfo);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
     } else {
       result.details = queryResults.details;
     }
@@ -1327,9 +1415,9 @@ module.exports = internal.TipManager = class {
     var queryResults;
     
     queryList = {
-      scheduleshare:
-        'delete from scheduleshare ' +
-        'where scheduleshareid = ' + postData.scheduleshareid + 
+      shareschedule:
+        'delete from shareschedule ' +
+        'where sharescheduleid = ' + postData.sharescheduleid + 
         '  and userid_to = ' + userInfo.userId
     };
     
@@ -1354,5 +1442,20 @@ module.exports = internal.TipManager = class {
     // consider other cleaning e.g. <script> tags
     
     return cleaned;
+  }
+  
+  _getDateStamp() {
+    var now = new Date();
+;
+    var yr = now.getFullYear();
+    var mo = ('00' + (now.getMonth() + 1)).slice(-2);
+    var da = ('00' + now.getDate()).slice(-2);
+    var hr = ('00' + now.getHours()).slice(-2);
+    var mi = ('00' + now.getMinutes()).slice(-2);
+    var se = ('00' + now.getSeconds()).slice(-2);
+    
+    var dateStamp = yr + '-' + mo + '-' + da + ' ' + hr + ':' + mi + ':' + se;
+    
+    return dateStamp;
   }
 }

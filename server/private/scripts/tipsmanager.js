@@ -35,7 +35,8 @@ const app = function () {
     page.body.appendChild(page.maincontainer);
 
     await _renderPage();
-    _navDispatch('share');//_navDispatch('scheduling');
+    await settings.share.update();
+    _navDispatch('scheduling');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -136,7 +137,7 @@ const app = function () {
     }
     
     item.classList.add('tipmanager-sharedlabel');
-    settings.elemShareCount = CreateElement.createDiv(null, 'tipmanager-super', 'x');
+    settings.elemShareCount = CreateElement.createDiv(null, 'tipmanager-super');
     item.appendChild(settings.elemShareCount);
   }
   
@@ -174,6 +175,7 @@ const app = function () {
     
     elem.innerHTML = count;
     var msg = count + ' schedules have been shared with you';
+    if (count == 1) msg = '1 schedule has been shared with you';
     if (count == 0) msg = '';
     elem.parentNode.title = msg;
     if (elem.classList.contains('hide-me')) elem.classList.remove('hide-me');

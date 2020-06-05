@@ -120,16 +120,16 @@ CREATE TABLE controlstate
   CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
 );
 
-CREATE TABLE scheduleshare
+CREATE TABLE shareschedule
 (
-  scheduleshareid  int unsigned NOT NULL AUTO_INCREMENT ,
+  sharescheduleid  int unsigned NOT NULL AUTO_INCREMENT ,
   scheduleid int unsigned NOT NULL, 
   userid_from      int unsigned NOT NULL ,
   userid_to      int unsigned NOT NULL ,
   comment     varchar(300) NOT NULL,
   datestamp   varchar(30) NOT NULL,
 
-  PRIMARY KEY (scheduleshareid) ,
+  PRIMARY KEY (sharescheduleid) ,
 
   CONSTRAINT UNIQUE (scheduleid, userid_from, userid_to, datestamp) ,
   CONSTRAINT FOREIGN KEY (scheduleid) REFERENCES schedule (scheduleid) ON DELETE CASCADE,
@@ -137,7 +137,21 @@ CREATE TABLE scheduleshare
   CONSTRAINT FOREIGN KEY (userid_to) REFERENCES user (userid) ON DELETE CASCADE
 );
 
+CREATE TABLE sharescheduletip
+(
+  sharescheduletipid  int unsigned NOT NULL AUTO_INCREMENT ,
+  sharescheduleid      int unsigned NOT NULL ,
+  tipid      int unsigned NOT NULL ,
+  tipstate     int unsigned NOT NULL ,
+  schedulelocation     int unsigned NOT NULL ,
+  previousitem     int  NOT NULL ,
+  nextitem     int  NOT NULL ,
 
+  PRIMARY KEY (sharescheduletipid),
+  CONSTRAINT UNIQUE (sharescheduleid, tipid, schedulelocation),
+  CONSTRAINT FOREIGN KEY (sharescheduleid) REFERENCES shareschedule (sharescheduleid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip (tipid) ON DELETE CASCADE
+);
 
 #--------------------------------------------------------------------------
 #-- triggers

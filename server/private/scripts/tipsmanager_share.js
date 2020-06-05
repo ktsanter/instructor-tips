@@ -274,17 +274,22 @@ class TipShare {
   async _acceptSharedSchedule(params) {
     var dbParams = {
       schedulename: params.schedulename,
-      sharedscheduleid: params.sharedcheduleinfo.scheduleid
+      sharescheduleid: params.sharedcheduleinfo.sharescheduleid
     };
     
-    console.log('accept schedule (DB tbd)');
-    console.log(dbParams);
-
+    var queryResults = await this._doPostQuery('tipmanager/update', 'sharedschedule', dbParams);
+    if (!queryResults.success) {
+      if (queryResults.details.indexOf('duplicate schedule name') >= 0) {
+        this._notice.setNotice('');
+        alert('You already have a schedule with this name. Please try again');
+      }
+    }
+    
     await this._updateReceived();
   }
   
   async _removeSharedSchedule(params) {
-    var dbParams = {scheduleshareid: params.scheduleshareid};
+    var dbParams = {sharescheduleid: params.sharescheduleid};
     var queryResults = await this._doPostQuery('tipmanager/delete', 'shareschedule', dbParams);
     await this._updateReceived();
   }
