@@ -387,7 +387,6 @@ class TipScheduling {
     if (choiceType == 'addtip') {
       var elemWeeklyTipContents = elemWeeklyTip.getElementsByClassName('weeklytip-contents')[0];
       var lastWeeklyItem = elemWeeklyTipContents.lastChild;
-      var moveAfterId = (lastWeeklyItem ? lastWeeklyItem.itemInfo.scheduletipid : -1);
 
       this._disableContents(true);
       this._control.show(false);
@@ -395,9 +394,7 @@ class TipScheduling {
       this._addTipDialog.show(true);
       this._addTipDialog.update({
         scheduleid: this._control.state().scheduleid,
-        weeknum: weekNum, 
-        moveafterid: moveAfterId,
-        movebeforeid: -1
+        weeknum: weekNum
       });
       
     } else if (choiceType == 'edittip') {  
@@ -434,8 +431,7 @@ class TipScheduling {
       category: info.category,
       scheduleid: info.params.scheduleid,
       schedulelocation: info.params.weeknum,
-      moveafterid: info.params.moveafterid,
-      movebeforeid: info.params.movebeforeid
+      schedulelocationorder: 0
     };
 
     var queryResults = await this._doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams);
@@ -484,8 +480,7 @@ class TipScheduling {
       tipid: tipId,
       scheduleid: this._control.state().scheduleid,
       schedulelocation: destinationInfo.schedulelocation,
-      moveafterid: destinationInfo.moveafterid,
-      movebeforeid: destinationInfo.movebeforeid
+      schedulelocationorder: destinationInfo.schedulelocationorder
     };
     
     var queryResults = await this._doPostQuery('tipmanager/update', 'addscheduletip', addParams);
@@ -495,13 +490,14 @@ class TipScheduling {
   }
   
   async _moveTip(scheduleTipId, destinationInfo) {
-    if (scheduleTipId == destinationInfo.moveafterid || scheduleTipId == destinationInfo.movebeforeid) return;
-    
     var moveParams = {
       scheduletipid: scheduleTipId,
+      scheduleid: this._control.state().scheduleid,
+      tipid: destinationInfo.tipid,
+      origschedulelocation: destinationInfo.origschedulelocation,
+      origschedulelocationorder: destinationInfo.origschedulelocationorder,
       schedulelocation: destinationInfo.schedulelocation,
-      moveafterid: destinationInfo.moveafterid,
-      movebeforeid: destinationInfo.movebeforeid
+      schedulelocationorder: destinationInfo.schedulelocationorder
     };
     
     var queryResults = await this._doPostQuery('tipmanager/update', 'movescheduletip', moveParams);
@@ -510,8 +506,8 @@ class TipScheduling {
     }
   }
     
-  async _removeTip(id) {  
-    var queryResults = await this._doPostQuery('tipmanager/delete', 'scheduletip', {scheduletipid: id});
+  async _removeTip(params) {
+    var queryResults = await this._doPostQuery('tipmanager/delete', 'scheduletip', params);
     if (queryResults.success) {
       this.update(false);
     }
@@ -644,11 +640,30 @@ class TipScheduling {
     var itemInfo = JSON.parse(data);
     
     if (this._getDropLocation(e.target).dropcontainer.classList.contains('weeklytip-trashcontainer')) {
-      await this._removeTip(itemInfo.scheduletipid);
+      var deleteParams = itemInfo;
+      itemInfo.scheduleid = this._control.state().scheduleid;
+      
+      await this._removeTip(deleteParams);
 
     } else if (itemInfo.dragtype == 'move') {
       var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
-      await this._moveTip(itemInfo.scheduletipid, destinationInfo);
+      
+      var newLocationOrder = destinationInfo.schedulelocationorder;
+      if (destinationInfo.schedulelocation == itemInfo.schedulelocation &&
+          destinationInfo.schedulelocationorder >= itemInfo.schedulelocationorder) {
+        newLocationOrder--;
+      }
+      
+      var moveParams = {
+        scheduletipid: itemInfo.scheduletipid,
+        scheduleid: this._control.state().scheduleid,
+        tipid: itemInfo.tipid,
+        origschedulelocation: itemInfo.schedulelocation,
+        origschedulelocationorder: itemInfo.schedulelocationorder,
+        schedulelocation: destinationInfo.schedulelocation,
+        schedulelocationorder: newLocationOrder
+      }
+      await this._moveTip(itemInfo.scheduletipid, moveParams);
 
     } else if (itemInfo.dragtype == 'add') {
       var destinationInfo = this._getDropLocation(this._dragTarget.targetNode);
@@ -659,7 +674,7 @@ class TipScheduling {
   _getDropLocation(elem) {
     var droppedOnWeekLabel = false;
     var droppedOnTip = false;
-    var scheduleLocation, idOfPrevious, idOfNext;
+    var scheduleLocation, scheduleLocationOrder;
     
     if (elem.classList.contains('weeklytip-trashcontainer')) {
       return {dropcontainer: this._trashTarget};
@@ -679,30 +694,18 @@ class TipScheduling {
     if (droppedOnWeekLabel) {
       node = node.parentNode;
       scheduleLocation = node.weeknum;
-      idOfPrevious = -1;
-      if (node.itemList.length == 0) {
-        idOfNext = -1;
-      } else {
-        idOfNext = node.itemList[0].scheduletipid;
-      }
+      scheduleLocationOrder = 0;
       
     } else if (droppedOnTip) {
       scheduleLocation = node.itemInfo.schedulelocation;
-      idOfPrevious = node.itemInfo.scheduletipid;
-      var itemList = node.parentNode.parentNode.itemList;
-      var itemIndex = -1;
-      for (var i = 0; i < itemList.length && itemIndex < 0; i++) {
-        if (itemList[i].scheduletipid == idOfPrevious) itemIndex = i;
-      }
-
-      if (itemIndex >= (itemList.length - 1)) {
-        idOfNext = -1;
-      } else {
-        idOfNext = itemList[itemIndex + 1].scheduletipid;
-      }
+      scheduleLocationOrder = node.itemInfo.schedulelocationorder + 1;
     }
     
-    return {schedulelocation: scheduleLocation, moveafterid: idOfPrevious, movebeforeid: idOfNext, dropcontainer: node};
+    return {
+      schedulelocation: scheduleLocation, 
+      schedulelocationorder: scheduleLocationOrder,
+      dropcontainer: node
+    };
   }
   
   _highlightTipTrash(highlight) {

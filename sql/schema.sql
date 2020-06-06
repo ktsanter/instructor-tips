@@ -99,8 +99,7 @@ CREATE TABLE scheduletip
   tipid      int unsigned NOT NULL ,
   tipstate     int unsigned NOT NULL ,
   schedulelocation     int unsigned NOT NULL ,
-  previousitem     int  NOT NULL ,
-  nextitem     int  NOT NULL ,
+  schedulelocationorder int unsigned NOT NULL,
 
   PRIMARY KEY (scheduletipid),
   CONSTRAINT UNIQUE (scheduleid, tipid, schedulelocation),
@@ -141,11 +140,11 @@ CREATE TABLE sharescheduletip
 (
   sharescheduletipid  int unsigned NOT NULL AUTO_INCREMENT ,
   sharescheduleid      int unsigned NOT NULL ,
+  scheduletipid    int unsigned NOT NULL,
   tipid      int unsigned NOT NULL ,
   tipstate     int unsigned NOT NULL ,
   schedulelocation     int unsigned NOT NULL ,
-  previousitem     int  NOT NULL ,
-  nextitem     int  NOT NULL ,
+  schedulelocationorder int unsigned NOT NULL,
 
   PRIMARY KEY (sharescheduletipid),
   CONSTRAINT UNIQUE (sharescheduleid, tipid, schedulelocation),

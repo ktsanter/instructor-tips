@@ -103,7 +103,7 @@ module.exports = internal.TipManager = class {
       dbResult = await this._moveScheduleTip(params, postData, userInfo);
             
     } else if (params.queryName == 'addscheduletip') {
-      dbResult = await this._addScheduleTip(params, postData, userInfo);
+      dbResult = await this._addScheduleTip(params, postData, userInfo, false);
             
     } else if (params.queryName == 'addtipandscheduletip') {
       dbResult = await this._addTipAndScheduleTip(params, postData, userInfo);
@@ -286,7 +286,7 @@ module.exports = internal.TipManager = class {
             
       scheduledetails:
         'select ' +  
-          'st.scheduletipid, st.tipstate, st.schedulelocation, st.previousitem, st.nextitem, ' + 
+          'st.scheduletipid, st.tipstate, st.schedulelocation, st.schedulelocationorder, ' + 
           'vtc.common, vtc.userid, vtc.categorytext, ' +
           't.tipid, t.tiptext ' +
           'from schedule as s, scheduletip as st, tip as t, view_tipsandcategories as vtc ' +
@@ -385,24 +385,15 @@ module.exports = internal.TipManager = class {
   _orderSingleWeek(items) {
     var ordered = [];
     
-    var firstItem = null;
-    for (var i = 0; i < items.length && !firstItem; i++) {
-      if (items[i].previousitem == -1) firstItem = items[i];
-    }
-    if (firstItem) {
-      ordered.push(firstItem);
-      var currentItem = firstItem;
-      while (currentItem.nextitem != -1) {
-        var nextItem = this._findItemById(items, currentItem.nextitem);
-        if (nextItem != null) {
-          ordered.push(nextItem);
-          currentItem = nextItem;
-        } else {
-          break; // something wrong with the linked list
-        }
+    ordered = items.sort(function(a, b) {
+      if (a.schedulelocationorder > b.schedulelocationorder) {
+        return 1;
+      } else if (a.schedulelocationorder < b.schedulelocationorder) {
+        return -1;
       }
-    }   
-    
+      return 0;
+    });
+
     return ordered;
   }
   
@@ -646,8 +637,8 @@ module.exports = internal.TipManager = class {
     var shareScheduleId = queryResults.data[0].sharescheduleid;
 
     var query = 
-      'insert into sharescheduletip (sharescheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem) ' +
-      'select ' + shareScheduleId + ' as sharescheduleid, tipid, 0 as tipstate, schedulelocation, previousitem, nextitem ' +
+      'insert into sharescheduletip (sharescheduleid, scheduletipid, tipid, tipstate, schedulelocation, previousitem, nextitem) ' +
+      'select ' + shareScheduleId + ' as sharescheduleid, scheduletipid, tipid, 0 as tipstate, schedulelocation, previousitem, nextitem ' +
       'from scheduletip ' +
       'where scheduleid = ' + postData.scheduleid + ' ';
 ;      
@@ -660,7 +651,7 @@ module.exports = internal.TipManager = class {
     }
     
     return result;
-  }    
+  }
 
 //---------------------------------------------------------------
 // specific update methods
@@ -764,29 +755,23 @@ module.exports = internal.TipManager = class {
   
   async _moveScheduleTip(params, postData, userInfo) {
     var result = this._queryFailureResult();
-
-    var query, queryList;
     var queryResults;
+        
+    var deleteParams = {
+      scheduletipid: postData.scheduletipid,
+      scheduleid: postData.scheduleid,
+      schedulelocation: postData.origschedulelocation,
+      schedulelocationorder: postData.origschedulelocationorder
+    };
 
-    var scheduleTipId = postData.scheduletipid;
-    var moveAfterId = postData.moveafterid;
-    var moveBeforeId = postData.movebeforeid;
-    var newLocation = postData.schedulelocation;
-    
-    if (scheduleTipId == moveBeforeId || scheduleTipId == moveAfterId) {
-      result.success = false;
-      result.data = null;
-      result.details = "move failed: id=" + scheduleTipId + " after=" + moveAfterId + " before=" + moveBeforeId;
-      return result;
-    }
-    
-    queryResults = await this._unlinkScheduleTip(scheduleTipId);
+    queryResults = await this._deleteScheduleTip(params, deleteParams, userInfo);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
     }
     
-    queryResults = await this._linkScheduleTip(scheduleTipId, newLocation, moveAfterId, moveBeforeId);
+    var addParams = postData;
+    queryResults = await this._addScheduleTip(params, addParams, userInfo, true);
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';
@@ -794,68 +779,62 @@ module.exports = internal.TipManager = class {
     } else {
       result.details = queryResults.details;
     }
-    
-    return result;    
+      
+    return result;
+   
   }
   
-  async _addScheduleTip(params, postData, userInfo) {
+  async _addScheduleTip(params, postData, userInfo, bypassDuplicateTest) {
     var result = this._queryFailureResult();
 
     var queryList;
     var queryResults;
     
+    if (!bypassDuplicateTest) {
+      queryList = {
+        checkforduplicate:
+          'select scheduletipid ' +
+          'from scheduletip ' +
+          'where scheduleid = ' + postData.scheduleid + ' ' +
+            'and tipid = ' + postData.tipid + ' ' +
+            'and schedulelocation = ' + postData.schedulelocation
+      };
+
+      queryResults = await this._dbQueries(queryList);
+      if (!queryResults.success) {
+        result.details = queryResults.detail;
+        return result;
+      }
+      
+      if (queryResults.data.checkforduplicate.length > 0) {
+        result.details = 'tip is already assigned to week';
+        result.success = true;
+        return result;
+      }
+    }
+
     queryList = {
-      checkforduplicate:
-        'select scheduletipid ' +
-        'from scheduletip ' +
+      shift: 
+        'update scheduletip ' +
+        'set schedulelocationorder = schedulelocationorder + 1 ' +
         'where scheduleid = ' + postData.scheduleid + ' ' +
-          'and tipid = ' + postData.tipid + ' ' +
-          'and schedulelocation = ' + postData.schedulelocation
-    };
+          'and schedulelocation = ' + postData.schedulelocation + ' ' +
+          'and schedulelocationorder >= ' + postData.schedulelocationorder,
 
-    queryResults = await this._dbQueries(queryList);
-    if (!queryResults.success) {
-      result.details = queryResults.detail;
-      return result;
-    }
-    
-    if (queryResults.data.checkforduplicate.length > 0) {
-      result.details = 'tip is already assigned to week';
-      result.success = true;
-      return result;
-    }
-
-    queryList = {
       makescheduletip:
         'insert into scheduletip (' +
-          'scheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem ' +
+          'scheduleid, tipid, tipstate, schedulelocation, schedulelocationorder ' +
         ') values (' +
           postData.scheduleid + ', ' +
           postData.tipid + ', ' +
           '0, ' + 
           postData.schedulelocation + ', ' +
-          '-1, ' +
-          '-1 ' + 
+          postData.schedulelocationorder +
         ')',
-        
-      getscheduletip: 
-        'select ' +
-          'scheduletipid ' +
-        'from scheduletip ' +
-        'where scheduleid = ' + postData.scheduleid + ' ' +
-          'and tipid = ' + postData.tipid + ' ' +
-          'and schedulelocation = ' + postData.schedulelocation
+
     }
-    
+
     queryResults = await this._dbQueries(queryList);
-    if (!queryResults.success) {
-      result.details = queryResults.detail;
-      return result;
-    }
-    
-    var scheduleTipId = queryResults.data.getscheduletip[0].scheduletipid;
-    
-    queryResults = await this._linkScheduleTip(scheduleTipId, postData.schedulelocation, postData.moveafterid, postData.movebeforeid);
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';
@@ -919,7 +898,7 @@ module.exports = internal.TipManager = class {
       return result;
     }
 
-    addResult = await this._addScheduleTip(params, postData, userInfo);
+    addResult = await this._addScheduleTip(params, postData, userInfo, false);
     
     if (addResult.success) {
       result.success = true;
@@ -1033,13 +1012,7 @@ module.exports = internal.TipManager = class {
     
     var newScheduleId = queryResults.data.scheduleid;
     
-    queryList.scheduletips = 
-      'insert into scheduletip (scheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem) ' +
-      'select ' + newScheduleId + ' as scheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem ' +
-      'from sharescheduletip ' +
-      'where sharescheduleid = ' + postData.sharescheduleid + ' ';
-
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._acceptSharedScheduleTips(params, postData, userInfo, newScheduleId);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -1055,6 +1028,116 @@ module.exports = internal.TipManager = class {
     
     return result;
   }
+  
+  async _acceptSharedScheduleTips(params, postData, userInfo, newScheduleId) {
+    var result = this._queryFailureResult();
+    var query, queryResults;    
+    
+    var query = 
+      'select sharescheduletipid, scheduletipid, tipid, 0 as tipstate, schedulelocation, previousitem, nextitem ' +
+      'from sharescheduletip ' +
+      'where sharescheduleid = ' + postData.sharescheduleid + ' ';
+      
+    queryResults = await this._dbQuery(query);
+    if (!queryResults.success) {
+      result.details = queryResults.detail;
+      return result;
+    }
+    
+    var organizedScheduleTips = this._organizeScheduleTips(queryResults.data);
+    for (var stLocation in organizedScheduleTips) {
+      var locationTips = organizedScheduleTips[stLocation];
+      var prevItem = -1;
+      
+      for (var i = 0; i < locationTips.length && queryResults.success; i++) {
+        var item = locationTips[i];
+        var queryList = {
+          makescheduletip:
+            'insert into scheduletip (' +
+              'scheduleid, tipid, tipstate, schedulelocation, previousitem, nextitem ' +
+            ') values (' +
+              postData.scheduleid + ', ' +
+              postData.tipid + ', ' +
+              '0, ' + 
+              postData.schedulelocation + ', ' +
+              prevItem + ', ' +
+              '-1 ' + 
+            ')',
+            
+          getscheduletip: 
+            'select ' +
+              'scheduletipid ' +
+            'from scheduletip ' +
+            'where scheduleid = ' + postData.scheduleid + ' ' +
+              'and tipid = ' + postData.tipid + ' ' +
+              'and schedulelocation = ' + postData.schedulelocation
+        }
+        
+        queryResults = await this._dbQueries(queryList);
+        
+        if (queryResults.success) {
+          var newItem = queryResults.data.getscheduletip[0].scheduletipid;
+          if (i > 0) {
+          var query = 
+            'update scheduletip ' +
+            'set nextitem = ' + prevItem + ' ' +
+            'where scheduletipid = ' + newItem            
+          };
+        
+          queryResults = await this._dbQuery(query);
+          
+          prevItem = newItem;
+        }
+      }
+    }
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;    
+  }
+  
+  _organizeScheduleTips(scheduleTips) {
+    var organized = {};
+    for (var i = 0; i < scheduleTips.length; i++) {
+      var st = scheduleTips[i];
+      var stLocation = st.schedulelocation;
+      
+      if (!organized.hasOwnProperty(stLocation)) organized[stLocation] = [];
+      organized[stLocation].push(st);
+    }
+        
+    for (var stLoc in organized) {
+      var locScheduleTips = organized[stLoc];
+      var ordered = [];
+      
+      var index = this._findIndexOfItemInList(-1, locScheduleTips, 'previousitem');
+      ordered.push(locScheduleTips[index]);
+      
+      while ((index != null) && (locScheduleTips[index].nextitem != -1)) {
+        index = this._findIndexOfItemInList(locScheduleTips[index].nextitem, locScheduleTips, 'scheduletipid');
+        if (index != null) ordered.push(locScheduleTips[index]);
+      }
+      
+      organized[stLoc] = ordered;
+    }
+    
+    return organized;
+  }
+  
+  _findIndexOfItemInList(id, arr, tipkey) {
+    var index = null;
+    
+    for (var i = 0; i < arr.length && index == null; i++) {
+      if (arr[i][tipkey] == id) index = i;
+    }
+    
+    return index;
+  }  
   
   _difference(setA, setB) {
     let _difference = new Set(setA)
@@ -1111,159 +1194,7 @@ module.exports = internal.TipManager = class {
 
     return result;
   }
-  
-  async _unlinkScheduleTip(scheduleTipId) {
-    var result = this._queryFailureResult();
     
-    var query, queryList;
-    
-    var queryResults = await this._getScheduleTipLinks(scheduleTipId);
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
-    
-    var previousId = queryResults.data.previousitem;
-    var nextId = queryResults.data.nextitem;
-    
-    // remove from current linked list
-    if (previousId == -1 && nextId == -1) {
-      // nothing to do
-      
-    } else if (previousId == -1) {
-      // get next item and make it first
-      queryList = {
-        q1: 
-          'update scheduletip ' +
-          'set previousitem = -1 ' +
-           'where scheduletipid = ' + nextId
-      };
-      
-    } else if (nextId == -1) {
-      // get previous item and make it last
-      queryList = {
-        q1: 
-          'update scheduletip ' +
-          'set nextitem = -1 ' +
-           'where scheduletipid = ' + previousId
-      };
-      
-    } else {
-      // hook up previous and next items
-      queryList = {
-        q1:
-          'update scheduletip ' +
-          'set nextitem = ' + nextId + ' ' +
-           'where scheduletipid = ' + previousId,
-        q2:
-          'update scheduletip ' +
-          'set previousitem = ' + previousId + ' ' + 
-           'where scheduletipid = ' + nextId
-      };
-    }
-
-    queryResults = await this._dbQueries(queryList);
-    if (queryResults.success) {
-      result.success = true;
-      
-    } else {
-      result.details = queryResults.details;
-    }    
-
-    return result;
-  }
-  
-  async _linkScheduleTip(scheduleTipId, scheduleLocation, afterId, beforeId) {
-    var result = this._queryFailureResult();
-    
-    var queryList;
-    var queryResults;
-    
-    if (afterId == -1 && beforeId == -1) {
-      // add as only item in list
-      queryList = {
-        q1:
-          'update scheduletip ' +
-          'set ' +
-            'schedulelocation = ' + scheduleLocation + ', ' +
-            'previousitem = -1, ' +
-            'nextitem = -1 ' +
-          'where scheduletipid = ' + scheduleTipId
-      };
-      
-    } else if (afterId == -1) {
-      // add as first item in list
-      queryList = {
-        q1:
-          'update scheduletip ' + 
-          'set ' +
-            'schedulelocation = ' + scheduleLocation + ', ' +
-            'previousitem = -1, ' +
-            'nextitem = ' + beforeId + ' ' +
-          'where scheduletipid = ' + scheduleTipId,
-          
-        q2:
-          'update scheduletip ' + 
-          'set ' +
-            'previousitem = ' + scheduleTipId + ' ' +
-          'where scheduletipid = ' + beforeId
-      };
-      
-    } else if (beforeId == -1) {
-      // add as last item in list
-      queryList = {
-        q1:
-          'update scheduletip ' + 
-          'set ' +
-            'schedulelocation = ' + scheduleLocation + ', ' +
-            'previousitem = ' + afterId + ', ' +
-            'nextitem = -1 ' +
-          'where scheduletipid = ' + scheduleTipId,
-          
-        q2:
-          'update scheduletip ' + 
-          'set ' +
-            'nextitem = ' + scheduleTipId + ' ' +
-          'where scheduletipid = ' + afterId
-      };
-      
-    } else {
-      // add between two items in list
-      queryList = {
-        q1:
-          'update scheduletip ' + 
-          'set ' +
-            'schedulelocation = ' + scheduleLocation + ', ' +
-            'previousitem = ' + afterId + ', ' +
-            'nextitem = ' + beforeId + ' ' +
-          'where scheduletipid = ' + scheduleTipId,
-          
-        q2:
-          'update scheduletip ' + 
-          'set ' +
-            'nextitem = ' + scheduleTipId + ' ' +
-          'where scheduletipid = ' + afterId,
-          
-        q3:
-          'update scheduletip ' + 
-          'set ' +
-            'previousitem = ' + scheduleTipId + ' ' +
-          'where scheduletipid = ' + beforeId
-          
-      };
-    }
-    
-    queryResults = await this._dbQueries(queryList);
-    if (queryResults.success) {
-      result.success = true;
-      
-    } else {
-      result.details = queryResults.details;
-    }
-
-    return result;    
-  }
-  
   async _getScheduleTipLinks(scheduleTipId) {
     var result = this._queryFailureResult();
 
@@ -1345,19 +1276,22 @@ module.exports = internal.TipManager = class {
   
   async _deleteScheduleTip(params, postData, userInfo) {
     var result = this._queryFailureResult();
- 
-    var scheduleTipId = postData.scheduletipid;
+    var queryList, queryResults;
     
-    var queryResults = await this._unlinkScheduleTip(scheduleTipId);
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
+    queryList = {
+      shift:
+        'update scheduletip ' +
+        'set schedulelocationorder = schedulelocationorder - 1 ' +
+        'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and schedulelocation = ' + postData.schedulelocation + ' ' +
+          'and schedulelocationorder > ' + postData.schedulelocationorder,
+          
+      remove: 
+        'delete from scheduletip ' +
+        'where scheduletipid = ' + postData.scheduletipid
+    };
     
-    var query = 'delete from scheduletip ' +
-                'where scheduletipid = ' + scheduleTipId;
-    
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;

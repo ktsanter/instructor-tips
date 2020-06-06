@@ -352,11 +352,11 @@ module.exports = internal.dbAdminQuery = class {
     var queryList = {
       scheduletips: 
         'select st.scheduletipid, st.scheduleid, st.tipid, st.tipstate, ' +
-        'st.schedulelocation, st.previousitem, st.nextitem, ' + 
+        'st.schedulelocation, st.schedulelocationorder, ' + 
         's.schedulename ' +
         'from scheduletip as st, schedule as s ' +
         'where st.scheduleid = s.scheduleid ' +
-        'order by s.schedulename, st.schedulelocation ',
+        'order by s.schedulename, st.schedulelocation, st.schedulelocationorder ',
 
       schedules: 
         'select scheduleid, schedulename, userid ' +
@@ -380,10 +380,9 @@ module.exports = internal.dbAdminQuery = class {
         {tipid: 'foreignkey'},
         {tipstate: 'text'},
         {schedulelocation: 'text'},
-        {previousitem: 'text'},
-        {nextitem: 'text'}
+        {schedulelocationorder: 'text'}
       ],
-      result.displayFields = ['scheduleid', 'tipid', 'tipstate', 'schedulelocation', 'previousitem', 'nextitem'];
+      result.displayFields = ['scheduleid', 'tipid', 'tipstate', 'schedulelocation', 'schedulelocationorder'];
       result.data = queryResults.data.scheduletips,
       result.constraints = {
         foreignKeys: {
