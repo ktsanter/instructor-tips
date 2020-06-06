@@ -29,14 +29,19 @@ body {
   padding-bottom: 0.4em;
 }
 
-.testplatform .testplatform-controls {
-  padding-bottom: 0.4em;
+.testplatform .testplatform-contents {}
+
+.testplatform .testplatform-contents .testplatform-slider {
 }
 
-.testplatform .testplatform-controls .testplatform-controls-button {
-  background-color: var(--MVlightteal);
-  color: var(--MVwhite);
-  border: 1px solid var(--MVdeepteal);
-  border-radius: 6px;
-  margin-right: 0.2em;
+.testplatform .testplatform-contents .testplatform-checkbox {}
+
+.testplatform .testplatform-contents i.testplatform-checkbox {
+  font-size: 2.0em;
+  padding-right: 0.2em;
+}
+
+.testplatform .testplatform-contents label.testplatform-checkbox {
+  color: blue;
+  vertical-align: top;
 }

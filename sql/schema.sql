@@ -152,6 +152,32 @@ CREATE TABLE sharescheduletip
   CONSTRAINT FOREIGN KEY (tipid) REFERENCES tip (tipid) ON DELETE CASCADE
 );
 
+CREATE TABLE sharenotification
+(
+  sharenotificationid  int unsigned NOT NULL AUTO_INCREMENT ,
+  userid      int unsigned NOT NULL ,
+  notificationon     int unsigned NOT NULL ,
+
+
+  PRIMARY KEY (sharenotificationid),
+  CONSTRAINT UNIQUE (userid, notificationon),
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
+);
+
+CREATE TABLE schedulenotification
+(
+  schedulenotificationid  int unsigned NOT NULL AUTO_INCREMENT ,
+  userid      int unsigned NOT NULL ,
+  scheduleid      int unsigned NOT NULL ,
+  notificationtype  varchar(30) NOT NULL ,
+
+
+  PRIMARY KEY (schedulenotificationid),
+  CONSTRAINT UNIQUE (userid, scheduleid, notificationtype),
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (scheduleid) REFERENCES schedule (scheduleid) ON DELETE CASCADE
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------
@@ -168,6 +194,12 @@ CREATE TRIGGER trigger_newuser_controlstate2
   AFTER INSERT ON user FOR EACH ROW
     INSERT controlstate (userid, controlgroup, state)
     SELECT new.userid, 'filtering' AS courseid, '{"search": "", "keywords": []}' as state;
+    
+#-- add share notification default tfor new users
+CREATE TRIGGER trigger_newuser_notification
+  AFTER INSERT ON user FOR EACH ROW
+    INSERT sharenotification (userid, notificationon)
+    SELECT new.userid, 0 as notificationon;
     
 #--------------------------------------------------------------------------
 #-- views

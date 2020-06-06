@@ -55,6 +55,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'sharedwithuser') {
       dbResult = await this._getSchedulesSharedWithUser(params, postData, userInfo);
       
+    } else if (params.queryName == 'notification') {
+      dbResult = await this._getNotificationInfo(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -542,6 +545,47 @@ module.exports = internal.TipManager = class {
     return result;
   }    
     
+  async _getNotificationInfo(params, postData, userInfo) {
+    var result = this._queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      share:
+        'select notificationon ' + 
+        'from sharenotification ' +
+        'where userid = ' + userInfo.userId,
+        
+      schedule:
+        'select scheduleid, schedulename ' +
+        'from schedule ' +
+        'where userid = ' + userInfo.userId,
+        
+      schedulenotification:
+        'select scheduleid, scheduleid, notificationtype ' +
+        'from schedulenotification ' +
+        'where userid = ' + userInfo.userId
+    };
+
+    console.log(queryList);
+    queryResults = await this._dbQueries(queryList);
+    console.log(queryResults.data.share);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = {
+        share: queryResults.data.share[0],
+        schedule: queryResults.data.schedule,
+        schedulenotification: queryResults.data.schedulenotification
+      };
+      
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }    
+
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------

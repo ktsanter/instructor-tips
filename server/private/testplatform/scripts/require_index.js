@@ -2,7 +2,7 @@ define(function (require) {
   require('index');
   
   require('create_element');
-  require('lookupinput');
+  //require('lookupinput');
   
   document.addEventListener('DOMContentLoaded', app.init());
 });

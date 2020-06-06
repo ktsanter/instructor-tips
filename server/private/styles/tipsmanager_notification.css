@@ -10,6 +10,20 @@
   display: none;
 }
 
-.tipnotification .tipnotification-contents {
-  border: 1px solid red;
+.tipnotification .tipnotification-contents {}
+
+.tipnotification .tipnotification-contents .tipnotification-share {
+  margin-bottom: 0.4em;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-share .tipnotification-sharecontrol {}
+
+.tipnotification .tipnotification-contents .tipnotification-share .tipnotification-sharelabel {
+  display: inline-block;
+  margin-top: 0.6em;
+  padding-left: 0.4em;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule {
+  border: 1px solid blue;
 }

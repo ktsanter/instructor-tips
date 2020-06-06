@@ -47,36 +47,31 @@ const app = function () {
   function _renderControls() {
     var container = CreateElement.createDiv(null, 'testplatform-controls');
     
-    var handler = (e, showValue) => {_handleShowButton(e, true)};
-    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'show', null, handler));
-    var handler = (e, showValue) => {_handleShowButton(e, false)};
-    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'hide', null, handler));
-    
-    handler = (e) => {_handleValueButton(e, 'get')};
-    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'get value', null, handler));
-    
-    handler = (e) => {_handleValueButton(e, 'set')};
-    container.appendChild(CreateElement.createButton(null, 'testplatform-controls-button', 'set value', null, handler));
-    
     return container;
   }
   
   function _renderTestContent() {
-    var params = {
-      //label: 'choose from',
-      valueList: ['bob', 'bill', 'fred', 'Frannie', 'barnabas', 'Bubba', 'george', 'harry', 'ginnie'],
-      selectedValueList: ['bill', 'fred'], //[],
-      changeCallback: (params) => {_testCallback(params);}
-    };
+    var container = CreateElement.createDiv(null, 'testplatform-contents');
     
-    if (params.valueList) params.valueList = params.valueList.sort();
+    var subcontainer = CreateElement.createDiv(null, 'testplatform-contents-sub');
+    container.appendChild(subcontainer);
+    var handler = (e) => {_handleCheck(e);}
+    var elemCheck = _renderCheckbox(null, 'testplatform-checkbox', 'cbgroup', 'myValue', 'test', false, handler);
+    subcontainer.appendChild(elemCheck);
     
-    this._lookupInput = new LookupInput(params);
+    subcontainer = CreateElement.createDiv(null, 'testplatform-contents-sub');
+    container.appendChild(subcontainer);
+    elemCheck = _renderCheckbox(null, 'testplatform-checkbox', 'cbgroup', 'myValue', 'test2', true, handler);
+    subcontainer.appendChild(elemCheck);
     
-    var elem = this._lookupInput.render();
-    this._lookupInput.show(true);
+    subcontainer = CreateElement.createDiv(null, 'testplatform-contents-sub')
+    container.appendChild(subcontainer);
     
-    return elem;
+    handler = (e) => {_handleCheck2(e);}
+    //createSliderSwitch(dataOnLabel, dataOffLabel, addedClassList, handler, useTwoChoice)
+    subcontainer.appendChild(CreateElement.createSliderSwitch('on', 'off', 'testplatform-slider', handler));
+
+    return container;
   }
   
   function _renderTestOuput() {
@@ -85,26 +80,59 @@ const app = function () {
     return container;
   }
  
+  function _renderCheckbox(id, classList, groupName, buttonValue, displayValue, checked, handler) {
+    var container = CreateElement.createSpan(null, null);
+
+    var revisedClassList = classList;
+    if (classList) revisedClassList += ' ';
+    if (checked) {
+      revisedClassList += 'fas fa-check-square checkbox-checked';
+    } else {
+      revisedClassList += 'far fa-square'
+    }
+    
+    var elem = CreateElement.createIcon(id, revisedClassList, null, (e) => {_checkboxHandler(e, handler);});
+    container.appendChild(elem);
+    elem.checked = checked;
+    
+    var label = CreateElement._createElement('label', null, classList);
+    label.innerHTML = displayValue;
+    container.appendChild(label);
+
+    return container;
+  }
+  
+  function _checkboxHandler(e, handler) {
+    var elem = e.target;
+    if (elem.checked) {
+      elem.classList.remove('checkbox-checked');
+      elem.classList.remove('fas');
+      elem.classList.remove('fa-check-square');
+      elem.classList.add('far');
+      elem.classList.add('fa-square');
+
+    } else {
+      elem.classList.add('checkbox-checked');
+      elem.classList.remove('far');
+      elem.classList.remove('fa-square');
+      elem.classList.add('fas');
+      elem.classList.add('fa-check-square');
+    }
+    elem.checked = !elem.checked;
+    
+    handler(e);
+  }
+  
   //---------------------------------------
 	// handlers
 	//----------------------------------------
-  function _handleShowButton(e, showValue) {
-    this._lookupInput.show(showValue);
-  }
-
-  function _handleValueButton(e, operation) {
-    if (operation == 'get') {
-      var value = this._lookupInput.value();
-      var elemOutput = page.maincontainer.getElementsByClassName('testplatform-output')[0];
-      elemOutput.innerHTML = JSON.stringify(value);
-      
-    } else if (operation == 'set') {
-      this._lookupInput.setSelectedValues(['fred']);
-    }
+  function _handleCheck(e) {
+    console.log(e.target);
+    console.log(e.target.checked);
   }
   
-  function _testCallback(params) {
-    console.log('test callback: ' + JSON.stringify(params));
+  function _handleCheck2(e) {
+    console.log(e.target);
   }
   
   //---------------------------------------
