@@ -297,8 +297,7 @@ module.exports = internal.TipManager = class {
             'and t.tipid = vtc.tipid '
     };
         
-    var queryResults = await this._dbQueries(queryList);
-    
+    var queryResults = await this._dbQueries(queryList);    
     if (queryResults.success) {
       var consolidatedDetails = this._consolidateTipCategories(queryResults.data.scheduledetails, userInfo);
       
@@ -376,35 +375,19 @@ module.exports = internal.TipManager = class {
     
     var orderedDetails = {};
     for (var key in detailsByLocation) {
-      orderedDetails[key] = this._orderSingleWeek(detailsByLocation[key]);
+      orderedDetails[key] = detailsByLocation[key].sort(function(a, b) {
+        if (a.schedulelocationorder > b.schedulelocationorder) {
+          return 1;
+        } else if (a.schedulelocationorder < b.schedulelocationorder) {
+          return -1;
+        }
+        return 0;
+      });        
     }
  
     return orderedDetails;
   }
-  
-  _orderSingleWeek(items) {
-    var ordered = [];
-    
-    ordered = items.sort(function(a, b) {
-      if (a.schedulelocationorder > b.schedulelocationorder) {
-        return 1;
-      } else if (a.schedulelocationorder < b.schedulelocationorder) {
-        return -1;
-      }
-      return 0;
-    });
 
-    return ordered;
-  }
-  
-  _findItemById(items, id) {
-    var item = null;
-    for (var i = 0; i < items.length && !item; i++) {
-      if (items[i].scheduletipid == id) item = items[i];
-    }
-
-    return item;
-  }
   
   async _getTipList(params, postData, userInfo) {
     var result = this._queryFailureResult();   
@@ -578,7 +561,8 @@ module.exports = internal.TipManager = class {
     if (queryResults.success) {
       query = 'select scheduleid ' +
               'from schedule ' +
-              'where schedulename = "' + postData.schedulename + '" ';
+              'where schedulename = "' + postData.schedulename + '" ' +
+              'and userid = ' + userInfo.userId;
       queryResults = await this._dbQuery(query);
       
       if (queryResults.success) {
@@ -599,9 +583,9 @@ module.exports = internal.TipManager = class {
   
   async _shareSchedule(params, postData, userInfo) {
     var result = this._queryFailureResult();
-
-    var query, queryResults;
     
+    var query, queryResults;
+       
     var dateStamp = this._getDateStamp();
     
     query = 
@@ -637,12 +621,13 @@ module.exports = internal.TipManager = class {
     var shareScheduleId = queryResults.data[0].sharescheduleid;
 
     var query = 
-      'insert into sharescheduletip (sharescheduleid, scheduletipid, tipid, tipstate, schedulelocation, previousitem, nextitem) ' +
-      'select ' + shareScheduleId + ' as sharescheduleid, scheduletipid, tipid, 0 as tipstate, schedulelocation, previousitem, nextitem ' +
+      'insert into sharescheduletip (sharescheduleid, scheduletipid, tipid, tipstate, schedulelocation, schedulelocationorder) ' +
+      'select ' + shareScheduleId + ' as sharescheduleid, scheduletipid, tipid, 0 as tipstate, schedulelocation, schedulelocationorder ' +
       'from scheduletip ' +
       'where scheduleid = ' + postData.scheduleid + ' ';
-;      
+     
     queryResults = await this._dbQuery(query);    
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'insert succceeded';
@@ -1011,12 +996,16 @@ module.exports = internal.TipManager = class {
     }
     
     var newScheduleId = queryResults.data.scheduleid;
-    
-    queryResults = await this._acceptSharedScheduleTips(params, postData, userInfo, newScheduleId);
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
+
+    var query = 
+      'insert into scheduletip (scheduleid, tipid, tipstate, schedulelocation, schedulelocationorder) ' +
+      'select ' + 
+        newScheduleId + ' as scheduleid, ' +
+        'tipid, tipstate, schedulelocation, schedulelocationorder ' +
+      'from sharescheduletip ' +
+      'where sharescheduleid = ' + postData.sharescheduleid + ' ';
+      
+    queryResults = await this._dbQuery(query);
 
     queryResults = await this._deleteSharedSchedule(params, postData, userInfo);
     if (queryResults.success) {

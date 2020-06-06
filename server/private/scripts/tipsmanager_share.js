@@ -281,7 +281,7 @@ class TipShare {
     if (!queryResults.success) {
       if (queryResults.details.indexOf('duplicate schedule name') >= 0) {
         this._notice.setNotice('');
-        alert('You already have a schedule with this name. Please try again');
+        alert('You already have a schedule with this name. Please try again with a different name');
       }
     }
     
