@@ -101,6 +101,7 @@
   border-right: 1px solid var(--itemBorder);
   border-top: 1px solid var(--itemBorder);
   border-bottom: 1px solid var(--itemBorder);  
+  overflow-wrap: break-word;
 }
 
 .tipbrowse .tipbrowse-results .tipbrowse-tip .tipbrowse-tip-details.eventip {

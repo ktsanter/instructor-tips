@@ -177,6 +177,8 @@
 .weeklytip-singletip {
   display: inline-block;
   padding: 0.2em 0.4em 0.2em 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .weeklytip-trashcontainer {

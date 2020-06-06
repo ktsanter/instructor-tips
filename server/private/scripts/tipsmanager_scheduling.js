@@ -588,7 +588,7 @@ class TipScheduling {
   _handleDragEnter(e) {
     e.preventDefault();
     
-    var destContainer= this._getDropLocation(e.target).dropcontainer;
+    var destContainer = this._getDropLocation(e.target).dropcontainer;
     
     if (destContainer.classList.contains('weeklytip-trashcontainer')) {
       this._dragTarget.style.display = 'none';
@@ -700,7 +700,7 @@ class TipScheduling {
       scheduleLocation = node.itemInfo.schedulelocation;
       scheduleLocationOrder = node.itemInfo.schedulelocationorder + 1;
     }
-    
+
     return {
       schedulelocation: scheduleLocation, 
       schedulelocationorder: scheduleLocationOrder,

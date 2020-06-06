@@ -1,19 +1,12 @@
-- add tip editing menu option?
-
-- schedule sharing
-   - save full set of scheduletips on share send
-   - integrate same on receive
-   - add delete share option
+- add tip editing (add/edit/delete) menu option?
+   - handle orphaned shared schedule tips (trigger?)
 
 - notification management
 
 - text sanitizing for tips
 
 - limit string lengths for DB value
-    - schedule names
-    - schedule share comment
     - tip text
 
-- change landing page back to Scheduling
+- update settings UI
 
-- handle orphaned shared schedule tips (trigger?)

@@ -38,11 +38,14 @@
 }
 
 .tipshare .tipshare-contents .tipshare-send .tipshare-select {
+  display: inline-block;
   min-width: 16em;
+  max-width: 35%;
+  text-overflow: ellipsis;   
 }
 
 .tipshare .tipshare-contents .tipshare-send .tipshare-selectcontainer {
-  display: inline-block;
+  display: inline;
 }
 
 .tipshare .tipshare-contents .tipshare-send .tipshare-usercontainer {

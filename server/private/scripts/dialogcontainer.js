@@ -47,6 +47,7 @@ class DialogContainer {
     
     var elemScheduleName = CreateElement.createTextInput(null, 'dialogcontainer-input');
     elemScheduleName.placeholder = 'schedule name';
+    elemScheduleName.maxLength = 200;
     elemScheduleName.addEventListener('input', (e) => {this._handleScheduleName(e);});
     
     subContainer.appendChild(elemScheduleName);
@@ -84,6 +85,7 @@ class DialogContainer {
     
     var elemScheduleName = CreateElement.createTextInput(null, 'dialogcontainer-input');
     elemScheduleName.placeholder = 'schedule name';
+    elemScheduleName.maxLength = 200;    
     elemScheduleName.addEventListener('input', (e) => {this._handleScheduleName(e);});
     subContainer.appendChild(elemScheduleName);
 
@@ -134,6 +136,7 @@ class DialogContainer {
     
     var elemTipText = CreateElement.createTextArea(null, 'dialogcontainer-input');
     elemTipText.placeholder = 'tip text';
+    elemTipText.maxLength = 800;
     elemTipText.addEventListener('input', (e) => {this._handleTipTextChange(e);});
     
     subContainer.appendChild(elemTipText);
@@ -180,6 +183,7 @@ class DialogContainer {
     
     var elemScheduleName = CreateElement.createTextInput(null, 'dialogcontainer-input');
     elemScheduleName.placeholder = 'new schedule name';
+    elemScheduleName.maxLength = 200;    
     elemScheduleName.addEventListener('input', (e) => {this._handleScheduleName(e);});
     
     subContainer.appendChild(elemScheduleName);
