@@ -1,7 +1,14 @@
 - add tip editing (add/edit/delete) menu option?
    - handle orphaned shared schedule tips (trigger?)
 
-- text sanitizing for tips
+- text sanitizing
+  - schedule name
+  - share comment
+  - tip text
+  - email
 
-- update settings UI
+- figure out how to do password change
+  - need full-fledged HTML form
+
+- clean up common tips and incorporate Bspace into
 

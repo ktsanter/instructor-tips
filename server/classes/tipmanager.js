@@ -28,8 +28,8 @@ module.exports = internal.TipManager = class {
   async doQuery(params, postData, userInfo) {
     var dbResult = this._queryFailureResult();
 
-    if (params.queryName == 'notificationoptions') {
-      dbResult = await this._getUserNotificationOptions(params, userInfo);
+    if (params.queryName == 'profile') {
+      dbResult = await this._getUserProfile(params, userInfo);
       
     } else if (params.queryName == 'schedule-list') {
       dbResult = await this._getScheduleList(params, postData, userInfo);
@@ -117,9 +117,12 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'sharedschedule') {
       dbResult = await this._acceptSharedSchedule(params, postData, userInfo);
             
+    } else if (params.queryName == 'profile') {
+      dbResult = await this._updateUserProfile(params, postData, userInfo);
+      
     } else if (params.queryName == 'notification') {
-      dbResult = await this._updateNotificationInfo(params, postData, userInfo);
-            
+      dbResult = await this._updateNotificationInfo(params, postData, userInfo);            
+    
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -254,12 +257,12 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _getUserNotificationOptions(params, userInfo) {
+  async _getUserProfile(params, userInfo) {
     var result = this._queryFailureResult();   
     
     var queryList = {
       notificationoptions: 
-        'select sharedschedule, pushreminders, email ' +
+        'select email ' +
         'from user ' +
         'where userid = ' + userInfo.userId + ' '
     };
@@ -749,7 +752,7 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
-  async _updateUserNotificationOptions(params, postData, userInfo) {
+  async _updateUserProfile(params, postData, userInfo) {
     var result = this._queryFailureResult();
 
     var query;
@@ -758,8 +761,6 @@ module.exports = internal.TipManager = class {
     query =
       'update user ' +
       'set ' + 
-        'sharedschedule = ' + postData.sharedschedule + ', ' +
-        'pushreminders = ' + postData.pushreminders + ', ' +
         'email = "' + postData.email + '" ' +
       'where userid = ' + userInfo.userId + ' ';
 

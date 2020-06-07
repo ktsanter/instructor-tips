@@ -67,6 +67,8 @@ class TipProfile {
     elem.type = 'email';
     elem.placeholder = 'email for notifications';
     elem.maxLength = 80;
+    elem.addEventListener('input', (e) => {this._handleEmailChange(e);});
+    elem.addEventListener('keyup', (e) => {this._handleEmailKeyup(e)});
     
     return container;
   }
@@ -78,17 +80,21 @@ class TipProfile {
     
     var elem = CreateElement.createTextInput(null, 'tipprofile-passwordinput password-new');
     container.appendChild(elem);
-    elem.type = 'password';
+    //elem.type = 'password';
     elem.placeholder = 'new password';
     elem.maxLength = 16;
-    elem.autocomplete = 'off';
+    //elem.autocomplete = 'off';
+    elem.addEventListener('input', (e) => {this._handlePasswordChange(e);});
+    elem.disabled = true;
 
     elem = CreateElement.createTextInput(null, 'tipprofile-passwordinput password-confirm');
     container.appendChild(elem);
-    elem.type = 'password';
+    //elem.type = 'password';
     elem.placeholder = 'confirm new password';
     elem.maxLength = 16;
-    elem.autocomplete = 'off';
+    //elem.autocomplete = 'off';
+    elem.addEventListener('input', (e) => {this._handlePasswordChange(e);});
+    elem.disabled = true;
 
     return container;
   }
@@ -98,11 +104,7 @@ class TipProfile {
     
     var handler = (e) => {this._handleConfirm();};
     var elem = CreateElement.createButton(null, 'tipprofile-confirmsave', 'save', 'save profile changes', handler);
-    container.appendChild(elem);    
-    
-    handler = (e) => {this._handleCancel();};
-    elem = CreateElement.createButton(null, 'tipprofile-confirmcancel', 'cancel', 'discard profile changes', handler);
-    container.appendChild(elem);    
+    container.appendChild(elem);       
 
     return container;
   }
@@ -127,46 +129,39 @@ class TipProfile {
   async update() {
     console.log('TipProfile.update');
     var state = await this._loadStateFromDB();
-    
+   
     if (state) {
-      this._updateShare(state.share.notificationon);
-      this._updateScheduleNotifications(state.schedule);
+      this._updateEmail(state.email);
+      this._updateConfirm();
     }
-    
-    console.log(state);
+  }
+  
+  _updateEmail(email) {
+    var elem = this._container.getElementsByClassName('tipprofile-emailinput')[0];
+    elem.value = email;
+    elem.origEmailValue = email;
   }
 
+  _updateConfirm() {
+    var elem = this._container.getElementsByClassName('tipprofile-emailinput')[0];
+    var enableConfirm = (elem.value != elem.origEmailValue);
+    
+    elem = this._container.getElementsByClassName('tipprofile-confirmsave')[0];
+    elem.disabled = !enableConfirm;
+  }
+  
   //--------------------------------------------------------------
   // process state
   //--------------------------------------------------------------
   _getStateFromControls() {
     console.log('_getStateFromControls');
-    return {};
-    /*
-    var state = {share: {}, schedule: {}};
+    var elemEmail = this._container.getElementsByClassName('tipprofile-emailinput')[0];
     
-    var elemShare = this._container.getElementsByClassName('tipnotification-sharecontrol')[0];
-    state.share.notificationon = (CreateElement.getSliderValue(elemShare) ? 1 : 0);
-    
-    var elemSchedules = this._container.getElementsByClassName('tipnotification-scheduledetails');
-    for (var i = 0; i < elemSchedules.length; i++) {
-      var scheduleInfo = elemSchedules[i].scheduleInfo;
-      var elemControls = elemSchedules[i].getElementsByClassName('tipnotification-controlitem');
-      var controlValues = [];
-      for (var j = 0; j < elemControls.length; j++) {
-        var control = elemControls[j];
-        var controlText = control.controlLabelText;
-        if (CreateElement.getSliderValue(control)) controlValues.push(controlText);
-      }
-      
-      state.schedule[scheduleInfo.scheduleid] = {
-        schedulename: scheduleInfo.schedulename,
-        notification: controlValues
-      };
-    }
-    
+    var state = {
+      email: elemEmail.value
+    };
+
     return state;
-    */
   }
   
   async _loadStateFromDB() {
@@ -183,34 +178,39 @@ class TipProfile {
   
   async _saveStateToDB(state) {
     console.log('_saveStateToDB');
-    /*
-    await this._doPostQuery('tipmanager/update', 'notification', state);
-    //    var queryResults = await this._doPostQuery('tipmanager/update', 'notificationoptions', postData);
-    */
-  }
-  
 
+    var queryResults = await this._doPostQuery('tipmanager/update', 'profile', state);
+    
+    return queryResults.success;
+  }
+ 
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
   _handleConfirm(e) {
-    console.log('_handleEmailConfirm');
+    if (this._saveStateToDB(this._getStateFromControls())) {
+      this.update();
+    }
   }
   
   _handleCancel(e) {
     console.log('_handleEmailCancel');
+    this.update();
   }
 
-  /*
-  _handleShareChange(e) {
-    this._saveStateToDB(this._getStateFromControls());
+  _handleEmailChange(e) {
+    this._updateConfirm();
   }
   
-  _handleScheduleChange(e) {
-    this._saveStateToDB(this._getStateFromControls());
-  }
-  */
+  _handleEmailKeyup(e) {
+    if (e.code == 'Escape') {
+      e.target.value = e.target.origEmailValue;
+      this._updateConfirm();
+    }
+  }  
   
+  _handlePasswordChange(e) {}
+    
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  

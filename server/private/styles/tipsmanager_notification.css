@@ -12,6 +12,9 @@
 
 .tipnotification .tipnotification-contents {}
 
+/*-------------------------------------------------------------------
+ * share
+ *------------------------------------------------------------------*/
 .tipnotification .tipnotification-contents .tipnotification-share {
   margin: 1.0em 0;
 }
@@ -24,14 +27,23 @@
   padding-left: 0.4em;
 }
 
+/*-------------------------------------------------------------------
+ * schedule
+ *------------------------------------------------------------------*/
 .tipnotification .tipnotification-contents .tipnotification-schedule {
-  max-width: 70%;
+  max-width: 50%;
   margin-top: 2.0em;
 }
 
+.tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-schedulelabel {
+   font-weight: bold;
+}
+
 .tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-scheduledetails {
+  position: relative;
   min-height: 4.0em;
   border: 1px solid var(--itemBorder);
+  margin-bottom: 0.2em;
 }
 
 .tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-scheduledetails.even {
@@ -44,13 +56,15 @@
 
 .tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails .tipnotification-schedulename {
   display: inline-block;
-  max-width: 50%;
+  max-width: 40%;
   padding: 0.2em 0 0.2em 0.2em;
 }
 
 .tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails .tipnotification-schedulecontrols {
-  float: right;
-  padding-right: 0.2em;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.2em 0.4em 0 0;
 }
 
 .tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails .tipnotification-schedulecontrols .tipnotification-controlitem.switch  {
@@ -60,6 +74,7 @@
 
 .tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails.even .tipnotification-schedulecontrols .tipnotification-controlitem.switch .switch-label {
   background-color: white;
+  box-shadow: none;
 }
 
 .tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails.odd .tipnotification-schedulecontrols .tipnotification-controlitem.switch .switch-label {

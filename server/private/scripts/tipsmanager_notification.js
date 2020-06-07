@@ -100,6 +100,8 @@ class TipNotification {
   _updateScheduleNotifications(scheduleData) {
     var container = this._container.getElementsByClassName('tipnotification-schedule')[0];
     this._removeChildren(container);
+    
+    container.appendChild(CreateElement.createDiv(null, 'tipnotification-schedulelabel', 'Receive notification reminders'));
 
     var count = 0;    
     for (var scheduleId in scheduleData) {
