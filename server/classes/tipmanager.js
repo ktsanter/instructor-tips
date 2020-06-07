@@ -117,6 +117,9 @@ module.exports = internal.TipManager = class {
     } else if (params.queryName == 'sharedschedule') {
       dbResult = await this._acceptSharedSchedule(params, postData, userInfo);
             
+    } else if (params.queryName == 'notification') {
+      dbResult = await this._updateNotificationInfo(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -559,24 +562,22 @@ module.exports = internal.TipManager = class {
       schedule:
         'select scheduleid, schedulename ' +
         'from schedule ' +
-        'where userid = ' + userInfo.userId,
+        'where userid = ' + userInfo.userId + ' ' +
+        'order by scheduleid',
         
       schedulenotification:
-        'select scheduleid, scheduleid, notificationtype ' +
+        'select scheduleid, notificationtype ' +
         'from schedulenotification ' +
         'where userid = ' + userInfo.userId
     };
 
-    console.log(queryList);
     queryResults = await this._dbQueries(queryList);
-    console.log(queryResults.data.share);
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
       result.data = {
         share: queryResults.data.share[0],
-        schedule: queryResults.data.schedule,
-        schedulenotification: queryResults.data.schedulenotification
+        schedule: this._consolidateScheduleNotifications(queryResults.data.schedule, queryResults.data.schedulenotification)
       };
       
     } else {
@@ -585,6 +586,24 @@ module.exports = internal.TipManager = class {
     
     return result;
   }    
+  
+  _consolidateScheduleNotifications(scheduleData, scheduleNotificationData) {
+    var consolidated = {};
+    for (var i = 0; i < scheduleData.length; i++) {
+      var schedule = scheduleData[i];
+      consolidated[schedule.scheduleid] = {
+        schedulename: schedule.schedulename,
+        notification: []
+      }
+    }
+    
+    for (var i = 0; i < scheduleNotificationData.length; i++) {
+      var notification = scheduleNotificationData[i];
+      consolidated[notification.scheduleid].notification.push(notification.notificationtype);
+    }
+    
+    return consolidated;
+  }
 
 //---------------------------------------------------------------
 // specific insert methods
@@ -1193,6 +1212,106 @@ module.exports = internal.TipManager = class {
     
     return clause;
   }
+  
+  async _acceptSharedSchedule(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var queryList, queryResults;    
+
+    queryList = {};
+    
+    queryList.schedule = 
+      'select ' + 
+        userInfo.userId + ' as userid, ' +
+        '"' + postData.schedulename + '" as schedulename, ' +
+        's.schedulelength, ' +
+        's.schedulestartdate ' +
+      'from schedule as s, shareschedule as ss ' +
+      'where s.scheduleid = ss.scheduleid ' +
+        'and ss.sharescheduleid = ' + postData.sharescheduleid;
+        
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+     
+    queryResults = await this._insertSchedule(params, queryResults.data.schedule[0], userInfo);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate schedule name';
+      }
+      return result;
+    }
+    
+    var newScheduleId = queryResults.data.scheduleid;
+
+    var query = 
+      'insert into scheduletip (scheduleid, tipid, tipstate, schedulelocation, schedulelocationorder) ' +
+      'select ' + 
+        newScheduleId + ' as scheduleid, ' +
+        'tipid, tipstate, schedulelocation, schedulelocationorder ' +
+      'from sharescheduletip ' +
+      'where sharescheduleid = ' + postData.sharescheduleid + ' ';
+      
+    queryResults = await this._dbQuery(query);
+
+    queryResults = await this._deleteSharedSchedule(params, postData, userInfo);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  async _updateNotificationInfo(params, postData, userInfo) {
+    var result = this._queryFailureResult();
+    var queryList, queryResults;    
+    
+    queryList = {
+      share:
+        'update sharenotification ' +
+        'set notificationon = ' + postData.share.notificationon + ' ' +
+        'where userid = ' + userInfo.userId,
+    };
+    
+    var scheduleList = postData.schedule;
+    for (var scheduleId in scheduleList) {
+      var schedule = scheduleList[scheduleId];
+
+      queryList['remove' + scheduleId] = 
+        'delete from schedulenotification ' +
+        'where scheduleid = ' + scheduleId + ' ' +
+          'and userid = ' + userInfo.userId + ' ';
+      
+      for (var i = 0; i < schedule.notification.length; i++) {
+        var notificationText = schedule.notification[i];
+        
+        queryList['add' + scheduleId + '_' + i] = 
+          'insert into schedulenotification (' +
+            'userid, scheduleid, notificationtype ' +
+          ') ' +
+          'select ' +
+            userInfo.userId + ', ' +
+            scheduleId + ', ' +
+            '"' + notificationText + '" as notificationtype'; 
+      }
+    }
+    
+    queryResults = await this._dbQueries(queryList);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;    
+  }
+  
   
   async _addTipCategory(params, postData, userInfo) {
     var result = this._queryFailureResult();

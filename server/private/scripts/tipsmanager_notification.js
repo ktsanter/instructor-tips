@@ -10,6 +10,10 @@ class TipNotification {
     
     this._HIDE_CLASS = 'tipnotification-hide';
 
+    this._config = {};
+    if (config) this._config = {};
+    this._config.controlText = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    
     this._container = null;
   }
  
@@ -81,45 +85,97 @@ class TipNotification {
 
   async update() {
     var state = await this._loadStateFromDB();
-    this._setState(state);
+    
+    if (state) {
+      this._updateShare(state.share.notificationon);
+      this._updateScheduleNotifications(state.schedule);
+    }
   }
+  
+  _updateShare(shareOn) {
+    var elemShareControl = this._container.getElementsByClassName('tipnotification-sharecontrol')[0];
+    CreateElement.setSliderValue(elemShareControl, shareOn == 1);
+  }
+  
+  _updateScheduleNotifications(scheduleData) {
+    var container = this._container.getElementsByClassName('tipnotification-schedule')[0];
+    this._removeChildren(container);
+
+    var count = 0;    
+    for (var scheduleId in scheduleData) {
+      var schedule = scheduleData[scheduleId];
+      schedule.scheduleid = scheduleId;
+      container.appendChild(this._renderScheduleNotification(schedule, count % 2 == 0));   
+      count++;      
+    }
+  }
+  
+  _renderScheduleNotification(schedule, evenEntry) {
+    var classString = 'tipnotification-scheduledetails' + (evenEntry ? ' even' : ' odd');
+    var container = CreateElement.createDiv(null, classString);
+    container.scheduleInfo = schedule
+    
+    container.appendChild(CreateElement.createDiv(null, 'tipnotification-schedulename', schedule.schedulename));
+    
+    var controls = CreateElement.createDiv(null, 'tipnotification-schedulecontrols');
+    container.appendChild(controls);
+    
+    var notificationSet = new Set(schedule.notification);
+    var handler = (e) => this._handleScheduleChange(e);
+    for (var i = 0; i < this._config.controlText.length; i++) {
+      var txt = this._config.controlText[i];
+      var elem = CreateElement.createSliderSwitch(txt, txt, 'tipnotification-controlitem', handler);
+      controls.appendChild(elem);
+      CreateElement.setSliderValue(elem, notificationSet.has(txt));
+      elem.controlLabelText = txt;
+    }
+    
+    return container;
+  }
+
 
   //--------------------------------------------------------------
   // process state
   //--------------------------------------------------------------
-  getState() {
-    console.log('getState');
-    var state = {};
+  _getStateFromControls() {
+    var state = {share: {}, schedule: {}};
+    
+    var elemShare = this._container.getElementsByClassName('tipnotification-sharecontrol')[0];
+    state.share.notificationon = (CreateElement.getSliderValue(elemShare) ? 1 : 0);
+    
+    var elemSchedules = this._container.getElementsByClassName('tipnotification-scheduledetails');
+    for (var i = 0; i < elemSchedules.length; i++) {
+      var scheduleInfo = elemSchedules[i].scheduleInfo;
+      var elemControls = elemSchedules[i].getElementsByClassName('tipnotification-controlitem');
+      var controlValues = [];
+      for (var j = 0; j < elemControls.length; j++) {
+        var control = elemControls[j];
+        var controlText = control.controlLabelText;
+        if (CreateElement.getSliderValue(control)) controlValues.push(controlText);
+      }
+      
+      state.schedule[scheduleInfo.scheduleid] = {
+        schedulename: scheduleInfo.schedulename,
+        notification: controlValues
+      };
+    }
     
     return state;
   }
   
-  _setState(state) {
-    console.log('_setState');
-  }
-  
   async _loadStateFromDB() {
-    console.log('_loadStateFromDB');
     var state = null;
     
     var queryResults = await this._doGetQuery('tipmanager/query', 'notification');
     if (queryResults.success) {
-      console.log(queryResults.data);
-      //state = JSON.parse(queryResults.controlstate[0].state);
+      state = queryResults.data;
     };
     
     return state;
   }
   
-  async _saveStateToDB(stateToSave) {
-    console.log('_saveStateToDB');
-    /*
-    var stateForDB = {
-      search: stateToSave.search,
-      keywords: stateToSave.keywords
-    };
-    await this._doPostQuery('tipmanager/update', 'controlstate-filtering', stateForDB);
-    */
+  async _saveStateToDB(state) {
+    await this._doPostQuery('tipmanager/update', 'notification', state);
   }
   
 
@@ -127,8 +183,11 @@ class TipNotification {
   // handlers
   //-------------------------------------------------------------- 
   _handleShareChange(e) {
-    var share = CreateElement.getSliderValue(e.target.parentNode);
-    console.log(share);
+    this._saveStateToDB(this._getStateFromControls());
+  }
+  
+  _handleScheduleChange(e) {
+    this._saveStateToDB(this._getStateFromControls());
   }
   
   //--------------------------------------------------------------
