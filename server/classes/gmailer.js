@@ -48,7 +48,8 @@ module.exports = internal.GMailer = class {
       from: this._defaultSender,
       to: addresseeList,
       subject: subjectText,
-      text: bodyText
+      text: bodyText,
+      html: bodyText
     };
     
     this._transporter.sendMail(mailOptions, function(error, info){

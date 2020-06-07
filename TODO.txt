@@ -7,8 +7,11 @@
   - tip text
   - email
 
+- complete password checking
+
 - figure out how to do password change
   - need full-fledged HTML form
 
-- clean up common tips and incorporate Bspace into
+- clean up common tips and incorporate Bspace into them
 
+- add reminder notifications (cron style)

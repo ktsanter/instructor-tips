@@ -75,7 +75,7 @@ module.exports = internal.TipManager = class {
       dbResult = await this._addScheduleWeek(params, postData, userInfo);
             
     } else if (params.queryName == 'shareschedule') {
-      dbResult = await this._shareSchedule(params, postData, userInfo);
+      dbResult = await this._shareSchedule(params, postData, userInfo, gMailer);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -647,7 +647,7 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
-  async _shareSchedule(params, postData, userInfo) {
+  async _shareSchedule(params, postData, userInfo, gMailer) {
     var result = this._queryFailureResult();
     
     var query, queryResults;
@@ -686,13 +686,19 @@ module.exports = internal.TipManager = class {
     
     var shareScheduleId = queryResults.data[0].sharescheduleid;
 
-    var query = 
+    query = 
       'insert into sharescheduletip (sharescheduleid, scheduletipid, tipid, tipstate, schedulelocation, schedulelocationorder) ' +
       'select ' + shareScheduleId + ' as sharescheduleid, scheduletipid, tipid, 0 as tipstate, schedulelocation, schedulelocationorder ' +
       'from scheduletip ' +
       'where scheduleid = ' + postData.scheduleid + ' ';
      
-    queryResults = await this._dbQuery(query);    
+    queryResults = await this._dbQuery(query);
+    if (!queryResults) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    queryResults = await this._notifyAboutSharedSchedule(postData.scheduleid, postData.comment, userInfo, postData.userid, gMailer);
 
     if (queryResults.success) {
       result.success = true;
@@ -702,6 +708,64 @@ module.exports = internal.TipManager = class {
     }
     
     return result;
+  }
+  
+  async _notifyAboutSharedSchedule(scheduleId, comment, userInfo, useridTo, gMailer) {
+    var result = this._queryFailureResult();
+    
+    var queryList, queryResults;
+
+    queryList = {
+      notification:
+        'select sn.notificationon, u.email ' +
+        'from user as u, sharenotification as sn ' +
+        'where u.userid = sn.userid ' +
+          'and u.userid = ' + useridTo,
+        
+      schedule:
+        'select schedulename ' +
+        'from schedule ' +
+        'where scheduleid = ' + scheduleId + ' ' +
+          'and userid = ' + userInfo.userId,
+    };
+    
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults) {
+      result.details = queryResults.details;
+      return result;
+    }    
+
+    var notificationOn = queryResults.data.notification[0].notificationon;
+    var emailTo = queryResults.data.notification[0].email;
+    var scheduleName = queryResults.data.schedule[0].schedulename;
+
+    if (!notificationOn) {
+      result.success = true;
+      result.details = 'no message sent - notification off';
+      console.log('notification off');
+      return result;
+    }
+    
+    var bodyText = userInfo.userName + ' shared a schedule with you in the InstructorTips app.<br>';
+    bodyText += '<em>name </em>: ' + scheduleName + '<br>';
+    if (comment.length > 0) {
+      bodyText += '<em>comment</em>: ' + comment + '<br>';
+    } 
+    
+    var mailResult = await gMailer.sendMessage(
+      emailTo, 
+      'an Instructor Tips schedule has been shared with you',
+      bodyText
+    )
+                
+    if (mailResult.success) {
+      result.success = true;
+      result.details = 'notification message sent';
+    } else {
+      result.details = 'notification message failed';
+    }
+    
+    return result;    
   }
 
 //---------------------------------------------------------------
