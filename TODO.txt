@@ -1,8 +1,6 @@
 - add tip editing (add/edit/delete) menu option?
    - handle orphaned shared schedule tips (trigger?)
 
-- notification management
-
 - text sanitizing for tips
 
 - update settings UI

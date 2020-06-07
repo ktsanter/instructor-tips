@@ -3,10 +3,11 @@ define(function (require) {
   require('tipsmanager_scheduling');
   require('tipsmanager_notification');
   require('tipsmanager_share');
+  require('tipsmanager_profile');
+
   require('tipsmanager_schedulingcontrol');
   require('tipsmanager_tipbrowse');
   require('tipsmanager_tipfilter');
-  require('tipsmanager_settings');
   require('dbadmincontainer');
   require('dbadmintableedit');
   require('standard_notice');

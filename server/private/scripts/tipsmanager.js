@@ -18,7 +18,7 @@ const app = function () {
     navOptions: [
       'scheduling', 'share', 'notification',
       'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates',
-      'settings'
+      'profile'
     ],
     adminTypes: ['privileges', 'users', 'userprivileges', 'categories', 'tips', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates']
   };
@@ -36,8 +36,9 @@ const app = function () {
 
     await _renderPage();
     await settings.share.update();
+    
     //_navDispatch('scheduling');
-    _navDispatch('notification');
+    _navDispatch('profile');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -76,7 +77,7 @@ const app = function () {
       ],
       
       hamburgeritems: [     
-        {label: 'settings', callback: () => {return _navDispatch('settings');}},      
+        {label: 'profile', callback: () => {return _navDispatch('profile');}},      
         {label: 'help', callback: _showHelp},
         {label: 'logout', callback: _doLogout}
       ]      
@@ -117,8 +118,8 @@ const app = function () {
     });
     container.appendChild(await settings.share.render());
 
-    settings.settings = new Settings();
-    container.appendChild(await settings.settings.render());
+    settings.profile = new TipProfile();
+    container.appendChild(await settings.profile.render());
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
       var type = settings.adminTypes[i];

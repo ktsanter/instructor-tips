@@ -1,18 +1,17 @@
 //-----------------------------------------------------------------------------------
-// TipNotification class
+// TipProfile class
 //-----------------------------------------------------------------------------------
 // TODO: 
 //-----------------------------------------------------------------------------------
-class TipNotification {
+class TipProfile {
   constructor(config) {
     this._version = '0.01';
-    this._title = 'Notification';
+    this._title = 'Profile';
     
-    this._HIDE_CLASS = 'tipnotification-hide';
+    this._HIDE_CLASS = 'tipprofile-hide';
 
     this._config = {};
     if (config) this._config = config;
-    this._config.controlText = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     
     this._container = null;
   }
@@ -21,7 +20,7 @@ class TipNotification {
   // initial rendering
   //--------------------------------------------------------------
   async render() {
-    this._container = CreateElement.createDiv(null, 'tipnotification ' + this._HIDE_CLASS);
+    this._container = CreateElement.createDiv(null, 'tipprofile ' + this._HIDE_CLASS);
     
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
@@ -41,31 +40,73 @@ class TipNotification {
   }
 
   _renderContents() {
-    var container = CreateElement.createDiv(null, 'tipnotification-contents');
+    var container = CreateElement.createDiv(null, 'tipprofile-contents');
     
-    container.appendChild(this._renderShareNotifications());
-    container.appendChild(this._renderScheduleNotifications());
+    container.appendChild(this._renderEmail());
+    container.appendChild(this._renderPassword());
+    container.appendChild(this._renderConfirm());
     
     return container;
   }
   
-  _renderShareNotifications() {
-    var container = CreateElement.createDiv(null, 'tipnotification-share');
+  _renderSectionTitle(title) {
+    var container = CreateElement.createDiv(null, 'tipprofile-sectiontitle');
     
-    var handler = (e) => {this._handleShareChange(e);}
-    var elem = CreateElement.createSliderSwitch('yes', 'no', 'tipnotification-sharecontrol', handler);
+    container.appendChild(CreateElement.createDiv(null, 'tipprofile-sectiontitletext', title));
+    
+    return container;
+  }
+  
+  _renderEmail() {
+    var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-email');
+    
+    container.appendChild(this._renderSectionTitle('Email for notification'));
+    
+    var elem = CreateElement.createTextInput(null, 'tipprofile-emailinput');
     container.appendChild(elem);
-    container.appendChild(CreateElement.createDiv(null, 'tipnotification-sharelabel', 'Receive notification when a schedule is shared with you'));
-    
-    return container;
-  }
-
-  _renderScheduleNotifications() {
-    var container = CreateElement.createDiv(null, 'tipnotification-schedule');
+    elem.type = 'email';
+    elem.placeholder = 'email for notifications';
+    elem.maxLength = 80;
     
     return container;
   }
   
+  _renderPassword() {
+    var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-password');
+    
+    container.appendChild(this._renderSectionTitle('Password'));
+    
+    var elem = CreateElement.createTextInput(null, 'tipprofile-passwordinput password-new');
+    container.appendChild(elem);
+    elem.type = 'password';
+    elem.placeholder = 'new password';
+    elem.maxLength = 16;
+    elem.autocomplete = 'off';
+
+    elem = CreateElement.createTextInput(null, 'tipprofile-passwordinput password-confirm');
+    container.appendChild(elem);
+    elem.type = 'password';
+    elem.placeholder = 'confirm new password';
+    elem.maxLength = 16;
+    elem.autocomplete = 'off';
+
+    return container;
+  }
+    
+  _renderConfirm() {
+    var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-confirm');
+    
+    var handler = (e) => {this._handleConfirm();};
+    var elem = CreateElement.createButton(null, 'tipprofile-confirmsave', 'save', 'save profile changes', handler);
+    container.appendChild(elem);    
+    
+    handler = (e) => {this._handleCancel();};
+    elem = CreateElement.createButton(null, 'tipprofile-confirmcancel', 'cancel', 'discard profile changes', handler);
+    container.appendChild(elem);    
+
+    return container;
+  }
+    
   //--------------------------------------------------------------
   // updating
   //--------------------------------------------------------------
@@ -84,60 +125,24 @@ class TipNotification {
   }
 
   async update() {
+    console.log('TipProfile.update');
     var state = await this._loadStateFromDB();
     
     if (state) {
       this._updateShare(state.share.notificationon);
       this._updateScheduleNotifications(state.schedule);
     }
-  }
-  
-  _updateShare(shareOn) {
-    var elemShareControl = this._container.getElementsByClassName('tipnotification-sharecontrol')[0];
-    CreateElement.setSliderValue(elemShareControl, shareOn == 1);
-  }
-  
-  _updateScheduleNotifications(scheduleData) {
-    var container = this._container.getElementsByClassName('tipnotification-schedule')[0];
-    this._removeChildren(container);
-
-    var count = 0;    
-    for (var scheduleId in scheduleData) {
-      var schedule = scheduleData[scheduleId];
-      schedule.scheduleid = scheduleId;
-      container.appendChild(this._renderScheduleNotification(schedule, count % 2 == 0));   
-      count++;      
-    }
-  }
-  
-  _renderScheduleNotification(schedule, evenEntry) {
-    var classString = 'tipnotification-scheduledetails' + (evenEntry ? ' even' : ' odd');
-    var container = CreateElement.createDiv(null, classString);
-    container.scheduleInfo = schedule
     
-    container.appendChild(CreateElement.createDiv(null, 'tipnotification-schedulename', schedule.schedulename));
-    
-    var controls = CreateElement.createDiv(null, 'tipnotification-schedulecontrols');
-    container.appendChild(controls);
-    
-    var notificationSet = new Set(schedule.notification);
-    var handler = (e) => this._handleScheduleChange(e);
-    for (var i = 0; i < this._config.controlText.length; i++) {
-      var txt = this._config.controlText[i];
-      var elem = CreateElement.createSliderSwitch(txt, txt, 'tipnotification-controlitem', handler);
-      controls.appendChild(elem);
-      CreateElement.setSliderValue(elem, notificationSet.has(txt));
-      elem.controlLabelText = txt;
-    }
-    
-    return container;
+    console.log(state);
   }
-
 
   //--------------------------------------------------------------
   // process state
   //--------------------------------------------------------------
   _getStateFromControls() {
+    console.log('_getStateFromControls');
+    return {};
+    /*
     var state = {share: {}, schedule: {}};
     
     var elemShare = this._container.getElementsByClassName('tipnotification-sharecontrol')[0];
@@ -161,12 +166,14 @@ class TipNotification {
     }
     
     return state;
+    */
   }
   
   async _loadStateFromDB() {
+    console.log('_loadStateFromDB');
     var state = null;
     
-    var queryResults = await this._doGetQuery('tipmanager/query', 'notification');
+    var queryResults = await this._doGetQuery('tipmanager/query', 'profile');
     if (queryResults.success) {
       state = queryResults.data;
     };
@@ -175,13 +182,26 @@ class TipNotification {
   }
   
   async _saveStateToDB(state) {
+    console.log('_saveStateToDB');
+    /*
     await this._doPostQuery('tipmanager/update', 'notification', state);
+    //    var queryResults = await this._doPostQuery('tipmanager/update', 'notificationoptions', postData);
+    */
   }
   
 
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
+  _handleConfirm(e) {
+    console.log('_handleEmailConfirm');
+  }
+  
+  _handleCancel(e) {
+    console.log('_handleEmailCancel');
+  }
+
+  /*
   _handleShareChange(e) {
     this._saveStateToDB(this._getStateFromControls());
   }
@@ -189,6 +209,7 @@ class TipNotification {
   _handleScheduleChange(e) {
     this._saveStateToDB(this._getStateFromControls());
   }
+  */
   
   //--------------------------------------------------------------
   // utility methods
