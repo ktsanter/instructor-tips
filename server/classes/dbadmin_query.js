@@ -7,11 +7,11 @@
 const internal = {};
 
 module.exports = internal.dbAdminQuery = class {
-  constructor(mariadb, dbName, userManagement) {
+  constructor(mariadb, dbName, userManagement, hostName) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
-      host: 'localhost',
+      host: hostName, //'localhost',
       user: 'root',
       password: 'SwordFish002',
       connectionLimit: 5  
@@ -154,7 +154,7 @@ module.exports = internal.dbAdminQuery = class {
     
     var queryList = {
       users: 
-        'select userid, username, usershortname, email, sharedschedule, pushreminders ' +
+        'select userid, username, usershortname, email ' +
         'from user ' +
         'order by username'
     };
@@ -168,11 +168,9 @@ module.exports = internal.dbAdminQuery = class {
       result.insertUpdateFields = [
         {usershortname: 'text'}, 
         {username: 'text'},
-        {email: 'text'},
-        {sharedschedule: 'text'},
-        {pushreminders: 'text'}
+        {email: 'text'}
       ],
-      result.displayFields = ['usershortname', 'username', 'email', 'sharedschedule', 'pushreminders'];
+      result.displayFields = ['usershortname', 'username', 'email'];
       result.data = queryResults.data.users,
       result.constraints = {};
     } else {

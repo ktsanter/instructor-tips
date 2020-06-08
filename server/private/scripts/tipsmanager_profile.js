@@ -60,7 +60,7 @@ class TipProfile {
   _renderEmail() {
     var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-email');
     
-    container.appendChild(this._renderSectionTitle('Email for notification'));
+    container.appendChild(this._renderSectionTitle('email for notification'));
     
     var elem = CreateElement.createTextInput(null, 'tipprofile-emailinput');
     container.appendChild(elem);
@@ -76,7 +76,7 @@ class TipProfile {
   _renderPassword() {
     var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-password');
     
-    container.appendChild(this._renderSectionTitle('Password'));
+    container.appendChild(this._renderSectionTitle('change password'));
     
     var elem = CreateElement.createTextInput(null, 'tipprofile-passwordinput password-new');
     container.appendChild(elem);

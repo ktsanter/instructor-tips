@@ -7,11 +7,11 @@
 const internal = {};
 
 module.exports = internal.dbAdminInsert = class {
-  constructor(mariadb, dbName, userManagement) {
+  constructor(mariadb, dbName, userManagement, hostName) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
-      host: 'localhost',
+      host: hostName, //'localhost',
       user: 'root',
       password: 'SwordFish002',
       connectionLimit: 5  
@@ -147,13 +147,11 @@ module.exports = internal.dbAdminInsert = class {
     var pushRemindersOption = 0;
     if (postData.pushreminders == '1') pushRemindersOption = 1;
     
-    var query = 'insert into user (usershortname, username, email, sharedschedule, pushreminders) ' +
+    var query = 'insert into user (usershortname, username, email) ' +
                 'values (' +
                   '"' + postData.usershortname + '", ' + 
                   '"' + postData.username + '",' + 
-                  '"' + postData.email + '", ' +
-                  sharedScheduleOption + ', ' +
-                  pushRemindersOption +
+                  '"' + postData.email + '" ' +
                 ')';
     
     var queryResults = await this._dbQuery(query);

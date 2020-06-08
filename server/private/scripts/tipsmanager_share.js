@@ -68,7 +68,7 @@ class TipShare {
   _renderSendTitle() {
     var container = CreateElement.createDiv(null, 'tipshare-sendtitle');
     
-    container.appendChild(CreateElement.createDiv(null, 'tipshare-sendtitletext', 'Share schedule with others'));
+    container.appendChild(CreateElement.createDiv(null, 'tipshare-sendtitletext', 'share schedule with others'));
     
     return container;
   }
@@ -119,7 +119,7 @@ class TipShare {
     
     var subcontainer = CreateElement.createDiv(null, 'tipshare-received-title');
     container.appendChild(subcontainer);
-    subcontainer.appendChild(CreateElement.createDiv(null, 'tipshare-received-titletext', 'Schedules shared with you'));
+    subcontainer.appendChild(CreateElement.createDiv(null, 'tipshare-received-titletext', 'schedules shared with you'));
     
     container.appendChild(CreateElement.createDiv(null, 'tipshare-received-contents'));
     

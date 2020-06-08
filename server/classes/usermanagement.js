@@ -7,11 +7,11 @@
 const internal = {};
 
 module.exports = internal.UserManagement = class {
-  constructor(mariadb, dbName) {
+  constructor(mariadb, dbName, hostName) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
-      host: 'localhost',
+      host: hostName, //'localhost',
       user: 'root',
       password: 'SwordFish002',
       connectionLimit: 5  

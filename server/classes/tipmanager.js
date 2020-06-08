@@ -8,11 +8,11 @@
 const internal = {};
 
 module.exports = internal.TipManager = class {
-  constructor(mariadb, dbName, userManagement) {
+  constructor(mariadb, dbName, userManagement, hostName) {
     this._mariadb = mariadb
     
     this._pool = mariadb.createPool({
-      host: 'localhost',
+      host: hostName, //'localhost',
       user: 'root',
       password: 'SwordFish002',
       connectionLimit: 5  
