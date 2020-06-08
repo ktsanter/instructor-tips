@@ -15,3 +15,11 @@
 - clean up common tips and incorporate Bspace into them
 
 - add reminder notifications (cron style)
+
+- parameterize and abstract SQL login
+  - admin query
+  - admin insert
+  - admin update
+  - admin delete
+  - tipmanager
+  - usermanagement

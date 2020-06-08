@@ -37,10 +37,7 @@ load data local infile 'initial_load_data/user.txt'
 into table user
 FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
-(usershortname, username, email)
-set 
-  sharedschedule = 0, 
-  pushreminders = 0;
+(usershortname, username, email);
 
 #-------------------------------------------------------------
 #-- userprivilege
@@ -92,7 +89,7 @@ CREATE TABLE tip_staging
   categorytext      varchar(100) NOT NULL 
 );
 
-load data local infile 'initial_load_data/tipdata2_instructorscorner.txt'
+load data local infile 'initial_load_data/tip.txt' /*'initial_load_data/tipdata2_instructorscorner.txt'*/
 into table tip_staging
 FIELDS TERMINATED BY '|'
 LINES TERMINATED BY '\r\n'
