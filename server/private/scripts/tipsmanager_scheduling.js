@@ -41,7 +41,11 @@ class TipScheduling {
     var updateCallback = (params) => {return this.update(params);};
     var dragstartCallback = (e) => {return this._startTipDrag(e)};
     var dragendCallback =   (e) => {return this._handleDragEnd(e)};
-    this._browse = new TipBrowse(updateCallback, dragstartCallback, dragendCallback);
+    this._browse = new TipBrowse({
+      "updateCallback": updateCallback, 
+      "dragstartCallback": dragstartCallback, 
+      "dragendCallback": dragendCallback
+    });
     this._container.appendChild(await this._browse.render(this._notice));
     
     var categoryList = await this._loadCategoryListFromDB();

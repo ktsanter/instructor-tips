@@ -3,6 +3,7 @@ define(function (require) {
   require('tipsmanager_scheduling');
   require('tipsmanager_notification');
   require('tipsmanager_share');
+  require('tipsmanager_editing');
   require('tipsmanager_profile');
 
   require('tipsmanager_schedulingcontrol');

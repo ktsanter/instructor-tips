@@ -1,5 +1,6 @@
-- add tip editing (add/edit/delete) menu option?
+- add tip editing (edit/delete) menu option
    - handle orphaned shared schedule tips (trigger?)
+   - only show tips owned by user unless admin
 
 - text sanitizing
   - schedule name
@@ -11,8 +12,6 @@
 
 - figure out how to do password change
   - need full-fledged HTML form
-
-- clean up common tips and incorporate Bspace into them
 
 - add reminder notifications (cron style)
 

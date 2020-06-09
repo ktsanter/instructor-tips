@@ -16,7 +16,7 @@ const app = function () {
     logoutURL: '/usermanagement/logout',
     
     navOptions: [
-      'scheduling', 'share', 'notification',
+      'scheduling', 'share', 'notification', 'editing',
       'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates',
       'profile'
     ],
@@ -37,7 +37,8 @@ const app = function () {
     await _renderPage();
     await settings.share.update();
     
-    _navDispatch('scheduling');
+    //_navDispatch('scheduling');
+    _navDispatch('editing');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -72,6 +73,7 @@ const app = function () {
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false},
         {label: 'Sharing', callback: () => {return _navDispatch('share');}, subitems: null, rightjustify: false},
+        {label: 'Tip editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
         {label: settings.userInfo.userName, callback: null, subitems: null, rightjustify: true}
       ],
       
@@ -117,6 +119,9 @@ const app = function () {
     });
     container.appendChild(await settings.share.render());
 
+    settings.editing = new TipEditing();
+    container.appendChild(await settings.editing.render());
+    
     settings.profile = new TipProfile();
     container.appendChild(await settings.profile.render());
 

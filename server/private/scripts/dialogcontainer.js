@@ -27,6 +27,7 @@ class DialogContainer {
     // tip dialogs
     else if (dialogType == 'add-tip') this._container.appendChild(this._renderAddEditTip(dialogType));
     else if (dialogType == 'edit-tip') this._container.appendChild(this._renderAddEditTip(dialogType));
+    else if (dialogType == 'delete-tip') this._container.appendChild(this._renderDeleteTip(dialogType));
     
     // schedule sharing dialogs
     else if (dialogType == 'accept-share') this._container.appendChild(this._renderAcceptShare(dialogType));
@@ -172,6 +173,23 @@ class DialogContainer {
     return container;
   }
   
+  _renderDeleteTip() {
+    var container = CreateElement.createDiv(null, 'dialogcontainer-delete');
+    
+    container.appendChild(this._renderTitle('Delete tip'));
+    
+    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-message'));
+    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-deletetip'));
+
+    var handler = (me) => {this._handleConfirm(this);};
+    container.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'confirm', 'delete tip', handler));
+
+    handler = (me) => {this._handleCancel(this);};
+    container.appendChild(CreateElement.createButton(null, 'dialogcontainer confirmcancel', 'cancel', 'do not delete tip', handler));
+    
+    return container;
+  }
+  
   _renderAcceptShare() {
     var container = CreateElement.createDiv(null, 'dialogcontainer-add');
     
@@ -229,6 +247,7 @@ class DialogContainer {
     // tip dialogs
     else if (dialogType == 'add-tip') this._updateAddTip(params); 
     else if (dialogType == 'edit-tip') this._updateEditTip(params); 
+    else if (dialogType == 'delete-tip') this._updateDeleteTip(params); 
     
     // schedule sharing dialogs
     else if (dialogType == 'accept-share') this._updateAcceptShare(params); 
@@ -277,6 +296,7 @@ class DialogContainer {
   
   _updateEditTip(params) {
     if (!params.editable) {
+      console.log('attempted to edit tip where editable=false');
       this._handleCancel(this);
       return;
     }
@@ -300,6 +320,24 @@ class DialogContainer {
     elemPreview.innerHTML = MarkdownToHTML.convert(tipText);
     if (tipText.length == 0) elemPreview.innerHTML = 'preview';
     this._setClass(elemPreview, 'preview-default', tipText.length == 0);
+  }
+  
+  _updateDeleteTip(params) {
+    if (!params.deletable) {
+      console.log('attempted to delete tip where deletable=false');
+      this._handleCancel(this);
+      return;
+    }
+
+    var elemMsg = this._container.getElementsByClassName('dialogcontainer-message')[0];
+    var msg = 'This tip will be deleted and deletions cannot be undone.' +
+              '<br><br>Are you sure you want to delete this tip?';
+    
+    elemMsg.innerHTML = msg;
+    elemMsg.tipId = params.tipid;
+
+    var elemTipText = this._container.getElementsByClassName('dialogcontainer-deletetip')[0];
+    elemTipText.innerHTML = MarkdownToHTML.convert(params.tiptext);
   }
   
   _updateAcceptShare(params) {
@@ -399,6 +437,10 @@ class DialogContainer {
         category: this._category.value(),
         params: this._config.params
       };
+      
+    } else if (dialogType == 'delete-tip') {
+      var elemMsg = this._container.getElementsByClassName('dialogcontainer-message')[0];
+      callbackData = {tipid: elemMsg.tipId};
       
     } else if (dialogType = 'accept-share') {
       var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];

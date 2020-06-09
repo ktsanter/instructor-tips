@@ -36,6 +36,15 @@
   margin-bottom: 0.3em;
 }
 
+.dialogcontainer .dialogcontainer-delete .dialogcontainer-deletetip {
+  border: 1px solid var(--bgTertiaryEmphasis);
+  border-radius: 0.3em;
+  background-color: white;
+  width: 50%;
+  margin-bottom: 1.0em;
+  padding: 0.2em;
+}
+
 .dialogcontainer .dialogcontainer-sub.confirmcancel {
   margin-top: 0.4em;
 }

@@ -5,23 +5,45 @@
 //-----------------------------------------------------------------------------------
 
 class TipBrowse {
-  constructor(updateCallback, dragstartCallback, dragendCallback) {
+  constructor(config) {
     this._version = '0.01';
     this._title = 'Browse tips';
     
     this._HIDE_CLASS = 'tipbrowse-hide';
     
-    this._updateCallback = updateCallback;
-    this._dragstartCallback = dragstartCallback;
-    this._dragendCallback = dragendCallback
+    this._config = {};
+    if (config) this._config = config;
+    
+    this._setConfigHandler('updateCallback');
+    this._setConfigHandler('dragstartCallback');
+    this._setConfigHandler('dragendCallback');
+    this._setConfigHandler('editCallback');
+    this._setConfigHandler('deleteCallback');
+    
+    this._checkConfigOption('allowEdit', false);
+    this._checkConfigOption('allowDelete', false);
 
-    this._container = CreateElement.createDiv(null, 'tipbrowse');
+    this._container = null;  
   }
+
+  _setConfigHandler(handlerName) {
+    if (!this._config.hasOwnProperty(handlerName) || !this._config[handlerName]) {
+      this._config[handlerName] = (e) => {this._doNothing(e);};
+    }
+  }
+  
+  _checkConfigOption(optionName, defaultVal) {
+    if (!this._config.hasOwnProperty(optionName)) this._config[optionName] = defaultVal;
+  }
+
+  _doNothing(e) {}
   
   //--------------------------------------------------------------
   // rendering
   //--------------------------------------------------------------
   async render(notice) {
+    this._container = CreateElement.createDiv(null, 'tipbrowse');
+
     // this object has its own notice to avoid conflicts with that of "parent"
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
@@ -81,8 +103,9 @@ class TipBrowse {
   
   _renderTipList(container, tipList) {
     this._removeAllChildren(container);
-    container.tipList = tipList;
     
+    container.tipList = tipList;
+
     for (var i = 0; i < tipList.length; i++) {
       var subcontainer = CreateElement.createDiv(null, 'tipbrowse-tip');
       container.appendChild(subcontainer);
@@ -92,6 +115,8 @@ class TipBrowse {
       var classString = 'tipbrowse-tip-details' + (i % 2 == 0 ? ' eventip' : ' oddtip');
       var elemTip = CreateElement.createDiv(null, classString, MarkdownToHTML.convert(tipList[i].tiptext));
       subcontainer.appendChild(elemTip);
+      
+      subcontainer.appendChild(this._renderTipControls(tipList[i], i % 2 == 0));
     }
   }
   
@@ -107,6 +132,31 @@ class TipBrowse {
     container.addEventListener('dragend', (e) => {this._dragendHandler(e)});
     
     container.appendChild(CreateElement.createIcon(null, 'tipbrowse-draghandle-icon fas fa-grip-vertical', null, null));
+    
+    return container;
+  }
+  
+  _renderTipControls(tipInfo, evenTip) {
+    var classString = 'tipbrowse-tipcontrols';
+    classString += evenTip ? ' eventip' : ' oddtip';
+    var container = CreateElement.createDiv(null, classString);
+
+    var subcontainer = CreateElement.createDiv(null, 'tipbrowse-tipcontrols-inner');
+    container.appendChild(subcontainer);
+    
+    if (this._config.allowEdit) {
+      var handler = (e) => {this._handleEdit(e);};
+      var elem = CreateElement.createIcon(null, 'tipcontrol-icon far fa-edit', 'edit tip', handler);
+      subcontainer.appendChild(elem);
+      elem.tipInfo = tipInfo;
+    }
+    
+    if (this._config.allowDelete) {
+      var handler = (e) => {this._handleDelete(e);};
+      var elem = CreateElement.createIcon(null, 'tipcontrol-icon far fa-trash-alt', 'delete tip', handler);
+      subcontainer.appendChild(elem);
+      elem.tipInfo = tipInfo;
+    }
     
     return container;
   }
@@ -142,6 +192,14 @@ class TipBrowse {
     this.update(true);
   }
   
+  _handleEdit(e) {
+    this._config.editCallback(e.target.tipInfo);
+  };
+  
+  _handleDelete(e) {
+    this._config.deleteCallback(e.target.tipInfo);
+  };
+  
   _dragstartHandler(e) {
     if (!e.target.classList.contains('tipbrowse-draghandle')) {
       e.preventDefault();
@@ -160,12 +218,12 @@ class TipBrowse {
     
     e.target.itemInfo = itemInfo;
 
-    return this._dragstartCallback(e);
+    return this._config.dragstartCallback(e);
   }
   
   _dragendHandler(e) {
     if (!e.target.classList.contains('tipbrowse-draghandle')) return false;
-    return this._dragendCallback(e);
+    return this._config.dragendCallback(e);
   }
   //--------------------------------------------------------------
   // utility methods

@@ -466,7 +466,8 @@ module.exports = internal.TipManager = class {
           tipid: consolidatedItem.tipid,
           tiptext: consolidatedItem.tiptext,
           common: consolidatedItem.common,
-          userid: consolidatedItem.userid
+          userid: consolidatedItem.userid,
+          category: consolidatedItem.categorylist
         });
       }
     }
