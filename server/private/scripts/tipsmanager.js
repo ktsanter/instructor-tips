@@ -37,8 +37,7 @@ const app = function () {
     await _renderPage();
     await settings.share.update();
     
-    //_navDispatch('scheduling');
-    _navDispatch('editing');
+    _navDispatch('scheduling');
 	}
 	
 	//-----------------------------------------------------------------------------

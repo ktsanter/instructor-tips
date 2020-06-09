@@ -92,6 +92,10 @@ class TipEditing {
   //--------------------------------------------------------------
   show(makeVisible) {
     this._showElement(this._container, makeVisible);
+    if (!makeVisible) {
+      this._editTipDialog.forceCancel();
+      this._deleteTipDialog.forceCancel();
+    }
   }
   
   _showContents(makeVisible) {
@@ -155,9 +159,6 @@ class TipEditing {
   }    
   
   async _finishDeleteTip(tipInfo) {
-    console.log('_finishDeleteTip');
-    console.log(tipInfo);
-        
     this._showContents(true);
     
     var deleteParams = {

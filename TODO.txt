@@ -20,5 +20,3 @@
   - usermanagement
 
 - use environment variables in node
-
-- close DialogContainer when main menu change

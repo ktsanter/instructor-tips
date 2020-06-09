@@ -104,6 +104,11 @@ class TipScheduling {
   //--------------------------------------------------------------
   show(makeVisible) {
     this._showElement(this._container, makeVisible);
+    if (!makeVisible) {
+      this._addTipDialog.forceCancel();
+      this._editTipDialog.forceCancel();
+    }
+    this._control.show(makeVisible);
   }
   
   _showElement(elem, makeVisible) {

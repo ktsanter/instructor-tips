@@ -57,13 +57,16 @@ class TipManagerSchedulingControl {
     this._container.appendChild(this._deleteDialog.render());
   }
 
-  show(makeVisible) {   
+  show(makeVisible) {
     if (this._container.classList.contains(this._HIDE_CLASS)) {
       this._container.classList.remove(this._HIDE_CLASS);
     }
     
     if (!makeVisible) {
       this._container.classList.add(this._HIDE_CLASS);
+      this._addDialog.forceCancel();
+      this._renameDialog.forceCancel();
+      this._deleteDialog.forceCancel();
     }
   }
   

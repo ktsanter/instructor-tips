@@ -407,6 +407,10 @@ class DialogContainer {
       this._container.classList.add(this._HIDE_CLASS);
     }
   }
+  
+  forceCancel() {
+    this._handleCancel(this);
+  }
 
   //--------------------------------------------------------------
   // package callback data
