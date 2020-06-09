@@ -20,6 +20,7 @@ class TipBrowse {
     this._setConfigHandler('editCallback');
     this._setConfigHandler('deleteCallback');
     
+    this._checkConfigOption('editing', false);
     this._checkConfigOption('allowEdit', false);
     this._checkConfigOption('allowDelete', false);
 
@@ -85,7 +86,7 @@ class TipBrowse {
     var container = CreateElement.createDiv(null, 'tipbrowse-contents');
     
     container.appendChild(await this._tipFilter.render(this._notice));
-    container.appendChild(CreateElement.createDiv(null, 'tipbrowse-results', '[browse results]'));
+    container.appendChild(CreateElement.createDiv(null, 'tipbrowse-results'));
     
     return container;
   }
@@ -156,6 +157,11 @@ class TipBrowse {
       var elem = CreateElement.createIcon(null, 'tipcontrol-icon far fa-trash-alt', 'delete tip', handler);
       subcontainer.appendChild(elem);
       elem.tipInfo = tipInfo;
+      if (tipInfo.schedulecount + tipInfo.shareschedulecount > 0) {
+        elem.classList.add('tipcontrol-disable');
+        elem.title = 'tip is used in one or more schedules';
+        elem.removeEventListener('click', handler);
+      }
     }
     
     return container;
@@ -165,8 +171,10 @@ class TipBrowse {
     var result = null;
     
     var filterSettings = this._tipFilter.getFilterState();
+    var queryParams = filterSettings;
+    queryParams.editing = this._config.editing;
     
-    var queryResults = await this._doPostQuery('tipmanager/query', 'tiplist', filterSettings);
+    var queryResults = await this._doPostQuery('tipmanager/query', 'tiplist', queryParams);
     if (queryResults.success) {
       result = queryResults.data.sort(function(a, b) {
         if (a.tiptext.toLowerCase() > b.tiptext.toLowerCase()) {

@@ -2,8 +2,7 @@
 //---------------------------------------------------------------
 // tip management DB interface
 //---------------------------------------------------------------
-// TODO: add logic based on user privileges
-// TODO: text sanitizing for schedule name
+// TODO: text sanitizing for schedule name, share comment, tip text
 //---------------------------------------------------------------
 const internal = {};
 
@@ -25,7 +24,7 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // dispatchers
 //---------------------------------------------------------------
-  async doQuery(params, postData, userInfo) {
+  async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._queryFailureResult();
 
     if (params.queryName == 'profile') {
@@ -44,7 +43,7 @@ module.exports = internal.TipManager = class {
       dbResult = await this._getScheduleDetails(params, postData, userInfo);
       
     } else if (params.queryName == 'tiplist') {
-      dbResult = await this._getTipList(params, postData, userInfo);
+      dbResult = await this._getTipList(params, postData, userInfo, funcCheckPrivilege);
       
     } else if (params.queryName == 'categorylist') {
       dbResult = await this._getCategoryList(params, postData, userInfo);
@@ -65,7 +64,7 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
 
-  async doInsert(params, postData, gMailer, userInfo) {
+  async doInsert(params, postData, gMailer, userInfo, funcCheckPrivilege) {
     var dbResult = this._queryFailureResult();
     
     if (params.queryName == 'schedule') {
@@ -84,7 +83,7 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
   
-  async doUpdate(params, postData, userInfo) {
+  async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._queryFailureResult();
     
     if (params.queryName == 'schedule') {
@@ -112,7 +111,7 @@ module.exports = internal.TipManager = class {
       dbResult = await this._addTipAndScheduleTip(params, postData, userInfo);
             
     } else if (params.queryName == 'tiptextandcategory') {
-      dbResult = await this._updateTipTextAndCategory(params, postData, userInfo);
+      dbResult = await this._updateTipTextAndCategory(params, postData, userInfo, funcCheckPrivilege);
             
     } else if (params.queryName == 'sharedschedule') {
       dbResult = await this._acceptSharedSchedule(params, postData, userInfo);
@@ -130,7 +129,7 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }  
 
-  async doDelete(params, postData, userInfo) {
+  async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._queryFailureResult();
     
     if (params.queryName == 'schedule') {
@@ -144,6 +143,9 @@ module.exports = internal.TipManager = class {
             
     } else if (params.queryName == 'shareschedule') {
       dbResult = await this._deleteSharedSchedule(params, postData, userInfo);
+            
+    } else if (params.queryName == 'tip') {
+      dbResult = await this._deleteTip(params, postData, userInfo, funcCheckPrivilege);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -398,14 +400,22 @@ module.exports = internal.TipManager = class {
   }
 
   
-  async _getTipList(params, postData, userInfo) {
+  async _getTipList(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._queryFailureResult();   
     
     var queryList = {
       tiplist: 
         // common tips and those owned by user
-        'select tipid, tiptext, common, userid, categorytext ' + 
-        'from view_tipsandcategories ' + 
+        'select ' +
+          'vtc.tipid, vtc.tiptext, vtc.common, vtc.userid, vtc.categorytext, ' +
+          'vtu.schedulecount, vtu.shareschedulecount ' + 
+        'from view_tipsandcategories as vtc ' +
+        'left outer join (' +
+          'select tipid, schedulecount, shareschedulecount ' +
+          'from view_tipusage ' +
+        ') as vtu on (' +
+          'vtc.tipid = vtu.tipid ' +
+        ') ' +          
         'where (common  ' + 
            'or userid = ' + userInfo.userId + ') ' +
            'and tiptext like "%' + postData.search + '%" ' +           
@@ -413,19 +423,27 @@ module.exports = internal.TipManager = class {
         'union ' + 
 
         // tips used on one of the user's schedules (includes shared)
-        'select tus.tipid, vtc.tiptext, vtc.common, vtc.userid, vtc.categorytext ' + 
+        'select ' +
+          'tus.tipid, ' +
+          'vtc.tiptext, vtc.common, vtc.userid, vtc.categorytext, ' + 
+          'vtu.schedulecount, vtu.shareschedulecount ' + 
         'from view_tipsusedinschedule as tus, view_tipsandcategories as vtc ' + 
+        'left outer join (' +
+          'select tipid, schedulecount, shareschedulecount ' +
+          'from view_tipusage ' +
+        ') as vtu on (' +
+          'vtc.tipid = vtu.tipid ' +
+        ') ' +          
         'where tus.tipid = vtc.tipid ' + 
           'and tus.userid = ' + userInfo.userId + ' ' +
           'and vtc.tiptext like "%' + postData.search + '%" '
     };
     
-    var queryResults = await this._dbQueries(queryList);
-    
+    var queryResults = await this._dbQueries(queryList);    
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.data = this._filterTipList(queryResults.data.tiplist, postData.keywords),
+      result.data = this._filterTipList(queryResults.data.tiplist, postData.keywords, postData.editing, userInfo, funcCheckPrivilege),
       result.constraints = {};
     } else {
       result.details = queryResults.details;
@@ -434,19 +452,24 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  _filterTipList(tipList, keywords) {
+  _filterTipList(tipList, keywords, editing, userInfo, funcCheckPrivilege) {
     var filteredList = [];
     
+    var hasAdminPriv = funcCheckPrivilege(userInfo, 'admin');
+
     var consolidatedList = {};
     for (var i = 0; i < tipList.length; i++) {
       var tipItem = tipList[i];
+
       if (!consolidatedList[tipItem.tipid]) {
         consolidatedList[tipItem.tipid] = {
           tipid: tipItem.tipid,
           tiptext: tipItem.tiptext,
           common: tipItem.common,
           userid: tipItem.userid,
-          categorylist: []
+          categorylist: [],
+          schedulecount: (tipItem.schedulecount ? tipItem.schedulecount : 0),
+          shareschedulecount: (tipItem.shareschedulecount ? tipItem.shareschedulecount : 0)
         };
       }
       
@@ -458,6 +481,8 @@ module.exports = internal.TipManager = class {
       var categorySet = new Set(consolidatedItem.categorylist);
 
       var passesFilter = true;
+      if (editing) passesFilter = (!consolidatedItem.common && consolidatedItem.userid == userInfo.userId) || hasAdminPriv;
+      
       for (var j = 0; j < keywords.length && passesFilter; j++) {
         passesFilter = categorySet.has(keywords[j]);
       }
@@ -467,7 +492,9 @@ module.exports = internal.TipManager = class {
           tiptext: consolidatedItem.tiptext,
           common: consolidatedItem.common,
           userid: consolidatedItem.userid,
-          category: consolidatedItem.categorylist
+          category: consolidatedItem.categorylist,
+          schedulecount: consolidatedItem.schedulecount,
+          shareschedulecount: consolidatedItem.shareschedulecount
         });
       }
     }
@@ -743,7 +770,6 @@ module.exports = internal.TipManager = class {
     if (!notificationOn) {
       result.success = true;
       result.details = 'no message sent - notification off';
-      console.log('notification off');
       return result;
     }
     
@@ -1024,7 +1050,7 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _updateTipTextAndCategory(params, postData, userInfo) {
+  async _updateTipTextAndCategory(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._queryFailureResult();
     var queryList, queryResults;
     
@@ -1041,8 +1067,10 @@ module.exports = internal.TipManager = class {
       return result;
     }
 
-    var qData = queryResults.data.checkifeditable[0];    
-    var editable = (!qData.common && qData.userid == userInfo.userId);
+    var qData = queryResults.data.checkifeditable[0];
+    var hasAdminPriv = funcCheckPrivilege(userInfo, 'admin');    
+    var editable = (!qData.common && qData.userid == userInfo.userId) || hasAdminPriv;
+
     if (!editable) {
       result.details = 'tip not editable by user';
       return result;
@@ -1559,7 +1587,6 @@ module.exports = internal.TipManager = class {
     return result;
   }
 
-  
   async _deleteSharedSchedule(params, postData, userInfo) {
     var result = this._queryFailureResult();
 
@@ -1575,6 +1602,64 @@ module.exports = internal.TipManager = class {
     
     queryResults = await this._dbQueries(queryList);
     
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+  async _deleteTip(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._queryFailureResult();
+
+    var hasAdminPriv = funcCheckPrivilege(userInfo, 'admin');
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      tipusage:
+        'select schedulecount, shareschedulecount  ' +
+        'from view_tipusage ' +
+        'where tipid = ' + postData.tipid,
+        
+      tipownership: 
+        'select common, userid ' +
+        'from tip ' +
+        'where tipid = ' + postData.tipid
+    };
+
+    queryResults = await this._dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    console.log(queryResults);
+    console.log(queryResults.data);
+    var tipUsage = queryResults.data.tipusage[0];
+    var tipUsageCount = 0;
+    if (tipUsage) tipUsageCount = tipUsage.schedulecount + tipUsage.shareschedulecount;
+    
+    var tipOwnership = queryResults.data.tipownership[0];
+    var tipOwnerId = tipOwnership.userid;
+    var commonTip = tipOwnership.common;
+    
+    console.log(tipUsageCount + ' ' + commonTip + ' ' + tipOwnerId + ' ' + hasAdminPriv);
+    if (!hasAdminPriv && (tipUsageCount > 0 || commonTip || tipOwnerId != userInfo.userId)) {
+      result.details = 'cannot delete - insufficient privilege or tip in use';
+      return result;
+    }
+    
+    queryList = {
+      deletetip: 
+        'delete from tip ' +
+        'where tipid = ' + postData.tipid
+    }
+    
+    queryResults = await this._dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       result.details = 'delete succeeded';

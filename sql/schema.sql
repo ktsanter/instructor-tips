@@ -221,4 +221,35 @@ create view view_tipsusedinschedule as
   select st.tipid, s.userid 
   from schedule as s, scheduletip as st
   where s.scheduleid = st.scheduleid;
+  
+#-- get count of schedules and shared schedules where a tip is used
+create view view_tipusage as
+  select vs.tipid, vs.schedulecount, jst.shareschedulecount
+  from (
+    select tipid, count(scheduleid) as schedulecount
+    from scheduletip
+    group by tipid
+  )  as vs
+  left outer join (
+    select tipid, count(sharescheduleid) as shareschedulecount
+    from sharescheduletip
+    group by tipid
+  ) as jst on (
+    vs.tipid = jst.tipid
+  )
 
+  union all
+
+  select jst.tipid, vs.schedulecount, jst.shareschedulecount
+  from (
+    select tipid, count(scheduleid) as schedulecount
+    from scheduletip
+    group by tipid
+  )  as vs
+  right outer join (
+    select tipid, count(sharescheduleid) as shareschedulecount
+    from sharescheduletip
+    group by tipid
+  ) as jst on (
+    vs.tipid = jst.tipid
+  ) where vs.schedulecount is null;

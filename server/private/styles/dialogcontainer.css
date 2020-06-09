@@ -36,6 +36,16 @@
   margin-bottom: 0.3em;
 }
 
+.dialogcontainer .dialogcontainer-usage {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 0.4em;
+}
+
+.dialogcontainer .dialogcontainer-usage .dialogcontainer-usagelabel {
+  margin-bottom: -1.0em;
+}
+
 .dialogcontainer .dialogcontainer-delete .dialogcontainer-deletetip {
   border: 1px solid var(--bgTertiaryEmphasis);
   border-radius: 0.3em;

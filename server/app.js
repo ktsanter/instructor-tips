@@ -1,5 +1,7 @@
 "use strict";
 
+//console.log(process.env);
+
 const express = require('express')
 var bodyParser = require('body-parser');
 var favicon = require('serve-favicon')
@@ -159,8 +161,10 @@ app.get('/admin/query/:queryName',  async function (req, res) {
 
 // InstructorTips general
 app.get('/tipmanager/query/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.send(await dbTipManager.doQuery(req.params, req.body, userManagement.getUserInfo(req.session)));
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
+    res.send(await dbTipManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('get'));
@@ -210,8 +214,10 @@ app.post('/admin/delete/:queryName', async function (req, res) {
 
 // InstructorTips general
 app.post('/tipmanager/query/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.send(await dbTipManager.doQuery(req.params, req.body, userManagement.getUserInfo(req.session)));
+  var userInfo = userManagement.getUserInfo(req.session);
+
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
+    res.send(await dbTipManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));
@@ -219,8 +225,10 @@ app.post('/tipmanager/query/:queryName', async function (req, res) {
 })
 
 app.post('/tipmanager/insert/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.send(await dbTipManager.doInsert(req.params, req.body, gMailer, userManagement.getUserInfo(req.session)));
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
+    res.send(await dbTipManager.doInsert(req.params, req.body, gMailer, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));
@@ -228,8 +236,10 @@ app.post('/tipmanager/insert/:queryName', async function (req, res) {
 })
 
 app.post('/tipmanager/update/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.send(await dbTipManager.doUpdate(req.params, req.body, userManagement.getUserInfo(req.session)));
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
+    res.send(await dbTipManager.doUpdate(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));
@@ -237,8 +247,10 @@ app.post('/tipmanager/update/:queryName', async function (req, res) {
 })
 
 app.post('/tipmanager/delete/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.send(await dbTipManager.doDelete(req.params, req.body, userManagement.getUserInfo(req.session)));
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
+    res.send(await dbTipManager.doDelete(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));

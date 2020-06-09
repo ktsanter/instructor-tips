@@ -33,7 +33,8 @@ class TipEditing {
       dialogtype: 'edit-tip',
       confirmcallback: (arg) => {this._finishEditTip(arg)},
       cancelcallback: () => {this._cancelEditTip()},
-      categorylist: categoryList
+      categorylist: categoryList,
+      showUsageInfo: true
     });
     this._container.appendChild(this._editTipDialog.render());    
     
@@ -58,6 +59,7 @@ class TipEditing {
     var container = CreateElement.createDiv(null, 'tipediting-contents');
     
     this._browse = new TipBrowse({
+      editing: true,
       allowEdit: true,
       allowDelete: true,
       editCallback: (params) => {this._handleEdit(params);}, 
@@ -115,12 +117,13 @@ class TipEditing {
   // handlers
   //-------------------------------------------------------------- 
   _handleEdit(tipInfo) {
-    tipInfo.editable = true;  // sort this out by filtering results of initial query for browse;
-                              // parameter in config for TipBrowse object?
-                              // check if tip is used on a schedule, if user is admin, etc.
-    
+    tipInfo.editable = true;  // as tip list is filtered this should always be true 
     this._showContents(false);
     this._editTipDialog.show(true);
+    
+    // should probably figure this out too
+    if (tipInfo.category.length == 1 && tipInfo.category[0] == null) tipInfo.category = [];
+    
     this._editTipDialog.update(tipInfo);
   }
   
@@ -161,12 +164,7 @@ class TipEditing {
       tipid: tipInfo.tipid
     };
 
-    console.log('** handle orphaned schedule tips and share schedule tips **');
-    var queryResults = {success: true}
-    //---------------------------------------------------------------------------
-    // don't uncomment this until orphaning and permissions are resolved
-    //var queryResults = await this._doPostQuery('tipmanager/delete', 'tip', deleteParams);
-    //---------------------------------------------------------------------------
+    var queryResults = await this._doPostQuery('tipmanager/delete', 'tip', deleteParams);
     if (queryResults.success) {
       this._showContents(true);
       this.update();

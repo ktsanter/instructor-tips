@@ -9,6 +9,7 @@ class DialogContainer {
     this._HIDE_CLASS = 'dialogcontainer-hide';
     
     this._config = config;
+    if (!this._config.hasOwnProperty('showUsageInfo')) this._config.showUsageInfo = false;
   }
   
   //--------------------------------------------------------------
@@ -144,6 +145,11 @@ class DialogContainer {
     
     // tip text preview
     container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-preview'));
+    
+    // usage info for tip
+    if (this._config.showUsageInfo) {
+      container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-usage', 'usage'));
+    }
     
     // category selection
     var params = {
@@ -308,6 +314,7 @@ class DialogContainer {
     elemTipText.focus();
 
     this._updateTipTextPreview(params.tiptext);
+    if (this._config.showUsageInfo) this._updateUsageInfo(params);
     
     this._category.setSelectedValues(params.category);
     
@@ -321,6 +328,19 @@ class DialogContainer {
     if (tipText.length == 0) elemPreview.innerHTML = 'preview';
     this._setClass(elemPreview, 'preview-default', tipText.length == 0);
   }
+  
+  _updateUsageInfo(tipInfo) {
+    var container = this._container.getElementsByClassName('dialogcontainer-usage')[0];
+    this._removeChildren(container);
+    
+    container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-usagelabel', 'This tip is'));
+    
+    var items = [];
+    if (tipInfo.common) items.push('<strong>marked as "common"</strong>');
+    items.push('used in ' + tipInfo.schedulecount + ' schedule(s)');
+    items.push('used in ' + tipInfo.shareschedulecount + ' shared schedule(s)');
+    container.appendChild(CreateElement.createUL(null, 'dialogcontainer-usageitems', items));
+   }
   
   _updateDeleteTip(params) {
     if (!params.deletable) {

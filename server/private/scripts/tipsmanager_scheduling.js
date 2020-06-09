@@ -61,7 +61,8 @@ class TipScheduling {
       dialogtype: 'edit-tip',
       confirmcallback: (arg) => {this._finishEditTip(arg)},
       cancelcallback: () => {this._cancelEditTip()},
-      categorylist: categoryList
+      categorylist: categoryList,
+      showUsageInfo: false
     });
     this._container.appendChild(this._editTipDialog.render());
 

@@ -31,6 +31,10 @@
   margin: 0;  
 }
 
+.tipediting .tipbrowse .tipfilter {
+  margin-bottom: 0.8em;
+}
+
 .tipediting .tipbrowse .tipbrowse-title {
   display: none;
 }
@@ -78,6 +82,13 @@
   border-radius: 0.3em;
   padding: 0.2em;
   margin: 0.2em;
+  cursor: pointer;
+}
+
+.tipediting .tipbrowse .tipbrowse-tipcontrols .tipbrowse-tipcontrols-inner .tipcontrol-icon.tipcontrol-disable {
+  color: var(--bgTertiaryEmphasis);
+  background-color: transparent;
+  cursor: default;
 }
 
 /*-------------------------------------------------------------------
