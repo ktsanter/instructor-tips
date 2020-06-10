@@ -5,6 +5,35 @@
 // TODO: 
 //---------------------------------------------------------------
 class SQLDBInterface {
+
+  static async doGetQuery(queryType, queryName, elemNotice) {
+    var resultData = {success: false};
+    
+    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
+    if (requestResult.success) {
+      resultData = requestResult;
+    } else {
+      if (elemNotice) elemNotice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
+    }
+    
+    return resultData;
+  }
+
+  static async doPostQuery(queryType, queryName, postData, elemNotice) {
+    var resultData = {success: false};
+    
+    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
+    if (requestResult.success) {
+      resultData = requestResult;
+      if (elemNotice) elemNotice.setNotice('');
+    } else {
+      resultData.details = requestResult.details;
+      if (elemNotice) elemNotice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
+    }
+    
+    return resultData;
+  }      
+  
   static async dbGet(queryType, queryName) {
     const METHOD_TITLE = 'dbGet';
     

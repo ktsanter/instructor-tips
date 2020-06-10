@@ -75,7 +75,7 @@ class TipEditing {
   async _loadCategoryListFromDB() {
     var categoryList = null;
     
-    var queryResults = await this._doGetQuery('tipmanager/query', 'categorylist');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'categorylist', this._notice);
     if (queryResults.success) {
       var data = queryResults.categorylist;
       categoryList = [];
@@ -93,9 +93,10 @@ class TipEditing {
   show(makeVisible) {
     this._showElement(this._container, makeVisible);
     if (!makeVisible) {
-      this._editTipDialog.forceCancel();
-      this._deleteTipDialog.forceCancel();
+      this._editTipDialog.show(false);
+      this._deleteTipDialog.show(false);
     }
+      this._showContents(makeVisible);
   }
   
   _showContents(makeVisible) {
@@ -147,7 +148,7 @@ class TipEditing {
       category: tipInfo.category
     }
 
-    var queryResults = await this._doPostQuery('tipmanager/update', 'tiptextandcategory', editParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'tiptextandcategory', editParams, this._notice);
     if (queryResults.success) {
       this._showContents(true);
       this.update();
@@ -165,7 +166,7 @@ class TipEditing {
       tipid: tipInfo.tipid
     };
 
-    var queryResults = await this._doPostQuery('tipmanager/delete', 'tip', deleteParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/delete', 'tip', deleteParams, this._notice);
     if (queryResults.success) {
       this._showContents(true);
       this.update();
@@ -184,35 +185,5 @@ class TipEditing {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      resultData.details = requestResult.details;
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }  
+ 
 }

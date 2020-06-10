@@ -151,11 +151,9 @@ module.exports = internal.dbAdminUpdate = class {
                 'set ' + 
                   'usershortname = "' + postData.usershortname + '", ' +
                   'username = "' + postData.username + '", ' +
-                  'email = "' + postData.email + '", ' +
-                  'sharedschedule = ' + sharedScheduleOption + ', ' +
-                  'pushreminders = ' + pushRemindersOption + ' ' +
+                  'email = "' + postData.email + '" ' +
                 'where userid = ' + postData.userid;
-                
+                ;
     var queryResults = await this._dbQuery(query);
 
     if (queryResults.success) {

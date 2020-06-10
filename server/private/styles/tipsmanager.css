@@ -53,12 +53,13 @@ body {
   top: 0.0em;
   right: 0.5em;
   background-color: var(--bgSecondaryChoice);
+  font-weight: bold;
+  padding: 0 0.1em;
 }
 
 .navbar .navbar-item.navbar-main-item.navbar-selected .tipmanager-super {
   color: var(--bgSecondaryChoice);
   background-color: transparent;
-  font-weight: bold;
 }
 
 .navbar .navbar-item.navbar-main-item .tipmanager-super.hide-me {

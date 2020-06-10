@@ -61,12 +61,13 @@ class TipManagerSchedulingControl {
     if (this._container.classList.contains(this._HIDE_CLASS)) {
       this._container.classList.remove(this._HIDE_CLASS);
     }
+    this._showMainUI(makeVisible);
     
     if (!makeVisible) {
       this._container.classList.add(this._HIDE_CLASS);
-      this._addDialog.forceCancel();
-      this._renameDialog.forceCancel();
-      this._deleteDialog.forceCancel();
+      this._addDialog.show(false);
+      this._renameDialog.show(false);
+      this._deleteDialog.show(false);
     }
   }
   
@@ -87,7 +88,7 @@ class TipManagerSchedulingControl {
     var container = CreateElement.createDiv(null, 'schedulecontrol-ui');
 
     var scheduleList = [];
-    var queryResults = await this._doGetQuery('tipmanager/query', 'schedule-list');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'schedule-list', this._notice);
     if (queryResults.success) {
       scheduleList = queryResults.schedules;
     }
@@ -139,7 +140,7 @@ class TipManagerSchedulingControl {
   
   async update() {
     var scheduleList = [];
-    var queryResults = await this._doGetQuery('tipmanager/query', 'schedule-list');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'schedule-list', this._notice);
     if (queryResults.success) {
       scheduleList = queryResults.schedules;
     }
@@ -161,7 +162,7 @@ class TipManagerSchedulingControl {
     var elemNewSelect = CreateElement.createSelect(null, 'schedulecontrol-select select-css', handler, valueList);
     elemOldSelect.parentNode.replaceChild(elemNewSelect, elemOldSelect);
     
-    queryResults = await this._doGetQuery('tipmanager/query', 'controlstate-scheduling');
+    queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'controlstate-scheduling', this._notice);
     if (queryResults.success) {
       if (queryResults.controlstate.length > 0) {
         var state = JSON.parse(queryResults.controlstate[0].state);
@@ -199,7 +200,7 @@ class TipManagerSchedulingControl {
     
     this._disableOptions(stateToSave.scheduleid == null);
 
-    await this._doPostQuery('tipmanager/update', 'controlstate-scheduling', stateToSave);
+    await SQLDBInterface.doPostQuery('tipmanager/update', 'controlstate-scheduling', stateToSave, this._notice);
   }
   
   _showMainUI(makeVisible) {
@@ -230,7 +231,7 @@ class TipManagerSchedulingControl {
       schedulelength: params.schedulelength,
       schedulestartdate: params.schedulestart
     };
-    var queryResult = await this._doPostQuery('tipmanager/insert', 'schedule', queryParams);
+    var queryResult = await SQLDBInterface.doPostQuery('tipmanager/insert', 'schedule', queryParams, this._notice);
 
     if (queryResult.success) {
       var newState = this.state();
@@ -270,7 +271,7 @@ class TipManagerSchedulingControl {
       schedulestartdate: params.schedulestart
     };
 
-    var queryResult = await this._doPostQuery('tipmanager/update', 'schedule', queryParams);
+    var queryResult = await SQLDBInterface.doPostQuery('tipmanager/update', 'schedule', queryParams, this._notice);
     await this._updateCallback(true);
     this._showMainUI(true);
   }
@@ -288,7 +289,7 @@ class TipManagerSchedulingControl {
   
   async _finishDelete(params) {
     var queryParams = {scheduleid: params.scheduleid};
-    var queryResult = await this._doPostQuery('tipmanager/delete', 'schedule', queryParams);
+    var queryResult = await SQLDBInterface.doPostQuery('tipmanager/delete', 'schedule', queryParams, this._notice);
     if (!queryResult.success) return;
     
     var newState = this.state();
@@ -364,37 +365,4 @@ class TipManagerSchedulingControl {
       }
     }
   }
-    
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-      console.log('queryType: ' + queryType + ' queryName: ' + queryName);
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-      console.log('queryType: ' + queryType + ' queryName: ' + queryName);
-      console.log(postData);
-    }
-    
-    return resultData;
-  }    
 }

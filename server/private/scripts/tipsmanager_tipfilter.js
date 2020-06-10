@@ -136,7 +136,7 @@ class TipFilter {
   async _loadFilterStateFromDB() {
     var state = null;
     
-    var queryResults = await this._doGetQuery('tipmanager/query', 'controlstate-filtering');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'controlstate-filtering', this._notice);
     if (queryResults.success) {;
       state = JSON.parse(queryResults.controlstate[0].state);
     };
@@ -150,7 +150,7 @@ class TipFilter {
       keywords: stateToSave.keywords,
       common: stateToSave.common
     };
-    await this._doPostQuery('tipmanager/update', 'controlstate-filtering', stateForDB);
+    await SQLDBInterface.doPostQuery('tipmanager/update', 'controlstate-filtering', stateForDB, this._notice);
   }
   
   //--------------------------------------------------------------
@@ -159,7 +159,7 @@ class TipFilter {
   async _loadCategoryListFromDB() {
     var categoryList = null;
     
-    var queryResults = await this._doGetQuery('tipmanager/query', 'categorylist');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'categorylist', this._notice);
     if (queryResults.success) {
       var data = queryResults.categorylist;
       categoryList = [];
@@ -190,36 +190,4 @@ class TipFilter {
   // utility
   //--------------------------------------------------------------      
    
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-      console.log('queryType: ' + queryType + ' queryName: ' + queryName);
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-      console.log('queryType: ' + queryType + ' queryName: ' + queryName);
-      console.log(postData);
-    }
-    
-    return resultData;
-  }    
 }

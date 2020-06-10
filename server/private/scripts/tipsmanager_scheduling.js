@@ -87,7 +87,7 @@ class TipScheduling {
   async _loadCategoryListFromDB() {
     var categoryList = null;
     
-    var queryResults = await this._doGetQuery('tipmanager/query', 'categorylist');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'categorylist', this._notice);
     if (queryResults.success) {
       var data = queryResults.categorylist;
       categoryList = [];
@@ -104,9 +104,12 @@ class TipScheduling {
   //--------------------------------------------------------------
   show(makeVisible) {
     this._showElement(this._container, makeVisible);
-    if (!makeVisible) {
-      this._addTipDialog.forceCancel();
-      this._editTipDialog.forceCancel();
+    if (makeVisible) {
+      this._disableContents(false);
+      
+    } else {
+      this._addTipDialog.show(false);
+      this._editTipDialog.show(false);
     }
     this._control.show(makeVisible);
   }
@@ -155,7 +158,7 @@ class TipScheduling {
   }
   
   async _loadScheduleContents(scheduleId) {
-    var queryResults = await this._doPostQuery('tipmanager/query', 'schedule-details', {scheduleid: scheduleId});
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/query', 'schedule-details', {scheduleid: scheduleId}, this._notice);
     if (!queryResults.success) return;
     
     var scheduleOverview = queryResults.data.schedule;
@@ -359,6 +362,7 @@ class TipScheduling {
   
   _disableContents(disable) {
     var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
+ 
     //var title = this._container.getElementsByClassName('tipmanager-title')[0];
 
     if (disable) {
@@ -380,7 +384,11 @@ class TipScheduling {
     
     var newTipState = 1;
     if (itemInfo.tipstate == 1) newTipState = 0;
-    var queryResults = await this._doPostQuery('tipmanager/update', 'tipstate', {scheduletipid: itemInfo.scheduletipid, tipstate: newTipState});
+    var queryResults = await SQLDBInterface.doPostQuery(
+      'tipmanager/update', 'tipstate', 
+      {scheduletipid: itemInfo.scheduletipid, tipstate: newTipState},
+      this._notice
+    );
     if (queryResults.success) {
       this.update(false);
     }
@@ -417,7 +425,7 @@ class TipScheduling {
       }
       
     } else if (choiceType == 'addweek') {
-      var queryResults = await this._doPostQuery('tipmanager/insert', 'addscheduleweek', {scheduleid: scheduleId, afterweek: weekNum});
+      var queryResults = await SQLDBInterface.doPostQuery('tipmanager/insert', 'addscheduleweek', {scheduleid: scheduleId, afterweek: weekNum}, this._notice);
       if (queryResults.success) {
         this.update(false);
       }
@@ -427,7 +435,7 @@ class TipScheduling {
       msg += '\n\nContinue with removing week #' + weekNum + '?';
       
       if (confirm(msg)) {
-        var queryResults = await this._doPostQuery('tipmanager/delete', 'removescheduleweek', {scheduleid: scheduleId, week: weekNum});
+        var queryResults = await SQLDBInterface.doPostQuery('tipmanager/delete', 'removescheduleweek', {scheduleid: scheduleId, week: weekNum}, this._notice);
         if (queryResults.success) {
           this.update(false);
         }
@@ -444,7 +452,7 @@ class TipScheduling {
       schedulelocationorder: 0
     };
 
-    var queryResults = await this._doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams, this._notice);
     if (queryResults.success) {
       this.update(false);
       this._disableContents(false);
@@ -472,7 +480,7 @@ class TipScheduling {
       category: info.category
     }
 
-    var queryResults = await this._doPostQuery('tipmanager/update', 'tiptextandcategory', editParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'tiptextandcategory', editParams, this._notice);
     if (queryResults.success) {
       this.update(false);
       this._disableContents(false);
@@ -493,7 +501,7 @@ class TipScheduling {
       schedulelocationorder: destinationInfo.schedulelocationorder
     };
     
-    var queryResults = await this._doPostQuery('tipmanager/update', 'addscheduletip', addParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'addscheduletip', addParams, this._notice);
     if (queryResults.success) {
       this.update(false);
     }
@@ -510,14 +518,14 @@ class TipScheduling {
       schedulelocationorder: destinationInfo.schedulelocationorder
     };
     
-    var queryResults = await this._doPostQuery('tipmanager/update', 'movescheduletip', moveParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'movescheduletip', moveParams, this._notice);
     if (queryResults.success || queryResults.details == 'tip is already assigned to week') {
       this.update(false);
     }
   }
     
   async _removeTip(params) {
-    var queryResults = await this._doPostQuery('tipmanager/delete', 'scheduletip', params);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/delete', 'scheduletip', params, this._notice);
     if (queryResults.success) {
       this.update(false);
     }
@@ -761,35 +769,4 @@ class TipScheduling {
     var d = new Date(str);
     return !isNaN(d);
   }
-
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      resultData.details = requestResult.details;
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }  
 }

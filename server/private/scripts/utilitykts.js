@@ -19,5 +19,13 @@ class UtilityKTS {
     while (elem.firstChild) {
       elem.removeChild(elem.firstChild);
     }
-  }      
+  }    
+  
+  static toggleClass(elem, className) {
+    if (elem.classList.contains(className)) {
+      elem.classList.remove(className);
+    } else {
+      elem.classList.add(className);
+    }
+  }
 }

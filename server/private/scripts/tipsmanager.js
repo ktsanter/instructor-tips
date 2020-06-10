@@ -44,7 +44,7 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------  
   async function _renderPage() {    
-    var dbResult = await _doGetQuery('usermanagement', 'getuser');
+    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
     settings.userInfo = null;
     if (dbResult.success) {
       settings.userInfo = dbResult.userInfo;
@@ -58,7 +58,7 @@ const app = function () {
   }
   
   async function _renderNavbar() {
-    var queryResults = await _doGetQuery('admin/query', 'navbar');
+    var queryResults = await SQLDBInterface.doGetQuery('admin/query', 'navbar');
 
     if (!queryResults.success) {
       return CreateElement.createDiv(null, null, queryResults.details);
@@ -189,24 +189,6 @@ const app = function () {
     if (elem.classList.contains('hide-me')) elem.classList.remove('hide-me');
     if (count == 0) elem.classList.add('hide-me');
   }
-  
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async function _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      resultData.details = 'DB error: ' + JSON.stringify(requestResult.details);
-      console.log('DB error: ' + JSON.stringify(requestResult.details));
-      console.log('queryType = ' + queryType + ' queryName=' + queryName);
-    }
-    
-    return resultData;
-  } 
   
   //---------------------------------------
 	// return from wrapper function

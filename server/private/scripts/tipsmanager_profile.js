@@ -165,7 +165,7 @@ class TipProfile {
   async _loadStateFromDB() {
     var state = null;
     
-    var queryResults = await this._doGetQuery('tipmanager/query', 'profile');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'profile', this._notice);
     if (queryResults.success) {
       state = queryResults.data;
     };
@@ -174,7 +174,7 @@ class TipProfile {
   }
   
   async _saveStateToDB(state) {
-    var queryResults = await this._doPostQuery('tipmanager/update', 'profile', state);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'profile', state, this._notice);
     
     return queryResults.success;
   }
@@ -208,35 +208,5 @@ class TipProfile {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      resultData.details = requestResult.details;
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }  
+  
 }

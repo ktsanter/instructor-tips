@@ -200,7 +200,7 @@ class TipShare {
   }
   
   async _updateScheduleList() {
-    var queryResults = await this._doGetQuery('tipmanager/query', 'schedule-list');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'schedule-list', this._notice);
     if (!queryResults.success) return;
     
     var scheduleList = queryResults.schedules;
@@ -219,7 +219,7 @@ class TipShare {
   }
   
   async _updateUserList() {
-    var queryResults = await this._doGetQuery('tipmanager/query', 'userstosharewith');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'userstosharewith', this._notice);
     if (!queryResults.success) return;
     
     var userList = queryResults.users;
@@ -246,7 +246,7 @@ class TipShare {
   }
 
   async _updateReceived() {
-    var queryResults = await this._doGetQuery('tipmanager/query', 'sharedwithuser');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'sharedwithuser', this._notice);
     if (!queryResults.success) return;
     
     var sharedSchedules = queryResults.data;
@@ -264,7 +264,7 @@ class TipShare {
   }
 
   async _shareSchedule(params) {
-    var queryResults = await this._doPostQuery('tipmanager/insert', 'shareschedule', params);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/insert', 'shareschedule', params, this._notice);
     if (queryResults.success) {
       alert('The schedule has been shared successfully');
       await this._updateReceived();
@@ -277,7 +277,7 @@ class TipShare {
       sharescheduleid: params.sharedcheduleinfo.sharescheduleid
     };
     
-    var queryResults = await this._doPostQuery('tipmanager/update', 'sharedschedule', dbParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'sharedschedule', dbParams, this._notice);
     if (!queryResults.success) {
       if (queryResults.details.indexOf('duplicate schedule name') >= 0) {
         this._notice.setNotice('');
@@ -290,15 +290,15 @@ class TipShare {
   
   async _removeSharedSchedule(params) {
     var dbParams = {sharescheduleid: params.sharescheduleid};
-    var queryResults = await this._doPostQuery('tipmanager/delete', 'shareschedule', dbParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/delete', 'shareschedule', dbParams, this._notice);
     await this._updateReceived();
   }
   
   _showContents(visible) {
     var elemContents = this._container.getElementsByClassName('tipshare-contents')[0];
-    var elemTitle = this._container.getElementsByClassName('tipmanager-title')[0];
+    //var elemTitle = this._container.getElementsByClassName('tipmanager-title')[0];
     elemContents.style.display = (visible ? 'block' : 'none');
-    elemTitle.style.display = (visible ? 'block' : 'none');
+    //elemTitle.style.display = (visible ? 'block' : 'none');
   }
   
   //--------------------------------------------------------------
@@ -377,34 +377,4 @@ class TipShare {
   // utility methods
   //--------------------------------------------------------------  
 
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      resultData.details = requestResult.details;
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }  
 }

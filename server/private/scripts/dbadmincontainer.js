@@ -36,7 +36,7 @@ class DBAdminContainer {
   async update() {
     this._prepContainerForUpdate();
 
-    this._dbData = await this._doGetQuery('admin/query', this._adminType);
+    this._dbData = await SQLDBInterface.doGetQuery('admin/query', this._adminType, this._notice);
     if (this._dbData) {
       this._tableEditor = new DBAdminTableEdit(this._dbData, this._dbCallbacks);
       this._container.appendChild(this._tableEditor.render());
@@ -59,52 +59,22 @@ class DBAdminContainer {
   // callback functions
   //--------------------------------------------------------------   
   async _doRequery() {
-    this._dbData = await this._doGetQuery('admin/query', this._adminType);
+    this._dbData = await SQLDBInterface.doGetQuery('admin/query', this._adminType, this._notice);
     return this._dbData;
   }
 
   async _doInsert(queryData) {
-    await this._doPostQuery('admin/insert', this._adminType, queryData);
+    await SQLDBInterface.doPostQuery('admin/insert', this._adminType, queryData, this._notice);
   }
   
   async _doUpdate(queryData) {
-    await this._doPostQuery('admin/update', this._adminType, queryData);
+    await SQLDBInterface.doPostQuery('admin/update', this._adminType, queryData, this._notice);
   }
   
   async _doDelete(queryData) {
-    await this._doPostQuery('admin/delete', this._adminType, queryData);
+    await SQLDBInterface.doPostQuery('admin/delete', this._adminType, queryData, this._notice);
   }
   
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------   
-  async _doGetQuery(queryType, queryName) {
-    var resultData = null;
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = null;
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }
-
   //--------------------------------------------------------------
   // utility functions
   //--------------------------------------------------------------

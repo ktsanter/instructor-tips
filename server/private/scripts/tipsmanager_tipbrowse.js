@@ -175,7 +175,7 @@ class TipBrowse {
     var queryParams = filterSettings;
     queryParams.editing = this._config.editing;
     
-    var queryResults = await this._doPostQuery('tipmanager/query', 'tiplist', queryParams);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/query', 'tiplist', queryParams, this._notice);
     if (queryResults.success) {
       result = queryResults.data.sort(function(a, b) {
         if (a.tiptext.toLowerCase() > b.tiptext.toLowerCase()) {
@@ -260,36 +260,4 @@ class TipBrowse {
       elem.removeChild(elem.firstChild);
     }
   }
-    
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-        
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }  
 }

@@ -185,7 +185,7 @@ class TipNotification {
   async _loadStateFromDB() {
     var state = null;
     
-    var queryResults = await this._doGetQuery('tipmanager/query', 'notification');
+    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'notification', this._notice);
     if (queryResults.success) {
       state = queryResults.data;
     };
@@ -194,7 +194,7 @@ class TipNotification {
   }
   
   async _saveStateToDB(state) {
-    await this._doPostQuery('tipmanager/update', 'notification', state);
+    await SQLDBInterface.doPostQuery('tipmanager/update', 'notification', state, this._notice);
   }
   
 
@@ -212,35 +212,5 @@ class TipNotification {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-
-  //--------------------------------------------------------------
-  // db functions
-  //--------------------------------------------------------------     
-  async _doGetQuery(queryType, queryName) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbGet(queryType, queryName);
-    if (requestResult.success) {
-      resultData = requestResult;
-    } else {
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }
-
-  async _doPostQuery(queryType, queryName, postData) {
-    var resultData = {success: false};
-    
-    var requestResult = await SQLDBInterface.dbPost(queryType, queryName, postData);
-    if (requestResult.success) {
-      resultData = requestResult;
-      this._notice.setNotice('');
-    } else {
-      resultData.details = requestResult.details;
-      this._notice.setNotice('DB error: ' + JSON.stringify(requestResult.details));
-    }
-    
-    return resultData;
-  }  
+ 
 }
