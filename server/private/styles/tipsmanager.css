@@ -28,6 +28,9 @@ body {
   display: none;
 }
 
+/*------------------------------------------------------------------
+ * TipManager title
+ *------------------------------------------------------------------*/
 .tipmanager-title {
   margin-bottom: 0.4em;
 }
@@ -38,16 +41,9 @@ body {
   padding-right: 0.4em;
 }
 
-.tipmanager-icon {
-  cursor: pointer;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-.tipmanager-icon.fa-caret-right {
-  padding-right: 7px;
-}
-
+/*------------------------------------------------------------------
+ * navbar
+ *------------------------------------------------------------------*/
 .navbar .navbar-item.navbar-main-item.tipmanager-sharedlabel {
   position: relative;
 }

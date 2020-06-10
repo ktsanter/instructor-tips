@@ -150,7 +150,7 @@ class TipScheduling {
   _prepContainerForUpdate() {
     var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
     if (contents) {
-      this._removeChildren(contents);
+      UtilityKTS.removeChildren(contents);
     }
   }
   
@@ -735,17 +735,6 @@ class TipScheduling {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-  _setClass(elem, className, add) {
-    if (elem.classList.contains(className)) elem.classList.remove(className);
-    if (add) elem.classList.add(className);
-  }
-  
-  _removeChildren(elem) {
-    while (elem.firstChild) {
-      elem.removeChild(elem.firstChild);
-    }
-  }
-
   _addDays(theDate, days) {
     var d = new Date(theDate);
     d.setDate(d.getDate()  + days);

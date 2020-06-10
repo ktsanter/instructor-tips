@@ -12,6 +12,21 @@
   display: none;
 }
 
+.tipfilter .tipfilter-controls {
+  display: inline-block;
+  vertical-align: top;
+  margin-top: -0.6em;
+}
+
+.tipfilter .tipfilter-controls .tipfilter-icon {
+  border: 1px solid var(--bgSecondaryChoice);
+  background-color: var(--bgSecondaryChoice);
+  font-size: 1.2em;
+  margin-top: 0.8em;
+  color: white;
+  padding: 0.2em;
+}
+
 .tipfilter .tipfilter-inputs {
   display: inline-block;
 }
@@ -41,17 +56,18 @@
 	background-color: #fff;
 }
 
-.tipfilter .tipfilter-controls {
+.tipfilter .tipfilter-inputs .tipfilter-keyword {
   display: inline-block;
-  vertical-align: top;
-  margin-top: -0.6em;
 }
 
-.tipfilter .tipfilter-controls .tipfilter-icon {
-  border: 1px solid var(--bgSecondaryChoice);
-  background-color: var(--bgSecondaryChoice);
-  font-size: 1.2em;
-  margin-top: 0.8em;
-  color: white;
-  padding: 0.2em;
+.tipfilter .tipfilter-inputs .tipfilter-common {
+  display: inline-block;
+}
+
+.tipfilter .tipfilter-inputs .tipfilter-common .tipfilter-commonswitch {
+  margin-top: 0.4em;
+}
+
+.tipfilter .tipfilter-inputs .lookupinput .lookupinput-inputcontainer  {
+  margin-left: 1.2em;
 }

@@ -19,6 +19,7 @@ define(function (require) {
   require('dbadmintableedit');
   require('dialogcontainer');
   require('lookupinput');
+  require('utilitykts');
   
   document.addEventListener('DOMContentLoaded', app.init());
 });

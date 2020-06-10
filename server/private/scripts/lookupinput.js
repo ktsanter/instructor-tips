@@ -168,23 +168,23 @@ class LookupInput {
       var match = (inputValue.slice(0, minLength) == itemText.slice(0, minLength));
       
       if (match) nMatches++;
-      this._setClass(elemItem, 'notshown', !match);
+      UtilityKTS.setClass(elemItem, 'notshown', !match);
     }
 
-    this._setClass(elemItemsContainer, this._HIDE_CLASS, false);
-    this._setClass(elemItemsContainer, 'nomatches', (nMatches == 0));
+    UtilityKTS.setClass(elemItemsContainer, this._HIDE_CLASS, false);
+    UtilityKTS.setClass(elemItemsContainer, 'nomatches', (nMatches == 0));
   }
   
   _updateDisplayedSelectedItems() {
     var container = this._container.getElementsByClassName('lookupinput-selectedcontainer')[0];
-    this._removeChildren(container);
+    UtilityKTS.removeChildren(container);
     
     var valueList = this._config.selectedValueList;
     for (var i = 0; i < valueList.length; i++) {
       container.appendChild(this._renderSelectedItem(valueList[i]));
     }
     
-    this._setClass(container, this._HIDE_CLASS, (valueList.length > 0));
+    UtilityKTS.setClass(container, this._HIDE_CLASS, (valueList.length > 0));
   }
   
   _addSelectedItem(value) {
@@ -262,7 +262,7 @@ class LookupInput {
   
   _hideInputItems(me) {
     var elemItemsContainer = me._container.getElementsByClassName('lookupinput-itemcontainer')[0];
-    me._setClass(elemItemsContainer, me._HIDE_CLASS, true);
+    UtilityKTS.setClass(elemItemsContainer, me._HIDE_CLASS, true);
   }
 
   _handleSelectedItemRemove(e) {
@@ -288,23 +288,12 @@ class LookupInput {
     }
     
     node = node.getElementsByClassName('lookupinput-selecteditemicon')[0];
-    this._setClass(node, 'lookupinput-selecteditemhover', enter);
+    UtilityKTS.setClass(node, 'lookupinput-selecteditemhover', enter);
   }
   
   //--------------------------------------------------------------
   // utility
-  //-------------------------------------------------------------- 
-  _setClass(elem, className, add) {
-    if (elem.classList.contains(className)) elem.classList.remove(className);
-    if (add) elem.classList.add(className);
-  }
-  
-  _removeChildren(elem) {
-    while (elem.firstChild) {
-      elem.removeChild(elem.firstChild);
-    }
-  }
-  
+  //--------------------------------------------------------------   
   _sortStringsIgnoreCase(arr) {
     return arr.sort(function(a, b) {
       if (a.toLowerCase() > b.toLowerCase()) {

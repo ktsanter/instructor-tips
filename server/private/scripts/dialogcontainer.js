@@ -295,7 +295,7 @@ class DialogContainer {
     
     var elemPreview = this._container.getElementsByClassName('dialogcontainer-preview')[0];
     elemPreview.innerHTML = 'preview';
-    this._setClass(elemPreview, 'preview-default', true);
+    UtilityKTS.setClass(elemPreview, 'preview-default', true);
 
     this._category.setSelectedValues([]);
   }
@@ -326,12 +326,12 @@ class DialogContainer {
     var elemPreview = this._container.getElementsByClassName('dialogcontainer-preview')[0];
     elemPreview.innerHTML = MarkdownToHTML.convert(tipText);
     if (tipText.length == 0) elemPreview.innerHTML = 'preview';
-    this._setClass(elemPreview, 'preview-default', tipText.length == 0);
+    UtilityKTS.setClass(elemPreview, 'preview-default', tipText.length == 0);
   }
   
   _updateUsageInfo(tipInfo) {
     var container = this._container.getElementsByClassName('dialogcontainer-usage')[0];
-    this._removeChildren(container);
+    UtilityKTS.removeChildren(container);
     
     container.appendChild(CreateElement.createDiv(null, 'dialogcontainer-usagelabel', 'This tip is'));
     
@@ -365,7 +365,7 @@ class DialogContainer {
     var container = this._container.getElementsByClassName('dialogcontainer-sharedschedule')[0];
     var elemName = this._container.getElementsByClassName('dialogcontainer-input')[0];
     
-    this._removeChildren(container);
+    UtilityKTS.removeChildren(container);
     container.sharedScheduleInfo = shareInfo;
     container.appendChild(this._updateAcceptShareOriginalInfo(shareInfo));
 
@@ -511,26 +511,7 @@ class DialogContainer {
   
   //--------------------------------------------------------------
   // utility
-  //--------------------------------------------------------------     
-  _setClass(elem, className, add) {
-    if (elem.classList.contains(className)) elem.classList.remove(className);
-    if (add) elem.classList.add(className);
-  }
-  
-  _toggleClass(elem, className) {
-    if (elem.classList.contains(className)) {
-      elem.classList.remove(className);
-    } else {
-      elem.classList.add(className);
-    }
-  }
-
-  _removeChildren(elem) {
-    while (elem.firstChild) {
-      elem.removeChild(elem.firstChild);
-    }
-  }
-  
+  //--------------------------------------------------------------      
   _formatDate(d) {
     var y = d.getFullYear();
     var m = ('00' + (d.getMonth() + 1)).slice(-2);

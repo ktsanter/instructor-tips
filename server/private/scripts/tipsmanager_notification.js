@@ -112,7 +112,7 @@ class TipNotification {
   
   _updateScheduleNotifications(scheduleData) {
     var container = this._container.getElementsByClassName('tipnotification-schedule')[0];
-    this._removeChildren(container);
+    UtilityKTS.removeChildren(container);
     
     //container.appendChild(CreateElement.createDiv(null, 'tipnotification-schedulelabel', 'Receive notification reminders'));
 
@@ -212,16 +212,6 @@ class TipNotification {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-  _setClass(elem, className, add) {
-    if (elem.classList.contains(className)) elem.classList.remove(className);
-    if (add) elem.classList.add(className);
-  }
-  
-  _removeChildren(elem) {
-    while (elem.firstChild) {
-      elem.removeChild(elem.firstChild);
-    }
-  }
 
   //--------------------------------------------------------------
   // db functions

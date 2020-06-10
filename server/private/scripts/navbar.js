@@ -140,9 +140,10 @@ class NavigationBar {
     var elemMainItems = this._navbar.getElementsByClassName('navbar-item');
     for (var i = 0; i < elemMainItems.length; i++) {
       var elem = elemMainItems[i];
-      if (elem.classList.contains(className)) elem.classList.remove(className);
+      UtilityKTS.setClass(elem, className, false);
     }
-    if (elemToSelect) elemToSelect.classList.add(className);
+
+    if (elemToSelect) UtilityKTS.setClass(elemToSelect, className, true);
   }
  
   selectOption(optionLabel) {
@@ -160,8 +161,4 @@ class NavigationBar {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-  _setClass(elem, className, add) {
-    if (elem.classList.contains(className)) elem.classList.remove(className);
-    if (add) elem.classList.add(className);
-  }  
 }

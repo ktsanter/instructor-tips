@@ -184,16 +184,6 @@ class TipEditing {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-  _setClass(elem, className, add) {
-    if (elem.classList.contains(className)) elem.classList.remove(className);
-    if (add) elem.classList.add(className);
-  }
-  
-  _removeChildren(elem) {
-    while (elem.firstChild) {
-      elem.removeChild(elem.firstChild);
-    }
-  }
 
   //--------------------------------------------------------------
   // db functions

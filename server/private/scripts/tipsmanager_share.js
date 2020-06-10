@@ -242,7 +242,7 @@ class TipShare {
     var elemUser = this._container.getElementsByClassName('tipshare-userselect')[0];
     var elemConfirm = this._container.getElementsByClassName('tipshare-confirmcancelcontainer')[0];
     
-    this._setClass(elemConfirm, 'disable-me', ((elemSchedule.selectedIndex < 0) || (elemUser.selectedIndex < 0)));
+    UtilityKTS.setClass(elemConfirm, 'disable-me', ((elemSchedule.selectedIndex < 0) || (elemUser.selectedIndex < 0)));
   }
 
   async _updateReceived() {
@@ -252,10 +252,10 @@ class TipShare {
     var sharedSchedules = queryResults.data;
 
     var container = this._container.getElementsByClassName('tipshare-received')[0];
-    this._setClass(container, this._HIDE_CLASS, sharedSchedules.length == 0);
+    UtilityKTS.setClass(container, this._HIDE_CLASS, sharedSchedules.length == 0);
     
     var contents = this._container.getElementsByClassName('tipshare-received-contents')[0];
-    this._removeChildren(contents);    
+    UtilityKTS.removeChildren(contents);    
     for (var i = 0; i < sharedSchedules.length; i++) {
       contents.appendChild(this._renderReceivedScheduleItem(sharedSchedules[i], i % 2 == 0));
     }
@@ -323,7 +323,7 @@ class TipShare {
   
   _handleCommentClick(e) {
     var elemComment = e.target.parentNode.parentNode.getElementsByClassName('tipshare-comment')[0];
-    this._toggleClass(elemComment, 'hide-me', false);
+    UtilityKTS.toggleClass(elemComment, 'hide-me', false);
   }
   
   async _handleAcceptSchedule(e) {
@@ -376,24 +376,6 @@ class TipShare {
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  
-  _setClass(elem, className, add) {
-    if (elem.classList.contains(className)) elem.classList.remove(className);
-    if (add) elem.classList.add(className);
-  }
-  
-  _toggleClass(elem, className) {
-    if (elem.classList.contains(className)) {
-      elem.classList.remove(className);
-    } else {
-      elem.classList.add(className);
-    }
-  }
-
-  _removeChildren(elem) {
-    while (elem.firstChild) {
-      elem.removeChild(elem.firstChild);
-    }
-  }
 
   //--------------------------------------------------------------
   // db functions

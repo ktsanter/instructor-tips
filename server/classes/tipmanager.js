@@ -443,7 +443,7 @@ module.exports = internal.TipManager = class {
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.data = this._filterTipList(queryResults.data.tiplist, postData.keywords, postData.editing, userInfo, funcCheckPrivilege),
+      result.data = this._filterTipList(queryResults.data.tiplist, postData.keywords, postData.editing, postData.common, userInfo, funcCheckPrivilege),
       result.constraints = {};
     } else {
       result.details = queryResults.details;
@@ -452,7 +452,7 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  _filterTipList(tipList, keywords, editing, userInfo, funcCheckPrivilege) {
+  _filterTipList(tipList, keywords, editing, includeCommon, userInfo, funcCheckPrivilege) {
     var filteredList = [];
     
     var hasAdminPriv = funcCheckPrivilege(userInfo, 'admin');
@@ -486,6 +486,9 @@ module.exports = internal.TipManager = class {
       for (var j = 0; j < keywords.length && passesFilter; j++) {
         passesFilter = categorySet.has(keywords[j]);
       }
+      
+      if (!includeCommon && consolidatedItem.common) passesFilter = false;
+      
       if (passesFilter) {
         filteredList.push({
           tipid: consolidatedItem.tipid,

@@ -191,7 +191,7 @@ CREATE TRIGGER trigger_newuser_controlstate1
 CREATE TRIGGER trigger_newuser_controlstate2
   AFTER INSERT ON user FOR EACH ROW
     INSERT controlstate (userid, controlgroup, state)
-    SELECT new.userid, 'filtering' AS courseid, '{"search": "", "keywords": []}' as state;
+    SELECT new.userid, 'filtering' AS courseid, '{"search": "", "keywords": [], "common": true}' as state;
     
 #-- add share notification default tfor new users
 CREATE TRIGGER trigger_newuser_notification

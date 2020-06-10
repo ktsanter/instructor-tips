@@ -32,7 +32,7 @@ class TipFilter {
     var container = CreateElement.createDiv(null, 'tipfilter-inputs');
 
    // search
-    var subcontainer = CreateElement.createDiv('tipfilter-search');
+    var subcontainer = CreateElement.createDiv(null, 'tipfilter-search');
     container.appendChild(subcontainer);
     
     var elem = CreateElement.createDiv(null, 'tipfilter-label', 'contains');
@@ -44,7 +44,7 @@ class TipFilter {
     elem.addEventListener('input', (e) => {this._handleSearchChange();});
     
     // keywords
-    subcontainer = CreateElement.createDiv('tipfilter-keyword');
+    subcontainer = CreateElement.createDiv(null, 'tipfilter-keyword');
     container.appendChild(subcontainer);
 
     var elem = CreateElement.createDiv(null, 'tipfilter-label', 'category');
@@ -59,6 +59,16 @@ class TipFilter {
     this._keywordInput = new LookupInput(params);
     subcontainer.appendChild(this._keywordInput.render());
     this._keywordInput.show(true);
+    
+    // common
+    subcontainer = CreateElement.createDiv(null, 'tipfilter-common');
+    container.appendChild(subcontainer);
+    
+    var handler = (e) => {this._handleCommonChange(e);};
+    elem = CreateElement.createSliderSwitch('common', 'common', 'tipfilter-commonswitch', handler, false);
+    subcontainer.appendChild(elem);
+    elem.title = 'include "common" tips in results';
+    CreateElement.setSliderValue(elem, true);
     
     return container;
   }
@@ -102,10 +112,12 @@ class TipFilter {
   getFilterState() {
     var valSearch = this._container.getElementsByClassName('tipfilter-search-input')[0].value;
     var valKeywords = this._keywordInput.value();
+    var valCommon = CreateElement.getSliderValue(this._container.getElementsByClassName('tipfilter-commonswitch')[0]);
     
     var filterState = {
       search: valSearch,
-      keywords: valKeywords
+      keywords: valKeywords,
+      common: valCommon
     }
     
     return filterState;
@@ -114,9 +126,11 @@ class TipFilter {
   _setFilterState(filterState) {
     var elemSearch = this._container.getElementsByClassName('tipfilter-search-input')[0];
     var elems = this._container.getElementsByClassName('tipfilter-keyword-input')[0];
+    var elemCommon = this._container.getElementsByClassName('tipfilter-commonswitch')[0];
 
     elemSearch.value = filterState.search;   
     this._keywordInput.setSelectedValues(filterState.keywords);
+    CreateElement.setSliderValue(elemCommon, filterState.common);
   }
   
   async _loadFilterStateFromDB() {
@@ -133,7 +147,8 @@ class TipFilter {
   async _saveFilterStateToDB(stateToSave) {
     var stateForDB = {
       search: stateToSave.search,
-      keywords: stateToSave.keywords
+      keywords: stateToSave.keywords,
+      common: stateToSave.common
     };
     await this._doPostQuery('tipmanager/update', 'controlstate-filtering', stateForDB);
   }
@@ -164,6 +179,10 @@ class TipFilter {
   }
   
   async _handleCategoryChange(params) {
+    await this._retrieveTips();
+  }
+  
+  async _handleCommonChange(e) {
     await this._retrieveTips();
   }
   

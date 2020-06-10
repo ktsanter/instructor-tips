@@ -15,6 +15,10 @@
   float: left;
 }
 
+.tipschedule .tipbrowse {
+  top: 9.6em;
+}
+
 .tipschedule-icon {
   font-size: 1.2em;
   margin-right: 0.2em;
