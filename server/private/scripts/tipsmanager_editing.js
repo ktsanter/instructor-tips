@@ -25,7 +25,7 @@ class TipEditing {
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
 
-    this._container.appendChild(this._renderTitle());
+    //this._container.appendChild(this._renderTitle());
     this._container.appendChild(await this._renderContents());
     
     var categoryList = await this._loadCategoryListFromDB();

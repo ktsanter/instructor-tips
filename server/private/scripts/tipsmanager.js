@@ -37,7 +37,7 @@ const app = function () {
     await _renderPage();
     await settings.share.update();
     
-    _navDispatch('scheduling');
+    settings.objNavbar.selectOption('Scheduling');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -51,7 +51,8 @@ const app = function () {
     }    
     
     page.maincontainer.appendChild(await _renderSubContainers());
-    page.body.insertBefore(await _renderNavbar(), page.body.firstChild);
+    settings.navbar = await _renderNavbar();
+    page.body.insertBefore(settings.navbar, page.body.firstChild);
     attachShareCountElement();
     page.maincontainer.classList.add('bump-down');
   }
@@ -70,16 +71,16 @@ const app = function () {
       
       items: [
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
-        {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false},
-        {label: 'Sharing', callback: () => {return _navDispatch('share');}, subitems: null, rightjustify: false},
         {label: 'Tip editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
+        {label: 'Sharing', callback: () => {return _navDispatch('share');}, subitems: null, rightjustify: false},
+        {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false},
         {label: settings.userInfo.userName, callback: null, subitems: null, rightjustify: true}
       ],
       
       hamburgeritems: [     
-        {label: 'profile', callback: () => {return _navDispatch('profile');}},      
-        {label: 'help', callback: _showHelp},
-        {label: 'logout', callback: _doLogout}
+        {label: 'profile', markselected: true, callback: () => {return _navDispatch('profile');}},      
+        {label: 'help', markselected: false, callback: _showHelp},
+        {label: 'logout', markselected: false, callback: _doLogout}
       ]      
     };
     
@@ -101,7 +102,9 @@ const app = function () {
       );
     }
     
-    return new NavigationBar(navConfig);
+    settings.objNavbar = new NavigationBar(navConfig);
+    
+    return settings.objNavbar.render();
   }
   
   async function _renderSubContainers() {

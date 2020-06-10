@@ -10,14 +10,13 @@ class NavigationBar {
     this._version = '0.01';
     
     this._config = config;
-    this._navbar = this._renderNavbar();
-    
-    return this._navbar;
   }
  
-  _renderNavbar() {    
-    var nullLink = 'javascript:void(0)';
+  render() {    
     var elemList = CreateElement._createElement('ul', null, 'navbar');
+    this._navbar = elemList;
+    
+    var nullLink = 'javascript:void(0)';
     
     var elemItem = CreateElement._createElement('li', null, 'navbar-item navbar-title');
     elemItem.innerHTML = this._config.title;
@@ -36,7 +35,7 @@ class NavigationBar {
       var subitem = hamburgeritems[i];
       var elemSubitem = CreateElement.createDiv(null, null, subitem.label);
       elemDiv.appendChild(elemSubitem);
-      elemSubitem.addEventListener('click', subitem.callback);
+      elemSubitem.addEventListener('click', this._makeHamburgerItemCallback(this, subitem.callback, subitem.markselected));
     }
     
     for (var i = 0; i < this._config.items.length; i++) {
@@ -49,7 +48,7 @@ class NavigationBar {
         elemItem = CreateElement._createElement('li', null, classList);
         elemList.appendChild(elemItem);
         elemItem.innerHTML = item.label;
-        elemItem.addEventListener('click', item.callback);
+        elemItem.addEventListener('click', this._makeMainItemCallback(this, item.callback));
         
       } else {
         classList += ' dropdown';
@@ -62,7 +61,7 @@ class NavigationBar {
         elemItem.appendChild(elemDiv);
         for (var j = 0; j < item.subitems.length; j++) {
           var subitem = item.subitems[j];
-          var callback = subitem.callback;
+          var callback = this._makeSubItemCallback(this, subitem.callback);
           
           var elemSubitem = CreateElement.createDiv(null, null);
           elemDiv.appendChild(elemSubitem);
@@ -90,10 +89,79 @@ class NavigationBar {
     return elemList;
   }
   
+  _makeMainItemCallback(me, origCallback) {
+    return function(e) { 
+      var elemMainItem = e.target;
+      me._setSelectedItem(elemMainItem);
+      origCallback();
+    }
+  }
+
+  _makeSubItemCallback(me, origCallback) {
+    return function(e) { 
+      var node = e.target;
+      var elemMainItem = null;
+      for (var i = 0; i < 10 && !elemMainItem; i++) {
+        if (node.classList.contains('navbar-item')) elemMainItem = node;
+        node = node.parentNode;
+      }
+
+      me._setSelectedItem(elemMainItem);
+      origCallback();
+    }
+  }
+
+  _makeHamburgerItemCallback(me, origCallback, markSelected) {
+    return function(e) { 
+      if (markSelected) {
+        var node = e.target;
+        var elemMainItem = null;
+        for (var i = 0; i < 10 && !elemMainItem; i++) {
+          if (node.classList.contains('navbar-item')) elemMainItem = node;
+          node = node.parentNode;
+        }
+
+        me._setSelectedItem(elemMainItem);
+      }
+      origCallback();
+    }
+  }
+
   _makeCallbackWithCheckToggle(origCallback, elemIcon) {
     return function() { 
       elemIcon.classList.toggle('navbar-invisible');
       origCallback();
     }
   }
+  
+  _setSelectedItem(elemToSelect) {
+    var className = 'navbar-selected';
+    
+    var elemMainItems = this._navbar.getElementsByClassName('navbar-item');
+    for (var i = 0; i < elemMainItems.length; i++) {
+      var elem = elemMainItems[i];
+      if (elem.classList.contains(className)) elem.classList.remove(className);
+    }
+    if (elemToSelect) elemToSelect.classList.add(className);
+  }
+ 
+  selectOption(optionLabel) {
+    var elemMainItems = this._navbar.getElementsByClassName('navbar-item');
+    var elemToTarget = null;
+    
+    for (var i = 0; i < elemMainItems.length && !elemToTarget; i++) {
+      var elem = elemMainItems[i];
+      if (elem.innerHTML.indexOf(optionLabel) >= 0) elemToTarget = elem;
+    }
+    
+    if (elemToTarget) elemToTarget.click();
+  }
+  
+  //--------------------------------------------------------------
+  // utility methods
+  //--------------------------------------------------------------  
+  _setClass(elem, className, add) {
+    if (elem.classList.contains(className)) elem.classList.remove(className);
+    if (add) elem.classList.add(className);
+  }  
 }

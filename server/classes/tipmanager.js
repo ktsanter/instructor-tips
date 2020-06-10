@@ -1637,8 +1637,6 @@ module.exports = internal.TipManager = class {
       return result;
     }
     
-    console.log(queryResults);
-    console.log(queryResults.data);
     var tipUsage = queryResults.data.tipusage[0];
     var tipUsageCount = 0;
     if (tipUsage) tipUsageCount = tipUsage.schedulecount + tipUsage.shareschedulecount;
@@ -1647,7 +1645,6 @@ module.exports = internal.TipManager = class {
     var tipOwnerId = tipOwnership.userid;
     var commonTip = tipOwnership.common;
     
-    console.log(tipUsageCount + ' ' + commonTip + ' ' + tipOwnerId + ' ' + hasAdminPriv);
     if (!hasAdminPriv && (tipUsageCount > 0 || commonTip || tipOwnerId != userInfo.userId)) {
       result.details = 'cannot delete - insufficient privilege or tip in use';
       return result;

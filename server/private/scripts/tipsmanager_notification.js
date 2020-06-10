@@ -26,7 +26,7 @@ class TipNotification {
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
 
-    this._container.appendChild(this._renderTitle());
+    //this._container.appendChild(this._renderTitle());
 
     this._container.appendChild(this._renderContents());
     
@@ -47,10 +47,12 @@ class TipNotification {
     container.appendChild(this._renderScheduleNotifications());
     
     return container;
-  }
+  }  
   
   _renderShareNotifications() {
-    var container = CreateElement.createDiv(null, 'tipnotification-share');
+    var container = CreateElement.createDiv(null, 'tipnotification-share tipnotification-section');
+    
+    container.appendChild(this._renderSectionTitle('shared schedules'));
     
     var handler = (e) => {this._handleShareChange(e);}
     var elem = CreateElement.createSliderSwitch('yes', 'no', 'tipnotification-sharecontrol', handler);
@@ -61,10 +63,21 @@ class TipNotification {
   }
 
   _renderScheduleNotifications() {
-    var container = CreateElement.createDiv(null, 'tipnotification-schedule');
+    var container = CreateElement.createDiv(null, 'tipnotification-schedulecontainer tipnotification-section');
     
+    container.appendChild(this._renderSectionTitle('reminder notifications for schedules'));
+    container.appendChild(CreateElement.createDiv(null, 'tipnotification-schedule'));
+        
     return container;
   }
+  
+  _renderSectionTitle(title) {
+    var container = CreateElement.createDiv(null, 'tipnotification-sectiontitle');
+    
+    container.appendChild(CreateElement.createDiv(null, 'tipnotification-sectiontitletext', title));
+    
+    return container;
+  }  
   
   //--------------------------------------------------------------
   // updating
@@ -101,7 +114,7 @@ class TipNotification {
     var container = this._container.getElementsByClassName('tipnotification-schedule')[0];
     this._removeChildren(container);
     
-    container.appendChild(CreateElement.createDiv(null, 'tipnotification-schedulelabel', 'Receive notification reminders'));
+    //container.appendChild(CreateElement.createDiv(null, 'tipnotification-schedulelabel', 'Receive notification reminders'));
 
     var count = 0;    
     for (var scheduleId in scheduleData) {
@@ -109,6 +122,10 @@ class TipNotification {
       schedule.scheduleid = scheduleId;
       container.appendChild(this._renderScheduleNotification(schedule, count % 2 == 0));   
       count++;      
+    }
+    
+    if (count == 0) {
+      container.appendChild(CreateElement.createDiv(null, 'tipnotification-noschedules', 'you currently have no schedules'));
     }
   }
   

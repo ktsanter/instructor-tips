@@ -28,7 +28,7 @@ class TipScheduling {
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
 
-    this._container.appendChild(this._renderTitle());
+    //this._container.appendChild(this._renderTitle());
 
     this._control = new TipManagerSchedulingControl({
       disableCallback: (params) => {return this._disableContents(params);},
@@ -359,16 +359,16 @@ class TipScheduling {
   
   _disableContents(disable) {
     var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
-    var title = this._container.getElementsByClassName('tipmanager-title')[0];
+    //var title = this._container.getElementsByClassName('tipmanager-title')[0];
 
     if (disable) {
       contents.style.display = 'none';
-      title.style.display = 'none';
+      //title.style.display = 'none';
       this._browse.show(false);
       
     } else {
       contents.style.display = 'block';
-      title.style.display = 'block';
+      //title.style.display = 'block';
       this._browse.show(this._control.state().showbrowse);
     }
   }

@@ -15,6 +15,7 @@
 }
 
 .tipediting .tipediting-contents {
+  width: 80%;
   margin-top: 1.0em;
 }
 
@@ -35,14 +36,24 @@
   margin-bottom: 0.8em;
 }
 
-.tipediting .tipbrowse .tipbrowse-title {
-  display: none;
+.tipediting .tipbrowse .tipbrowse-title .tipbrowse-titletext {
+  color: transparent;
 }
 
 .tipediting .tipbrowse .tipbrowse-results .tipbrowse-tip {
   width: 100%;
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
 }  
   
+.tipediting .tipbrowse .tipbrowse-results .tipbrowse-tip.eventip {
+  background-color: white;
+}  
+
+.tipediting .tipbrowse .tipbrowse-results .tipbrowse-tip.oddtip {
+  background-color: var(--bgQuaternaryEmphasis);
+}  
+
 .tipediting .tipbrowse .tipbrowse-results .tipbrowse-tip-details {
   border: none;
   width: 85%;
@@ -54,25 +65,9 @@
 }
 
 /* edit/delete controls */
-.tipediting .tipediting-contents .tipbrowse .tipbrowse-tipcontrols {
-  float: right;
-}
+.tipediting .tipediting-contents .tipbrowse .tipbrowse-tipcontrols {}
 
-.tipediting .tipediting-contents .tipbrowse .tipbrowse-tipcontrols.eventip {
-  background-color: white;
-}
-
-.tipediting .tipediting-contents .tipbrowse .tipbrowse-tipcontrols.oddtip {
-  background-color: var(--bgQuaternaryEmphasis);
-}
-
-.tipediting .tipbrowse .tipbrowse-tipcontrols .tipbrowse-tipcontrols-inner {
-  opacity: 0;
-}
-
-.tipediting .tipbrowse .tipbrowse-tipcontrols .tipbrowse-tipcontrols-inner:hover {
-  opacity: 1;
-}
+.tipediting .tipbrowse .tipbrowse-tipcontrols .tipbrowse-tipcontrols-inner {}
 
 .tipediting .tipbrowse .tipbrowse-tipcontrols .tipbrowse-tipcontrols-inner .tipcontrol-icon {
   font-size: 1.2em;

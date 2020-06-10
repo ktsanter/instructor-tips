@@ -13,11 +13,29 @@
 .tipnotification .tipnotification-contents {}
 
 /*-------------------------------------------------------------------
+ * section title
+ *------------------------------------------------------------------*/
+ .tipnotification .tipnotification-contents .tipnotification-section {
+   margin-top: 2.0em;
+   margin-bottom: 4.0em;
+ }
+ 
+.tipnotification .tipnotification-contents .tipnotification-section .tipnotification-sectiontitle {}
+
+.tipnotification .tipnotification-contents .tipnotification-section .tipnotification-sectiontitletext {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  border: 1px solid var(--itemBorder);
+  border-radius: 0.3em;
+  padding: 0.2em;
+  margin: 0 0.2em 0.4em 0;
+}
+
+/*-------------------------------------------------------------------
  * share
  *------------------------------------------------------------------*/
-.tipnotification .tipnotification-contents .tipnotification-share {
-  margin: 1.0em 0;
-}
+.tipnotification .tipnotification-contents .tipnotification-share {}
 
 .tipnotification .tipnotification-contents .tipnotification-share .tipnotification-sharecontrol {}
 
@@ -32,7 +50,10 @@
  *------------------------------------------------------------------*/
 .tipnotification .tipnotification-contents .tipnotification-schedule {
   max-width: 50%;
-  margin-top: 2.0em;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-noschedules {
+  font-style: italic;
 }
 
 .tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-schedulelabel {

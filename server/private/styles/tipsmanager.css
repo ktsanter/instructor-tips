@@ -14,13 +14,13 @@ body {
 
 @media screen and (pointer: fine) {
   #mainContainer.bump-down {
-    margin-top: 3em;
+    margin-top: 4em;
   }
 }
 
 @media screen and (pointer: coarse) {
   #mainContainer.bump-down {
-    margin-top: 5.4em;
+    margin-top: 6.4em;
   }
 }
 
@@ -57,6 +57,12 @@ body {
   top: 0.0em;
   right: 0.5em;
   background-color: var(--bgSecondaryChoice);
+}
+
+.navbar .navbar-item.navbar-main-item.navbar-selected .tipmanager-super {
+  color: var(--bgSecondaryChoice);
+  background-color: transparent;
+  font-weight: bold;
 }
 
 .navbar .navbar-item.navbar-main-item .tipmanager-super.hide-me {

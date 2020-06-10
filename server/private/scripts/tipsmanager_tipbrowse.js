@@ -108,16 +108,17 @@ class TipBrowse {
     container.tipList = tipList;
 
     for (var i = 0; i < tipList.length; i++) {
-      var subcontainer = CreateElement.createDiv(null, 'tipbrowse-tip');
+      var classString = 'tipbrowse-tip' + (i % 2 == 0 ? ' eventip' : ' oddtip');
+      var subcontainer = CreateElement.createDiv(null, classString);
       container.appendChild(subcontainer);
       
       subcontainer.appendChild(this._renderDragHandle(tipList[i].tipid, i % 2 == 0));
-
-      var classString = 'tipbrowse-tip-details' + (i % 2 == 0 ? ' eventip' : ' oddtip');
-      var elemTip = CreateElement.createDiv(null, classString, MarkdownToHTML.convert(tipList[i].tiptext));
-      subcontainer.appendChild(elemTip);
       
       subcontainer.appendChild(this._renderTipControls(tipList[i], i % 2 == 0));
+
+      classString = 'tipbrowse-tip-details' + (i % 2 == 0 ? ' eventip' : ' oddtip');
+      var elemTip = CreateElement.createDiv(null, classString, MarkdownToHTML.convert(tipList[i].tiptext));
+      subcontainer.appendChild(elemTip);
     }
   }
   

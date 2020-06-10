@@ -24,7 +24,7 @@ class TipShare {
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
 
-    this._container.appendChild(this._renderTitle());
+    //this._container.appendChild(this._renderTitle());
     this._container.appendChild(this._renderContents());
     
     this._importDialog = new DialogContainer({

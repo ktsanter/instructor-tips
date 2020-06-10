@@ -20,3 +20,11 @@
   - usermanagement
 
 - use environment variables in node
+
+- single icon for expand/collapse all on scheduling?
+
+- add toggle for common tips in browse
+
+- add gitignore
+
+- commonize section, section-title, etc and restyle

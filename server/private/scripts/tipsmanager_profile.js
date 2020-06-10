@@ -25,7 +25,7 @@ class TipProfile {
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
 
-    this._container.appendChild(this._renderTitle());
+    //this._container.appendChild(this._renderTitle());
 
     this._container.appendChild(this._renderContents());
     
@@ -127,7 +127,6 @@ class TipProfile {
   }
 
   async update() {
-    console.log('TipProfile.update');
     var state = await this._loadStateFromDB();
    
     if (state) {
@@ -154,7 +153,6 @@ class TipProfile {
   // process state
   //--------------------------------------------------------------
   _getStateFromControls() {
-    console.log('_getStateFromControls');
     var elemEmail = this._container.getElementsByClassName('tipprofile-emailinput')[0];
     
     var state = {
@@ -165,7 +163,6 @@ class TipProfile {
   }
   
   async _loadStateFromDB() {
-    console.log('_loadStateFromDB');
     var state = null;
     
     var queryResults = await this._doGetQuery('tipmanager/query', 'profile');
@@ -177,8 +174,6 @@ class TipProfile {
   }
   
   async _saveStateToDB(state) {
-    console.log('_saveStateToDB');
-
     var queryResults = await this._doPostQuery('tipmanager/update', 'profile', state);
     
     return queryResults.success;
@@ -194,7 +189,6 @@ class TipProfile {
   }
   
   _handleCancel(e) {
-    console.log('_handleEmailCancel');
     this.update();
   }
 

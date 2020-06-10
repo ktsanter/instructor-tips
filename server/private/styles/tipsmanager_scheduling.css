@@ -8,6 +8,7 @@
 
 .tipschedule-contents {
   width: 50%;
+  margin-top: 1.8em;
 }
 
 .tipschedule-contents.browse {
@@ -21,6 +22,7 @@
 }
 
 .tipschedule-icon.collapse-icon {
+  display: none; /* disabled while I think it over */
   font-size: 1.0em;
   background-color: var(--bgSecondaryChoice);
   padding: 0.2em;

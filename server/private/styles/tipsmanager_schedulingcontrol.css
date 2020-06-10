@@ -13,7 +13,7 @@
 
 .schedulecontrol .schedulecontrol-ui .schedulecontrol-select.select-css {
   display: inline-block;
-  max-width: 35%;
+  width: 35%;
   text-overflow: ellipsis;  
 }
 
