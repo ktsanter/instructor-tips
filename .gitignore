@@ -1,5 +1,4 @@
-# ignore installed node modules
-server/node_modules/
+server/node_modules
 server/startserver.bat
 
 # Honor .ignore
