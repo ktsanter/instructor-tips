@@ -12,5 +12,3 @@
 
 - add reminder notifications (cron style)
 
-- use environment variables in node
-  - update gitignore

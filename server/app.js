@@ -1,18 +1,29 @@
 "use strict";
 
-// change from hardcoded to environment variables eventually
-const THIS_PORT = 3000;
-const THIS_HOST = 'localhost';
+//------------------------------------------
+// environment variables
+//------------------------------------------
+const THIS_PORT =getEnv('THIS_PORT', true);
+const THIS_HOST = getEnv('THIS_HOST', true);
 
-const MARIA_USER = 'root';
-const MARIA_PASSWORD = 'SwordFish002';
-const MARIA_DBNAME = 'instructortips';
+const MARIA_USER = getEnv('MARIA_USER', true);
+const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
+const MARIA_DBNAME = getEnv('MARIA_DBNAME', true);
 
-const SESSION_USER = 'root';
-const SESSION_PASSWORD = 'SwordFish002';
-const SESSION_DBNAME = 'sessionstore';
-const SESSION_SECRET = 'Grit Gumption';
+const SESSION_USER = getEnv('SESSION_USER', true);
+const SESSION_PASSWORD = getEnv('SESSION_PASSWORD', true);
+const SESSION_DBNAME = getEnv('SESSION_DBNAME', true);
+const SESSION_SECRET = getEnv('SESSION_SECRET', true);
 
+function getEnv(varName, required) {
+  var value = process.env[varName];
+  if (required && !value) {
+    console.log('couldn\'t retrieve value for ' + varName + ', exiting app...');
+    process.exit(100);
+  }
+  return value;
+}
+    
 //------------------------------------------
 // configure express for the app
 //------------------------------------------
@@ -20,11 +31,6 @@ const express = require('express')
 var path = require('path')
 
 const app = express()
-
-//------------------------------------------
-// environment variables (testing)
-//------------------------------------------
-console.log(process.env);
 
 //------------------------------------------
 // configure favicon
