@@ -69,6 +69,7 @@ class TipProfile {
     elem.maxLength = 80;
     elem.addEventListener('input', (e) => {this._handleEmailChange(e);});
     elem.addEventListener('keyup', (e) => {this._handleEmailKeyup(e)});
+    UtilityKTS.denyDoubleQuotes(elem);
     
     return container;
   }

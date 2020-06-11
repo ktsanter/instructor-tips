@@ -231,19 +231,24 @@ class TipManagerSchedulingControl {
       schedulelength: params.schedulelength,
       schedulestartdate: params.schedulestart
     };
-    var queryResult = await SQLDBInterface.doPostQuery('tipmanager/insert', 'schedule', queryParams, this._notice);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/insert', 'schedule', queryParams, this._notice);
 
-    if (queryResult.success) {
+    if (!queryResults.success) {
+       if (queryResults.details.indexOf('duplicate schedule name') >= 0) {
+        this._notice.setNotice('');
+        alert('You already have a schedule with this name. Please try again with a different name');
+      }
+
+    } else {      
       var newState = this.state();
-      newState.scheduleid = queryResult.data.scheduleid;
+      newState.scheduleid = queryResults.data.scheduleid;
       newState.schedulename = params.schedulename;
       await this._saveState(newState);
       await this.update();
     }
-
+    
     await this._updateCallback(true);
-    this._showMainUI(true);
-  }
+    this._showMainUI(true);  }
   
   _cancelAdd() {
     this._showMainUI(true);
@@ -271,7 +276,14 @@ class TipManagerSchedulingControl {
       schedulestartdate: params.schedulestart
     };
 
-    var queryResult = await SQLDBInterface.doPostQuery('tipmanager/update', 'schedule', queryParams, this._notice);
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'schedule', queryParams, this._notice);
+    if (!queryResults.success) {
+       if (queryResults.details.indexOf('duplicate schedule name') >= 0) {
+        this._notice.setNotice('');
+        alert('You already have a schedule with this name. Please try again with a different name');
+      }
+    }
+
     await this._updateCallback(true);
     this._showMainUI(true);
   }

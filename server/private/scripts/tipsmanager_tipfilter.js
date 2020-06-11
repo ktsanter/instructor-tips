@@ -42,6 +42,7 @@ class TipFilter {
     subcontainer.appendChild(elem);
     elem.placeholder = 'search for text';
     elem.addEventListener('input', (e) => {this._handleSearchChange();});
+    UtilityKTS.denyDoubleQuotes(elem);
     
     // keywords
     subcontainer = CreateElement.createDiv(null, 'tipfilter-keyword');

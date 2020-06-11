@@ -1,14 +1,11 @@
-- text sanitizing (both sides)
-  - schedule name
-  - share comment
-  - tip text
-  - email
-  - search (in browse filter)
-
 - complete password checking on login (server side)
+
+- more validation on email and password?
 
 - figure out how to do password change
   - need full-fledged HTML form (?)
 
 - add reminder notifications (cron style)
+
+- discuss SQL setup with Noah
 

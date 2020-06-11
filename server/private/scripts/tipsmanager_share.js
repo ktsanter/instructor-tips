@@ -98,6 +98,7 @@ class TipShare {
     container.appendChild(elemComment);
     elemComment.placeholder = 'comment';
     elemComment.maxLength = 250;
+    UtilityKTS.denyDoubleQuotes(elemComment);
         
     return container;
   }
@@ -345,6 +346,7 @@ class TipShare {
   
   async _finishAcceptSchedule(params) {
     await this._acceptSharedSchedule(params);
+    await this._updateScheduleList();
 
     this._showContents(true);
   }

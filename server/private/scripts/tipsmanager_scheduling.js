@@ -484,7 +484,14 @@ class TipScheduling {
     if (queryResults.success) {
       this.update(false);
       this._disableContents(false);
-      this._control.show(true);    
+      this._control.show(true); 
+      
+    } else if (queryResults.details == '*ERROR: in dbPost, "duplicate tip for user"') {
+      this._notice.setNotice('');
+      this._editTipDialog.show(true);
+      setTimeout(function() {
+        alert('You already have a tip available with this text.');
+      }, 300);
     }
   }
   

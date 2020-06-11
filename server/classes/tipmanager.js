@@ -582,23 +582,31 @@ module.exports = internal.TipManager = class {
   async _insertSchedule(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult();  
     
+    var scheduleName = this._sanitizeText(postData.schedulename);
     var query = 'insert into schedule (userid, schedulename, schedulelength, schedulestartdate) ' +
                 'values (' +
                   userInfo.userId + ', ' + 
-                  '"' + postData.schedulename + '", ' +
+                  '"' + scheduleName + '", ' +
                   postData.schedulelength + ', ' + 
                 '"' + postData.schedulestartdate + '" ' +                   
                 ')';
     
     var queryResults = await this._dbManager.dbQuery(query);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate schedule name';
+      }
+      return result;
+    }    
 
     if (queryResults.success) {
       query = 'select scheduleid ' +
               'from schedule ' +
-              'where schedulename = "' + postData.schedulename + '" ' +
+              'where schedulename = "' + scheduleName + '" ' +
               'and userid = ' + userInfo.userId;
+              
       queryResults = await this._dbManager.dbQuery(query);
-      
       if (queryResults.success) {
         result.success = true;
         result.details = 'insert succeeded';
@@ -621,6 +629,7 @@ module.exports = internal.TipManager = class {
     var query, queryResults;
        
     var dateStamp = this._getDateStamp();
+    var shareComment = this._sanitizeText(postData.comment);
     
     query = 
       'insert into shareschedule (scheduleid, userid_from, userid_to, comment, datestamp) ' + 
@@ -628,7 +637,7 @@ module.exports = internal.TipManager = class {
         postData.scheduleid + ', ' +
         userInfo.userId + ', ' +
         postData.userid + ', ' +
-        '"' + postData.comment + '", ' +
+        '"' + shareComment + '", ' +
         '"' + dateStamp + '" ' +
       ') ';
       
@@ -741,9 +750,10 @@ module.exports = internal.TipManager = class {
   async _updateSchedule(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult();
 
+    var scheduleName = this._sanitizeText(postData.schedulename);
     var query = 'update schedule ' +
                 'set ' +
-                  'schedulename = "' + postData.schedulename + '", ' +
+                  'schedulename = "' + scheduleName + '", ' +
                   // don't allow length change here 'schedulelength = ' + postData.schedulelength + ', ' +
                   'schedulestartdate = "' + postData.schedulestartdate + '" ' +
                 'where scheduleid = ' + postData.scheduleid;
@@ -756,8 +766,11 @@ module.exports = internal.TipManager = class {
       result.data = null;
     } else {
       result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate schedule name';
+      }
     }
-    
+
     return result;
   }  
   
@@ -786,13 +799,13 @@ module.exports = internal.TipManager = class {
   async _updateUserProfile(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult();
 
-    var query;
-    var queryResults;
+    var query, queryResults;
+    var email = this._sanitizeText(postData.email).replace(/\s/g, '');
     
     query =
       'update user ' +
       'set ' + 
-        'email = "' + postData.email + '" ' +
+        'email = "' + email + '" ' +
       'where userid = ' + userInfo.userId + ' ';
 
     queryResults = await this._dbManager.dbQuery(query);
@@ -929,11 +942,13 @@ module.exports = internal.TipManager = class {
   async _addTipAndScheduleTip(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult();
    
+    var tipText = this._sanitizeText(postData.tiptext);
+    
     var queryList = {
       checkforduplicate:
         'select tipid ' +
         'from tip ' +
-        'where tiptext = "' + postData.tiptext + '" ' +
+        'where tiptext = "' + tipText + '" ' +
           'and (userid = ' + userInfo.userId + ' or common) '
     }
     
@@ -951,7 +966,7 @@ module.exports = internal.TipManager = class {
       addTip: 
         'insert into tip (tiptext, userid, common) ' +
         'values (' +
-          '"' + postData.tiptext + '", ' +
+          '"' + tipText + '", ' +
           userInfo.userId + ', ' +
           'FALSE' + ' ' +
         ')',
@@ -959,7 +974,7 @@ module.exports = internal.TipManager = class {
       getTipId:
         'select tipid ' +
         'from tip ' +
-        'where tiptext = "' + postData.tiptext + '" ' +
+        'where tiptext = "' + tipText + '" ' +
           'and userid = ' + userInfo.userId
     };
             
@@ -994,16 +1009,29 @@ module.exports = internal.TipManager = class {
     var result = this._dbManager.queryFailureResult();
     var queryList, queryResults;
     
+    var tipText = this._sanitizeText(postData.tiptext);
+    
     queryList = {
       checkifeditable: 
         'select common, userid ' +
         'from view_tipsandcategories ' +
-        'where tipid = ' + postData.tipid + ' '
+        'where tipid = ' + postData.tipid + ' ',
+        
+      dupecheck: 
+        'select tipid ' +
+        'from tip ' +
+        'where (userid = ' + userInfo.userId + ' ' +
+          'or common) ' + 
+          'and tiptext = "' + tipText + '" '
     };
 
     queryResults = await this._dbManager.dbQueries(queryList);
     if (!queryResults.success) {
       result.details = queryResults.details;
+      return result;
+    }
+    if (queryResults.data.dupecheck[0]) {
+      result.details = 'duplicate tip for user';
       return result;
     }
 
@@ -1020,11 +1048,10 @@ module.exports = internal.TipManager = class {
     var newCategorySet = new Set(postData.category);
     var categoriesToRemove  = Array.from(this._difference(origCategorySet, newCategorySet));
     var categoriesToAdd = Array.from(this._difference(newCategorySet, origCategorySet));
-
     queryList = {
       tiptext: 
         'update tip ' + 
-        'set tiptext = "' + postData.tiptext + '" ' +
+        'set tiptext = "' + tipText + '" ' +
         'where tipid = ' + postData.tipid,
     };
     
@@ -1066,11 +1093,12 @@ module.exports = internal.TipManager = class {
     var queryList, queryResults;    
 
     queryList = {};
+    scheduleName = this._sanitizeText(postData.schedulename);
     
     queryList.schedule = 
       'select ' + 
         userInfo.userId + ' as userid, ' +
-        '"' + postData.schedulename + '" as schedulename, ' +
+        '"' + scheduleName + '" as schedulename, ' +
         's.schedulelength, ' +
         's.schedulestartdate ' +
       'from schedule as s, shareschedule as ss ' +
@@ -1611,9 +1639,9 @@ module.exports = internal.TipManager = class {
 // other support methods
 //---------------------------------------------------------------
   _sanitizeText(str) {
-    var cleaned = str.replace(/"/g, '\\"');;
-    
-    // consider other cleaning e.g. <script> tags
+    var cleaned = str.replace(/"/g, '\\"');  // escape double quotes
+    cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
+    cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
     
     return cleaned;
   }

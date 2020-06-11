@@ -152,6 +152,13 @@ class TipEditing {
     if (queryResults.success) {
       this._showContents(true);
       this.update();
+      
+    } else if (queryResults.details == '*ERROR: in dbPost, "duplicate tip for user"') {
+      this._notice.setNotice('');
+      this._editTipDialog.show(true);
+      setTimeout(function() {
+        alert('You already have a tip available with this text.');
+      }, 300);
     }
   }
   

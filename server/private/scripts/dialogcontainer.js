@@ -51,6 +51,7 @@ class DialogContainer {
     elemScheduleName.placeholder = 'schedule name';
     elemScheduleName.maxLength = 200;
     elemScheduleName.addEventListener('input', (e) => {this._handleScheduleName(e);});
+    UtilityKTS.denyDoubleQuotes(elemScheduleName);
     
     subContainer.appendChild(elemScheduleName);
 
@@ -89,6 +90,7 @@ class DialogContainer {
     elemScheduleName.placeholder = 'schedule name';
     elemScheduleName.maxLength = 200;    
     elemScheduleName.addEventListener('input', (e) => {this._handleScheduleName(e);});
+    UtilityKTS.denyDoubleQuotes(elemScheduleName);
     subContainer.appendChild(elemScheduleName);
 
     var todayFormatted = this._formatDate(new Date());
@@ -140,6 +142,7 @@ class DialogContainer {
     elemTipText.placeholder = 'tip text';
     elemTipText.maxLength = 800;
     elemTipText.addEventListener('input', (e) => {this._handleTipTextChange(e);});
+    UtilityKTS.denyDoubleQuotes(elemTipText);    
     
     subContainer.appendChild(elemTipText);
     
@@ -209,6 +212,7 @@ class DialogContainer {
     elemScheduleName.placeholder = 'new schedule name';
     elemScheduleName.maxLength = 200;    
     elemScheduleName.addEventListener('input', (e) => {this._handleScheduleName(e);});
+    UtilityKTS.denyDoubleQuotes(elemScheduleName);
     
     subContainer.appendChild(elemScheduleName);
 
@@ -324,7 +328,8 @@ class DialogContainer {
   
   _updateTipTextPreview(tipText) {
     var elemPreview = this._container.getElementsByClassName('dialogcontainer-preview')[0];
-    elemPreview.innerHTML = MarkdownToHTML.convert(tipText);
+    var cleanText = MarkdownToHTML.convert(this._sanitizeText(tipText));
+    elemPreview.innerHTML = cleanText;
     if (tipText.length == 0) elemPreview.innerHTML = 'preview';
     UtilityKTS.setClass(elemPreview, 'preview-default', tipText.length == 0);
   }
@@ -363,7 +368,8 @@ class DialogContainer {
     elemMsg.tipId = params.tipid;
 
     var elemTipText = this._container.getElementsByClassName('dialogcontainer-deletetip')[0];
-    elemTipText.innerHTML = MarkdownToHTML.convert(params.tiptext);
+    var cleanText = MarkdownToHTML.convert(this._sanitizeText(params.tiptext));
+    elemTipText.innerHTML = cleanText;
   }
   
   _updateAcceptShare(params) {
@@ -520,5 +526,13 @@ class DialogContainer {
     var d = ('00' + d.getDate()).slice(-2);
     
     return y + '-' + m + '-' + d;    
+  }
+  
+  _sanitizeText(str) {
+    var cleaned = str.replace(/"/g, '\\"');  // escape double quotes
+    cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
+    cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
+    
+    return cleaned;
   }
 }

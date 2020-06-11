@@ -17,5 +17,23 @@
     <script data-main="scripts/require_index" src="scripts/require.js"></script>
   </head>
 
-  <body></body>
+  <body> 
+    <div> test </div>
+    <input id="dummy" type="text" pattern="[abc]">
+    <br>
+    <hr>
+    
+    <script>
+      document.getElementById('dummy').addEventListener('keypress', (e) => {return myFunc(e);})
+      function myFunc(e) {
+        if (e.key == '"') {
+          e.stopPropagation();
+          e.preventDefault();  
+          e.returnValue = false;
+          e.cancelBubble = true;
+          return false;
+        }
+      }
+    </script>
+  </body>
 </html>

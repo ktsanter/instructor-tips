@@ -28,4 +28,26 @@ class UtilityKTS {
       elem.classList.add(className);
     }
   }
+  
+  static escapeQuotes(str) {
+    console.log('escapeQuotes');
+    console.log(str);
+    
+    var escaped = str.replace(/\"/g, "\\\"");
+    console.log(escaped)
+    
+    return escaped;
+  }
+  
+  static denyDoubleQuotes(elem) {
+    elem.addEventListener('keypress', function(e) {
+      if (e.key == '"') {
+        e.stopPropagation();
+        e.preventDefault();  
+        e.returnValue = false;
+        e.cancelBubble = true;
+        return false;
+      }
+    });
+  }
 }

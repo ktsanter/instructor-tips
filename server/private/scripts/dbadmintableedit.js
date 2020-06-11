@@ -267,6 +267,7 @@ class DBAdminTableEdit {
     if (fieldType == 'text') {
       elem = CreateElement.createTextInput('input' + fieldName, 'dbadmin-editfield');
       elem.placeholder = fieldName;
+      UtilityKTS.denyDoubleQuotes(elem);
       if (fieldValue) {
         elem.value = fieldValue;
       }
@@ -274,6 +275,7 @@ class DBAdminTableEdit {
     } else if (fieldType == 'textarea') {
       elem = CreateElement.createTextArea('textarea' + fieldName, 'dbadmin-editfield');
       elem.placeholder = fieldName;
+      UtilityKTS.denyDoubleQuotes(elem);
       if (fieldValue) {
       elem.value = fieldValue;
       }
