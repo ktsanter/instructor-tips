@@ -12,18 +12,5 @@
 
 - add reminder notifications (cron style)
 
-- parameterize and abstract SQL login on server side
-  - admin query
-  - admin insert
-  - admin update
-  - admin delete
-  - tipmanager
-  - usermanagement
-
 - use environment variables in node
   - update gitignore
-
-- commonize doPostQuery and doGetQuery on client side
-   - need to include notice as parameter
-
-- count on tip usage is off (after share deletion)

@@ -7,17 +7,8 @@
 const internal = {};
 
 module.exports = internal.TipManager = class {
-  constructor(mariadb, dbName, userManagement, hostName) {
-    this._mariadb = mariadb
-    
-    this._pool = mariadb.createPool({
-      host: hostName, //'localhost',
-      user: 'root',
-      password: 'SwordFish002',
-      connectionLimit: 5  
-    });
-    
-    this._dbName = dbName;
+  constructor(userManagement, dbManager) {
+    this._dbManager = dbManager;
     this._userManagement = userManagement;
   }
   
@@ -25,7 +16,7 @@ module.exports = internal.TipManager = class {
 // dispatchers
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
-    var dbResult = this._queryFailureResult();
+    var dbResult = this._dbManager.queryFailureResult();
 
     if (params.queryName == 'profile') {
       dbResult = await this._getUserProfile(params, userInfo);
@@ -65,7 +56,7 @@ module.exports = internal.TipManager = class {
   }
 
   async doInsert(params, postData, gMailer, userInfo, funcCheckPrivilege) {
-    var dbResult = this._queryFailureResult();
+    var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'schedule') {
       dbResult = await this._insertSchedule(params, postData, userInfo);
@@ -84,7 +75,7 @@ module.exports = internal.TipManager = class {
   }
   
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
-    var dbResult = this._queryFailureResult();
+    var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'schedule') {
       dbResult = await this._updateSchedule(params, postData, userInfo);
@@ -130,7 +121,7 @@ module.exports = internal.TipManager = class {
   }  
 
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
-    var dbResult = this._queryFailureResult();
+    var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'schedule') {
       dbResult = await this._deleteSchedule(params, postData, userInfo);
@@ -155,64 +146,10 @@ module.exports = internal.TipManager = class {
   }
 
 //---------------------------------------------------------------
-// general query methods
-//---------------------------------------------------------------
-  _queryFailureResult() {
-    return {success: false, details: 'db query failed', data: null, constraints: null};
-  }
-      
-  async _dbQueries(queryList) {
-    var queryResults = {
-      success: true,
-      details: 'queries succeeded',
-      data: {}
-    };
-    
-    for (var key in queryList) {
-      var singleResult = await this._dbQuery(queryList[key]);
-      if (!singleResult.success) {
-        queryResults.success = false;
-        queryResults.details = 'DB query failed (' + key +') ' + singleResult.details;
-        
-      } else {
-        queryResults.data[key] = singleResult.data;
-      }
-    }
-          
-    return queryResults;
-  }  
-
-  async _dbQuery(sql) {
-    var conn;
-    var dbResult = this._queryFailureResult();
-
-    try {
-        conn = await this._pool.getConnection();
-        await conn.query('USE ' + this._dbName);
-        const rows = await conn.query(sql);
-        dbResult.success = true;
-        dbResult.details = 'db request succeeded';
-        dbResult.data = [];
-        for (var i = 0; i < rows.length; i++) {
-          dbResult.data.push(rows[i]);
-        }
-        
-    } catch (err) {
-      dbResult.details = err;
-      //throw err;
-      
-    } finally {
-      if (conn) conn.release();
-    }
-    
-    return dbResult;
-  }
-
-//---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
   async _getScheduleList(params, postData, userInfo) {
-    var result = this._queryFailureResult(); 
+    var result = this._dbManager.queryFailureResult(); 
     
     var queryList = {};
 
@@ -221,7 +158,7 @@ module.exports = internal.TipManager = class {
       'FROM schedule ' +
       'WHERE userid = ' + userInfo.userId;
               
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -236,7 +173,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _getControlState(params, postData, userInfo, controlGroup) {
-    var result = this._queryFailureResult(); 
+    var result = this._dbManager.queryFailureResult(); 
     
     var queryList = {};
 
@@ -246,7 +183,7 @@ module.exports = internal.TipManager = class {
       'WHERE userid = ' + userInfo.userId + ' ' +
         'AND controlgroup = "' + controlGroup + '" ';
     
-    var queryResults = await this._dbQueries(queryList);    
+    var queryResults = await this._dbManager.dbQueries(queryList);    
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -260,7 +197,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _getUserProfile(params, userInfo) {
-    var result = this._queryFailureResult();   
+    var result = this._dbManager.queryFailureResult();   
     
     var queryList = {
       notificationoptions: 
@@ -269,7 +206,7 @@ module.exports = internal.TipManager = class {
         'where userid = ' + userInfo.userId + ' '
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -285,7 +222,7 @@ module.exports = internal.TipManager = class {
   
   
   async _getScheduleDetails(params, postData, userInfo) {
-    var result = this._queryFailureResult();   
+    var result = this._dbManager.queryFailureResult();   
     
     var queryList = {
       schedule: 
@@ -308,7 +245,7 @@ module.exports = internal.TipManager = class {
             'and t.tipid = vtc.tipid '
     };
         
-    var queryResults = await this._dbQueries(queryList);    
+    var queryResults = await this._dbManager.dbQueries(queryList);    
     if (queryResults.success) {
       var consolidatedDetails = this._consolidateTipCategories(queryResults.data.scheduledetails, userInfo);
       
@@ -401,7 +338,7 @@ module.exports = internal.TipManager = class {
 
   
   async _getTipList(params, postData, userInfo, funcCheckPrivilege) {
-    var result = this._queryFailureResult();   
+    var result = this._dbManager.queryFailureResult();   
     
     var queryList = {
       tiplist: 
@@ -439,7 +376,7 @@ module.exports = internal.TipManager = class {
           'and vtc.tiptext like "%' + postData.search + '%" '
     };
     
-    var queryResults = await this._dbQueries(queryList);    
+    var queryResults = await this._dbManager.dbQueries(queryList);    
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -506,7 +443,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _getCategoryList(params, postData, userInfo) {
-    var result = this._queryFailureResult(); 
+    var result = this._dbManager.queryFailureResult(); 
     
     var queryList = {};
 
@@ -515,7 +452,7 @@ module.exports = internal.TipManager = class {
       'FROM category ' +
       'ORDER BY categorytext';
               
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -530,7 +467,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _getUsersToShareWith(params, postData, userInfo) {
-    var result = this._queryFailureResult(); 
+    var result = this._dbManager.queryFailureResult(); 
     
     var queryList = {};
 
@@ -539,7 +476,7 @@ module.exports = internal.TipManager = class {
       'from user ' +
       'order by username ';
     
-    var queryResults = await this._dbQueries(queryList);    
+    var queryResults = await this._dbManager.dbQueries(queryList);    
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -553,7 +490,7 @@ module.exports = internal.TipManager = class {
   }  
   
   async _getSchedulesSharedWithUser(params, postData, userInfo) {
-    var result = this._queryFailureResult(); 
+    var result = this._dbManager.queryFailureResult(); 
     
     var query, queryResults;
     
@@ -568,7 +505,7 @@ module.exports = internal.TipManager = class {
         'and ss.userid_from = u.userid ' +
       'order by ss.datestamp desc';
         
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -583,7 +520,7 @@ module.exports = internal.TipManager = class {
   }    
     
   async _getNotificationInfo(params, postData, userInfo) {
-    var result = this._queryFailureResult(); 
+    var result = this._dbManager.queryFailureResult(); 
     
     var queryList, queryResults;
     
@@ -605,7 +542,7 @@ module.exports = internal.TipManager = class {
         'where userid = ' + userInfo.userId
     };
 
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -643,7 +580,7 @@ module.exports = internal.TipManager = class {
 // specific insert methods
 //---------------------------------------------------------------
   async _insertSchedule(params, postData, userInfo) {
-    var result = this._queryFailureResult();  
+    var result = this._dbManager.queryFailureResult();  
     
     var query = 'insert into schedule (userid, schedulename, schedulelength, schedulestartdate) ' +
                 'values (' +
@@ -653,14 +590,14 @@ module.exports = internal.TipManager = class {
                 '"' + postData.schedulestartdate + '" ' +                   
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       query = 'select scheduleid ' +
               'from schedule ' +
               'where schedulename = "' + postData.schedulename + '" ' +
               'and userid = ' + userInfo.userId;
-      queryResults = await this._dbQuery(query);
+      queryResults = await this._dbManager.dbQuery(query);
       
       if (queryResults.success) {
         result.success = true;
@@ -679,7 +616,7 @@ module.exports = internal.TipManager = class {
   }  
   
   async _shareSchedule(params, postData, userInfo, gMailer) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query, queryResults;
        
@@ -695,7 +632,7 @@ module.exports = internal.TipManager = class {
         '"' + dateStamp + '" ' +
       ') ';
       
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
     if (!queryResults) {
       result.details = queryResults.details;
       return result;
@@ -709,7 +646,7 @@ module.exports = internal.TipManager = class {
         'and userid_to = ' + postData.userid + ' ' +
       'order by datestamp desc ';
     
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -723,7 +660,7 @@ module.exports = internal.TipManager = class {
       'from scheduletip ' +
       'where scheduleid = ' + postData.scheduleid + ' ';
      
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
     if (!queryResults) {
       result.details = queryResults.details;
       return result;
@@ -742,7 +679,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _notifyAboutSharedSchedule(scheduleId, comment, userInfo, useridTo, gMailer) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList, queryResults;
 
@@ -760,7 +697,7 @@ module.exports = internal.TipManager = class {
           'and userid = ' + userInfo.userId,
     };
     
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (!queryResults) {
       result.details = queryResults.details;
       return result;
@@ -802,7 +739,7 @@ module.exports = internal.TipManager = class {
 // specific update methods
 //---------------------------------------------------------------
   async _updateSchedule(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'update schedule ' +
                 'set ' +
@@ -811,7 +748,7 @@ module.exports = internal.TipManager = class {
                   'schedulestartdate = "' + postData.schedulestartdate + '" ' +
                 'where scheduleid = ' + postData.scheduleid;
 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -825,7 +762,7 @@ module.exports = internal.TipManager = class {
   }  
   
   async _updateControlState(params, postData, userInfo, controlGroup) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'update controlstate ' +
                 'set ' +
@@ -833,7 +770,7 @@ module.exports = internal.TipManager = class {
                 'where userid = ' + userInfo.userId + ' ' +
                 '  and controlgroup = "' + controlGroup + '" ';
                 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -847,7 +784,7 @@ module.exports = internal.TipManager = class {
   }  
   
   async _updateUserProfile(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query;
     var queryResults;
@@ -858,7 +795,7 @@ module.exports = internal.TipManager = class {
         'email = "' + postData.email + '" ' +
       'where userid = ' + userInfo.userId + ' ';
 
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -872,7 +809,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _updateScheduleTipState(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query;
     var queryResults;
@@ -883,7 +820,7 @@ module.exports = internal.TipManager = class {
         'tipstate = ' + postData.tipstate + ' ' +
       'where scheduletipid = ' + postData.scheduletipid + ' ';
     
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -897,7 +834,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _moveScheduleTip(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     var queryResults;
         
     var deleteParams = {
@@ -928,7 +865,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _addScheduleTip(params, postData, userInfo, bypassDuplicateTest) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var queryList;
     var queryResults;
@@ -943,7 +880,7 @@ module.exports = internal.TipManager = class {
             'and schedulelocation = ' + postData.schedulelocation
       };
 
-      queryResults = await this._dbQueries(queryList);
+      queryResults = await this._dbManager.dbQueries(queryList);
       if (!queryResults.success) {
         result.details = queryResults.detail;
         return result;
@@ -977,7 +914,7 @@ module.exports = internal.TipManager = class {
 
     }
 
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';
@@ -990,7 +927,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _addTipAndScheduleTip(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
    
     var queryList = {
       checkforduplicate:
@@ -1000,7 +937,7 @@ module.exports = internal.TipManager = class {
           'and (userid = ' + userInfo.userId + ' or common) '
     }
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
 
     if (!queryResults.success) {
       result.details = queryResults.details;
@@ -1026,7 +963,7 @@ module.exports = internal.TipManager = class {
           'and userid = ' + userInfo.userId
     };
             
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
 
     if (!queryResults.success) {
       result.details = queryResults.details;
@@ -1054,7 +991,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _updateTipTextAndCategory(params, postData, userInfo, funcCheckPrivilege) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     var queryList, queryResults;
     
     queryList = {
@@ -1064,7 +1001,7 @@ module.exports = internal.TipManager = class {
         'where tipid = ' + postData.tipid + ' '
     };
 
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -1112,7 +1049,7 @@ module.exports = internal.TipManager = class {
           'where c.categorytext = "' + categoryText + '" ';
     }
     
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -1125,7 +1062,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _acceptSharedSchedule(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     var queryList, queryResults;    
 
     queryList = {};
@@ -1140,7 +1077,7 @@ module.exports = internal.TipManager = class {
       'where s.scheduleid = ss.scheduleid ' +
         'and ss.sharescheduleid = ' + postData.sharescheduleid;
         
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -1165,7 +1102,7 @@ module.exports = internal.TipManager = class {
       'from sharescheduletip ' +
       'where sharescheduleid = ' + postData.sharescheduleid + ' ';
       
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
 
     queryResults = await this._deleteSharedSchedule(params, postData, userInfo);
     if (queryResults.success) {
@@ -1179,7 +1116,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _acceptSharedScheduleTips(params, postData, userInfo, newScheduleId) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     var query, queryResults;    
     
     var query = 
@@ -1187,7 +1124,7 @@ module.exports = internal.TipManager = class {
       'from sharescheduletip ' +
       'where sharescheduleid = ' + postData.sharescheduleid + ' ';
       
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
     if (!queryResults.success) {
       result.details = queryResults.detail;
       return result;
@@ -1222,7 +1159,7 @@ module.exports = internal.TipManager = class {
               'and schedulelocation = ' + postData.schedulelocation
         }
         
-        queryResults = await this._dbQueries(queryList);
+        queryResults = await this._dbManager.dbQueries(queryList);
         
         if (queryResults.success) {
           var newItem = queryResults.data.getscheduletip[0].scheduletipid;
@@ -1233,7 +1170,7 @@ module.exports = internal.TipManager = class {
             'where scheduletipid = ' + newItem            
           };
         
-          queryResults = await this._dbQuery(query);
+          queryResults = await this._dbManager.dbQuery(query);
           
           prevItem = newItem;
         }
@@ -1311,7 +1248,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _acceptSharedSchedule(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     var queryList, queryResults;    
 
     queryList = {};
@@ -1326,7 +1263,7 @@ module.exports = internal.TipManager = class {
       'where s.scheduleid = ss.scheduleid ' +
         'and ss.sharescheduleid = ' + postData.sharescheduleid;
         
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -1351,7 +1288,7 @@ module.exports = internal.TipManager = class {
       'from sharescheduletip ' +
       'where sharescheduleid = ' + postData.sharescheduleid + ' ';
       
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
 
     queryResults = await this._deleteSharedSchedule(params, postData, userInfo);
     if (queryResults.success) {
@@ -1365,7 +1302,7 @@ module.exports = internal.TipManager = class {
   }
   
   async _updateNotificationInfo(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     var queryList, queryResults;    
     
     queryList = {
@@ -1398,7 +1335,7 @@ module.exports = internal.TipManager = class {
       }
     }
     
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       result.details = 'insert succeeded';
@@ -1411,7 +1348,7 @@ module.exports = internal.TipManager = class {
   
   
   async _addTipCategory(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var categoryList = postData.category;
     if (categoryList.length == 0) {
@@ -1431,7 +1368,7 @@ module.exports = internal.TipManager = class {
           'where categorytext = "' + postData.category[i] + '"';
     }
         
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -1445,7 +1382,7 @@ module.exports = internal.TipManager = class {
   }
     
   async _getScheduleTipLinks(scheduleTipId) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query;
     var queryResults;
@@ -1456,7 +1393,7 @@ module.exports = internal.TipManager = class {
       'where ' + 
         'scheduletipid = ' + scheduleTipId;
         
-    queryResults = await this._dbQuery(query);
+    queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -1470,7 +1407,7 @@ module.exports = internal.TipManager = class {
   }  
   
   async _addScheduleWeek(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var queryList;
     var queryResults;
@@ -1489,7 +1426,7 @@ module.exports = internal.TipManager = class {
           'and schedulelocation > ' + postData.afterweek + ' '
     };
     
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       
@@ -1504,13 +1441,13 @@ module.exports = internal.TipManager = class {
 // specific delete methods
 //---------------------------------------------------------------
   async _deleteSchedule(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'delete from schedule ' +
                 'where scheduleid = ' + postData.scheduleid + ' ' +
                   'and userid = ' + userInfo.userId ;
 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -1524,7 +1461,7 @@ module.exports = internal.TipManager = class {
   }  
   
   async _deleteScheduleTip(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     var queryList, queryResults;
     
     queryList = {
@@ -1540,7 +1477,7 @@ module.exports = internal.TipManager = class {
         'where scheduletipid = ' + postData.scheduletipid
     };
     
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -1554,7 +1491,7 @@ module.exports = internal.TipManager = class {
   }  
   
   async _removeScheduleWeek(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var queryList;
     var queryResults;
@@ -1579,7 +1516,7 @@ module.exports = internal.TipManager = class {
           
     };
     
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       
@@ -1591,7 +1528,7 @@ module.exports = internal.TipManager = class {
   }
 
   async _deleteSharedSchedule(params, postData, userInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var queryList;
     var queryResults;
@@ -1603,7 +1540,7 @@ module.exports = internal.TipManager = class {
         '  and userid_to = ' + userInfo.userId
     };
     
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -1616,7 +1553,7 @@ module.exports = internal.TipManager = class {
   }
 
   async _deleteTip(params, postData, userInfo, funcCheckPrivilege) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var hasAdminPriv = funcCheckPrivilege(userInfo, 'admin');
     
@@ -1634,7 +1571,7 @@ module.exports = internal.TipManager = class {
         'where tipid = ' + postData.tipid
     };
 
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -1659,7 +1596,7 @@ module.exports = internal.TipManager = class {
         'where tipid = ' + postData.tipid
     }
     
-    queryResults = await this._dbQueries(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       result.details = 'delete succeeded';

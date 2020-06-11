@@ -62,6 +62,7 @@
 
 .tipfilter .tipfilter-inputs .tipfilter-common {
   display: inline-block;
+  vertical-align: top;
 }
 
 .tipfilter .tipfilter-inputs .tipfilter-common .tipfilter-commonswitch {
@@ -69,5 +70,10 @@
 }
 
 .tipfilter .tipfilter-inputs .lookupinput .lookupinput-inputcontainer  {
+  margin-left: 1.2em;
+}
+
+.tipfilter .tipfilter-inputs .lookupinput .lookupinput-selectedcontainer  {
+  width: 76%;
   margin-left: 1.2em;
 }

@@ -7,25 +7,16 @@
 const internal = {};
 
 module.exports = internal.dbAdminDelete = class {
-  constructor(mariadb, dbName, userManagement, hostName) {
-    this._mariadb = mariadb
-    
-    this._pool = mariadb.createPool({
-      host: hostName, //'localhost',
-      user: 'root',
-      password: 'SwordFish002',
-      connectionLimit: 5  
-    });
-    
-    this._dbName = dbName;
+  constructor(userManagement, dbManager) {
     this._userManagement = userManagement;
+    this._dbManager = dbManager;
   }
   
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
   async doDelete(params, postData) {
-    var dbResult = this._queryFailureResult();
+    var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'privileges') {
       dbResult = await this._deletePrivilege(params, postData);
@@ -62,44 +53,15 @@ module.exports = internal.dbAdminDelete = class {
   }
 
 //---------------------------------------------------------------
-// general query functions
-//---------------------------------------------------------------
-  _queryFailureResult() {
-    return {success: false, details: 'db insert failed', data: null};
-  }
-
-  async _dbQuery(sql) {
-    var conn;
-    var dbResult = this._queryFailureResult();
-
-    try {
-        conn = await this._pool.getConnection();
-        await conn.query('USE ' + this._dbName);
-        await conn.query(sql);
-        dbResult.success = true;
-        dbResult.details = 'db request succeeded';
-        
-    } catch (err) {
-      dbResult.details = err;
-      //throw err;
-      
-    } finally {
-      if (conn) conn.release();
-    }
-    
-    return dbResult;
-  }
-
-//---------------------------------------------------------------
 // specific query functions
 //---------------------------------------------------------------
   async _deletePrivilege(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'delete from privilege ' +
                 'where privilegeid = ' + postData.privilegeid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -114,12 +76,12 @@ module.exports = internal.dbAdminDelete = class {
   }
   
   async _deleteUser(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'delete from user ' +
                 'where userid = ' + postData.userid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -133,12 +95,12 @@ module.exports = internal.dbAdminDelete = class {
   }
     
   async _deleteUserPrivilege(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'delete from userprivilege ' +
                 'where userprivilegeid = ' + postData.userprivilegeid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -152,12 +114,12 @@ module.exports = internal.dbAdminDelete = class {
   }
 
   async _deleteTip(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'delete from tip ' +
                 'where tipid = ' + postData.tipid;
 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -171,12 +133,12 @@ module.exports = internal.dbAdminDelete = class {
   }  
   
   async _deleteCategory(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'delete from category ' +
                 'where categoryid = ' + postData.categoryid;
 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -190,12 +152,12 @@ module.exports = internal.dbAdminDelete = class {
   }  
   
   async _deleteTipCategory(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'delete from tipcategory ' +
                 'where tipcategoryid = ' + postData.tipcategoryid;
 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -209,12 +171,12 @@ module.exports = internal.dbAdminDelete = class {
   }  
     
   async _deleteSchedule(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'delete from schedule ' +
                 'where scheduleid = ' + postData.scheduleid;
 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -228,12 +190,12 @@ module.exports = internal.dbAdminDelete = class {
   }    
     
   async _deleteScheduleTip(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'delete from scheduletip ' +
                 'where scheduletipid = ' + postData.scheduletipid;
 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -247,12 +209,12 @@ module.exports = internal.dbAdminDelete = class {
   }    
     
   async _deleteControlState(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var query = 'delete from controlstate ' +
                 'where controlstateid = ' + postData.controlstateid;
 
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;

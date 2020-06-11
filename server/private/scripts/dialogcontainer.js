@@ -337,8 +337,14 @@ class DialogContainer {
     
     var items = [];
     if (tipInfo.common) items.push('<strong>marked as "common"</strong>');
-    items.push('used in ' + tipInfo.schedulecount + ' schedule(s)');
-    items.push('used in ' + tipInfo.shareschedulecount + ' shared schedule(s)');
+    var schedMsg = 'used in ' + tipInfo.schedulecount + ' location';
+    schedMsg += (tipInfo.schedulecount == 1 ? '' : 's') + ' on schedules';
+    items.push(schedMsg);
+
+    var shareschedMsg = 'used in ' + tipInfo.shareschedulecount + ' location';
+    shareschedMsg += (tipInfo.shareschedulecount == 1 ? '' : 's') + ' on shared schedules';
+    items.push(shareschedMsg);
+    
     container.appendChild(CreateElement.createUL(null, 'dialogcontainer-usageitems', items));
    }
   

@@ -1,38 +1,73 @@
 "use strict";
 
-//console.log(process.env);
-
-const express = require('express')
-var bodyParser = require('body-parser');
-var favicon = require('serve-favicon')
-var path = require('path')
-const mariadb = require('mariadb')
-var session = require('express-session')
-var mySQL = require('mysql')
-var MySQLStore = require('express-mysql-session')(session);
-var nodemailer = require('nodemailer');
-
-const app = express()
-const port = 3000
-
-// temp: hard-coded for now
+// change from hardcoded to environment variables eventually
+const THIS_PORT = 3000;
 const THIS_HOST = 'localhost';
 
+const MARIA_USER = 'root';
+const MARIA_PASSWORD = 'SwordFish002';
+const MARIA_DBNAME = 'instructortips';
+
+const SESSION_USER = 'root';
+const SESSION_PASSWORD = 'SwordFish002';
+const SESSION_DBNAME = 'sessionstore';
+const SESSION_SECRET = 'Grit Gumption';
+
+//------------------------------------------
+// configure express for the app
+//------------------------------------------
+const express = require('express')
+var path = require('path')
+
+const app = express()
+
+//------------------------------------------
+// environment variables (testing)
+//------------------------------------------
+console.log(process.env);
+
+//------------------------------------------
+// configure favicon
+//------------------------------------------
+var favicon = require('serve-favicon')
 app.use(favicon('favicon.ico'))
 
-app.use(bodyParser.json()); 
-
-//------ req body parsers -------------
+//------------------------------------------
+// body parsers
+//------------------------------------------
+var bodyParser = require('body-parser');
 app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true })); // for form data
 
+//------------------------------------------
+// mariadb management
+//------------------------------------------
+const mariadb = require('mariadb')
 
-//------- session management ------------------
+const mariadbParams = {
+    reqd: mariadb,
+    host: THIS_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME, 
+    connectionLimit: 5
+};
+    
+const mariaDBManagerClass = require('./classes/mariadb_management')
+const mariaDBManager = new mariaDBManagerClass(mariadbParams);
+    
+//------------------------------------------
+// session management
+//------------------------------------------
+var session = require('express-session')
+var mySQL = require('mysql')
+var MySQLStore = require('express-mysql-session')(session);
+
 var mysqlPool = mySQL.createPool({
     host: THIS_HOST, //'localhost',
-    user: 'root',
-    password: 'SwordFish002',
-    database: 'sessionstore'
+    user: SESSION_USER,
+    password: SESSION_PASSWORD,
+    database: SESSION_DBNAME
 });
 
 const MS_PER_HOUR = 60 * 60 * 1000;
@@ -46,7 +81,7 @@ var sessionStore = new MySQLStore({
 );
 
 app.use(session({
-  secret: 'Grit Gumption',
+  secret: SESSION_SECRET,
   cookie: {maxAge: 24 * MS_PER_HOUR}, 
   resave: false,
   saveUninitialized: true,
@@ -61,35 +96,39 @@ app.use(function (req, res, next) {
   next()
 })
 
-//--------- user management -----------------
-const userManagementClass = require('./classes/usermanagement')
-const userManagement = new userManagementClass(mariadb, 'instructortips', THIS_HOST);
-
-//-------- email -------------
+//------------------------------------------
+// email management
+//------------------------------------------
+var nodemailer = require('nodemailer');
 const gMailerClass = require('./classes/gmailer');
 const gMailer = new gMailerClass(nodemailer);
 
-//-------- admin queries -----------------
+//------------------------------------------
+// user management
+//------------------------------------------
+const userManagementClass = require('./classes/usermanagement')
+const userManagement = new userManagementClass(mariaDBManager);
+
+//------------------------------------------
+// InstructorTips admin query objects
+//------------------------------------------
 const dbAdminQueryClass = require('./classes/dbadmin_query')
-const dbAdminQuery = new dbAdminQueryClass(mariadb, 'instructortips', userManagement, THIS_HOST);
+const dbAdminQuery = new dbAdminQueryClass(userManagement, mariaDBManager);
 
 const dbAdminInsertClass = require('./classes/dbadmin_insert')
-const dbAdminInsert = new dbAdminInsertClass(mariadb, 'instructortips', THIS_HOST);
+const dbAdminInsert = new dbAdminInsertClass(userManagement, mariaDBManager);
 
 const dbAdminUpdateClass = require('./classes/dbadmin_update')
-const dbAdminUpdate = new dbAdminUpdateClass(mariadb, 'instructortips', THIS_HOST);
+const dbAdminUpdate = new dbAdminUpdateClass(userManagement, mariaDBManager);
 
 const dbAdminDeleteClass = require('./classes/dbadmin_delete')
-const dbAdminDelete = new dbAdminDeleteClass(mariadb, 'instructortips', THIS_HOST);
+const dbAdminDelete = new dbAdminDeleteClass(userManagement, mariaDBManager);
 
-//---------- tip manager
-const dbTipManagerClass = require('./classes/tipmanager', THIS_HOST)
-const dbTipManager = new dbTipManagerClass(mariadb, 'instructortips', userManagement);
-
-//---------- bolerplate response for failed request
-function _failedRequest(requestType) {
-  return {success: false, details: requestType + ' failed'};
-}
+//------------------------------------------
+// InstructorTips general query objects
+//------------------------------------------
+const dbTipManagerClass = require('./classes/tipmanager')
+const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager);
 
 //------------------------------------------------------
 // login/logout and main page
@@ -257,7 +296,14 @@ app.post('/tipmanager/delete/:queryName', async function (req, res) {
   }
 })
 
+//------------------------------------------
+// boilerplate response for failed request
+//------------------------------------------
+function _failedRequest(requestType) {
+  return {success: false, details: requestType + ' failed'};
+}
+
 //------------------------------------------------------
-// start up message
+// start up
 //------------------------------------------------------
-app.listen(port, () => console.log('app listening on port ' + port))
+app.listen(THIS_PORT, () => console.log('app listening on port ' + THIS_PORT))

@@ -7,25 +7,16 @@
 const internal = {};
 
 module.exports = internal.dbAdminUpdate = class {
-  constructor(mariadb, dbName, userManagement, hostName) {
-    this._mariadb = mariadb
-    
-    this._pool = mariadb.createPool({
-      host: hostName, //'localhost',
-      user: 'root',
-      password: 'SwordFish002',
-      connectionLimit: 5  
-    });
-    
-    this._dbName = dbName;
+  constructor(userManagement, dbManager) {
     this._userManagement = userManagement;
+    this._dbManager = dbManager;
   }
   
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
   async doUpdate(params, postData) {
-    var dbResult = this._queryFailureResult();
+    var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'privileges') {
       dbResult = await this._updatePrivilege(params, postData);
@@ -62,71 +53,17 @@ module.exports = internal.dbAdminUpdate = class {
   }
 
 //---------------------------------------------------------------
-// general query functions
-//---------------------------------------------------------------
-  _queryFailureResult() {
-    return {success: false, details: 'db insert failed', data: null};
-  } 
-
-  async _dbQuery(sql) {
-    var conn;
-    var dbResult = this._queryFailureResult();
-
-    try {
-        conn = await this._pool.getConnection();
-        await conn.query('USE ' + this._dbName);
-        const rows = await conn.query(sql);
-        dbResult.success = true;
-        dbResult.details = 'db request succeeded';
-        dbResult.data = [];
-        for (var i = 0; i < rows.length; i++) {
-          dbResult.data.push(rows[i]);
-        }
-        
-    } catch (err) {
-      dbResult.details = err;
-      //throw err;
-      
-    } finally {
-      if (conn) conn.release();
-    }
-    
-    return dbResult;
-  }
-  
-  async _dbQueries(queryList) {
-    var queryResults = {
-      success: true,
-      details: 'queries succeeded',
-      data: {}
-    };
-    
-    for (var key in queryList) {
-      var singleResult = await this._dbQuery(queryList[key]);
-      if (!singleResult.success) {
-        queryResults.success = false;
-        queryResults.details = 'DB query failed (' + key +') ' + singleResult.details;
-        
-      } else {
-        queryResults.data[key] = singleResult.data;
-      }
-    }
-          
-    return queryResults;
-  }    
-
-//---------------------------------------------------------------
 // specific query functions
 //---------------------------------------------------------------
   async _updatePrivilege(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'update privilege ' +
                 'set ' +
                   'privilegename = "' + postData.privilegename + '" ' + 
                 'where privilegeid = ' + postData.privilegeid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -140,7 +77,7 @@ module.exports = internal.dbAdminUpdate = class {
   }
   
   async _updateUser(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
 
     var sharedScheduleOption = 0;
     if (postData.sharedschedule == '1') sharedScheduleOption = 1;
@@ -154,7 +91,7 @@ module.exports = internal.dbAdminUpdate = class {
                   'email = "' + postData.email + '" ' +
                 'where userid = ' + postData.userid;
                 ;
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -168,7 +105,7 @@ module.exports = internal.dbAdminUpdate = class {
   }
     
   async _updateUserPrivilege(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'update userprivilege ' + 
                 'set ' + 
@@ -176,7 +113,7 @@ module.exports = internal.dbAdminUpdate = class {
                   'privilegeid = ' + postData.privilegeid + ' ' +
                 'where userprivilegeid = ' + postData.userprivilegeid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -190,7 +127,7 @@ module.exports = internal.dbAdminUpdate = class {
   }
 
   async _updateTip(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'update tip ' +
                 'set ' +
@@ -199,7 +136,7 @@ module.exports = internal.dbAdminUpdate = class {
                   'userid = ' + (postData.common ? 'NULL' : postData.userid) + ' ' +
                 'where tipid = ' + postData.tipid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -213,14 +150,14 @@ module.exports = internal.dbAdminUpdate = class {
   }  
     
   async _updateCategory(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'update category ' +
                 'set ' +
                   'categorytext = "' + postData.categorytext + '" ' + 
                 'where categoryid = ' + postData.categoryid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -234,7 +171,7 @@ module.exports = internal.dbAdminUpdate = class {
   }  
 
   async _updateTipCategory(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'update tipcategory ' +
                 'set ' +
@@ -242,7 +179,7 @@ module.exports = internal.dbAdminUpdate = class {
                   'categoryid = ' + postData.categoryid + ' ' +
                 'where tipcategoryid = ' + postData.tipcategoryid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -256,7 +193,7 @@ module.exports = internal.dbAdminUpdate = class {
   }  
   
   async _updateSchedule(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'update schedule ' +
                 'set ' +
@@ -266,7 +203,7 @@ module.exports = internal.dbAdminUpdate = class {
                   'schedulestartdate = "' + postData.schedulestartdate + '" ' + 
                 'where scheduleid = ' + postData.scheduleid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -280,7 +217,7 @@ module.exports = internal.dbAdminUpdate = class {
   }  
   
   async _updateScheduleTip(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'update scheduletip ' +
                 'set ' +
@@ -291,7 +228,7 @@ module.exports = internal.dbAdminUpdate = class {
                   'schedulelocationorder = ' + postData.schedulelocationorder + ' ' +
                 'where scheduletipid = ' + postData.scheduletipid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -305,7 +242,7 @@ module.exports = internal.dbAdminUpdate = class {
   }  
   
   async _updateControlState(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'update controlstate ' +
                 'set ' +
@@ -314,7 +251,7 @@ module.exports = internal.dbAdminUpdate = class {
                   'state = "' + postData.state + '" ' +
                 'where controlstateid = ' + postData.controlstateid;
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;

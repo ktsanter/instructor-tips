@@ -7,25 +7,16 @@
 const internal = {};
 
 module.exports = internal.dbAdminInsert = class {
-  constructor(mariadb, dbName, userManagement, hostName) {
-    this._mariadb = mariadb
-    
-    this._pool = mariadb.createPool({
-      host: hostName, //'localhost',
-      user: 'root',
-      password: 'SwordFish002',
-      connectionLimit: 5  
-    });
-    
-    this._dbName = dbName;
+  constructor(userManagement, dbManager) {
     this._userManagement = userManagement;
+    this._dbManager = dbManager;
   }
   
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
   async doInsert(params, postData) {
-    var dbResult = this._queryFailureResult();
+    var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'privileges') {
       dbResult = await this._insertPrivilege(params, postData);
@@ -62,71 +53,17 @@ module.exports = internal.dbAdminInsert = class {
   }
 
 //---------------------------------------------------------------
-// general query functions
-//---------------------------------------------------------------
-  _queryFailureResult() {
-    return {success: false, details: 'db insert failed', data: null};
-  }
-      
-  async _dbQuery(sql) {
-    var conn;
-    var dbResult = this._queryFailureResult();
-
-    try {
-        conn = await this._pool.getConnection();
-        await conn.query('USE ' + this._dbName);
-        const rows = await conn.query(sql);
-        dbResult.success = true;
-        dbResult.details = 'db request succeeded';
-        dbResult.data = [];
-        for (var i = 0; i < rows.length; i++) {
-          dbResult.data.push(rows[i]);
-        }        
-        
-    } catch (err) {
-      dbResult.details = err;
-      //throw err;
-      
-    } finally {
-      if (conn) conn.release();
-    }
-    
-    return dbResult;
-  }
-  
-  async _dbQueries(queryList) {
-    var queryResults = {
-      success: true,
-      details: 'queries succeeded',
-      data: {}
-    };
-    
-    for (var key in queryList) {
-      var singleResult = await this._dbQuery(queryList[key]);
-      if (!singleResult.success) {
-        queryResults.success = false;
-        queryResults.details = 'DB query failed (' + key +') ' + singleResult.details;
-        
-      } else {
-        queryResults.data[key] = singleResult.data;
-      }
-    }
-          
-    return queryResults;
-  }   
-
-//---------------------------------------------------------------
 // specific query functions
 //---------------------------------------------------------------
   async _insertPrivilege(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'insert into privilege (privilegename) ' +
                 'values (' +
                   '"' + postData.privilegename + '"' + 
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -140,7 +77,7 @@ module.exports = internal.dbAdminInsert = class {
   }
   
   async _insertUser(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var sharedScheduleOption = 0;
     if (postData.sharedschedule == '1') sharedScheduleOption = 1;
@@ -154,7 +91,7 @@ module.exports = internal.dbAdminInsert = class {
                   '"' + postData.email + '" ' +
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
       result.success = true;
@@ -168,7 +105,7 @@ module.exports = internal.dbAdminInsert = class {
   }
     
   async _insertUserPrivilege(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'insert into userprivilege (userid, privilegeid) ' +
                 'values (' +
@@ -176,7 +113,7 @@ module.exports = internal.dbAdminInsert = class {
                   '"' + postData.privilegeid + '"' + 
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -190,7 +127,7 @@ module.exports = internal.dbAdminInsert = class {
   }
 
   async _insertTip(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'insert into tip (tiptext, common, userid) ' +
                 'values (' +
@@ -199,7 +136,7 @@ module.exports = internal.dbAdminInsert = class {
                   (postData.common ? 'NULL' : postData.userid) + ' ' +
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -213,14 +150,14 @@ module.exports = internal.dbAdminInsert = class {
   }  
   
   async _insertCategory(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'insert into category (categorytext) ' +
                 'values (' +
                   '"' + postData.categorytext + '"' + 
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -234,7 +171,7 @@ module.exports = internal.dbAdminInsert = class {
   }  
   
   async _insertTipCategory(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'insert into tipcategory (tipid, categoryid) ' +
                 'values (' +
@@ -242,7 +179,7 @@ module.exports = internal.dbAdminInsert = class {
                   postData.categoryid + 
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -256,7 +193,7 @@ module.exports = internal.dbAdminInsert = class {
   }  
   
   async _insertSchedule(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'insert into schedule (userid, schedulename, schedulelength, schedulestartdate) ' +
                 'values (' +
@@ -266,7 +203,7 @@ module.exports = internal.dbAdminInsert = class {
                   '"' + postData.schedulestartdate + '" ' +
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -280,7 +217,7 @@ module.exports = internal.dbAdminInsert = class {
   }  
 
   async _insertScheduleTip(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'insert into scheduletip (' +
                   'scheduleid, tipid, tipstate, schedulelocation, schedulelocationorder' +
@@ -293,7 +230,7 @@ module.exports = internal.dbAdminInsert = class {
                   postData.schedulelocationorder + ' ' + 
                 ')';
     
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;
@@ -307,7 +244,7 @@ module.exports = internal.dbAdminInsert = class {
   }  
   
   async _insertControlState(params, postData) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var query = 'insert into controlstate (userid, controlgroup, state)' +
                 'values (' +
@@ -317,7 +254,7 @@ module.exports = internal.dbAdminInsert = class {
                 ')';
     
     console.log(query);
-    var queryResults = await this._dbQuery(query);
+    var queryResults = await this._dbManager.dbQuery(query);
 
     if (queryResults.success) {
       result.success = true;

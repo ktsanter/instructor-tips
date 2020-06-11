@@ -7,25 +7,16 @@
 const internal = {};
 
 module.exports = internal.dbAdminQuery = class {
-  constructor(mariadb, dbName, userManagement, hostName) {
-    this._mariadb = mariadb
-    
-    this._pool = mariadb.createPool({
-      host: hostName, //'localhost',
-      user: 'root',
-      password: 'SwordFish002',
-      connectionLimit: 5  
-    });
-    
-    this._dbName = dbName;
+  constructor(userManagement, dbManager) {
     this._userManagement = userManagement;
+    this._dbManager = dbManager
   }
   
 //---------------------------------------------------------------
 // query dispatcher
 //---------------------------------------------------------------
   async doQuery(params, postData, sessionInfo) {
-    var dbResult = this._queryFailureResult();
+    var dbResult = this._dbManager.queryFailureResult();
 
     if (params.queryName == 'privileges') {
       dbResult = await this._getPrivileges(params);
@@ -65,64 +56,10 @@ module.exports = internal.dbAdminQuery = class {
   }
 
 //---------------------------------------------------------------
-// general query functions
-//---------------------------------------------------------------
-  _queryFailureResult() {
-    return {success: false, details: 'db query failed', data: null, constraints: null};
-  }
-      
-  async _dbQueries(queryList) {
-    var queryResults = {
-      success: true,
-      details: 'queries succeeded',
-      data: {}
-    };
-    
-    for (var key in queryList) {
-      var singleResult = await this._dbQuery(queryList[key]);
-      if (!singleResult.success) {
-        queryResults.success = false;
-        queryResults.details = 'DB query failed (' + key +') ' + singleResult.details;
-        
-      } else {
-        queryResults.data[key] = singleResult.data;
-      }
-    }
-          
-    return queryResults;
-  }  
-
-  async _dbQuery(sql) {
-    var conn;
-    var dbResult = this._queryFailureResult();
-
-    try {
-        conn = await this._pool.getConnection();
-        await conn.query('USE ' + this._dbName);
-        const rows = await conn.query(sql);
-        dbResult.success = true;
-        dbResult.details = 'db request succeeded';
-        dbResult.data = [];
-        for (var i = 0; i < rows.length; i++) {
-          dbResult.data.push(rows[i]);
-        }
-        
-    } catch (err) {
-      dbResult.details = err;
-      //throw err;
-      
-    } finally {
-      if (conn) conn.release();
-    }
-    
-    return dbResult;
-  }
-
-//---------------------------------------------------------------
 // specific query functions
 //---------------------------------------------------------------
   async _getPrivileges(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       privileges: 
@@ -131,7 +68,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by privilegename'
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -150,7 +87,7 @@ module.exports = internal.dbAdminQuery = class {
   }
   
   async _getUsers(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       users: 
@@ -159,7 +96,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by username'
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -181,7 +118,7 @@ module.exports = internal.dbAdminQuery = class {
   }
     
   async _getUserPrivileges(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       userprivileges: 
@@ -200,7 +137,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by privilegename'
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -228,7 +165,7 @@ module.exports = internal.dbAdminQuery = class {
   }
   
   async _getTips(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       tips:
@@ -243,7 +180,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by username'
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -271,7 +208,7 @@ module.exports = internal.dbAdminQuery = class {
   }
   
   async _getCategories(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       categories:
@@ -281,7 +218,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by c.categorytext '
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -302,7 +239,7 @@ module.exports = internal.dbAdminQuery = class {
   }
   
   async _getSchedules(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       schedules: 
@@ -317,7 +254,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by username'
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -345,7 +282,7 @@ module.exports = internal.dbAdminQuery = class {
   }
 
   async _getScheduleTips(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       scheduletips: 
@@ -367,7 +304,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by tiptext'
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -398,7 +335,7 @@ module.exports = internal.dbAdminQuery = class {
   }
 
   async _getNavbar(params, sessionInfo) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var allowAdmin = this._userManagement.isAtLeastPrivilegeLevel(sessionInfo, 'admin');
     result.success = true;
@@ -410,7 +347,7 @@ module.exports = internal.dbAdminQuery = class {
   }
   
   async _getTipCategories(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       tipcategories: 
@@ -429,7 +366,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by categorytext'
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
@@ -457,7 +394,7 @@ module.exports = internal.dbAdminQuery = class {
   }  
 
   async _getControlStates(params) {
-    var result = this._queryFailureResult();
+    var result = this._dbManager.queryFailureResult();
     
     var queryList = {
       controlstates: 
@@ -472,7 +409,7 @@ module.exports = internal.dbAdminQuery = class {
         'order by userid'
     };
     
-    var queryResults = await this._dbQueries(queryList);
+    var queryResults = await this._dbManager.dbQueries(queryList);
     
     if (queryResults.success) {
       result.success = true;
