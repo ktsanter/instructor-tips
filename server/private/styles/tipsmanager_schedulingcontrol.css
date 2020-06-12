@@ -17,6 +17,11 @@
   text-overflow: ellipsis;  
 }
 
+.schedulecontrol .schedulecontrol-ui .schedulecontrol-selectmessage {
+  font-style: italic;
+  padding-left: 1.0em;
+}
+
 .schedulecontrol .schedulecontrol-options {
   display: inline-block;
   background-color: white;

@@ -110,6 +110,14 @@ const gMailerClass = require('./classes/gmailer');
 const gMailer = new gMailerClass(nodemailer);
 
 //------------------------------------------
+// cron management
+//------------------------------------------
+var commonmark = require('commonmark');
+var cron = require('cron');
+const cronSchedulerClass = require('./classes/cronscheduler')
+const cronScheduler = new cronSchedulerClass(cron, mariaDBManager, gMailer, commonmark);
+
+//------------------------------------------
 // user management
 //------------------------------------------
 const userManagementClass = require('./classes/usermanagement')

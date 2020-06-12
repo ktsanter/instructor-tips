@@ -193,3 +193,11 @@
   color: white;
   background-color: var(--bgSecondaryChoice);
 }  
+
+.tipshare .dialogcontainer .dialogcontainer-sub {
+  width: 50%;
+}
+
+.tipshare .dialogcontainer .dialogcontainer-sub .dialogcontainer-input {
+  width: 100%;
+}

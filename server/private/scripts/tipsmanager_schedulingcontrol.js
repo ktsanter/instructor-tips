@@ -128,7 +128,10 @@ class TipManagerSchedulingControl {
     subsubcontainer.appendChild(CreateElement.createIcon(null, 'schedulecontrol-icon subicon delete far fa-trash-alt trash', 'delete this schedule', handler));
     
     var handler = (e) => {return this._handleScheduleSelect(e);};
-    container.appendChild(CreateElement.createSelect(null, 'schedulecontrol-select select-css', handler, valueList));
+    var elemSelect = CreateElement.createSelect(null, 'schedulecontrol-select select-css', handler, valueList);
+    container.appendChild(elemSelect);
+    
+    container.appendChild(CreateElement.createSpan(null, 'schedulecontrol-selectmessage'));
 
     handler = (e) => {return this._handleBrowseTips(e);};   
     var elemBrowse = CreateElement.createSliderSwitch('browse tips', 'browse tips', 'schedulecontrol-browse', handler, false);
@@ -178,6 +181,10 @@ class TipManagerSchedulingControl {
         CreateElement.setSliderValue(elemBrowse, state.scheduleid && state.showbrowse);
         elemBrowse.style.visibility = state.scheduleid ? 'visible' : 'hidden';
       }
+      
+      var elemSelectMessage = this._container.getElementsByClassName('schedulecontrol-selectmessage')[0];
+      var msg = (valueList.length == 0 ? 'you currently have no schedules' : '');
+      elemSelectMessage.innerHTML = msg;
     }
   }
   
