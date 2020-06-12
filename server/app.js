@@ -15,6 +15,8 @@ const SESSION_PASSWORD = getEnv('SESSION_PASSWORD', true);
 const SESSION_DBNAME = getEnv('SESSION_DBNAME', true);
 const SESSION_SECRET = getEnv('SESSION_SECRET', true);
 
+const INSTRUCTORTIPS_URL = getEnv('INSTRUCTORTIPS_URL', true);
+
 function getEnv(varName, required) {
   var value = process.env[varName];
   if (required && !value) {
@@ -115,7 +117,7 @@ const gMailer = new gMailerClass(nodemailer);
 var commonmark = require('commonmark');
 var cron = require('cron');
 const cronSchedulerClass = require('./classes/cronscheduler')
-const cronScheduler = new cronSchedulerClass(cron, mariaDBManager, gMailer, commonmark);
+const cronScheduler = new cronSchedulerClass(cron, mariaDBManager, gMailer, commonmark, INSTRUCTORTIPS_URL);
 
 //------------------------------------------
 // user management

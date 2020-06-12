@@ -19,13 +19,14 @@
 const internal = {};
 
 module.exports = internal.CronScheduler = class {
-  constructor(cron, dbManager, mailer, commonmark) {
+  constructor(cron, dbManager, mailer, commonmark, appURL) {
     this._showMessages = true;
     
     this._cron = cron;
     this._dbManager = dbManager;
     this._mailer = mailer;
     this._commonmark = commonmark;
+    this._appURL = appURL;
     
     this._jobList = {};
     this._createInitialJobs();
@@ -100,6 +101,15 @@ module.exports = internal.CronScheduler = class {
     }
   }
   
+  isRunning(jobName) {
+    if (!this._jobExists(jobName)) {
+      console.log('**isRunning: job does not exist: ' + jobName);
+      return false;
+    }
+    
+    return this._jobList['schedulepush'].job.running;
+  }
+  
 //---------------------------------------------------------------
 // private methods
 //---------------------------------------------------------------
@@ -150,11 +160,8 @@ module.exports = internal.CronScheduler = class {
     var msFromStart = Date.now() - schedStartDate;
     var weeksFromStart = ((((msFromStart / 1000) / 60) / 60) / 24) / 7;
     var weekIndex = 0;
-    if (weeksFromStart > 0) weekIndex = Math.ceil(weeksFromStart);
-    if (weekIndex > scheduleInfo.schedulelength) {
-      console.log('CronScheduler: schedule ' + scheduleInfo.scheduleid + ' is past the last week');
-      return;  // schedule is past last date - send notification?  turn off notification?
-    }
+    if (weeksFromStart >= 0) weekIndex = Math.ceil(weeksFromStart);
+    if (weekIndex > scheduleInfo.schedulelength) weekIndex = -1;
     
     var queryList, queryResults;
     
@@ -184,20 +191,63 @@ module.exports = internal.CronScheduler = class {
     var tips = queryResults.data.tips;
 
     me._sendNotificationEmail(me, {
+      appURL: me._appURL,
       scheduleName: scheduleInfo.schedulename,
       email: queryResults.data.user[0].email,
-      tipList: queryResults.data.tips
+      tipList: queryResults.data.tips,
+      beforeBeginning: weekIndex == 0,
+      pastEnd: weekIndex < 0
     });
   }
   
   _sendNotificationEmail(me, params) {
-    console.log('send notification email to: ' + params.email);
-    console.log('  schedule: ' + params.scheduleName);
-    console.log('  tips: ');
-    for (var i = 0; i < params.tipList.length; i++) {
-      var tipText = params.tipList[i].tiptext;
-      console.log('  ' + me._convertToHTML(tipText, me._commonmark));
+    var htmlURL = '<a href=' + params.appURL + '>instructorTips</a>';
+    var destEmail = params.email;
+    var msgSubject = 'InstructorTips weekly reminder';
+    var msgBody = '';
+    
+    msgBody += '<div>';
+    msgBody +=   'This is a weekly reminder from ' + htmlURL + ' for "' + params.scheduleName + '"';
+    msgBody += '</div>';
+    
+    if (params.pastEnd) {
+      msgBody += '<div>';
+      msgBody +=   'The current date is later than the end date for your schedule so there are no reminders. ';
+      msgBody +=   'You can use the Notification option in InstructorTips to disable notifications for this schedule.';
+      msgBody += '</div>';
+      
+    } else if (params.tipList.length == 0) {
+      msgBody += '<div>';
+      msgBody +=   'There are no incomplete tips for this week. ';
+      msgBody += '</div>';
+      
+    } else {
+      if (params.beforeBeginning) {
+        msgBody += '<div>';
+        msgBody +=   'Note: these tips are from the "before the term starts" section of your schedule. ';
+        msgBody += '</div>';
+      }
+      
+      msgBody += '<div>';
+      msgBody += '<div>';
+      msgBody +=   'These tips for the week have yet to be marked complete: ';
+      msgBody += '</div>';
+
+      var htmlTips = '';
+      for (var i = 0; i < params.tipList.length; i++) {
+        var tipText = params.tipList[i].tiptext;
+        htmlTips += '<div>';
+        htmlTips += me._convertToHTML(tipText, me._commonmark);
+        htmlTips += '</div>';
+      }
+      msgBody += htmlTips;
+      
+      msgBody += '</div>'
     }
+    
+    console.log('\nto: ' + params.email);    
+    console.log('subject: ' + msgSubject);
+    console.log('body:\n' + msgBody);
   }
   
   

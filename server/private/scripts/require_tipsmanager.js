@@ -5,6 +5,7 @@ define(function (require) {
   require('tipsmanager_share');
   require('tipsmanager_editing');
   require('tipsmanager_profile');
+  require('tipsmanager_cron');
 
   require('tipsmanager_schedulingcontrol');
   require('tipsmanager_tipbrowse');

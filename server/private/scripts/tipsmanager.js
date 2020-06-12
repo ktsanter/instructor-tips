@@ -17,10 +17,10 @@ const app = function () {
     
     navOptions: [
       'scheduling', 'share', 'notification', 'editing',
-      'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates',
+      'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates', 'cron',
       'profile'
     ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'categories', 'tips', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates']
+    adminTypes: ['privileges', 'users', 'userprivileges', 'categories', 'tips', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates', 'cron']
   };
   
 	//---------------------------------------
@@ -96,7 +96,8 @@ const app = function () {
             {label: 'TipCategory', callback: () => {return _navDispatch('tipcategories');}},
             {label: 'Schedule', callback: () => {return _navDispatch('admin_schedules');}},
             {label: 'ScheduleTip', callback: () => {return _navDispatch('scheduletips');}},
-            {label: 'ControlState', callback: () => {return _navDispatch('controlstates');}}
+            {label: 'ControlState', callback: () => {return _navDispatch('controlstates');}},
+            {label: 'Cron', callback: () => {return _navDispatch('cron');}}
           ]
         }
       );
@@ -129,8 +130,12 @@ const app = function () {
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
       var type = settings.adminTypes[i];
-      settings[type] = new DBAdminContainer(type);
-      container.appendChild(settings[type].render());
+      if (type == 'cron') {
+        settings[type] = new TipCron();
+      } else {
+        settings[type] = new DBAdminContainer(type);
+      }
+      container.appendChild(await settings[type].render());
     }
     
     return container;

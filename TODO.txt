@@ -5,7 +5,10 @@
 - figure out how to do password change
   - need full-fledged HTML form (?)
 
-- add reminder notifications (cron style)
+- push notifications
+  - finish message formatting
+  - consider grouping by target
+  - add admin UI for enabling/disabling
 
 - discuss SQL setup with Noah
 

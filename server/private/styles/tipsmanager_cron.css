@@ -1,0 +1,13 @@
+/*-------------------------------------------------------------------
+ * styling for TipCron class
+ *------------------------------------------------------------------*/
+.tipcron {
+  position: relative;
+  --itemBorder: #dddd;
+}
+
+.tipcron.tipcron-hide {
+  display: none;
+}
+
+.tipcron .tipcron-contents {}
