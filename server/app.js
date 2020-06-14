@@ -190,15 +190,17 @@ app.post('/change_password', async function (req, res) {
 // GET requests
 //------------------------------------------------------
 app.get('/styles/:stylesheet', function (req, res) {
-    res.sendFile(path.join(__dirname, 'private', 'styles/' + req.params.stylesheet))
+  res.sendFile(path.join(__dirname, 'private', 'styles/' + req.params.stylesheet))
 })
 
 app.get('/scripts/:script', function (req, res) {
-    res.sendFile(path.join(__dirname, 'private', 'scripts/' + req.params.script))
+  res.sendFile(path.join(__dirname, 'private', 'scripts/' + req.params.script))
 })
 
-app.get('/help.html', function (req, res) {
-    res.sendFile(path.join(__dirname, 'private', 'help.html'))
+app.get('/help/:helpfile', function (req, res) {
+  console.log('** help');
+  console.log(req.params.helpfile);
+  res.sendFile(path.join(__dirname, 'private', 'help/' + req.params.helpfile))
 })
 
 // InstructorTips admin

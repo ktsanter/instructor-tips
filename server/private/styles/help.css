@@ -9,47 +9,41 @@ body {
 	font-size: 13px;
 }
 
-.title-container {
-  background-color: var(--bgPrimaryEmphasis);
-  margin-top: -8px;
-  padding-bottom: 2px;
-  padding-top: 3px;  
+.instructortips-help {}
+
+.instructortips-help .help-contents {
+  width: 100%;
+  margin-top: 2.8em;
 }
 
-.title {
-  display: inline-block;
-  color: white;
-  font-size: 1.1em;
-  border: 1px solid white;
-  border-radius: 6px;
-  margin: 4px;
-  padding-left: 3px;
-  padding-right: 3px;  
+.instructortips-help .help-contents .help-subcontents {
+  border: none;
+  width: 100%;
 }
 
-.about-container {
-  display: inline-block;
-  background-color: white;
-  margin-top: 8px;
-  padding: 8px 8px;
-  border: 1px solid var(--bgTertiaryEmphasis);
+.instructortips-help .help-contents .help-subcontents.help-hideme {
+  display: none;
 }
 
-.about-logosplash {
-  padding-bottom: 3px;
+/*-------------------------------------------------------------
+ * scrollbar
+ *------------------------------------------------------------*/
+body::-webkit-scrollbar {
+  width: 16px;
 }
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bgTertiaryEmphasis) var(--bgQuaternaryEmphasis);
+}
+body::-webkit-scrollbar-track {
+  background: var(--bgQuaternaryEmphasis);
+}
+body::-webkit-scrollbar-thumb {
+  background-color: var(--bgTertiaryEmphasis) ;
+  border-radius: 8px;
+  border: 3px solid var(--bgQuaternaryEmphasis);
+} 
 
-.about-logo {
-  font-size: 1.4em;
-  padding-right: 0.2em;
-}
-
-.about-logotitle {
-  font-size: 1.2em;
-  font-weight: bold;
-}
-
-.contents-container {
-  margin-top: 1em;
-  font-style: italic;
-}
+body::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bgPrimaryEmphasis_trans);
+} 

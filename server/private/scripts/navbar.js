@@ -23,19 +23,21 @@ class NavigationBar {
     elemList.appendChild(elemItem);
     
     var hamburgeritems = this._config.hamburgeritems;
-    var classList = 'navbar-item dropdown navbar-item-right';
-    elemItem = CreateElement._createElement('li', null, classList);
-    elemList.appendChild(elemItem);
+    if (hamburgeritems.length > 0) {
+      var classList = 'navbar-item dropdown navbar-item-right';
+      elemItem = CreateElement._createElement('li', null, classList);
+      elemList.appendChild(elemItem);
         
-    elemItem.appendChild(CreateElement.createIcon(null, 'dropbtn fas fa-bars hamburger-btn'));
+      elemItem.appendChild(CreateElement.createIcon(null, 'dropbtn fas fa-bars hamburger-btn'));
     
-    var elemDiv = CreateElement.createDiv(null, 'dropdown-content hamburger', '');
-    elemItem.appendChild(elemDiv);
-    for (var i = 0; i < hamburgeritems.length; i++) {
-      var subitem = hamburgeritems[i];
-      var elemSubitem = CreateElement.createDiv(null, null, subitem.label);
-      elemDiv.appendChild(elemSubitem);
-      elemSubitem.addEventListener('click', this._makeHamburgerItemCallback(this, subitem.callback, subitem.markselected));
+      var elemDiv = CreateElement.createDiv(null, 'dropdown-content hamburger', '');
+      elemItem.appendChild(elemDiv);
+      for (var i = 0; i < hamburgeritems.length; i++) {
+        var subitem = hamburgeritems[i];
+        var elemSubitem = CreateElement.createDiv(null, null, subitem.label);
+        elemDiv.appendChild(elemSubitem);
+        elemSubitem.addEventListener('click', this._makeHamburgerItemCallback(this, subitem.callback, subitem.markselected));
+      }
     }
     
     for (var i = 0; i < this._config.items.length; i++) {

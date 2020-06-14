@@ -54,10 +54,11 @@ class TipNotification {
     
     container.appendChild(this._renderSectionTitle('shared schedules'));
     
+    container.appendChild(CreateElement.createDiv(null, 'tipnotification-sharelabel', 'Receive notification when a schedule is shared with you'));
+
     var handler = (e) => {this._handleShareChange(e);}
     var elem = CreateElement.createSliderSwitch('yes', 'no', 'tipnotification-sharecontrol', handler);
     container.appendChild(elem);
-    container.appendChild(CreateElement.createDiv(null, 'tipnotification-sharelabel', 'Receive notification when a schedule is shared with you'));
     
     return container;
   }

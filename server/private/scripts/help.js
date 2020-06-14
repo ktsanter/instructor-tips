@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------
-// help page for Instructor Tips "Tips Manager" tool
+// help page for InstructorTips "Tips Manager" tool
 //-------------------------------------------------------------------
 // TODO: 
 //-------------------------------------------------------------------
@@ -7,16 +7,17 @@
 const app = function () {
   const appInfo = {
     appVersion: '0.56',
-    appName: 'InstructorTips',
+    appName: 'InstructorTips help',
     appAuthor: 'Kevin Santer',
     appContact: 'ksanter@michiganvirtual.org',
-    appEmail: 'mailto:ksanter@michiganvirtual.org',
-    helpURL: 'help.html'
+    appEmail: 'mailto:ksanter@michiganvirtual.org'
   };
   
 	const page = {};
   
-	const settings = {};
+	const settings = {
+    optionList: ['home', 'scheduling', 'tipediting', 'sharing', 'notification']
+  };
   
 	//---------------------------------------
 	// get things going
@@ -26,93 +27,71 @@ const app = function () {
     page.body.classList.add('instructortips-colorscheme');
     
     page.body.appendChild(_renderPage());
+    _navDispatch('home');
 	}
 	
 	//-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------  
   function _renderPage() {
-    var container = CreateElement.createDiv(null, null);
-    
-    container.appendChild(_renderTitle());
-    container.appendChild(_renderAbout());
+    var container = CreateElement.createDiv(null, 'instructortips-help');
+
+    container.appendChild(_renderNavbar());
     container.appendChild(_renderContents());
     
     return container;
   }
   
-  function _renderTitle() {
-    var container = CreateElement.createDiv(null, 'title-container');
-    
-    var titleLabel = CreateElement.createDiv(null, 'title', appInfo.appName + ' help');
-    container.appendChild(titleLabel);
-    
-    return container;
-  }
-  
-  function _renderAbout() {
-    var container = CreateElement.createDiv(null, 'about-container');
-    
-    container.appendChild(_renderLogoSplash());
-    container.appendChild(_renderVersion());
-    container.appendChild(_renderAuthor());
-    
-    return container;    
+  function _renderNavbar() {
+    var navConfig = {
+      title: appInfo.appName,
+      
+      items: [
+        {label: 'Home', callback: () => {return _navDispatch('home');}, subitems: null, rightjustify: false},
+        {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
+        {label: 'Tip editing', callback: () => {return _navDispatch('tipediting');}, subitems: null, rightjustify: false},
+        {label: 'Sharing', callback: () => {return _navDispatch('sharing');}, subitems: null, rightjustify: false},
+        {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false}
+      ],
+      
+      hamburgeritems: []
+    };
+        
+    return (new NavigationBar(navConfig)).render();
   }
   
   function _renderContents() {
-    var container = CreateElement.createDiv(null, 'contents-container');
+    var container = CreateElement.createDiv(null, 'help-contents');
     
-    container.appendChild(_renderHelp());
-    
-    return container;    
-  }
-
-  function _renderLogoSplash() {
-    var container = CreateElement.createDiv(null, 'about-logosplash');
-    
-    container.appendChild(CreateElement.createIcon(null, 'about-logo far fa-lightbulb'));
-    container.appendChild(CreateElement.createSpan(null, 'about-logotitle', appInfo.appName));
-    
-    return container;
-  }
-  
-  function _renderVersion() {
-    var container = CreateElement.createDiv(null, 'about-version');
-    
-    container.appendChild(CreateElement.createSpan(null, 'about-label', 'version '));
-    container.appendChild(CreateElement.createSpan(null, 'about-infoitem', appInfo.appVersion));
+    for (var i = 0; i < settings.optionList.length; i++) {
+      var opt = settings.optionList[i];
+      var classList = 'help-subcontents help-' + opt;
+      var url = 'help_' + opt + '.html';
+      var elem = CreateElement.createIframe(null, classList, url, null, null, false);
+      container.appendChild(elem);
+      page[opt] = elem;
+      elem.addEventListener('load', (e) => {_resizeIframe(e.target);});
+    }
     
     return container;
   }
   
-  function _renderAuthor() {
-    var container = CreateElement.createDiv(null, 'about-author');
-
-    container.appendChild(CreateElement.createSpan(null, 'about-infoitem', appInfo.appAuthor));
-    
-    var emailContainer = CreateElement.createSpan(null, 'about-infoitem');
-    container.appendChild(emailContainer);
-    
-    emailContainer.appendChild(CreateElement.createSpan(null, null, ' ('));
-    emailContainer.appendChild(CreateElement.createLink(null, 'about-infoitem', appInfo.appContact, null, appInfo.appEmail)); 
-    emailContainer.appendChild(CreateElement.createSpan(null, null, ')'));
-
-    return container;
-  }
-  
-  function _renderHelp() {
-    var container = CreateElement.createDiv(null, 'contents-container');
-
-    container.appendChild(CreateElement.createDiv(null, null, 'content TBD'));
-    
-    return container;
-  }
- 
+  function _resizeIframe(elemIframe) {
+    elemIframe.style.height = elemIframe.contentWindow.document.documentElement.scrollHeight + 'px';
+  }  
   
   //---------------------------------------
 	// handlers
 	//----------------------------------------
+  function _navDispatch(arg) {
+    for (var i = 0; i < settings.optionList.length; i++) {
+      var opt = settings.optionList[i];
+      UtilityKTS.setClass(page[opt], 'help-hideme', true);
+    }
+    
+    UtilityKTS.setClass(page[arg], 'help-hideme', false);
+    _resizeIframe(page[arg]);
+  }
   
   //---------------------------------------
 	// return from wrapper function
