@@ -11,7 +11,7 @@ module.exports = internal.GMailer = class {
   constructor(nodemailer, credentials) {
     this._nodemailer = nodemailer;
     this.DEBUG_ON = true;  // true => content printed to console rather than mailed
-    this.SHOW_IN_CONSOLE = true; // true => print message to console
+    this.SHOW_IN_CONSOLE = false; // true => print message parameters to console
     
     this._transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -37,7 +37,7 @@ module.exports = internal.GMailer = class {
     };
     
     if (this.DEBUG_ON) {
-      console.log('GMailer.sendMessage: debug mode on - message not sent');
+      console.log('GMailer.sendMessage: debug mode on -> message not mailed');
       if (this.SHOW_IN_CONSOLE) {
         console.log('\nsendMessage (debug)');
         console.log('from: ' + mailOptions.from);

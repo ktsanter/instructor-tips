@@ -48,10 +48,14 @@ ul.navbar {
 }
 
 .navbar li.navbar-item:not(.navbar-selected):hover {
-  background-color: var(--bgPrimaryChoice);
+  background-color: var(--bgTertiaryChoice);
 }
 
 .navbar li.navbar-item.navbar-title:hover {
+  background-color: transparent;
+}
+
+.navbar li.navbar-item.navbar-disabled:hover {
   background-color: transparent;
 }
 
@@ -90,7 +94,8 @@ ul.navbar {
 }
 
 .navbar .dropdown-content div:hover {
-  background-color: var(--bgTertiaryEmphasis);
+  color: white;
+  background-color: var(--bgTertiaryChoice);
 }
 
 .navbar .dropdown:hover .dropdown-content {

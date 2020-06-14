@@ -2,10 +2,7 @@
  * styling for TipManagerSchedulingControl class
  *------------------------------------------------------------------*/
 
-.schedulecontrol {
-  padding: 2px 0px;
-  margin-bottom: 14px;
-}
+.schedulecontrol {}
 
 .schedulecontrol-hide {
   display: none;

@@ -6,7 +6,7 @@
 
 const app = function () {
   const appInfo = {
-    appVersion: '0.01',
+    appVersion: '0.56',
     appName: 'InstructorTips',
     appAuthor: 'Kevin Santer',
     appContact: 'ksanter@michiganvirtual.org',

@@ -20,7 +20,8 @@ const internal = {};
 
 module.exports = internal.CronScheduler = class {
   constructor(cron, dbManager, mailer, commonmark, appURL) {
-    this._showMessages = true;
+    this.DEBUG = true;  
+    this.SHOW_MESSAGES = true;
     
     this._cron = cron;
     this._dbManager = dbManager;
@@ -56,7 +57,7 @@ module.exports = internal.CronScheduler = class {
 // public methods
 //---------------------------------------------------------------
   createJob(jobParams) {
-    if (this._showMessages) console.log('CronScheduler: createJob ' + jobParams.jobName + ' ' + jobParams.fireTime + ' ' + this._getDateStamp());
+    if (this.SHOW_MESSAGES) console.log('CronScheduler.createJob: ' + jobParams.jobName + ' ' + jobParams.fireTime + ' ' + this._getDateStamp());
 
     var job = new this._cron.CronJob(
       jobParams.fireTime,
@@ -73,9 +74,9 @@ module.exports = internal.CronScheduler = class {
   }
   
   startJob(jobName) {
-    if (this._showMessages) console.log('CronScheduler: startJob ' + jobName + ' ' + this._getDateStamp());
+    if (this.SHOW_MESSAGES) console.log('CronScheduler.startJob: ' + jobName + ' ' + this._getDateStamp());
     if (!this._jobExists(jobName)) {
-      console.log('**failed to start job: ' + jobName);
+      console.log('CronScheduler.startJob: **error: failed to start job ' + jobName + ' ' + this._getDateStamp());
       return false;
     }
     
@@ -84,9 +85,9 @@ module.exports = internal.CronScheduler = class {
   }
   
   stopJob(jobName) {
-    if (this._showMessages) console.log('CronScheduler: stopJob ' + jobName + ' ' + this._getDateStamp());
+    if (this.SHOW_MESSAGES) console.log('CronScheduler.stopJob: ' + jobName + ' ' + this._getDateStamp());
     if (!this._jobExists(jobName)) {
-      console.log('**failed to stop job: ' + jobName);
+      console.log('CronScheduler.stopJob: **error: failed to stop job ' + jobName + ' ' + this._getDateStamp());
       return false;
     }
     
@@ -95,7 +96,7 @@ module.exports = internal.CronScheduler = class {
   }
   
   stopAllJobs() {
-    if (this._showMessages) console.log('CronScheduler: stopAllJobs' + ' ' + this._getDateStamp());
+    if (this.SHOW_MESSAGES) console.log('CronScheduler.stopAllJobs: ' + ' ' + this._getDateStamp());
     for (var jobName in this._jobList) {
       this.stopJob(jobName);
     }
@@ -103,7 +104,7 @@ module.exports = internal.CronScheduler = class {
   
   isRunning(jobName) {
     if (!this._jobExists(jobName)) {
-      console.log('**isRunning: job does not exist: ' + jobName);
+      console.log('CronScheduler.isRunning: **error job does not exist ' + jobName + ' ' + this._getDateStamp());
       return false;
     }
     
@@ -121,9 +122,10 @@ module.exports = internal.CronScheduler = class {
 // callbacks
 //--------------------------------------------------------------      
   async _doSchedulePushNotifications(me) {    
-    /*-- while testing --*/
-    me.stopJob('schedulepush');
-    /*-------------------*/
+    if (this.DEBUG) {
+      console.log('CronScheduler._doSchedulePushNotifications: debug mode on -> stopping job after one run');
+      me.stopJob('schedulepush');
+    }
     
     var query, queryResults;
     
@@ -278,7 +280,7 @@ module.exports = internal.CronScheduler = class {
       
       schedulename: '<div class=\'schedulename\' style="' +
         'color: white;' +
-        'background-color: #8d8741;' +
+        'background-color: rgba(66, 98, 150, 1.0);' +
         'padding: 0.2em 0.2em 0.3em 0.2em;' +
       '">',
       
@@ -292,7 +294,7 @@ module.exports = internal.CronScheduler = class {
       
       tipsforweeklabel: '<div class=\'tipsforweeklabel\' style="' +
         'color: white;' +
-        'background-color: #8d8741;' +
+        'background-color: rgba(66, 98, 150, 1.0);' +
         'display: inline;' +
         'padding: 0 0.3em 0.1em 0.3em;' +
       '">',

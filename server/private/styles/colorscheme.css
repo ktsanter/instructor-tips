@@ -4,12 +4,12 @@
 
 .instructortips-colorscheme {
   --bgOverall: #eee; /*-- very light gray --*/
-  --bgPrimaryEmphasis: #8d8741;  /*-- khaki green --*/
-  --bgPrimaryEmphasis_trans: rgba(141,135,65, 0.6);
+  --bgPrimaryEmphasis: rgba(66, 98, 150, 1.0);   /*-- medium-dark blue --*/
+  --bgPrimaryEmphasis_trans: rgba(66, 98, 150, 0.6);
   --bgSecondaryEmphasis: #daad86;  /*-- medium sand --*/
   --bgTertiaryEmphasis: #c9c9c9;  /*-- medium gray --*/
   --bgQuaternaryEmphasis: #f2f2f2; /*-- light gray --*/
-  --bgPrimaryChoice:  #bc986a;  /*-- dark sand --*/
-  --bgSecondaryChoice: #659dbd;  /*-- dusty light blue --*/
-  --bgTertiaryChoice: #fbeec1;  /*-- light sand --*/
+  --bgPrimaryChoice:  #111111; /* #bc986a;*/  /*-- dark sand --*/
+  --bgSecondaryChoice: var(--bgPrimaryEmphasis);
+  --bgTertiaryChoice: #6093e5;  /*-- light blue --*/
 }

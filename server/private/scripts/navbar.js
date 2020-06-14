@@ -48,7 +48,11 @@ class NavigationBar {
         elemItem = CreateElement._createElement('li', null, classList);
         elemList.appendChild(elemItem);
         elemItem.innerHTML = item.label;
-        elemItem.addEventListener('click', this._makeMainItemCallback(this, item.callback));
+        if (item.callback) {
+          elemItem.addEventListener('click', this._makeMainItemCallback(this, item.callback));
+        } else {
+          elemItem.classList.add('navbar-disabled');
+        }
         
       } else {
         classList += ' dropdown';
@@ -91,9 +95,11 @@ class NavigationBar {
   
   _makeMainItemCallback(me, origCallback) {
     return function(e) { 
-      var elemMainItem = e.target;
-      me._setSelectedItem(elemMainItem);
-      origCallback();
+      if (origCallback) {
+        var elemMainItem = e.target;
+        me._setSelectedItem(elemMainItem);
+        origCallback();
+      }
     }
   }
 
