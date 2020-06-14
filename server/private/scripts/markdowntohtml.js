@@ -33,7 +33,10 @@ class MarkdownToHTML {
       result = result.substring(3);
       result = result.substring(0, result.length-5);
     }
-
+    if (result.indexOf('tilde') >= 0) {
+      console.log('orig: ' + str);
+      console.log('result: ' + result);
+    }
     result = MarkdownToHTML._replaceAll(result, '&amp;amp;', '&');
 
     return result;

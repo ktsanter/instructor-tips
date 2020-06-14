@@ -5,10 +5,8 @@
 - figure out how to do password change
   - need full-fledged HTML form (?)
 
-- push notifications
-  - finish message formatting
-  - consider grouping by target
-  - add admin UI for enabling/disabling
-
 - discuss SQL setup with Noah
+
+- build help page
+  - include Markdown section
 

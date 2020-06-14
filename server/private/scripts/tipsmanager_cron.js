@@ -41,11 +41,15 @@ class TipCron {
   _renderContents() {
     var container = CreateElement.createDiv(null, 'tipcron-contents');
     
-    container.appendChild(CreateElement.createDiv(null, 'tipcron-statuslabel', 'push notification job'));
-    var subcontainer = CreateElement.createDiv(null, 'tipcron-status');
+    var subcontainer = CreateElement.createDiv(null, 'tipcron-statuslabel');
+    container.appendChild(subcontainer);
+    subcontainer.appendChild(CreateElement.createDiv(null, 'tipcron-statuslabeltext', 'push notification job'));
+    
+    subcontainer = CreateElement.createDiv(null, 'tipcron-status');
     container.appendChild(subcontainer);
     
-    var elemStatus = CreateElement.createSliderSwitch('enabled', 'disabled', 'tipcron-statuscontrol', null, false);
+    var handler = (e) => {this._handleSwitchChange(e);};
+    var elemStatus = CreateElement.createSliderSwitch('enabled', 'disabled', 'tipcron-statuscontrol', handler, false);
     subcontainer.appendChild(elemStatus);    
     
     return container;
@@ -69,55 +73,51 @@ class TipCron {
   }
 
   async update() {
-    console.log('TipCron.update');
-    /*
-    var state = await this._loadStateFromDB();
+    console.log('update');
+    var state = await this._loadStateFromServer();
    
-    if (state) {
-    }
-    */
+    if (state) this._setUIState(state);
   }
   
   //--------------------------------------------------------------
   // process state
   //--------------------------------------------------------------
-  _getStateFromControls() {
-    /*
-    var elemEmail = this._container.getElementsByClassName('tipprofile-emailinput')[0];
-    
-    var state = {
-      email: elemEmail.value
-    };
-
-    return state;
-    */
-  }
-  
-  async _loadStateFromDB() {
-    /*
+  async _loadStateFromServer() {
     var state = null;
     
-    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'profile', this._notice);
+    var queryResults = await SQLDBInterface.doGetQuery('admin/query', 'cronstatus', this._notice);
     if (queryResults.success) {
       state = queryResults.data;
     };
+    console.log('_loadStateFromServer: ' + JSON.stringify(state));
     
     return state;
-    */
-  }
-  
-  async _saveStateToDB(state) {
-    /*
-    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'profile', state, this._notice);
-    
-    return queryResults.success;
-    */
   }
  
+  async _setServerState() {
+    console.log('_setServerState');
+    var elemSwitch = this._container.getElementsByClassName('tipcron-statuscontrol')[0];
+    var queryData = {
+      enableJob: CreateElement.getSliderValue(elemSwitch)
+    };
+
+    var queryResults = await SQLDBInterface.doPostQuery('admin/update', 'cronstatus', queryData, this._notice);
+  }
+
+  _setUIState(newState) {
+    console.log('_setUIState');
+    var  elemSwitch = this._container.getElementsByClassName('tipcron-statuscontrol')[0];
+    CreateElement.setSliderValue(elemSwitch, newState.isRunning);
+  }
+     
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
-    
+  async _handleSwitchChange(e) {
+    await this._setServerState();
+    await this.update();
+  }
+  
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  

@@ -531,7 +531,7 @@ class DialogContainer {
   _sanitizeText(str) {
     var cleaned = str.replace(/"/g, '\\"');  // escape double quotes
     cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
-    cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
+    //cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
     
     return cleaned;
   }

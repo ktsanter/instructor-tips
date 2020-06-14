@@ -8,23 +8,56 @@
 const internal = {};
 
 module.exports = internal.GMailer = class {
-  constructor(nodemailer) {
+  constructor(nodemailer, credentials) {
     this._nodemailer = nodemailer;
+    this.DEBUG_ON = true;  // true => content printed to console rather than mailed
+    this.SHOW_IN_CONSOLE = true; // true => print message to console
     
     this._transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'ktsanter3@gmail.com',
-        pass: 'vjrnyrnhpcayggoo'
+        user: credentials.user,
+        pass: credentials.password     
       }
     });
     
-    this._defaultSender = 'ktsanter3@gmail.com';
+    this._defaultSender = credentials.user;
   }
   
 //---------------------------------------------------------------
-// send test message
+// public methods - general messages
 //---------------------------------------------------------------
+  async sendMessage(addresseeList, subjectText, bodyText, bodyHTML) {
+    var mailOptions = {
+      from: this._defaultSender,
+      to: addresseeList,
+      subject: subjectText,
+      text: bodyText,
+      html: bodyHTML ? bodyHTML : bodyText
+    };
+    
+    if (this.DEBUG_ON) {
+      console.log('GMailer.sendMessage: debug mode on - message not sent');
+      if (this.SHOW_IN_CONSOLE) {
+        console.log('\nsendMessage (debug)');
+        console.log('from: ' + mailOptions.from);
+        console.log('to: ' + mailOptions.to);
+        console.log('subject: ' + mailOptions.subject);
+        console.log(mailOptions.text);
+        console.log(mailOptions.html);
+      }
+      
+    } else {
+      this._transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.log(error);
+        }
+      });     
+    }
+    
+    return {"success": true};
+  }  
+
   async sendTestMessage(reqParams, resBody) {
     var emailSuccessful = false;
     
@@ -41,23 +74,5 @@ module.exports = internal.GMailer = class {
     emailSuccessful = (info.accepted && info.accepted.length > 0);
     
     return {success: emailSuccessful};
-  }
-
-  async sendMessage(addresseeList, subjectText, bodyText) {
-    var mailOptions = {
-      from: this._defaultSender,
-      to: addresseeList,
-      subject: subjectText,
-      text: bodyText,
-      html: bodyText
-    };
-    
-    this._transporter.sendMail(mailOptions, function(error, info){
-      if (error) {
-        console.log(error);
-      }
-    });    
-    
-    return {"success": true};
   }
 }

@@ -10,4 +10,17 @@
   display: none;
 }
 
-.tipcron .tipcron-contents {}
+.tipcron .tipcron-contents {
+  margin-top: 2.0em;
+}
+
+.tipcron .tipcron-contents .tipcron-statuslabel {
+  display: inline-block;
+  vertical-align: bottom;
+  padding-bottom: 0.6em;
+}
+
+.tipcron .tipcron-contents .tipcron-status {
+  display: inline-block;
+  margin-left: 0.5em;
+}

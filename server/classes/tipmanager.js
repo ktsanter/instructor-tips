@@ -2,7 +2,7 @@
 //---------------------------------------------------------------
 // tip management DB interface
 //---------------------------------------------------------------
-// TODO: text sanitizing for schedule name, share comment, tip text
+// TODO: 
 //---------------------------------------------------------------
 const internal = {};
 
@@ -675,7 +675,7 @@ module.exports = internal.TipManager = class {
       return result;
     }
     
-    queryResults = await this._notifyAboutSharedSchedule(postData.scheduleid, postData.comment, userInfo, postData.userid, gMailer);
+    queryResults = await this._notifyAboutSharedSchedule(postData.scheduleid, postData.comment, userInfo, postData.userid, postData.appURL, gMailer);
 
     if (queryResults.success) {
       result.success = true;
@@ -687,14 +687,14 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _notifyAboutSharedSchedule(scheduleId, comment, userInfo, useridTo, gMailer) {
+  async _notifyAboutSharedSchedule(scheduleId, comment, userInfo, useridTo, appURL, gMailer) {
     var result = this._dbManager.queryFailureResult();
     
     var queryList, queryResults;
 
     queryList = {
       notification:
-        'select sn.notificationon, u.email ' +
+        'select sn.notificationon, u.email, u.username ' +
         'from user as u, sharenotification as sn ' +
         'where u.userid = sn.userid ' +
           'and u.userid = ' + useridTo,
@@ -715,6 +715,7 @@ module.exports = internal.TipManager = class {
     var notificationOn = queryResults.data.notification[0].notificationon;
     var emailTo = queryResults.data.notification[0].email;
     var scheduleName = queryResults.data.schedule[0].schedulename;
+    var userTo = queryResults.data.notification[0].username;
 
     if (!notificationOn) {
       result.success = true;
@@ -722,16 +723,44 @@ module.exports = internal.TipManager = class {
       return result;
     }
     
-    var bodyText = userInfo.userName + ' shared a schedule with you in the InstructorTips app.<br>';
-    bodyText += '<em>name </em>: ' + scheduleName + '<br>';
+    var bodyText = 'Hello ' + userTo + ',\n';
+    bodyText += userInfo.userName + ' shared a schedule with you in the InstructorTips app.\n';
+    bodyText += 'name: ' + scheduleName + '\n';
     if (comment.length > 0) {
-      bodyText += '<em>comment</em>: ' + comment + '<br>';
+      bodyText += 'comment: ' + comment + '\n';
     } 
+    bodyText += 'You can use the app to either accept or delete the schedule at your convenience.\n';
+    bodyText += '\nYou can find the InstructorTips app at: ' + appURL
+
+    var bodyHTML = '';
+    bodyHTML = '<div style="color: black; font-family: \'Segoe UI\', Tahoma, Arial, sans-serif; font-size: 13px;">';
+    
+    bodyHTML +=   '<div>';
+    bodyHTML +=     'Hello ' + userTo + ',<br>';
+    bodyHTML +=   '</div>';
+
+    bodyHTML +=   '<div style="margin-top: 0.5em">';
+    bodyHTML +=     userInfo.userName + ' shared a schedule with you in the <a href=' + appURL + '>' + 'InstructorTips' + '</a> app.';
+    bodyHTML +=   '</div>';
+    
+    bodyHTML +=   '<div>';
+    bodyHTML +=     '<strong><em>name</em></strong>: ' + scheduleName + '<br>';
+    if (comment.length > 0) {
+      bodyHTML +=   '<strong><em>comment</em></strong>: ' + comment + '<br>';
+    } 
+    bodyHTML +=   '</div>';
+
+    bodyHTML +=   '<div style="margin-top:0.5em;">';
+    bodyHTML +=     'You can use the app to either accept or delete the schedule at your convenience.';
+    bodyHTML +=   '</div>';
+    
+    bodyHTML += '</div>';
     
     var mailResult = await gMailer.sendMessage(
       emailTo, 
-      'an Instructor Tips schedule has been shared with you',
-      bodyText
+      'an InstructorTips schedule has been shared with you',
+      bodyText,
+      bodyHTML
     )
                 
     if (mailResult.success) {
@@ -942,7 +971,7 @@ module.exports = internal.TipManager = class {
   async _addTipAndScheduleTip(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult();
    
-    var tipText = this._sanitizeText(postData.tiptext);
+    var tipText = this._sanitizeText(postData.tiptext, true);
     
     var queryList = {
       checkforduplicate:
@@ -1638,10 +1667,10 @@ module.exports = internal.TipManager = class {
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------
-  _sanitizeText(str) {
+  _sanitizeText(str, skipAmpersandSanitizing) {
     var cleaned = str.replace(/"/g, '\\"');  // escape double quotes
     cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
-    cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
+    if (!skipAmpersandSanitizing) cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
     
     return cleaned;
   }

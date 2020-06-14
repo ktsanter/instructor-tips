@@ -120,7 +120,11 @@ module.exports = internal.CronScheduler = class {
 //--------------------------------------------------------------
 // callbacks
 //--------------------------------------------------------------      
-  async _doSchedulePushNotifications(me) {
+  async _doSchedulePushNotifications(me) {    
+    /*-- while testing --*/
+    me.stopJob('schedulepush');
+    /*-------------------*/
+    
     var query, queryResults;
     
     var daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -145,111 +149,309 @@ module.exports = internal.CronScheduler = class {
       console.log('*** query failed: ' + queryResults.details);
       return;
     }
-
+    
     var scheduleInfo = queryResults.data;
+    var schedulesByUser = {};
     for (var i = 0; i < scheduleInfo.length; i++) {
-      await me._sendScheduleNotification(me, scheduleInfo[i]);
+      var schedItem = scheduleInfo[i];
+      if (!schedulesByUser.hasOwnProperty(schedItem.userid)) schedulesByUser[schedItem.userid] = [];
+      schedulesByUser[schedItem.userid].push(schedItem);        
     }
     
-    /*-- while testing --*/
-    me.stopJob('schedulepush');
+    for (var userid in schedulesByUser) {
+      await me._sendScheduleNotification(me, userid, schedulesByUser[userid]);
+    }
   }
 
-  async _sendScheduleNotification(me, scheduleInfo) {
-    var schedStartDate = new Date(scheduleInfo.schedulestartdate);
-    var msFromStart = Date.now() - schedStartDate;
-    var weeksFromStart = ((((msFromStart / 1000) / 60) / 60) / 24) / 7;
-    var weekIndex = 0;
-    if (weeksFromStart >= 0) weekIndex = Math.ceil(weeksFromStart);
-    if (weekIndex > scheduleInfo.schedulelength) weekIndex = -1;
-    
+  async _sendScheduleNotification(me, userId, scheduleInfoList) {
     var queryList, queryResults;
-    
+
     queryList = {
       user: 
-        'select email ' +
+        'select email, username ' +
         'from user ' +
-        'where userid = ' + scheduleInfo.userid,
-        
-      tips:
-        'select st.tipid, t.tiptext ' +
-        'from scheduletip as st, tip as t ' +
-        'where st.scheduleid = ' + scheduleInfo.scheduleid + ' ' +
-          'and st.schedulelocation = ' + weekIndex + ' ' +
-          'and st.tipstate = 0 ' +
-          'and st.tipid = t.tipid ' +
-          'order by st.schedulelocation, st.schedulelocationorder '
+        'where userid = ' + userId,
     };
     
     queryResults = await me._dbManager.dbQueries(queryList);
     if (!queryResults.success) {
-      console.log('CronSchedule: user/tips lookup failed for schedule ' + scheduleInfo.scheduleId);
+      console.log('CronSchedule: user/tips lookup failed for user ' + userId);
       return;
     }
     
-    var email = queryResults.data.user[0].email;
-    var tips = queryResults.data.tips;
-
-    me._sendNotificationEmail(me, {
-      appURL: me._appURL,
-      scheduleName: scheduleInfo.schedulename,
-      email: queryResults.data.user[0].email,
-      tipList: queryResults.data.tips,
-      beforeBeginning: weekIndex == 0,
-      pastEnd: weekIndex < 0
-    });
-  }
-  
-  _sendNotificationEmail(me, params) {
-    var htmlURL = '<a href=' + params.appURL + '>instructorTips</a>';
-    var destEmail = params.email;
+    var emailTo = queryResults.data.user[0].email;
     var msgSubject = 'InstructorTips weekly reminder';
-    var msgBody = '';
+    var msgBodyText = '';
+    var msgBodyHTML = '';
     
-    msgBody += '<div>';
-    msgBody +=   'This is a weekly reminder from ' + htmlURL + ' for "' + params.scheduleName + '"';
-    msgBody += '</div>';
-    
-    if (params.pastEnd) {
-      msgBody += '<div>';
-      msgBody +=   'The current date is later than the end date for your schedule so there are no reminders. ';
-      msgBody +=   'You can use the Notification option in InstructorTips to disable notifications for this schedule.';
-      msgBody += '</div>';
-      
-    } else if (params.tipList.length == 0) {
-      msgBody += '<div>';
-      msgBody +=   'There are no incomplete tips for this week. ';
-      msgBody += '</div>';
-      
-    } else {
-      if (params.beforeBeginning) {
-        msgBody += '<div>';
-        msgBody +=   'Note: these tips are from the "before the term starts" section of your schedule. ';
-        msgBody += '</div>';
-      }
-      
-      msgBody += '<div>';
-      msgBody += '<div>';
-      msgBody +=   'These tips for the week have yet to be marked complete: ';
-      msgBody += '</div>';
+    var params = {
+      appURL: me._appURL,
+      userTo: queryResults.data.user[0].username,
+      dateStamp: me._getDateStamp().slice(0,10)
+    };
+    msgBodyText += me._notificationGreeting('text', params);
+    msgBodyHTML += me._notificationGreeting('html', params, me._getHTMLParams());
 
-      var htmlTips = '';
-      for (var i = 0; i < params.tipList.length; i++) {
-        var tipText = params.tipList[i].tiptext;
-        htmlTips += '<div>';
-        htmlTips += me._convertToHTML(tipText, me._commonmark);
-        htmlTips += '</div>';
-      }
-      msgBody += htmlTips;
+    for (var i = 0; i < scheduleInfoList.length; i++) {
+      var scheduleInfo = scheduleInfoList[i];
+      var schedStartDate = new Date(scheduleInfo.schedulestartdate);
+      var msFromStart = Date.now() - schedStartDate;
+      var weeksFromStart = ((((msFromStart / 1000) / 60) / 60) / 24) / 7;
+      var weekIndex = 0;
+      if (weeksFromStart >= 0) weekIndex = Math.ceil(weeksFromStart);
+      if (weekIndex > scheduleInfo.schedulelength) weekIndex = -1;
+          
+      queryList = {
+        tips:
+          'select st.tipid, t.tiptext, st.tipstate, st.schedulelocation ' +
+          'from scheduletip as st, tip as t ' +
+          'where st.scheduleid = ' + scheduleInfo.scheduleid + ' ' +
+            'and st.schedulelocation <= ' + weekIndex + ' ' +
+            //'and st.tipstate = 0 ' +
+            'and st.tipid = t.tipid ' +
+            'order by st.schedulelocation, st.schedulelocationorder '
+      };
       
-      msgBody += '</div>'
+      queryResults = await me._dbManager.dbQueries(queryList);
+      if (!queryResults.success) {
+        console.log('CronSchedule: user/tips lookup failed for schedule ' + scheduleInfo.scheduleId);
+        return;
+      }
+      
+      var params = {
+        appURL: me._appURL,
+        scheduleInfo: scheduleInfoList[i],
+        tipList: me._organizeTipsByLocation(queryResults.data.tips),
+        beforeBeginning: weekIndex == 0,
+        pastEnd: weekIndex < 0
+      }
+      msgBodyText += me._notificationScheduleText(me, params);
+      msgBodyHTML += me._notificationScheduleHTML(me, params, me._getHTMLParams());
     }
     
-    console.log('\nto: ' + params.email);    
-    console.log('subject: ' + msgSubject);
-    console.log('body:\n' + msgBody);
+    msgBodyText += me._notificationClosing('text', params);
+    msgBodyHTML += me._notificationClosing('html', params, me._getHTMLParams());
+    
+    var mailResult = await me._mailer.sendMessage(emailTo, msgSubject, msgBodyText, msgBodyHTML);
+    if (!mailResult.success) {
+      console.log('CronScheduler: failed to send email');
+    }    
   }
   
+  _organizeTipsByLocation(tipList) {
+    var organized = {};
+    
+    for (var i = 0; i < tipList.length; i++) {
+      var tip = tipList[i];
+      if (tip.tipstate == 0) {
+        if (!organized.hasOwnProperty(tip.schedulelocation)) organized[tip.schedulelocation] = [];
+        organized[tip.schedulelocation].push(tip);
+      }
+    }
+    
+    return organized;
+  }
+    
+//--------------------------------------------------------------
+// message formatters
+//--------------------------------------------------------------
+  _getHTMLParams() {
+    var params = {
+      salutation: '<div class=\'greeting\'>',
+      
+      greeting: '<div class=\'greeting\'>',
+      
+      notificationcontainer: '<div class=\'notificationcontainer\' style="' +
+        'color: black; ' +
+        'background-color: #eee;' +
+        'font-family: \'Segoe UI\', Tahoma, Arial, sans-serif;' +
+        'font-size: 13px;' +
+      '">',
+      
+      schedule: '<div class=\'schedule\' style="' +
+        'margin-top: 1.0em;' +
+        'margin-bottom: 2.0em;' +
+        'border-style: solid;' +
+        'border-color: #c9c9c9;' +
+        'border-width: 0 1px 1px 1px;' +
+      '">',
+      
+      schedulename: '<div class=\'schedulename\' style="' +
+        'color: white;' +
+        'background-color: #8d8741;' +
+        'padding: 0.2em 0.2em 0.3em 0.2em;' +
+      '">',
+      
+      scheduletips: '<div class=\'scheduletips\' style="' +
+        'margin-left: 0.8em;' +
+      '">',
+      
+      tipsforweek: '<div class=\'tipsforweek\' style="' +
+        'margin-top: 1.0em;' +
+      '">',
+      
+      tipsforweeklabel: '<div class=\'tipsforweeklabel\' style="' +
+        'color: white;' +
+        'background-color: #8d8741;' +
+        'display: inline;' +
+        'padding: 0 0.3em 0.1em 0.3em;' +
+      '">',
+      
+      tipdetails_even: '<div class=\'tipdetails tipdetails-even\' style="' +
+        'background-color: white;' +
+        'max-width: 70%;' +
+        'margin-top: 0.5em;' +
+        'padding: 0 0.4em 0 0.2em;' +
+      '">',     
+
+      tipdetails_odd: '<div class=\'tipdetails tipdetails-odd\' style="' +
+        'background-color: transparent;' +
+        'max-width: 70%;' +
+        'margin-top: 0.5em;' +
+        'padding: 0 0.4em 0 0.2em;' +
+      '">',     
+
+      pastdue: '<div class=\'pastdue\' style="' +
+        'padding: 0.2em 0;' +
+        'max-width: 70%;' +
+      '">',     
+
+      uptodate: '<div class=\'uptodate\' style="' +
+        'padding: 0.2em 0;' +
+        'max-width: 70%;' +
+      '">'
+    };
+    
+    return params;
+  }
+  
+  _notificationGreeting(type, params, htmlParams) {
+    var msg = '';
+    if (type == 'text') {
+      msg +=   'Hello ' + params.userTo + ',\n';
+      msg +=   'This is your weekly reminder from InstructorTips ';
+      msg +=   'for the week beginning ' + params.dateStamp + ', ';
+      msg +=   'reporting the tips you scheduled but haven\'t checked off yet.\n';
+      msg +=   'You can access the app at ' + params.appURL + '\n';
+      
+    } else if (type == 'html') {
+      var appLink = '<a href=' + params.appURL + '>instructorTips</a>';
+      var msg = '';
+
+      msg += htmlParams.notificationcontainer;
+      
+      msg += htmlParams.salutation;
+      msg +=   'Hello ' + params.userTo + ',';
+      msg += '</div>';
+      
+      msg += htmlParams.greeting;
+      msg +=   'This is your weekly reminder from ' + appLink + ' ';
+      msg +=   'for the week beginning ' + params.dateStamp + ', ';
+      msg +=   'reporting the tips you scheduled but haven\'t checked off yet.'
+      msg += '</div>';
+    }
+    
+    return msg;
+  }
+  
+  _notificationScheduleText(me, params) {
+    var msg = ''
+    
+    msg += params.scheduleInfo.schedulename + '\n';
+
+    if (params.pastEnd) {
+      msg +=   '  The current date is later than the end date for your schedule so there are no reminders.\n';
+      msg +=   '  You can use the Notification option in the app to disable notifications for this schedule.';
+      msg += '\n';
+      
+    } else if (Object.keys(params.tipList).length == 0) {
+      msg +=   '  Congratulations!  You\'ve checked off all the tips scheduled so far.';
+      msg += '\n';
+      
+    } else {
+      for (var scheduleLocation in params.tipList) {
+        if (scheduleLocation == 0) {
+          msg +=     '  before the term starts';
+        } else {
+          msg +=     '  week #' + scheduleLocation;
+        }
+        msg +=   '\n';
+
+        var tipsForWeek = params.tipList[scheduleLocation];
+        for (var i = 0; i < tipsForWeek.length; i++) {
+          var tipText = tipsForWeek[i].tiptext;
+          msg +=   '    - ' + tipText;
+          msg += '\n';
+        }
+        msg += '\n';
+      }
+    }
+    msg +=   '\n';
+
+    return msg
+  }
+  
+  _notificationScheduleHTML(me, params, htmlParams) {
+    var msg = ''
+    
+    msg += htmlParams.schedule;
+
+    msg +=   htmlParams.schedulename;
+    msg +=     params.scheduleInfo.schedulename;
+    msg +=   '</div>';
+
+    msg +=   htmlParams.scheduletips;
+    if (params.pastEnd) {
+      msg += htmlParams.pastdue;
+      msg +=   'The current date is later than the end date for your schedule so there are no reminders. ';
+      msg +=   'You can use the Notification option in the app to disable notifications for this schedule.';
+      msg += '</div>';
+      
+    } else if (Object.keys(params.tipList).length == 0) {
+      msg += htmlParams.uptodate;
+      msg +=   'Congratulations!  You\'ve checked off all the tips scheduled so far.';
+      msg += '</div>';
+      
+    } else {
+      for (var scheduleLocation in params.tipList) {
+        msg += htmlParams.tipsforweek;
+        msg +=   htmlParams.tipsforweeklabel;
+        if (scheduleLocation == 0) {
+          msg +=     'before the term starts';
+        } else {
+          msg +=     'week #' + scheduleLocation;
+        }
+        msg +=   '</div>';
+
+        var tipsForWeek = params.tipList[scheduleLocation];
+        for (var i = 0; i < tipsForWeek.length; i++) {
+          var tipText = tipsForWeek[i].tiptext;
+          msg += (i % 2 == 0) ? htmlParams.tipdetails_even : htmlParams.tipdetails_odd;
+          msg +=   me._convertToHTML(tipText, me._commonmark);
+          msg += '</div>';
+        }
+        msg += '</div>';
+      }
+    }
+    msg +=   '</div>';
+
+    msg += '</div>';
+
+    return msg;
+  }
+
+  _notificationClosing(type, params, htmlParams) {
+    var msg = '';
+    
+    if (type == 'text') {
+      msg += '';
+      
+    } else if (type == 'html') {
+      msg += '</div>';
+    }
+    
+    return msg;
+  }
   
 //--------------------------------------------------------------
 // MarkDownToHTML
@@ -261,14 +463,12 @@ module.exports = internal.CronScheduler = class {
     var parsed = reader.parse(str);
     var result = writer.render(parsed);
     
-    var firstThree = result.substring(0,3);
-    var lastFive = result.substring(result.length-5, result.length);
-    if (firstThree == '<p>' && lastFive == '</p>\n') {
+    result = result.replace(/%%(.*?)%%/g, '<span style=\"background-color: #FFFF00\">$1</span>');
+    
+    if (result.slice(0, 3) == '<p>' && result.slice(-5) == '</p>\n') {
       result = result.substring(3);
       result = result.substring(0, result.length-5);
     }
-
-    //result = CronScheduler._replaceAll(result, '&amp;amp;', '&');
 
     return result;
   }

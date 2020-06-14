@@ -17,6 +17,9 @@ const SESSION_SECRET = getEnv('SESSION_SECRET', true);
 
 const INSTRUCTORTIPS_URL = getEnv('INSTRUCTORTIPS_URL', true);
 
+const EMAIL_USER = getEnv('EMAIL_USER', true);
+const EMAIL_PASSWORD = getEnv('EMAIL_PASSWORD', true);
+
 function getEnv(varName, required) {
   var value = process.env[varName];
   if (required && !value) {
@@ -109,7 +112,7 @@ app.use(function (req, res, next) {
 //------------------------------------------
 var nodemailer = require('nodemailer');
 const gMailerClass = require('./classes/gmailer');
-const gMailer = new gMailerClass(nodemailer);
+const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD});
 
 //------------------------------------------
 // cron management
@@ -203,6 +206,9 @@ app.get('/admin/query/:queryName',  async function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor') && req.params.queryName == 'navbar') {
     res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
 
+  } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin') && req.params.queryName == 'cronstatus') {
+    res.send({success: true, details: 'cronstatus', data: {isRunning: cronScheduler.isRunning('schedulepush')}});
+
   } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
     res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
 
@@ -250,7 +256,15 @@ app.post('/admin/insert/:queryName', async function (req, res) {
 })
 
 app.post('/admin/update/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin') && req.params.queryName == 'cronstatus') {
+    if (req.body.enableJob) {
+      cronScheduler.startJob('schedulepush');
+    } else {
+      cronScheduler.stopJob('schedulepush');
+    }
+    res.send({success: true, details: 'cronstatus', data: {isRunning: cronScheduler.isRunning('schedulepush')}});
+
+  } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
     res.send(await dbAdminUpdate.doUpdate(req.params, req.body));
 
   } else {
@@ -283,6 +297,7 @@ app.post('/tipmanager/insert/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
     
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
+    req.body.appURL = INSTRUCTORTIPS_URL;    
     res.send(await dbTipManager.doInsert(req.params, req.body, gMailer, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
