@@ -62,13 +62,14 @@
 /*-------------------------------------------------------------------
  * email
  *------------------------------------------------------------------*/
-.tipprofile .tipprofile-contents .tipprofile-section.tipprofile-email {}
+.tipprofile .tipprofile-contents .tipprofile-section.tipprofile-email {
+  display: inline-block;
+}
 
 /*-------------------------------------------------------------------
  * password
  *------------------------------------------------------------------*/
 .tipprofile .tipprofile-contents .tipprofile-section.tipprofile-password {
-  opacity: 0.5;
   margin-top: 3.0em;
 }
 
@@ -79,9 +80,11 @@
 /*-------------------------------------------------------------------
  * confirm
  *------------------------------------------------------------------*/
-.tipprofile .tipprofile-contents .tipprofile-section.tipprofile-confirm {}
+.tipprofile .tipprofile-contents .tipprofile-section.tipprofile-confirm {
+  display: inline-block;
+}
 
-.tipprofile .tipprofile-contents .tipprofile-section.tipprofile-confirm .tipprofile-confirmsave:disabled{
+.tipprofile .tipprofile-contents .tipprofile-section.tipprofile-confirm .tipprofile-confirmemail:disabled{
   color: black;
   background-color: var(--bgTertiaryEmphasis);  
 }

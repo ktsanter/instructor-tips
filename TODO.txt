@@ -1,13 +1,17 @@
-- complete password checking on login (server side)
+- passwords
+  - add strength check / validation on client side
+  - add stub for hashing on user side
+  - build password change page
+  - include reset request option on login?
+  - build user account creation page
 
-- more validation on email and password?
-
-- figure out how to do password change
-  - need full-fledged HTML form (?)
+- more validation on email address?
 
 - discuss SQL setup with Noah
 
-- build help page
-  - include Markdown section
+- build help pages
+  - include Markdown section in tip editing section
+
+- navbar change: call profile when name is clicked on
 
 

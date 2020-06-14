@@ -25,26 +25,18 @@ class TipProfile {
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
 
-    //this._container.appendChild(this._renderTitle());
-
     this._container.appendChild(this._renderContents());
     
     return this._container;
-  }
-  
-  _renderTitle() {
-    var container = CreateElement.createDiv(null, 'tipmanager-title');
-    container.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
-    
-    return container;
   }
 
   _renderContents() {
     var container = CreateElement.createDiv(null, 'tipprofile-contents');
     
     container.appendChild(this._renderEmail());
+    container.appendChild(this._renderEmailConfirm());
+
     container.appendChild(this._renderPassword());
-    container.appendChild(this._renderConfirm());
     
     return container;
   }
@@ -73,6 +65,16 @@ class TipProfile {
     
     return container;
   }
+
+  _renderEmailConfirm() {
+    var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-confirm');
+    
+    var handler = (e) => {this._handleEmailConfirm();};
+    var elem = CreateElement.createButton(null, 'tipprofile-confirmemail', 'save', 'save new email address', handler);
+    container.appendChild(elem);       
+
+    return container;
+  }
   
   _renderPassword() {
     var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-password');
@@ -86,7 +88,7 @@ class TipProfile {
     elem.maxLength = 16;
     //elem.autocomplete = 'off';
     elem.addEventListener('input', (e) => {this._handlePasswordChange(e);});
-    elem.disabled = true;
+    //elem.disabled = true;
 
     elem = CreateElement.createTextInput(null, 'tipprofile-passwordinput password-confirm');
     container.appendChild(elem);
@@ -95,21 +97,11 @@ class TipProfile {
     elem.maxLength = 16;
     //elem.autocomplete = 'off';
     elem.addEventListener('input', (e) => {this._handlePasswordChange(e);});
-    elem.disabled = true;
+    //elem.disabled = true;
 
     return container;
   }
-    
-  _renderConfirm() {
-    var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-confirm');
-    
-    var handler = (e) => {this._handleConfirm();};
-    var elem = CreateElement.createButton(null, 'tipprofile-confirmsave', 'save', 'save profile changes', handler);
-    container.appendChild(elem);       
-
-    return container;
-  }
-    
+        
   //--------------------------------------------------------------
   // updating
   //--------------------------------------------------------------
@@ -132,7 +124,7 @@ class TipProfile {
    
     if (state) {
       this._updateEmail(state.email);
-      this._updateConfirm();
+      this._updateEmailConfirm();
     }
   }
   
@@ -142,11 +134,11 @@ class TipProfile {
     elem.origEmailValue = email;
   }
 
-  _updateConfirm() {
+  _updateEmailConfirm() {
     var elem = this._container.getElementsByClassName('tipprofile-emailinput')[0];
     var enableConfirm = (elem.value != elem.origEmailValue);
     
-    elem = this._container.getElementsByClassName('tipprofile-confirmsave')[0];
+    elem = this._container.getElementsByClassName('tipprofile-confirmemail')[0];
     elem.disabled = !enableConfirm;
   }
   
@@ -183,24 +175,20 @@ class TipProfile {
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
-  _handleConfirm(e) {
+  _handleEmailConfirm(e) {
     if (this._saveStateToDB(this._getStateFromControls())) {
       this.update();
     }
   }
-  
-  _handleCancel(e) {
-    this.update();
-  }
 
   _handleEmailChange(e) {
-    this._updateConfirm();
+    this._updateEmailConfirm();
   }
   
   _handleEmailKeyup(e) {
     if (e.code == 'Escape') {
       e.target.value = e.target.origEmailValue;
-      this._updateConfirm();
+      this._updateEmailConfirm();
     }
   }  
   

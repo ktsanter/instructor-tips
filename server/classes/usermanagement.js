@@ -22,36 +22,31 @@ module.exports = internal.UserManagement = class {
     sessionInfo.userInfo = {userId: -1};
   }
   
-  async attemptLogin(sessionInfo, userName, userPassword) {
-    var success = false;
-    
+  async attemptLogin(sessionInfo, userName, enteredPassword) {
     this.logout(sessionInfo);
     
-    var queryResult = await this._queryAllUserInfo();
-    if (queryResult.success) {
-      
-      if (userPassword == 'okay') {
-        var found = false;
-        for (var i = 0; i < queryResult.data.length && !found; i++) {
-          var userRow = queryResult.data[i];
-          
-          if (userName == userRow.usershortname) {
-            sessionInfo.userInfo = {
-              userId: userRow.userid,
-              userShortName: userRow.usershortname,
-              userName: userRow.username,
-              privilegeLevel: userRow.privilegename,
-              privilegeId: userRow.privilegeid
-            };
-            
-            found = true;
-            success = true;
-          }
-        }
-      }
+    var queryResults = await this._getInfoForUsername(userName);
+    if (!queryResults.success) {
+      console.log('UserManagement.attemptLogin: user lookup query failed');
+      console.log(queryResults.details);
+      return false;
     }
     
-    return success;
+    var userDataList = queryResults.data;
+    if (userDataList.length == 0) return false;  // no such user
+    
+    var userData = userDataList[0];
+    if (enteredPassword != userData.password) return false;  // passwords don't match
+ 
+    sessionInfo.userInfo = {
+      userId: userData.userid,
+      userShortName: userData.usershortname,
+      userName: userData.username,
+      privilegeLevel: userData.privilegename,
+      privilegeId: userData.privilegeid
+    };
+    
+    return true;
   }
   
   logout(sessionInfo) {
@@ -95,13 +90,19 @@ module.exports = internal.UserManagement = class {
     this.logout(sessionInfo);
   }
   
-  async _queryAllUserInfo() {
+//---------------------------------------------------------------
+// private methods
+//---------------------------------------------------------------    
+  async _getInfoForUsername(userName) {
     var result = this._dbManager.queryFailureResult();
     
-    var query = 'select user.userid, privilege.privilegeid, usershortname, username, privilegename ' +
-                'from user, privilege, userprivilege ' +
-                'where user.userid = userprivilege.userid ' +
-                  'and privilege.privilegeid = userprivilege.privilegeid ';
+    var query = 'select ' +
+                  'u.userid, u.usershortname, u.username, u.password, ' +
+                  'p.privilegeid, p.privilegename ' +
+                'from user as u, privilege as p, userprivilege as up ' +
+                'where u.userid = up.userid ' +
+                  'and p.privilegeid = up.privilegeid ' +
+                  'and u.usershortname = "' + userName + '"';
     
     var queryResults = await this._dbManager.dbQuery(query);
     
@@ -113,6 +114,6 @@ module.exports = internal.UserManagement = class {
       result.details = queryResults.details;
     }
     
-    return result;
+    return result;    
   }
 }

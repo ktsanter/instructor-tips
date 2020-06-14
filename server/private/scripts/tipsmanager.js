@@ -37,7 +37,8 @@ const app = function () {
     await _renderPage();
     await settings.share.update();
     
-    settings.objNavbar.selectOption('Scheduling');
+    //settings.objNavbar.selectOption('Scheduling');
+    document.getElementsByClassName('hamburger')[0].firstChild.click();
 	}
 	
 	//-----------------------------------------------------------------------------

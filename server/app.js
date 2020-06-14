@@ -198,9 +198,9 @@ app.get('/scripts/:script', function (req, res) {
 })
 
 app.get('/help/:helpfile', function (req, res) {
-  console.log('** help');
-  console.log(req.params.helpfile);
-  res.sendFile(path.join(__dirname, 'private', 'help/' + req.params.helpfile))
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
+    res.sendFile(path.join(__dirname, 'private', 'help/' + req.params.helpfile))
+  }
 })
 
 // InstructorTips admin
