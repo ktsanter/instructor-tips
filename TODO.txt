@@ -1,19 +1,15 @@
 - passwords
-  - add strength check / validation on user side
   - query to get salt on user side
-  - add stub for hashing on user side
-  - build password change page
-  - include reset request option on login?
+  - include reset request option on login
   - build user account creation page
-
-- more validation on email address?
+  - force password specification/reset if null
 
 - discuss SQL setup with Noah
 
 - build help pages
   - include Markdown section in tip editing section
-
-- navbar change: call profile when name is clicked on
+  - add profile page
+  - add "other" page
 
 - PUG for notification messages
 

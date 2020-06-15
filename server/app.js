@@ -129,6 +129,11 @@ const userManagementClass = require('./classes/usermanagement')
 const userManagement = new userManagementClass(mariaDBManager);
 
 //------------------------------------------
+// Pug management
+//------------------------------------------
+const pug = require('pug')
+
+//------------------------------------------
 // InstructorTips admin query objects
 //------------------------------------------
 const dbAdminQueryClass = require('./classes/dbadmin_query')
@@ -148,6 +153,21 @@ const dbAdminDelete = new dbAdminDeleteClass(userManagement, mariaDBManager);
 //------------------------------------------
 const dbTipManagerClass = require('./classes/tipmanager')
 const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager);
+
+//------------------------------------------------------
+// testing
+//------------------------------------------------------
+app.get('/testpug.html', function(req, res) {
+  // note these can be combined with render
+  var compiledTest = pug.compileFile('./private/pug/test.pug');
+
+  var rendered = compiledTest({
+    name: 'Kevin Santer',
+    week: '2020-06-15'
+  });
+  console.log(rendered);
+  res.send(rendered);
+})
 
 //------------------------------------------------------
 // login/logout and main page
