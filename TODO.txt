@@ -1,5 +1,6 @@
 - passwords
-  - add strength check / validation on client side
+  - add strength check / validation on user side
+  - query to get salt on user side
   - add stub for hashing on user side
   - build password change page
   - include reset request option on login?
@@ -13,5 +14,9 @@
   - include Markdown section in tip editing section
 
 - navbar change: call profile when name is clicked on
+
+- PUG for notification messages
+
+- HTML -> image -> email
 
 

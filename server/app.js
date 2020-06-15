@@ -181,9 +181,25 @@ app.get('/usermanagement/logout', function (req, res) {
   res.redirect('/login.html');
 })
 
-app.post('/change_password', async function (req, res) {
-  userManagement.changePassword(req.body, req.session);
-  res.redirect('/login.html');
+app.post('/usermanagement/passwordchange', async function (req, res) {
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
+    var result = await userManagement.changePassword(req.body, req.session);
+    console.log('result');
+    console.log(result);
+    
+    if (result.success) {
+      console.log('password change succeeded: redirecting...');
+      userManagement.logout(req.session);
+      result.details = 'password change succeeded';
+      result.data = {};
+      result.data.redirectURL = '/login.html';
+      
+    } else {
+      console.log('password change failed: sending result...');
+    }
+    
+    res.send(result);
+  }
 })  
 
 //------------------------------------------------------

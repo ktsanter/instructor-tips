@@ -83,11 +83,35 @@ module.exports = internal.UserManagement = class {
     return result;
   }  
   
-  changePassword(postData, sessionInfo) {
-    console.log('change password');
+  async changePassword(postData, sessionInfo) {
+    var result = this._dbManager.queryFailureResult();    
+    console.log('UserManagement.changePassword');
     console.log(postData);
     console.log(sessionInfo.userInfo);
-    this.logout(sessionInfo);
+
+    var result = this._dbManager.queryFailureResult();
+    
+    var query = 'update user ' +
+                 'set password = "' + postData.passwordHash + '" ' +
+                 'where userid = ' + sessionInfo.userInfo.userId;
+                 
+    console.log(query);
+    
+    var queryResults = await this._dbManager.dbQuery(query);
+    console.log('queryResults');
+    console.log(queryResults);
+
+    if (queryResults.success) {
+      this.logout(sessionInfo);
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
   }
   
 //---------------------------------------------------------------

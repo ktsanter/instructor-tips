@@ -37,8 +37,8 @@ const app = function () {
     await _renderPage();
     await settings.share.update();
     
-    //settings.objNavbar.selectOption('Scheduling');
-    document.getElementsByClassName('hamburger')[0].firstChild.click();
+    settings.objNavbar.selectOption('Scheduling');
+    // start with profile: document.getElementsByClassName('navbar-item-right')[1].click();
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -75,11 +75,10 @@ const app = function () {
         {label: 'Tip editing', callback: () => {return _navDispatch('editing');}, subitems: null, rightjustify: false},
         {label: 'Sharing', callback: () => {return _navDispatch('share');}, subitems: null, rightjustify: false},
         {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false},
-        {label: settings.userInfo.userName, callback: null, subitems: null, rightjustify: true}
+        {label: settings.userInfo.userName, callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}
       ],
       
-      hamburgeritems: [     
-        {label: 'profile', markselected: true, callback: () => {return _navDispatch('profile');}},      
+      hamburgeritems: [           
         {label: 'help', markselected: false, callback: _showHelp},
         {label: 'logout', markselected: false, callback: _doLogout}
       ]      

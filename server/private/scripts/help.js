@@ -16,7 +16,7 @@ const app = function () {
 	const page = {};
   
 	const settings = {
-    optionList: ['home', 'scheduling', 'tipediting', 'sharing', 'notification']
+    optionList: ['home', 'scheduling', 'tipediting', 'sharing', 'notification', 'other']
   };
   
 	//---------------------------------------
@@ -51,7 +51,8 @@ const app = function () {
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Tip editing', callback: () => {return _navDispatch('tipediting');}, subitems: null, rightjustify: false},
         {label: 'Sharing', callback: () => {return _navDispatch('sharing');}, subitems: null, rightjustify: false},
-        {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false}
+        {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false},
+        {label: 'Other', callback: () => {return _navDispatch('other');}, subitems: null, rightjustify: false}
       ],
       
       hamburgeritems: []
