@@ -131,6 +131,11 @@ const userManagement = new userManagementClass(mariaDBManager);
 const pug = require('pug')
 
 //------------------------------------------
+// html-to-image management
+//------------------------------------------
+const puppeteer = require('puppeteer');
+ 
+//------------------------------------------
 // message management
 //------------------------------------------
 var commonmark = require('commonmark');
@@ -141,7 +146,8 @@ const messageManagement = new messageManagementClass({
   "commonmark": commonmark, 
   "pug": pug, 
   "appURL": INSTRUCTORTIPS_URL, 
-  "fileServices": fileservices
+  "fileServices": fileservices,
+  "HTMLToImage": puppeteer
 });
 
 //------------------------------------------

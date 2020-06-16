@@ -1,6 +1,7 @@
 'use strict';
 
 const Capabilities = require('../../const/capabilities');
+const Long = require('long');
 
 /**
  * Initialize client capabilities according to options and server capabilities
@@ -8,8 +9,8 @@ const Capabilities = require('../../const/capabilities');
  * @param opts                options
  * @param info                information
  */
-module.exports.init = function(opts, info) {
-  let capabilities =
+module.exports.init = function (opts, info) {
+  let capabilitiesLow =
     Capabilities.IGNORE_SPACE |
     Capabilities.PROTOCOL_41 |
     Capabilities.TRANSACTIONS |
@@ -20,43 +21,53 @@ module.exports.init = function(opts, info) {
     Capabilities.PLUGIN_AUTH |
     Capabilities.PLUGIN_AUTH_LENENC_CLIENT_DATA;
 
+  let capabilitiesHigh = 0;
+  if ((info.serverCapabilities.low & Capabilities.MYSQL) === 0) {
+    capabilitiesHigh |= Capabilities.MARIADB_CLIENT_EXTENDED_TYPE_INFO;
+  }
+
   if (opts.connectAttributes) {
-    capabilities |= Capabilities.CONNECT_ATTRS;
+    capabilitiesLow |= Capabilities.CONNECT_ATTRS;
   }
 
   if (opts.foundRows) {
-    capabilities |= Capabilities.FOUND_ROWS;
+    capabilitiesLow |= Capabilities.FOUND_ROWS;
   }
 
   if (opts.permitLocalInfile) {
-    capabilities |= Capabilities.LOCAL_FILES;
+    capabilitiesLow |= Capabilities.LOCAL_FILES;
   }
 
   if (opts.multipleStatements) {
-    capabilities |= Capabilities.MULTI_STATEMENTS;
+    capabilitiesLow |= Capabilities.MULTI_STATEMENTS;
   }
 
-  info.eofDeprecated = false;
-  if (info.serverCapabilities & Capabilities.DEPRECATE_EOF) {
-    capabilities |= Capabilities.DEPRECATE_EOF;
-    info.eofDeprecated = true;
+  info.eofDeprecated = (info.serverCapabilities.low & Capabilities.DEPRECATE_EOF) > 0;
+  if (info.eofDeprecated) {
+    capabilitiesLow |= Capabilities.DEPRECATE_EOF;
   }
 
   if (opts.database) {
-    capabilities |= Capabilities.CONNECT_WITH_DB;
+    capabilitiesLow |= Capabilities.CONNECT_WITH_DB;
   }
 
   // use compression only if requested by client and supported by server
   if (opts.compress) {
-    if (info.serverCapabilities & Capabilities.COMPRESS) {
-      capabilities |= Capabilities.COMPRESS;
+    if (info.serverCapabilities.low & Capabilities.COMPRESS) {
+      capabilitiesLow |= Capabilities.COMPRESS;
     } else {
       opts.compress = false;
     }
   }
 
-  if (opts.permitConnectionWhenExpired) {
-    capabilities |= Capabilities.CAN_HANDLE_EXPIRED_PASSWORDS;
+  if (opts.bulk) {
+    if (info.serverCapabilities.high & Capabilities.MARIADB_CLIENT_STMT_BULK_OPERATIONS) {
+      capabilitiesHigh |= Capabilities.MARIADB_CLIENT_STMT_BULK_OPERATIONS;
+    }
   }
-  info.clientCapabilities = capabilities;
+
+  if (opts.permitConnectionWhenExpired) {
+    capabilitiesLow |= Capabilities.CAN_HANDLE_EXPIRED_PASSWORDS;
+  }
+  info.clientCapabilities = new Long(capabilitiesLow, capabilitiesHigh, true);
 };

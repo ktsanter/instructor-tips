@@ -9,22 +9,29 @@ const { Readable } = require('stream');
  */
 class Stream extends Query {
   constructor(cmdOpts, connOpts, sql, values, socket) {
-    super(() => {}, () => {}, cmdOpts, connOpts, sql, values);
+    super(
+      () => {},
+      () => {},
+      cmdOpts,
+      connOpts,
+      sql,
+      values
+    );
     this.socket = socket;
     this.inStream = new Readable({
       objectMode: true,
       read: () => {}
     });
 
-    this.on('fields', function(meta) {
+    this.on('fields', function (meta) {
       this.inStream.emit('fields', meta);
     });
 
-    this.on('error', function(err) {
+    this.on('error', function (err) {
       this.inStream.emit('error', err);
     });
 
-    this.on('end', function(err) {
+    this.on('end', function (err) {
       if (err) this.inStream.emit('error', err);
       this.inStream.push(null);
     });

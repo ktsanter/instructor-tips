@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Type definitions for mariadb 2.0
-// Project: https://github.com/MariaDB/mariadb-connector-nodejs
+// Project: https://github.com/mariadb-corporation/mariadb-connector-nodejs
 // Definitions by:  Diego Dupin <https://github.com/rusher>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.1
@@ -91,6 +92,12 @@ export interface QueryConfig {
    * (Default: true)
    */
   pipelining?: boolean;
+
+  /**
+   * Force server version check by explicitly using SELECT VERSION(), not relying on server initial handshake
+   * information
+   */
+  forceVersionCheck?: boolean;
 
   /**
    * Allows the use of LOAD DATA INFILE statements.
@@ -239,6 +246,18 @@ export interface ConnectionConfig extends UserConnectionConfig, QueryConfig {
    * (Default: false)
    */
   logPackets?: boolean;
+
+  /**
+   * Force server version check by explicitly using SELECT VERSION(), not relying on server initial packet.
+   * (Default: false)
+   */
+  forceVersionCheck?: boolean;
+
+  /**
+   * indicate to throw an exception if result-set will not contain some data due to having duplicate identifier
+   * (Default: true)
+   */
+  checkDuplicate?: boolean;
 
   /**
    * When enabled, the update number corresponds to update rows.
@@ -491,8 +510,24 @@ export interface Connection {
    */
   debugCompress(value: boolean): void;
 
+  /**
+   * This function permit to escape a parameter properly according to parameter type to avoid injection.
+   * @param value parameter
+   */
+  escape(value: any): string;
+
+  /**
+   * This function permit to escape a Identifier properly . See Identifier Names for escaping. Value will be enclosed by '`' character if content doesn't satisfy:
+   * <OL>
+   *  <LI>ASCII: [0-9,a-z,A-Z$_] (numerals 0-9, basic Latin letters, both lowercase and uppercase, dollar sign, underscore)</LI>
+   *  <LI>Extended: U+0080 .. U+FFFF and escaping '`' character if needed.</LI>
+   * </OL>
+   * @param identifier identifier
+   */
+  escapeId(identifier: string): string;
+
   on(ev: 'end', callback: () => void): Connection;
-  on(ev: 'error', callback: (err: MariaDbError) => void): Connection;
+  on(ev: 'error', callback: (err: SqlError) => void): Connection;
 }
 
 export interface PoolConnection extends Connection {
@@ -544,6 +579,27 @@ export interface Pool {
    * Get current stacked connection request.
    */
   taskQueueSize(): number;
+
+  /**
+   * This function permit to escape a parameter properly according to parameter type to avoid injection.
+   * @param value parameter
+   */
+  escape(value: any): string;
+
+  /**
+   * This function permit to escape a Identifier properly . See Identifier Names for escaping. Value will be enclosed by '`' character if content doesn't satisfy:
+   * <OL>
+   *  <LI>ASCII: [0-9,a-z,A-Z$_] (numerals 0-9, basic Latin letters, both lowercase and uppercase, dollar sign, underscore)</LI>
+   *  <LI>Extended: U+0080 .. U+FFFF and escaping '`' character if needed.</LI>
+   * </OL>
+   * @param identifier identifier
+   */
+  escapeId(identifier: string): string;
+
+  on(ev: 'acquire', callback: (conn: Connection) => void): Pool;
+  on(ev: 'connection', callback: (conn: Connection) => void): Pool;
+  on(ev: 'enqueue', callback: () => void): Pool;
+  on(ev: 'release', callback: (conn: Connection) => void): Pool;
 }
 
 export interface FilteredPoolCluster {
@@ -567,7 +623,7 @@ export interface UpsertResult {
   warningStatus: number;
 }
 
-export interface MariaDbError extends Error {
+export interface SqlError extends Error {
   /**
    * Either a MySQL server error (e.g. 'ER_ACCESS_DENIED_ERROR'),
    * a node.js error (e.g. 'ECONNREFUSED') or an internal error
@@ -590,6 +646,21 @@ export interface MariaDbError extends Error {
    */
   fatal: boolean;
 }
+
+interface SqlErrorConstructor extends ErrorConstructor {
+  new (
+    msg: string,
+    fatal?: boolean,
+    info?: { threadId?: number },
+    sqlState?: string | null,
+    errno?: number,
+    additionalStack?: string,
+    addHeader?: boolean
+  ): SqlError;
+  readonly prototype: SqlError;
+}
+
+declare const SqlError: SqlErrorConstructor;
 
 export const enum TypeNumbers {
   DECIMAL = 0,

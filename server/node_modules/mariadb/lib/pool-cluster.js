@@ -37,6 +37,7 @@ function PoolCluster(args) {
         throw new Error("Node identifier '" + identifier + "' already exist !");
     } else {
       identifier = 'PoolNode-' + nodeCounter++;
+      config = id;
     }
     const options = new PoolOptions(config);
     const pool = _createPool(options);
@@ -52,7 +53,7 @@ function PoolCluster(args) {
   this.end = () => {
     cachedPatterns = {};
     const poolEndPromise = [];
-    Object.keys(nodes).forEach(pool => {
+    Object.keys(nodes).forEach((pool) => {
       poolEndPromise.push(nodes[pool].end());
       delete nodes[pool];
     });
@@ -69,11 +70,11 @@ function PoolCluster(args) {
    *
    * @param pattern  pattern
    */
-  this.remove = pattern => {
+  this.remove = (pattern) => {
     if (!pattern) throw new Error('pattern parameter in Cluster.remove(pattern)  is mandatory');
 
     const regex = RegExp(pattern);
-    Object.keys(nodes).forEach(key => {
+    Object.keys(nodes).forEach((key) => {
       if (regex.test(key)) {
         nodes[key].end();
         delete nodes[key];
@@ -116,12 +117,14 @@ function PoolCluster(args) {
     const matchingNodeList = _matchingNodes(pattern || /^/);
 
     if (matchingNodeList.length === 0) {
-      if (Object.keys(nodes).length === 0)
+      if (Object.keys(nodes).length === 0 && !lastError) {
         return Promise.reject(
           new Error(
-            'No node have been added to cluster or nodes have been removed due to too much connection error'
+            'No node have been added to cluster ' +
+              'or nodes have been removed due to too much connection error'
           )
         );
+      }
       if (avoidNodeKey === undefined)
         return Promise.reject(new Error("No node found for pattern '" + pattern + "'"));
       const errMsg =
@@ -141,11 +144,11 @@ function PoolCluster(args) {
     }
   };
 
-  let _createPool = options => {
+  let _createPool = (options) => {
     return new Pool(options, false);
   };
 
-  const _createPoolCallback = options => {
+  const _createPoolCallback = (options) => {
     return new PoolCallback(options, false);
   };
 
@@ -157,21 +160,38 @@ function PoolCluster(args) {
    * @param selector      node selector ('RR','RANDOM' or 'ORDER')
    * @param callback      callback function
    * @param avoidNodeKey  failing node
+   * @param lastError     last error
    * @private
    */
-  const _getConnectionCallback = (cluster, pattern, selector, callback, avoidNodeKey) => {
+  const _getConnectionCallback = (
+    cluster,
+    pattern,
+    selector,
+    callback,
+    avoidNodeKey,
+    lastError
+  ) => {
     const matchingNodeList = _matchingNodes(pattern || /^/);
 
     if (matchingNodeList.length === 0) {
-      if (Object.keys(nodes).length === 0) {
+      if (Object.keys(nodes).length === 0 && !lastError) {
         callback(
           new Error(
-            'No node have been added to cluster or nodes have been removed due to too much connection error'
+            'No node have been added to cluster ' +
+              'or nodes have been removed due to too much connection error'
           )
         );
         return;
       }
-      callback(new Error("No node found for pattern '" + pattern + "'"));
+
+      if (avoidNodeKey === undefined)
+        callback(new Error("No node found for pattern '" + pattern + "'"));
+      const errMsg =
+        "No Connection available for '" +
+        pattern +
+        "'" +
+        (lastError ? '. Last connection error was: ' + lastError.message : '');
+      callback(new Error(errMsg));
       return;
     }
 
@@ -191,12 +211,12 @@ function PoolCluster(args) {
    * @return {*}
    * @private
    */
-  const _matchingNodes = pattern => {
+  const _matchingNodes = (pattern) => {
     if (cachedPatterns[pattern]) return cachedPatterns[pattern];
 
     const regex = RegExp(pattern);
     const matchingNodeList = [];
-    Object.keys(nodes).forEach(key => {
+    Object.keys(nodes).forEach((key) => {
       if (regex.test(key)) {
         matchingNodeList.push(key);
       }
@@ -256,7 +276,7 @@ function PoolCluster(args) {
    * @param nodeList  node list
    * @return {String}
    */
-  const roundRobinSelector = nodeList => {
+  const roundRobinSelector = (nodeList) => {
     let lastRoundRobin = nodeList.lastRrIdx;
     if (lastRoundRobin === undefined) lastRoundRobin = -1;
     if (++lastRoundRobin >= nodeList.length) lastRoundRobin = 0;
@@ -270,7 +290,7 @@ function PoolCluster(args) {
    * @param nodeList  node list
    * @return {String}
    */
-  const randomSelector = nodeList => {
+  const randomSelector = (nodeList) => {
     let randomIdx = Math.floor(Math.random() * nodeList.length);
     return nodeList[randomIdx];
   };
@@ -300,11 +320,11 @@ function PoolCluster(args) {
     const node = nodes[nodeKey];
     return node
       .getConnection()
-      .then(conn => {
+      .then((conn) => {
         node.errorCount = 0;
         return Promise.resolve(conn);
       })
-      .catch(err => {
+      .catch((err) => {
         node.errorCount = node.errorCount ? node.errorCount + 1 : 1;
         node.blacklistedUntil = Date.now() + opts.restoreNodeTimeout;
         if (
@@ -317,7 +337,7 @@ function PoolCluster(args) {
           delete nodeList.lastRrIdx;
           process.nextTick(() => cluster.emit('remove', nodeKey));
           //remove node from configuration if not already removed
-          node.end().catch(err => {
+          node.end().catch((err) => {
             // dismiss error
           });
         }
@@ -361,7 +381,7 @@ function PoolCluster(args) {
           if (nodeList.length === 0) return Promise.reject(err);
         }
 
-        if (opts.canRetry) return retryFct(nodeKey);
+        if (opts.canRetry) return retryFct(nodeKey, err);
         callback(err);
       } else {
         node.errorCount = 0;

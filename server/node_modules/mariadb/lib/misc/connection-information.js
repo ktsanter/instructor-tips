@@ -1,12 +1,12 @@
 'use strict';
 const Queue = require('denque');
 
-const _addPacket = function(msg) {
+const _addPacket = function (msg) {
   this.lastPackets.push(msg);
   while (this.lastPackets.size() > 32) this.lastPackets.shift();
 };
 
-const _getLastPackets = function() {
+const _getLastPackets = function () {
   let output = '';
   let packet;
   while ((packet = this.lastPackets.shift())) {
@@ -20,7 +20,7 @@ class ConnectionInformation {
     this.threadId = -1;
     this.status = null;
     this.serverVersion = null;
-    this.serverCapabilities = -1;
+    this.serverCapabilities = null;
   }
 
   addPacket(msg) {}
@@ -56,6 +56,40 @@ class ConnectionInformation {
     if (!this.serverVersion)
       throw new Error('cannot know if server is MariaDB until connection is established');
     return this.serverVersion.mariaDb;
+  }
+
+  /**
+   * Parse raw info to set server major/minor/patch values
+   * @param info
+   */
+  static parseVersionString(info) {
+    let car;
+    let offset = 0;
+    let type = 0;
+    let val = 0;
+
+    for (; offset < info.serverVersion.raw.length; offset++) {
+      car = info.serverVersion.raw.charCodeAt(offset);
+      if (car < 48 || car > 57) {
+        switch (type) {
+          case 0:
+            info.serverVersion.major = val;
+            break;
+          case 1:
+            info.serverVersion.minor = val;
+            break;
+          case 2:
+            info.serverVersion.patch = val;
+            return;
+        }
+        type++;
+        val = 0;
+      } else {
+        val = val * 10 + car - 48;
+      }
+    }
+    //serverVersion finished by number like "5.5.57", assign patchVersion
+    if (type === 2) info.serverVersion.patch = val;
   }
 }
 

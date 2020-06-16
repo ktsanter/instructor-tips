@@ -18,6 +18,7 @@ module.exports = internal.MessageManagement = class {
     this._pug = params.pug;
     this._appURL = params.appURL;
     this._fileServices = params.fileServices;
+    this._HTMLToImage = params.HTMLToImage;
   }
   
 //---------------------------------------------------------------
@@ -67,7 +68,9 @@ module.exports = internal.MessageManagement = class {
     };      
 
     var rendered = this._pug.renderFile('./private/pug/schedule_share.pug', {shareInfo: pugParams});
-
+    var imageFileName = 'share.png';
+    var madeImageFile = await this._makeImage(rendered, imageFileName);  // need to randomize this name
+    
     var mailResult = {success: false};
     
     if (this.DEBUG) {
@@ -90,8 +93,12 @@ module.exports = internal.MessageManagement = class {
       mailResult = await this._mailer.sendMessage(
         notificationInfo.email, 
         'an InstructorTips schedule has been shared with you',
-        'dummy text',
-        rendered
+        '',
+        '<img src="cid:' + (imageFileName + 'xxx') + '"/>',
+        [{
+          path: 'log/' + imageFileName,
+          cid: imageFileName + 'xxx'
+        }]
       ) 
     }
     
@@ -217,6 +224,8 @@ module.exports = internal.MessageManagement = class {
     }
     
     var rendered = this._pug.renderFile('./private/pug/schedule_reminder.pug', {notificationInfo: params});
+    var imageFileName = 'reminder.png';
+    var madeImageFile = await this._makeImage(rendered, imageFileName);  // need to randomize this name
 
     if (this.DEBUG) {
       var fileName = 'log/notification_' + userId + '.html';
@@ -231,7 +240,12 @@ module.exports = internal.MessageManagement = class {
     }
         
     if (!this.DEBUG) {
-      var mailResult = await this._mailer.sendMessage(emailTo, msgSubject, 'dummy text', rendered);
+      var imageHTML = '<img src="cid:' + (imageFileName + 'xxx') + '"/>';
+      var imageAttachments = [{
+        path: 'log/' + imageFileName,
+        cid: imageFileName + 'xxx'
+      }];
+      var mailResult = await this._mailer.sendMessage(emailTo, msgSubject, '', imageHTML, imageAttachments);
       if (!mailResult.success) {
         console.log('MessageManagement: failed to send email to ' + emailTo);
         return false;
@@ -266,6 +280,39 @@ module.exports = internal.MessageManagement = class {
     return organized;
   }
     
+  async _makeImage(html, targetFileName) {
+    console.log('MessageManagement._makeImage: ' + targetFileName);
+    const browser = await this._HTMLToImage.launch()
+    const page = await browser.newPage()
+    await page.setViewport({
+              width: 600,
+              height: 120,
+              deviceScaleFactor: 1,
+            });            
+    await page.setContent(html)
+    await page.screenshot({path: 'log/' + targetFileName, fullPage: true})
+    await browser.close()
+    
+    return true;
+  }
+    /*
+ async function test() {
+   var imgHTML = '<!DOCTYPE html> <html> <head> </head> <body> <div>hi there</div> </body> </html>';
+   const browser = await puppeteer.launch()
+   const page = await browser.newPage()
+   await page.setViewport({
+              width: 100,
+              height: 100,
+              deviceScaleFactor: 1,
+            });            
+   await page.setContent(imgHTML)
+   await page.screenshot({path: 'log/test.png'})
+   await browser.close() 
+ }
+ test();
+ console.log('okay');
+    
+    */
 //--------------------------------------------------------------
 // callbacks
 //--------------------------------------------------------------      

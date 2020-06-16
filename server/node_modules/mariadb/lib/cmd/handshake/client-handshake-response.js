@@ -20,36 +20,43 @@ const os = require('os');
 module.exports.send = function send(cmd, out, opts, pluginName, info) {
   out.startPacket(cmd);
   info.defaultPluginName = pluginName;
+  const pwd = Array.isArray(opts.password) ? opts.password[0] : opts.password;
   let authToken;
+  let authPlugin;
   switch (pluginName) {
-    case 'mysql_native_password':
-    case '':
-      authToken = NativePasswordAuth.encryptPassword(opts.password, info.seed);
-      break;
     case 'client_ed25519':
-      authToken = Ed25519PasswordAuth.encryptPassword(opts.password, info.seed);
+      authToken = Ed25519PasswordAuth.encryptPassword(pwd, info.seed);
+      authPlugin = 'client_ed25519';
+      break;
+
+    case 'mysql_clear_password':
+      authToken = Buffer.from(pwd);
+      authPlugin = 'mysql_clear_password';
       break;
 
     default:
-      authToken = Buffer.alloc(0);
+      authToken = NativePasswordAuth.encryptPassword(pwd, info.seed);
+      authPlugin = 'mysql_native_password';
       break;
   }
 
-  out.writeInt32(info.clientCapabilities);
+  out.writeInt32(info.clientCapabilities.low);
   out.writeInt32(1024 * 1024 * 1024); // max packet size
   out.writeInt8(opts.collation.index);
-  for (let i = 0; i < 23; i++) {
+  for (let i = 0; i < 19; i++) {
     out.writeInt8(0);
   }
+
+  out.writeInt32(info.clientCapabilities.high);
 
   //null encoded user
   out.writeString(opts.user || '');
   out.writeInt8(0);
 
-  if (info.serverCapabilities & Capabilities.PLUGIN_AUTH_LENENC_CLIENT_DATA) {
+  if (info.serverCapabilities.low & Capabilities.PLUGIN_AUTH_LENENC_CLIENT_DATA) {
     out.writeLengthCoded(authToken.length);
     out.writeBuffer(authToken, 0, authToken.length);
-  } else if (info.serverCapabilities & Capabilities.SECURE_CONNECTION) {
+  } else if (info.serverCapabilities.low & Capabilities.SECURE_CONNECTION) {
     out.writeInt8(authToken.length);
     out.writeBuffer(authToken, 0, authToken.length);
   } else {
@@ -57,18 +64,18 @@ module.exports.send = function send(cmd, out, opts, pluginName, info) {
     out.writeInt8(0);
   }
 
-  if (info.clientCapabilities & Capabilities.CONNECT_WITH_DB) {
+  if (info.clientCapabilities.low & Capabilities.CONNECT_WITH_DB) {
     out.writeString(opts.database);
     out.writeInt8(0);
     info.database = opts.database;
   }
 
-  if (info.clientCapabilities & Capabilities.PLUGIN_AUTH) {
+  if (info.clientCapabilities.low & Capabilities.PLUGIN_AUTH) {
     out.writeString(pluginName);
     out.writeInt8(0);
   }
 
-  if (opts.connectAttributes && info.serverCapabilities & Capabilities.CONNECT_ATTRS) {
+  if (opts.connectAttributes && info.serverCapabilities.low & Capabilities.CONNECT_ATTRS) {
     out.writeInt8(0xfc);
     let initPos = out.pos; //save position, assuming connection attributes length will be less than 2 bytes length
     out.writeInt16(0);

@@ -11,16 +11,21 @@
   - add profile page
   - add "other" page
 
-- PUG for notification messages
-  - alter code in CronScheduler to use Pug
-     - test before going down image path
-  - make Pug files for share messages
-  - alter code in TipsManager for share messages
-  - handle text alternative for both
-
 - HTML -> image -> email
 
 - select multiple target names for sharing ?
+
+- randomize image file names for messages
+
+- disable confirm button during Share operation
+
+- on messages
+  - remove inline link
+  - image map for link
+  - add standalone link (and URL?)
+  - why isn't attachment showing?
+  - add container to reminder ?
+  - add border to container(s) ?
 
 
 

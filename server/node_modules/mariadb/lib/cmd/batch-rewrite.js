@@ -25,29 +25,20 @@ class BatchRewrite extends CommonText {
    */
   start(out, opts, info) {
     this.info = info;
-    if (!this.initialValues) {
-      this.emit('send_end');
+    if (this.opts.timeout) {
       const err = Errors.createError(
-        'Batch must have values set\n' + this.displaySql(),
+        'Cannot use timeout for Batch statement',
         false,
         info,
         'HY000',
-        Errors.ER_BATCH_WITH_NO_VALUES,
-        this.stack,
-        false
+        Errors.ER_TIMEOUT_NOT_SUPPORTED
       );
-      this.onPacketReceive = null;
-      this.resolve = null;
-      process.nextTick(this.reject, err);
-      this.reject = null;
-      this.emit('end', err);
-      this.sending = false;
+      this.emit('send_end');
+      this.throwError(err, info);
       return;
     }
-    this.initialValues = Array.isArray(this.initialValues)
-      ? this.initialValues
-      : [this.initialValues];
 
+    if (this.initialValues.length === 0) this.initialValues = [[]];
     if (this.opts.namedPlaceholders) {
       this.parseResults = Parse.splitRewritableNamedParameterQuery(this.sql, this.initialValues);
       this.values = this.parseResults.values;
@@ -105,14 +96,14 @@ class BatchRewrite extends CommonText {
 
           value.on(
             'data',
-            function(chunk) {
+            function (chunk) {
               this.packet.writeBufferEscape(chunk);
             }.bind(this)
           );
 
           value.on(
             'end',
-            function() {
+            function () {
               this.packet.writeInt8(QUOTE); //'
               this.currentParam++;
               this.paramWritten();
@@ -134,7 +125,6 @@ class BatchRewrite extends CommonText {
     if (this.valueIdx < this.values.length && !this.packet.haveErrorResponse) {
       //there is still data to send
       setImmediate(this.sendQueries.bind(this));
-      // process.nextTick();
     } else {
       if (this.sending && this.valueIdx === this.values.length) this.emit('send_end');
       this.sending = false;
@@ -183,7 +173,7 @@ class BatchRewrite extends CommonText {
         if (this.parseResults.reWritable) {
           this.packet = null;
           let totalAffectedRows = 0;
-          this._rows.forEach(row => {
+          this._rows.forEach((row) => {
             totalAffectedRows += row.affectedRows;
           });
 
@@ -304,7 +294,7 @@ class BatchRewrite extends CommonText {
    * emitting event so next parameter can be written.
    */
   registerStreamSendEvent(packet, info) {
-    this.paramWritten = function() {
+    this.paramWritten = function () {
       let flushed = false;
       while (!flushed) {
         if (this.packet.haveErrorResponse) {
@@ -352,14 +342,14 @@ class BatchRewrite extends CommonText {
           flushed = packet.writeInt8(QUOTE) || flushed;
           value.once(
             'end',
-            function() {
+            function () {
               packet.writeInt8(QUOTE);
               this.currentParam++;
               this.paramWritten();
             }.bind(this)
           );
 
-          value.on('data', function(chunk) {
+          value.on('data', function (chunk) {
             packet.writeBufferEscape(chunk);
           });
           return;

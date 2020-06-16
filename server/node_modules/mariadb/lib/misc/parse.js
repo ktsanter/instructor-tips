@@ -16,7 +16,7 @@ const State = {
  *
  * @returns {Array} query separated by parameters
  */
-module.exports.splitQuery = function(sql) {
+module.exports.splitQuery = function (sql) {
   let partList = [];
   let state = State.Normal;
   let lastChar = '\0';
@@ -122,7 +122,7 @@ module.exports.splitQuery = function(sql) {
  * @param displaySql      display sql function
  * @returns {{parts: Array, values: Array}}
  */
-module.exports.splitQueryPlaceholder = function(sql, info, initialValues, displaySql) {
+module.exports.splitQueryPlaceholder = function (sql, info, initialValues, displaySql) {
   let partList = [];
   let values = [];
   let state = State.Normal;
@@ -202,7 +202,7 @@ module.exports.splitQueryPlaceholder = function(sql, info, initialValues, displa
           partList.push(sql.substring(lastParameterPosition, idx - 1));
           placeholderName = '';
           while (
-            ((car = sql.charAt(idx++)) !== '' && (car >= '0' && car <= '9')) ||
+            ((car = sql.charAt(idx++)) !== '' && car >= '0' && car <= '9') ||
             (car >= 'A' && car <= 'Z') ||
             (car >= 'a' && car <= 'z') ||
             car === '-' ||
@@ -272,7 +272,7 @@ module.exports.splitQueryPlaceholder = function(sql, info, initialValues, displa
  *
  * @returns {JSON} query separated by parameters
  */
-module.exports.splitRewritableQuery = function(sql) {
+module.exports.splitRewritableQuery = function (sql) {
   let reWritablePrepare = true;
   let multipleQueriesPrepare = true;
   let partList = [];
@@ -413,7 +413,8 @@ module.exports.splitRewritableQuery = function(sql) {
           //field/table name might contain 'select'
           if (
             idx > 1 &&
-            (sql.charAt(idx - 2) > ' ' && '();><=-+,'.indexOf(sql.charAt(idx - 2)) === -1)
+            sql.charAt(idx - 2) > ' ' &&
+            '();><=-+,'.indexOf(sql.charAt(idx - 2)) === -1
           ) {
             break;
           }
@@ -545,7 +546,7 @@ module.exports.splitRewritableQuery = function(sql) {
   };
 };
 
-module.exports.searchPlaceholder = function(sql, info, initialValues, displaySql) {
+module.exports.searchPlaceholder = function (sql, info, initialValues, displaySql) {
   let sqlPlaceHolder = '';
   const rowNumber = initialValues.length;
   let values = new Array(rowNumber);
@@ -628,7 +629,7 @@ module.exports.searchPlaceholder = function(sql, info, initialValues, displaySql
           sqlPlaceHolder += sql.substring(lastParameterPosition, idx - 1) + '?';
           placeholderName = '';
           while (
-            ((car = sql.charAt(idx++)) !== '' && (car >= '0' && car <= '9')) ||
+            ((car = sql.charAt(idx++)) !== '' && car >= '0' && car <= '9') ||
             (car >= 'A' && car <= 'Z') ||
             (car >= 'a' && car <= 'z') ||
             car === '-' ||
@@ -695,7 +696,7 @@ module.exports.searchPlaceholder = function(sql, info, initialValues, displaySql
  *
  * @returns {JSON} query separated by parameters
  */
-module.exports.splitRewritableNamedParameterQuery = function(sql, initialValues) {
+module.exports.splitRewritableNamedParameterQuery = function (sql, initialValues) {
   let reWritablePrepare = true;
   let multipleQueriesPrepare = true;
   let partList = [];
@@ -800,7 +801,7 @@ module.exports.splitRewritableNamedParameterQuery = function(sql, initialValues)
           let part = sql.substring(lastParameterPosition, idx - 1);
           placeholderName = '';
           while (
-            ((car = sql.charAt(idx++)) !== '' && (car >= '0' && car <= '9')) ||
+            ((car = sql.charAt(idx++)) !== '' && car >= '0' && car <= '9') ||
             (car >= 'A' && car <= 'Z') ||
             (car >= 'a' && car <= 'z') ||
             car === '-' ||
@@ -859,7 +860,8 @@ module.exports.splitRewritableNamedParameterQuery = function(sql, initialValues)
           //field/table name might contain 'select'
           if (
             idx > 1 &&
-            (sql.charAt(idx - 2) > ' ' && '();><=-+,'.indexOf(sql.charAt(idx - 2)) === -1)
+            sql.charAt(idx - 2) > ' ' &&
+            '();><=-+,'.indexOf(sql.charAt(idx - 2)) === -1
           ) {
             break;
           }
@@ -1001,7 +1003,7 @@ module.exports.splitRewritableNamedParameterQuery = function(sql, initialValues)
  * @param fileName    server requested file
  * @returns {boolean} is filename corresponding to query
  */
-module.exports.validateFileName = function(sql, parameters, fileName) {
+module.exports.validateFileName = function (sql, parameters, fileName) {
   let queryValidator = new RegExp(
     "^(\\s*\\/\\*([^\\*]|\\*[^\\/])*\\*\\/)*\\s*LOAD\\s+DATA\\s+((LOW_PRIORITY|CONCURRENT)\\s+)?LOCAL\\s+INFILE\\s+'" +
       fileName +

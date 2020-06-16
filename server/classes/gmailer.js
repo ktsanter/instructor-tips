@@ -11,7 +11,6 @@ module.exports = internal.GMailer = class {
   constructor(nodemailer, credentials) {
     this._nodemailer = nodemailer;
     this.DEBUG = true;  
-    this.SHOW_IN_CONSOLE = false; // DEBUG and true => print message parameters to console
     
     this._transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -27,7 +26,7 @@ module.exports = internal.GMailer = class {
 //---------------------------------------------------------------
 // public methods - general messages
 //---------------------------------------------------------------
-  async sendMessage(addresseeList, subjectText, bodyText, bodyHTML) {
+  async sendMessage(addresseeList, subjectText, bodyText, bodyHTML, attachments) {
     var mailOptions = {
       from: this._defaultSender,
       to: addresseeList,
@@ -36,21 +35,18 @@ module.exports = internal.GMailer = class {
       html: bodyHTML ? bodyHTML : bodyText
     };
     
+    if (attachments) {
+      mailOptions.attachments = attachments;
+    }
+
     if (this.DEBUG) {
       console.log('GMailer.sendMessage: debug mode on -> message to ' + addresseeList + ' not mailed');
-      if (this.SHOW_IN_CONSOLE) {
-        console.log('\nsendMessage (debug)');
-        console.log('from: ' + mailOptions.from);
-        console.log('to: ' + mailOptions.to);
-        console.log('subject: ' + mailOptions.subject);
-        console.log(mailOptions.text);
-        console.log(mailOptions.html);
-      }
       
     } else {
       this._transporter.sendMail(mailOptions, function(error, info){
         if (error) {
-          console.log(error);
+          console.log('GMailer.sendMessageerror: ' + JSON.stringify(error));
+          return {"success": false};
         }
       });     
     }

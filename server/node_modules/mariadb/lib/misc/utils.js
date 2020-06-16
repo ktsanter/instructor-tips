@@ -3,6 +3,7 @@ const Long = require('long');
 const hexArray = '0123456789ABCDEF'.split('');
 const Errors = require('../misc/errors');
 const CommonText = require('../cmd/common-text-cmd');
+const Iconv = require('iconv-lite');
 
 /**
  * Write bytes/hexadecimal value of a byte array to a string.
@@ -12,66 +13,78 @@ const CommonText = require('../cmd/common-text-cmd');
  * 73 74 32 20 28 73 74 72  6D 20 74 65 78 74 29 20     st2 (strm text)
  * 43 48 41 52 53 45 54 20  75 74 66 38                 CHARSET utf8
  */
-module.exports.log = function(opts, buf, off, len, header) {
+module.exports.log = function (opts, buf, off, end, header) {
   let out = [];
+  if (!buf) return '';
+  if (off === undefined || off === null) off = 0;
+  if (end === undefined || end === null) end = buf.length;
+  let asciiValue = new Array(16);
+  asciiValue[8] = ' ';
 
-  if (!buf || len !== 0) {
-    let asciiValue = new Array(16);
-    asciiValue[8] = ' ';
+  let useHeader = header !== undefined;
+  let offset = off || 0;
+  const maxLgh = Math.min(useHeader ? opts.debugLen - header.length : opts.debugLen, end - offset);
+  const isLimited = end - offset > maxLgh;
+  let byteValue;
+  let posHexa = 0;
+  let pos = 0;
 
-    let useHeader = header !== undefined;
-    let offset = off || 0;
-    const maxLgh = Math.min(
-      useHeader ? opts.debugLen - header.length : opts.debugLen,
-      len - offset
-    );
-    const isLimited = len - offset > maxLgh;
-    let byteValue;
-    let posHexa = 0;
-    let pos = 0;
+  out.push(
+    '+--------------------------------------------------+\n' +
+      '|  0  1  2  3  4  5  6  7   8  9  a  b  c  d  e  f |\n' +
+      '+--------------------------------------------------+------------------+\n'
+  );
 
-    if (useHeader) {
-      while (pos < header.length) {
-        byteValue = header[pos++] & 0xff;
-        out.push(hexArray[byteValue >>> 4], hexArray[byteValue & 0x0f], ' ');
-        asciiValue[posHexa++] =
-          byteValue > 31 && byteValue < 127 ? String.fromCharCode(byteValue) : '.';
-      }
-    }
-
-    pos = offset;
-    while (pos < maxLgh + offset) {
-      byteValue = buf[pos] & 0xff;
-
+  if (useHeader) {
+    while (pos < header.length) {
+      if (posHexa === 0) out.push('| ');
+      byteValue = header[pos++] & 0xff;
       out.push(hexArray[byteValue >>> 4], hexArray[byteValue & 0x0f], ' ');
-
       asciiValue[posHexa++] =
         byteValue > 31 && byteValue < 127 ? String.fromCharCode(byteValue) : '.';
-
       if (posHexa === 8) out.push(' ');
-      if (posHexa === 16) {
-        out.push('    ', asciiValue.join(''), '\n');
-        posHexa = 0;
-      }
-      pos++;
     }
-
-    let remaining = posHexa;
-    if (remaining > 0) {
-      if (remaining < 8) {
-        for (; remaining < 8; remaining++) out.push('   ');
-        out.push(' ');
-      }
-
-      for (; remaining < 16; remaining++) out.push('   ');
-
-      out.push('    ', asciiValue.slice(0, posHexa).join('') + (isLimited ? ' ...' : ''), '\n');
-    } else if (isLimited) {
-      out[out.length - 2] = out[out.length - 2] + ' ...';
-    }
-    return out.join('');
   }
-  return '';
+
+  pos = offset;
+  while (pos < maxLgh + offset) {
+    if (posHexa === 0) out.push('| ');
+    byteValue = buf[pos] & 0xff;
+
+    out.push(hexArray[byteValue >>> 4], hexArray[byteValue & 0x0f], ' ');
+
+    asciiValue[posHexa++] =
+      byteValue > 31 && byteValue < 127 ? String.fromCharCode(byteValue) : '.';
+
+    if (posHexa === 8) out.push(' ');
+    if (posHexa === 16) {
+      out.push('| ', asciiValue.join(''), ' |\n');
+      posHexa = 0;
+    }
+    pos++;
+  }
+
+  let remaining = posHexa;
+  if (remaining > 0) {
+    if (remaining < 8) {
+      for (; remaining < 8; remaining++) {
+        out.push('   ');
+        asciiValue[posHexa++] = ' ';
+      }
+      out.push(' ');
+    }
+
+    for (; remaining < 16; remaining++) {
+      out.push('   ');
+      asciiValue[posHexa++] = ' ';
+    }
+
+    out.push('| ', asciiValue.join(''), isLimited ? ' |...\n' : ' |\n');
+  } else if (isLimited) {
+    out[out.length - 1] = ' |...\n';
+  }
+  out.push('+--------------------------------------------------+------------------+\n');
+  return out.join('');
 };
 
 module.exports.escapeId = (opts, info, value) => {
@@ -84,36 +97,33 @@ module.exports.escapeId = (opts, info, value) => {
       Errors.ER_NULL_ESCAPEID
     );
   }
-  if (value.match(/^[0-9a-zA-Z\$_\u0080-\uFFFF]+$/u)) {
-    return value;
-  } else {
-    if (value.includes('\u0000')) {
-      throw Errors.createError(
-        'Cannot escape ID with null character (u0000)',
-        false,
-        info,
-        '0A000',
-        Errors.ER_NULL_CHAR_ESCAPEID
-      );
-    }
-
-    if (value.match(/^`.+`$/g)) {
-      value = value.substring(1, value.length() - 1);
-    }
-    return '`' + value.replace(/`/g, '``') + '`';
+  if (value.includes('\u0000')) {
+    throw Errors.createError(
+      'Cannot escape ID with null character (u0000)',
+      false,
+      info,
+      '0A000',
+      Errors.ER_NULL_CHAR_ESCAPEID
+    );
   }
+
+  // always return escaped value, event when there is no special characters
+  // to permit working with reserved words
+  if (value.match(/^`.+`$/g)) {
+    // already escaped
+    return value;
+  }
+  return '`' + value.replace(/`/g, '``') + '`';
 };
 
 module.exports.escape = (opts, info, value) => {
-  if (!value) return 'NULL';
+  if (value === undefined || value === null) return 'NULL';
 
   switch (typeof value) {
     case 'boolean':
       return value ? 'true' : 'false';
-      break;
     case 'number':
       return '' + value;
-      break;
     case 'object':
       if (Object.prototype.toString.call(value) === '[object Date]') {
         return opts.tz
@@ -135,7 +145,7 @@ module.exports.escape = (opts, info, value) => {
         let out = '(';
         for (let i = 0; i < value.length; i++) {
           if (i !== 0) out += ',';
-          out += escape(opts, info, value[i]);
+          out += this.escape(opts, info, value[i]);
         }
         out += ')';
         return out;
@@ -168,8 +178,6 @@ module.exports.escape = (opts, info, value) => {
                 ")')"
               );
 
-              break;
-
             case 'LineString':
               return (
                 prefix +
@@ -177,7 +185,6 @@ module.exports.escape = (opts, info, value) => {
                 CommonText.geoArrayPointToString(value.coordinates) +
                 ")')"
               );
-              break;
 
             case 'Polygon':
               return (
@@ -186,7 +193,6 @@ module.exports.escape = (opts, info, value) => {
                 CommonText.geoMultiArrayPointToString(value.coordinates) +
                 ")')"
               );
-              break;
 
             case 'MultiPoint':
               return (
@@ -195,7 +201,6 @@ module.exports.escape = (opts, info, value) => {
                 CommonText.geoArrayPointToString(value.coordinates) +
                 ")')"
               );
-              break;
 
             case 'MultiLineString':
               return (
@@ -204,7 +209,6 @@ module.exports.escape = (opts, info, value) => {
                 CommonText.geoMultiArrayPointToString(value.coordinates) +
                 ")')"
               );
-              break;
 
             case 'MultiPolygon':
               return (
@@ -213,7 +217,6 @@ module.exports.escape = (opts, info, value) => {
                 CommonText.geoMultiPolygonToString(value.coordinates) +
                 ")')"
               );
-              break;
 
             case 'GeometryCollection':
               return (
@@ -222,7 +225,6 @@ module.exports.escape = (opts, info, value) => {
                 CommonText.geometricCollectionToString(value.geometries) +
                 ")')"
               );
-              break;
           }
         } else {
           if (opts.permitSetMultiParamEntries) {
@@ -237,7 +239,7 @@ module.exports.escape = (opts, info, value) => {
                 out += ',';
               }
               out += '`' + key + '`=';
-              out += escape(opts, info, val);
+              out += this.escape(opts, info, val);
             }
             if (out === '') return "'" + escapeString(JSON.stringify(value)) + "'";
             return out;
@@ -246,7 +248,6 @@ module.exports.escape = (opts, info, value) => {
           }
         }
       }
-      break;
     default:
       return "'" + escapeString(value) + "'";
   }
@@ -265,7 +266,7 @@ const LITTERAL_ESCAPE = {
   '\\': '\\\\'
 };
 
-const escapeString = val => {
+const escapeString = (val) => {
   const pattern = /[\u0000'"\b\n\r\t\u001A\\]/g;
 
   let offset = 0;

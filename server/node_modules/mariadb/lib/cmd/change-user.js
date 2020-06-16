@@ -20,16 +20,15 @@ class ChangeUser extends Handshake {
   start(out, opts, info) {
     this.configAssign(opts, this.opts);
     let authToken;
+    const pwd = Array.isArray(this.opts.password) ? this.opts.password[0] : this.opts.password;
     switch (info.defaultPluginName) {
       case 'mysql_native_password':
       case '':
-        authToken = NativePasswordAuth.encryptPassword(this.opts.password, info.seed);
+        authToken = NativePasswordAuth.encryptPassword(pwd, info.seed);
         break;
-
       case 'client_ed25519':
-        authToken = Ed25519PasswordAuth.encryptPassword(this.opts.password, info.seed);
+        authToken = Ed25519PasswordAuth.encryptPassword(pwd, info.seed);
         break;
-
       default:
         authToken = Buffer.alloc(0);
         break;
@@ -40,7 +39,7 @@ class ChangeUser extends Handshake {
     out.writeString(this.opts.user || '');
     out.writeInt8(0);
 
-    if (info.serverCapabilities & Capabilities.SECURE_CONNECTION) {
+    if (info.serverCapabilities.low & Capabilities.SECURE_CONNECTION) {
       out.writeInt8(authToken.length);
       out.writeBuffer(authToken, 0, authToken.length);
     } else {
@@ -48,7 +47,7 @@ class ChangeUser extends Handshake {
       out.writeInt8(0);
     }
 
-    if (info.clientCapabilities & Capabilities.CONNECT_WITH_DB) {
+    if (info.clientCapabilities.low & Capabilities.CONNECT_WITH_DB) {
       out.writeString(this.opts.database);
       out.writeInt8(0);
       info.database = this.opts.database;
@@ -56,12 +55,12 @@ class ChangeUser extends Handshake {
 
     out.writeInt16(this.opts.collation.index);
 
-    if (info.clientCapabilities & Capabilities.PLUGIN_AUTH) {
+    if (info.clientCapabilities.low & Capabilities.PLUGIN_AUTH) {
       out.writeString(info.defaultPluginName);
       out.writeInt8(0);
     }
 
-    if (this.opts.connectAttributes && info.serverCapabilities & Capabilities.CONNECT_ATTRS) {
+    if (this.opts.connectAttributes && info.serverCapabilities.low & Capabilities.CONNECT_ATTRS) {
       out.writeInt8(0xfc);
       let initPos = out.pos; //save position, assuming connection attributes length will be less than 2 bytes length
       out.writeInt16(0);
@@ -128,11 +127,12 @@ class ChangeUser extends Handshake {
       if (this.opts.collation === undefined)
         throw new RangeError("Unknown charset '" + opt.charset + "'");
     } else if (opt.collation && typeof opt.collation === 'string') {
-      this.opts.collation = Collations.fromName(opt.collation.toUpperCase());
+      const initial = opt.collation;
+      this.opts.collation = Collations.fromName(initial.toUpperCase());
       if (this.opts.collation === undefined)
-        throw new RangeError("Unknown collation '" + opt.collation + "'");
+        throw new RangeError("Unknown collation '" + initial + "'");
     } else {
-      this.opts.collation = Collations.fromIndex(opt.charsetNumber) || Collations.fromIndex(224); //UTF8MB4_UNICODE_CI;
+      this.opts.collation = Collations.fromIndex(opt.charsetNumber) || connOpts.collation;
     }
     connOpts.password = opt.password;
   }

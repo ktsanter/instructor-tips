@@ -25,31 +25,20 @@ class BatchBulk extends CommonBinary {
    */
   start(out, opts, info) {
     this.info = info;
-    if (!this.initialValues) {
-      this.emit('send_end');
+    this.values = this.initialValues;
+
+    if (this.opts.timeout) {
       const err = Errors.createError(
-        'Batch must have values set\n' + this.displaySql(),
+        'Cannot use timeout for Batch statement',
         false,
         info,
         'HY000',
-        Errors.ER_BATCH_WITH_NO_VALUES,
-        this.stack,
-        false
+        Errors.ER_TIMEOUT_NOT_SUPPORTED
       );
-      this.onPacketReceive = null;
-      this.resolve = null;
-      process.nextTick(this.reject, err);
-      this.reject = null;
-      this.emit('end', err);
-      this.sending = false;
+      this.emit('send_end');
+      this.throwError(err, info);
       return;
     }
-
-    this.initialValues = Array.isArray(this.initialValues)
-      ? this.initialValues
-      : [this.initialValues];
-
-    this.values = this.initialValues;
 
     let questionMarkSql = this.sql;
     if (this.opts.namedPlaceholders) {
@@ -166,7 +155,7 @@ class BatchBulk extends CommonBinary {
       } else {
         this.packet = null;
         let totalAffectedRows = 0;
-        this._rows.forEach(row => {
+        this._rows.forEach((row) => {
           totalAffectedRows += row.affectedRows;
         });
 
@@ -242,11 +231,11 @@ class BatchBulk extends CommonBinary {
   validateParameters(info) {
     //validate parameter size.
     for (let r = 0; r < this.values.length; r++) {
-      let val = this.values[r];
+      if (!Array.isArray(this.values[r])) this.values[r] = [this.values[r]];
 
       //validate parameter is defined.
-      for (let i = 0; i < val.length; i++) {
-        if (val[i] === undefined) {
+      for (let i = 0; i < this.values[r].length; i++) {
+        if (this.values[r][i] === undefined) {
           this.emit('send_end');
           this.throwNewError(
             'Parameter at position ' +
