@@ -115,14 +115,6 @@ const gMailerClass = require('./classes/gmailer');
 const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD});
 
 //------------------------------------------
-// cron management
-//------------------------------------------
-var commonmark = require('commonmark');
-var cron = require('cron');
-const cronSchedulerClass = require('./classes/cronscheduler')
-const cronScheduler = new cronSchedulerClass(cron, mariaDBManager, gMailer, commonmark, INSTRUCTORTIPS_URL);
-
-//------------------------------------------
 // user management
 //------------------------------------------
 const userManagementClass = require('./classes/usermanagement')
@@ -132,6 +124,14 @@ const userManagement = new userManagementClass(mariaDBManager);
 // Pug management
 //------------------------------------------
 const pug = require('pug')
+
+//------------------------------------------
+// cron management
+//------------------------------------------
+var commonmark = require('commonmark');
+var cron = require('cron');
+const cronSchedulerClass = require('./classes/cronscheduler')
+const cronScheduler = new cronSchedulerClass(cron, mariaDBManager, gMailer, commonmark, pug, INSTRUCTORTIPS_URL);
 
 //------------------------------------------
 // InstructorTips admin query objects

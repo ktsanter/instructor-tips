@@ -1,0 +1,56 @@
+doctype html
+html
+  head
+    title InstructorTips schedule reminder
+    meta(charset="utf-8")
+    style
+      include schedule_reminder.css
+      
+  body  
+    p= JSON.stringify(notificationInfo)
+    - var userTo = notificationInfo.userTo
+    - var dateStamp = notificationInfo.dateStamp
+    
+    .salutation 
+      |Hello #{userTo},
+      
+    .greeting 
+      |This is your weekly reminder from 
+      a(href=notificationInfo.appURL) InstructorTips 
+      |for the week beginning #{dateStamp}, 
+      |reporting the tips you scheduled but haven't checked off yet.
+    
+    - var scheduleList = notificationInfo.scheduleList    
+    each scheduleData in scheduleList 
+      .schedule
+        .schedulename= scheduleData.scheduleName
+      
+        if scheduleData.pastDue
+          .specialcase.pastdue 
+            |The current date is later than the end date for your schedule so there are no reminders. 
+            |You can use the Notification option in the app to stop sending reminders for this schedule.
+        
+        else if scheduleData.upToDate
+          .specialcase.uptodate 
+            |Congratulations! You've checked off all the tips scheduled so far.
+          
+        else
+          - var tipList = scheduleData.tipList
+          .scheduletips
+            each weekNumber in (Object.keys(tipList))
+              - var weeklyTipList = tipList[weekNumber]
+              .tipsforweek
+                if (weekNumber == 0)
+                  .tipsforweeklabel
+                    |before the term starts
+                else
+                  .tipsforweeklabel
+                    |week ##{weekNumber}
+                    
+                each tip in weeklyTipList
+                  - var tipHTML = tip.tiptext
+                  .tipdetails
+                    |#{tipHTML}
+
+          
+      
