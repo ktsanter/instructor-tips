@@ -1,0 +1,36 @@
+doctype html
+html
+  head
+    title InstructorTips shared schedule
+    meta(charset="utf-8")
+    style
+      include schedule_share.css
+      
+  body  
+    - var userTo = shareInfo.userTo
+    - var userFrom = shareInfo.userFrom
+    - var scheduleName = shareInfo.scheduleName
+    - var comment = shareInfo.comment
+    
+    .container 
+      .salutation
+        |Hello #{userTo},
+
+      .message.message-share
+        |#{userFrom} shared a schedule with you in the 
+        a(href=shareInfo.appURL) InstructorTips 
+        |application.
+        
+      .schedule
+        .schedule-name
+          strong
+            |#{scheduleName}
+          
+        if comment  
+          .schedule-comment
+            em
+              |comment: 
+            |#{comment}
+        
+      .message.message-action
+        |You can use the app to either accept or delete the schedule at your convenience.

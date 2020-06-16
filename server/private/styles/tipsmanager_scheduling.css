@@ -172,10 +172,10 @@
 }
 
 .weeklytip .weeklytip-dragtarget {
-  background-color: var(--bgSecondaryChoice) !important;
-  border-left: 1px solid var(--itemBorder);
-  border-top: 1px solid var(--itemBorder);
-  border-bottom: 1px solid var(--itemBorder);
+  background-color: var(--bgTertiaryEmphasis) !important;
+  border-left: 1px solid var(--bgPrimaryEmphasis);
+  border-top: 1px solid var(--bgPrimaryEmphasis);
+  border-bottom: 1px solid var(--bgPrimaryEmphasis);
   border-radius: 4px 0px 0px 4px;
   height: 1.8em;  
 }
@@ -193,15 +193,16 @@
   right: 1.0em;
   color: var(--bgTertiaryEmphasis);
   background-color: var(--bgOverall);
-  border: 2px solid var(--bgSecondaryChoice);
-  border-radius: 6px;
+  border: 2px solid var(--bgTertiaryEmphasis);
+  border-radius: 0.3em;
   font-size: 2em;
   padding: 0.3em 0.2em;
 }
 
 .weeklytip-trashcontainer.highlight {
-  color: black;
-  background-color: var(--bgSecondaryChoice);
+  color: white;
+  background-color: var(--bgPrimaryEmphasis_trans);
+  border-color: black;
 }
 
 /*

@@ -1,0 +1,30 @@
+body {
+	color: black;
+	background-color: #eee;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.container {}
+
+.container .salutation {}
+
+.container .greeting {}
+
+.container .message {}
+
+.container .message.message-share {}
+
+.container .message.message-action {}
+
+.container .schedule {
+  background-color: white;
+  border: 1px solid rgba(66, 98, 150, 1.0);
+  border-radius: 0.3em;
+  margin: 0.4em 0;
+  padding: 0.2em 0.4em;  
+}
+
+.container .schedule .schedule-name{}
+
+.container .schedule .schedule-comment{}

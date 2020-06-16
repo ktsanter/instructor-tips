@@ -12,12 +12,15 @@
   - add "other" page
 
 - PUG for notification messages
-  - rename test files
   - alter code in CronScheduler to use Pug
      - test before going down image path
   - make Pug files for share messages
   - alter code in TipsManager for share messages
+  - handle text alternative for both
 
 - HTML -> image -> email
+
+- select multiple target names for sharing ?
+
 
 

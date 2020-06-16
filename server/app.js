@@ -51,6 +51,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true })); // for form data
 
 //------------------------------------------
+// file services
+//------------------------------------------
+const fileservices = require('fs');
+
+//------------------------------------------
 // mariadb management
 //------------------------------------------
 const mariadb = require('mariadb')
@@ -126,12 +131,28 @@ const userManagement = new userManagementClass(mariaDBManager);
 const pug = require('pug')
 
 //------------------------------------------
-// cron management
+// message management
 //------------------------------------------
 var commonmark = require('commonmark');
+const messageManagementClass = require('./classes/messagemanagement')
+const messageManagement = new messageManagementClass({
+  "dbManager": mariaDBManager, 
+  "mailer": gMailer, 
+  "commonmark": commonmark, 
+  "pug": pug, 
+  "appURL": INSTRUCTORTIPS_URL, 
+  "fileServices": fileservices
+});
+
+//------------------------------------------
+// cron management
+//------------------------------------------
 var cron = require('cron');
 const cronSchedulerClass = require('./classes/cronscheduler')
-const cronScheduler = new cronSchedulerClass(cron, mariaDBManager, gMailer, commonmark, pug, INSTRUCTORTIPS_URL);
+const cronScheduler = new cronSchedulerClass({
+  "cron": cron, 
+  "messageManagement": messageManagement
+});
 
 //------------------------------------------
 // InstructorTips admin query objects
@@ -152,64 +173,7 @@ const dbAdminDelete = new dbAdminDeleteClass(userManagement, mariaDBManager);
 // InstructorTips general query objects
 //------------------------------------------
 const dbTipManagerClass = require('./classes/tipmanager')
-const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager);
-
-//------------------------------------------------------
-// testing
-//------------------------------------------------------
-app.get('/testpug.html', function(req, res) {
-  var rendered = pug.renderFile('./private/pug/test.pug', {
-    name: 'Kevin Santer',
-    week: '2020-06-15',
-    scheduleList: [
-      {
-        scheduleName: 'Kevin schedule #1',
-        upToDate: false,
-        pastDue: false,
-        weekList: [
-          {
-            weekName: 'before the term starts',
-            tipList: [
-              {tipText: 'Bon jour, mon frére.<p></p><p>¡Hola Señor!</p>', even: true},
-              {tipText: 'a tip of my own', even: false},
-              {tipText: 'Before beginning the semester, check out <a href="https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing"><span style="background-color: #FFFF00">the schedule</span></a> of department meetings and Byte-Sized PD. Add sessions to your calendar. Your participation is welcome and encouraged!', even: true}
-            ]
-          },
-          {
-            weekName: 'week 1',
-            tipList: [
-              {tipText: 'Introduce yourself to your students. This can either be an announcement, video, message, or something else. Be creative! Show them who you are.', even: true},
-              {tipText: 'a tip of my own', even: false}
-            ]
-          },
-          {
-            weekName: 'week #2',
-            tipList: [
-              {tipText: 'Ask students how the course is going so far. Check in on what they need from you to be successful. Remind students of their end date and what that means.', even: true},
-              {tipText: 'Check ESRs as you are notified. Apply necessary accommodations in your courses.', even: false}
-            ]
-          }
-        ]
-      },
-      
-      {
-        scheduleName: 'Kevin schedule #2',
-        upToDate: true,
-        pastDue: false,
-        weekList: []
-      },
-      
-      {
-        scheduleName: 'Kevin schedule #3',
-        upToDate: false,
-        pastDue: true,
-        weekList: []
-      }
-    ]
-  });
-
-  res.send(rendered);
-})
+const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager, messageManagement);
 
 //------------------------------------------------------
 // login/logout and main page
@@ -378,7 +342,7 @@ app.post('/tipmanager/insert/:queryName', async function (req, res) {
     
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
     req.body.appURL = INSTRUCTORTIPS_URL;    
-    res.send(await dbTipManager.doInsert(req.params, req.body, gMailer, userInfo, userManagement.isAtLeastPrivilegeLevel));
+    res.send(await dbTipManager.doInsert(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));

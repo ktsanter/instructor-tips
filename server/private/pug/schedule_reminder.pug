@@ -7,7 +7,6 @@ html
       include schedule_reminder.css
       
   body  
-    p= JSON.stringify(notificationInfo)
     - var userTo = notificationInfo.userTo
     - var dateStamp = notificationInfo.dateStamp
     
@@ -27,8 +26,11 @@ html
       
         if scheduleData.pastDue
           .specialcase.pastdue 
-            |The current date is later than the end date for your schedule so there are no reminders. 
-            |You can use the Notification option in the app to stop sending reminders for this schedule.
+            |The current date is later than the end date for this schedule. 
+            |You can use the 
+            strong 
+              em Notification 
+            |option in the app to stop sending reminders for it.
         
         else if scheduleData.upToDate
           .specialcase.uptodate 
@@ -46,11 +48,16 @@ html
                 else
                   .tipsforweeklabel
                     |week ##{weekNumber}
-                    
+                
                 each tip in weeklyTipList
-                  - var tipHTML = tip.tiptext
-                  .tipdetails
-                    |#{tipHTML}
+                  - var tipHTML = tip.tiptext  
+                  if tip.evenTip
+                    .tipdetails.tipdetails-even
+                      |!{tipHTML}
+                  else
+                    .tipdetails.tipdetails-odd
+                      |!{tipHTML}
+                  
 
           
       

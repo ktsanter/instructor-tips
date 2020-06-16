@@ -27,14 +27,15 @@ body {
   margin-left: 0.8em;  
 }
 
-.schedule .scheduletips .specialcase {
-  padding: 0.2em 0;
+.schedule .specialcase {
+  background-color: white;
+  padding: 0.2em 0 0.2em 0.8em;
   max-width: 70%; 
 }
 
-.schedule .scheduletips .uptodate {}
+.schedule .uptodate {}
 
-.schedule .scheduletips .pastdue {}
+.schedule .pastdue {}
 
 .schedule .scheduletips .tipsforweek {
   margin-top: 1.0em;
@@ -49,8 +50,8 @@ body {
 
 .schedule .scheduletips .tipsforweek .tipdetails {
   max-width: 70%;
-  margin-top: 0.5em;
-  padding: 0 0.4em 0 0.2em;    
+  margin-top: -0.8em;
+  padding: 0em 0.2em 0em 0.2em;    
 }
 
 .schedule .scheduletips .tipsforweek .tipdetails.tipdetails-even {

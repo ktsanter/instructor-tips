@@ -561,6 +561,8 @@ class TipScheduling {
         this._trashTarget.appendChild(CreateElement.createIcon(null, 'weeklytip-trashicon far fa-trash-alt trash', null, null));
         this._container.appendChild(this._trashTarget);
         this._trashTarget.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
+        this._trashTarget.addEventListener('dragenter', (e) => {this._handleDragEnter(e);});
+        this._trashTarget.addEventListener('dragleave', (e) => {this._handleDragLeave(e);});
         this._trashTarget.addEventListener('dragover', (e) => {this._handleDragOver(e);});
         this._trashTarget.addEventListener('drop', (e) => {this._finishTipDrop(e);});
       }
@@ -637,10 +639,15 @@ class TipScheduling {
     return false;
   }
   
+  _handleDragLeave(e) {
+    this._highlightTipTrash(false);
+  }
+  
   _handleDragOver(e) {
     e.preventDefault();
 
     var destContainer = this._getDropLocation(e.target).dropcontainer;
+
     if (this._dragTarget && destContainer.classList.contains('weeklytip-trashcontainer')) {
       this._highlightTipTrash(true);
       
@@ -736,7 +743,7 @@ class TipScheduling {
   _highlightTipTrash(highlight) {
     var elem = this._trashTarget;
     if (!elem) return;
-    
+
     if (!highlight) {
         if (elem.classList.contains('highlight')) {
           elem.classList.remove('highlight');

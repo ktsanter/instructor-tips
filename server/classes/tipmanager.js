@@ -7,9 +7,10 @@
 const internal = {};
 
 module.exports = internal.TipManager = class {
-  constructor(userManagement, dbManager) {
+  constructor(userManagement, dbManager, messageManagement) {
     this._dbManager = dbManager;
     this._userManagement = userManagement;
+    this._messageManagement = messageManagement;
   }
   
 //---------------------------------------------------------------
@@ -55,7 +56,7 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
 
-  async doInsert(params, postData, gMailer, userInfo, funcCheckPrivilege) {
+  async doInsert(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'schedule') {
@@ -65,7 +66,7 @@ module.exports = internal.TipManager = class {
       dbResult = await this._addScheduleWeek(params, postData, userInfo);
             
     } else if (params.queryName == 'shareschedule') {
-      dbResult = await this._shareSchedule(params, postData, userInfo, gMailer);
+      dbResult = await this._shareSchedule(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -623,7 +624,7 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
-  async _shareSchedule(params, postData, userInfo, gMailer) {
+  async _shareSchedule(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult();
     
     var query, queryResults;
@@ -675,9 +676,14 @@ module.exports = internal.TipManager = class {
       return result;
     }
     
-    queryResults = await this._notifyAboutSharedSchedule(postData.scheduleid, postData.comment, userInfo, postData.userid, postData.appURL, gMailer);
+    var messageResult = await this._messageManagement.sendSharedScheduleNotification({
+      scheduleId: postData.scheduleid, 
+      comment: postData.comment, 
+      userInfo: userInfo, 
+      userIdTo: postData.userid
+    });
 
-    if (queryResults.success) {
+    if (messageResult.success) {
       result.success = true;
       result.details = 'insert succceeded';
     } else {
@@ -685,92 +691,6 @@ module.exports = internal.TipManager = class {
     }
     
     return result;
-  }
-  
-  async _notifyAboutSharedSchedule(scheduleId, comment, userInfo, useridTo, appURL, gMailer) {
-    var result = this._dbManager.queryFailureResult();
-    
-    var queryList, queryResults;
-
-    queryList = {
-      notification:
-        'select sn.notificationon, u.email, u.username ' +
-        'from user as u, sharenotification as sn ' +
-        'where u.userid = sn.userid ' +
-          'and u.userid = ' + useridTo,
-        
-      schedule:
-        'select schedulename ' +
-        'from schedule ' +
-        'where scheduleid = ' + scheduleId + ' ' +
-          'and userid = ' + userInfo.userId,
-    };
-    
-    queryResults = await this._dbManager.dbQueries(queryList);
-    if (!queryResults) {
-      result.details = queryResults.details;
-      return result;
-    }    
-
-    var notificationOn = queryResults.data.notification[0].notificationon;
-    var emailTo = queryResults.data.notification[0].email;
-    var scheduleName = queryResults.data.schedule[0].schedulename;
-    var userTo = queryResults.data.notification[0].username;
-
-    if (!notificationOn) {
-      result.success = true;
-      result.details = 'no message sent - notification off';
-      return result;
-    }
-    
-    var bodyText = 'Hello ' + userTo + ',\n';
-    bodyText += userInfo.userName + ' shared a schedule with you in the InstructorTips app.\n';
-    bodyText += 'name: ' + scheduleName + '\n';
-    if (comment.length > 0) {
-      bodyText += 'comment: ' + comment + '\n';
-    } 
-    bodyText += 'You can use the app to either accept or delete the schedule at your convenience.\n';
-    bodyText += '\nYou can find the InstructorTips app at: ' + appURL
-
-    var bodyHTML = '';
-    bodyHTML = '<div style="color: black; font-family: \'Segoe UI\', Tahoma, Arial, sans-serif; font-size: 13px;">';
-    
-    bodyHTML +=   '<div>';
-    bodyHTML +=     'Hello ' + userTo + ',<br>';
-    bodyHTML +=   '</div>';
-
-    bodyHTML +=   '<div style="margin-top: 0.5em">';
-    bodyHTML +=     userInfo.userName + ' shared a schedule with you in the <a href=' + appURL + '>' + 'InstructorTips' + '</a> app.';
-    bodyHTML +=   '</div>';
-    
-    bodyHTML +=   '<div>';
-    bodyHTML +=     '<strong><em>name</em></strong>: ' + scheduleName + '<br>';
-    if (comment.length > 0) {
-      bodyHTML +=   '<strong><em>comment</em></strong>: ' + comment + '<br>';
-    } 
-    bodyHTML +=   '</div>';
-
-    bodyHTML +=   '<div style="margin-top:0.5em;">';
-    bodyHTML +=     'You can use the app to either accept or delete the schedule at your convenience.';
-    bodyHTML +=   '</div>';
-    
-    bodyHTML += '</div>';
-    
-    var mailResult = await gMailer.sendMessage(
-      emailTo, 
-      'an InstructorTips schedule has been shared with you',
-      bodyText,
-      bodyHTML
-    )
-                
-    if (mailResult.success) {
-      result.success = true;
-      result.details = 'notification message sent';
-    } else {
-      result.details = 'notification message failed';
-    }
-    
-    return result;    
   }
 
 //---------------------------------------------------------------
