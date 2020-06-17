@@ -11,34 +11,52 @@
     <link href="../styles/help.css" rel="stylesheet" type="text/css">   
   </head>
 
-  <body onload="insertFieldValues();">
+  <body class="instructortips-colorscheme">
   
-    <div class="about-container">
+    <div class="instructortips-help home">
     
-      <div class="about-logosplash">
-        <i class="about-logo far fa-lightbulb"></i>
-        <span class="about-logotitle"> InstructorTips </span>
+      <div class="about-container">
+        <div class="about-logosplash">
+          <i class="about-logo far fa-lightbulb"></i>
+          <span class="about-logotitle"> InstructorTips </span>
+        </div>
+        
+        <div class="about-version">
+          <span class="about-label">version </span>
+          <span class="about-infoitem"> 0.57 </span>
+        </div>
+        
+        <div class="about-author">
+          <span class="about-infoitem"> Kevin Santer </span>
+          <span class="about-infoItem">
+            <span>(ksanter@michiganvirtual.org)</span>
+        </div>            
       </div>
       
-      <div class="about-version">
-        <span class="about-label">version </span>
-        <span class="about-infoitem"> 0.57 </span>
+      <div class="home-overview"> 
+        InstructorTips is a tool for building schedules with checklists of weekly tips.
+        <ul myLabel="With it users can:">
+          <li> create schedules, specifying the number of weeks and the start date </li>
+          <li> write their own tips and add them to any schedule </li>
+          <li> reuse tips on any schedule </li>
+          <li> choose from a repository of common tips </li>
+          <li> classify tips e.g. course launch, engagement, course end, etc.</li>
+          <li> share tips and schedules with other users</li>
+          <li> enable weekly notification reminders of tips that have yet to be checked off</li>
+        </ul>
+      </div>   
+      
+      <div>
+        <div class="home-snapshotlabel">
+          Snapshot of part of a schedule
+        </div>
+        <div class="home-snapshot">
+          <img src="/help/images/schedule_snapshot_001.png">
+        </div>
       </div>
       
-      <div class="about-author">
-        <span class="about-infoitem"> Kevin Santer </span>
-        <span class="about-infoItem">
-          <span>(ksanter@michiganvirtual.org)</span>
-      </div>      
-      
-    </div>
+    </div>    
 
   </body>
-  
-  <script>
-  function insertFieldValues() {
-    
-  }
 
-  </script>
 </html>

@@ -251,6 +251,12 @@ app.get('/scripts/:script', function (req, res) {
   res.sendFile(path.join(__dirname, 'private', 'scripts/' + req.params.script))
 })
 
+app.get('/help/images/:helpfile', function (req, res) {
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
+    res.sendFile(path.join(__dirname, 'private', 'help/images/' + req.params.helpfile))
+  }
+})
+
 app.get('/help/:helpfile', function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
     res.sendFile(path.join(__dirname, 'private', 'help/' + req.params.helpfile))
