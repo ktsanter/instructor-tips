@@ -10,7 +10,6 @@ const internal = {};
 module.exports = internal.MessageManagement = class {
   constructor(params) {
     this.DEBUG = false;  
-    this.SHOW_MESSAGES = true;
     
     this._dbManager = params.dbManager;
     this._mailer = params.mailer;
@@ -19,6 +18,11 @@ module.exports = internal.MessageManagement = class {
     this._appURL = params.appURL;
     this._fileServices = params.fileServices;
     this._HTMLToImage = params.HTMLToImage;
+    this._tempFileMaker = params.tempFileMaker;
+    
+    this._tempDir = 'temp';
+    this._sharePugFile = './private/pug/schedule_share.pug';
+    this._reminderPugFile = './private/pug/schedule_reminder.pug';
   }
   
 //---------------------------------------------------------------
@@ -55,7 +59,6 @@ module.exports = internal.MessageManagement = class {
     if (!notificationInfo.notificationon) {
       result.success = true;
       result.details = 'no message sent - notification off';
-      console.log('no notification sent for ' + notificationInfo.username);
       return result;
     }
     
@@ -67,39 +70,32 @@ module.exports = internal.MessageManagement = class {
       appURL: this._appURL
     };      
 
-    var rendered = this._pug.renderFile('./private/pug/schedule_share.pug', {shareInfo: pugParams});
-    var imageFileName = 'share.png';
-    var madeImageFile = await this._makeImage(rendered, imageFileName);  // need to randomize this name
+    var rendered = this._pug.renderFile(this._sharePugFile, {shareInfo: pugParams});
+    var imageFileName = this._tempFileMaker.tmpNameSync({tmpdir: this._tempDir}) + '.png'; 
+    imageFileName = this._tempDir + '/' + imageFileName.split('\\').pop().split('/').pop();
+ 
+    var madeImageFile = await this._makeImage(rendered, imageFileName);
     
     var mailResult = {success: false};
     
     if (this.DEBUG) {
-      var fileName = 'log/share_' + params.userInfo.userId + '_' + params.userIdTo + '_' + params.scheduleId + '.html';
-      this._fileServices.writeFile(fileName, rendered, function (err) {
-        if (err) {
-          console.log('MessageManagement: error writing ' + fileName);
-          console.log(err);
-        } else {
-          console.log('MessageManagement: wrote ' + fileName);
-        }
-      });
-    }
-
-    if (this.DEBUG) {
+      mailResult.success = true;
       result.success = true;
       result.details = 'notification message sent';
       
     } else {
-      mailResult = await this._mailer.sendMessage(
-        notificationInfo.email, 
-        'an InstructorTips schedule has been shared with you',
-        '',
-        '<img src="cid:' + (imageFileName + 'xxx') + '"/>',
-        [{
-          path: 'log/' + imageFileName,
-          cid: imageFileName + 'xxx'
-        }]
-      ) 
+      var msgSubject = 'an InstructorTips schedule has been shared with you';
+      var imageFileRelativePath = imageFileName;
+      var imageFileCID = imageFileName.split('\\').pop().split('/').pop() + 'xxx';
+      
+      var imageHTML = '<img src="cid:' + (imageFileCID) + '"/>';
+
+      var imageAttachments = [{
+        path: imageFileRelativePath,
+        cid: imageFileCID
+      }];
+
+      var mailResult = await this._mailer.sendMessage(notificationInfo.email, msgSubject, '', imageHTML, imageAttachments); 
     }
     
     if (mailResult.success) {
@@ -171,7 +167,7 @@ module.exports = internal.MessageManagement = class {
     
     queryResults = await this._dbManager.dbQueries(queryList);
     if (!queryResults.success) {
-      console.log('CronSchedule: user/tips lookup failed for user ' + userId);
+      console.log('MessageManagement: user/tips lookup failed for user ' + userId);
       return;
     }
     
@@ -223,33 +219,31 @@ module.exports = internal.MessageManagement = class {
       params.scheduleList.push(scheduleInfo);
     }
     
-    var rendered = this._pug.renderFile('./private/pug/schedule_reminder.pug', {notificationInfo: params});
-    var imageFileName = 'reminder.png';
-    var madeImageFile = await this._makeImage(rendered, imageFileName);  // need to randomize this name
-
-    if (this.DEBUG) {
-      var fileName = 'log/notification_' + userId + '.html';
-      this._fileServices.writeFile(fileName, rendered, function (err) {
-        if (err) {
-          console.log('MessageManagement: error writing ' + fileName);
-          console.log(err);
-        } else {
-          console.log('MessageManagement: wrote ' + fileName);
-        }
-      });
-    }
-        
+    var rendered = this._pug.renderFile(this._reminderPugFile, {notificationInfo: params});
+    var imageFileName = this._tempFileMaker.tmpNameSync({tmpdir: this._tempDir}) + '.png'; 
+    imageFileName = this._tempDir + '/' + imageFileName.split('\\').pop().split('/').pop();
+    
+    var madeImageFile = await this._makeImage(rendered, imageFileName);
+  
     if (!this.DEBUG) {
-      var imageHTML = '<img src="cid:' + (imageFileName + 'xxx') + '"/>';
+      var imageFileRelativePath = imageFileName;
+      var imageFileCID = imageFileName.split('\\').pop().split('/').pop() + 'xxx';
+      
+      var imageHTML = '<img src="cid:' + (imageFileCID) + '"/>';
+
       var imageAttachments = [{
-        path: 'log/' + imageFileName,
-        cid: imageFileName + 'xxx'
+        path: imageFileRelativePath,
+        cid: imageFileCID
       }];
+      
       var mailResult = await this._mailer.sendMessage(emailTo, msgSubject, '', imageHTML, imageAttachments);
       if (!mailResult.success) {
         console.log('MessageManagement: failed to send email to ' + emailTo);
         return false;
-      } 
+        
+      } else {
+        if (this._fileServices.existsSync(imageFileName)) this._fileServices.unlinkSync(imageFileName);
+      }
     }
     
     return true;
@@ -281,7 +275,7 @@ module.exports = internal.MessageManagement = class {
   }
     
   async _makeImage(html, targetFileName) {
-    console.log('MessageManagement._makeImage: ' + targetFileName);
+    console.log('targetFileName: ' + JSON.stringify(targetFileName));
     const browser = await this._HTMLToImage.launch()
     const page = await browser.newPage()
     await page.setViewport({
@@ -290,29 +284,12 @@ module.exports = internal.MessageManagement = class {
               deviceScaleFactor: 1,
             });            
     await page.setContent(html)
-    await page.screenshot({path: 'log/' + targetFileName, fullPage: true})
+    await page.screenshot({path: targetFileName, fullPage: true})
     await browser.close()
     
     return true;
   }
-    /*
- async function test() {
-   var imgHTML = '<!DOCTYPE html> <html> <head> </head> <body> <div>hi there</div> </body> </html>';
-   const browser = await puppeteer.launch()
-   const page = await browser.newPage()
-   await page.setViewport({
-              width: 100,
-              height: 100,
-              deviceScaleFactor: 1,
-            });            
-   await page.setContent(imgHTML)
-   await page.screenshot({path: 'log/test.png'})
-   await browser.close() 
- }
- test();
- console.log('okay');
-    
-    */
+
 //--------------------------------------------------------------
 // callbacks
 //--------------------------------------------------------------      

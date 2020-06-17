@@ -21,7 +21,6 @@ const internal = {};
 module.exports = internal.CronScheduler = class {
   constructor(params) {
     this.DEBUG = true;  
-    this.SHOW_MESSAGES = true;
     
     this._cron = params.cron;
     this._messageManagement = params.messageManagement;
@@ -61,8 +60,6 @@ module.exports = internal.CronScheduler = class {
 // public methods
 //---------------------------------------------------------------
   createJob(jobParams) {
-    if (this.SHOW_MESSAGES) console.log('CronScheduler.createJob: ' + jobParams.jobName + ' ' + jobParams.fireTime + ' ' + this._getDateStamp());
-
     var job = new this._cron.CronJob(
       jobParams.fireTime,
       jobParams.funcOnTick,
@@ -78,7 +75,6 @@ module.exports = internal.CronScheduler = class {
   }
   
   startJob(jobName) {
-    if (this.SHOW_MESSAGES) console.log('CronScheduler.startJob: ' + jobName + ' ' + this._getDateStamp());
     if (!this._jobExists(jobName)) {
       console.log('CronScheduler.startJob: **error: failed to start job ' + jobName + ' ' + this._getDateStamp());
       return false;
@@ -89,7 +85,6 @@ module.exports = internal.CronScheduler = class {
   }
   
   stopJob(jobName) {
-    if (this.SHOW_MESSAGES) console.log('CronScheduler.stopJob: ' + jobName + ' ' + this._getDateStamp());
     if (!this._jobExists(jobName)) {
       console.log('CronScheduler.stopJob: **error: failed to stop job ' + jobName + ' ' + this._getDateStamp());
       return false;
@@ -100,7 +95,6 @@ module.exports = internal.CronScheduler = class {
   }
   
   stopAllJobs() {
-    if (this.SHOW_MESSAGES) console.log('CronScheduler.stopAllJobs: ' + ' ' + this._getDateStamp());
     for (var jobName in this._jobList) {
       this.stopJob(jobName);
     }

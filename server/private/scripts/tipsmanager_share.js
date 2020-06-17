@@ -297,9 +297,7 @@ class TipShare {
   
   _showContents(visible) {
     var elemContents = this._container.getElementsByClassName('tipshare-contents')[0];
-    //var elemTitle = this._container.getElementsByClassName('tipmanager-title')[0];
     elemContents.style.display = (visible ? 'block' : 'none');
-    //elemTitle.style.display = (visible ? 'block' : 'none');
   }
   
   //--------------------------------------------------------------
@@ -319,7 +317,9 @@ class TipShare {
       comment: elemComment.value
     };
 
+    UtilityKTS.setClass(elemContainer, 'disable-me', true);
     await this._shareSchedule(shareParams);
+    UtilityKTS.setClass(elemContainer, 'disable-me', false);
   }
   
   _handleCommentClick(e) {

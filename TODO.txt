@@ -17,15 +17,11 @@
 
 - randomize image file names for messages
 
-- disable confirm button during Share operation
-
 - on messages
   - remove inline link
   - image map for link
   - add standalone link (and URL?)
   - why isn't attachment showing?
-  - add container to reminder ?
-  - add border to container(s) ?
 
 
 

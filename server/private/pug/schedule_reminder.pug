@@ -10,54 +10,51 @@ html
     - var userTo = notificationInfo.userTo
     - var dateStamp = notificationInfo.dateStamp
     
-    .salutation 
-      |Hello #{userTo},
-      
-    .greeting 
-      |This is your weekly reminder from 
-      a(href=notificationInfo.appURL) InstructorTips 
-      |for the week beginning #{dateStamp}, 
-      |reporting the tips you scheduled but haven't checked off yet.
-    
-    - var scheduleList = notificationInfo.scheduleList    
-    each scheduleData in scheduleList 
-      .schedule
-        .schedulename= scheduleData.scheduleName
-      
-        if scheduleData.pastDue
-          .specialcase.pastdue 
-            |The current date is later than the end date for this schedule. 
-            |You can use the 
-            strong 
-              em Notification 
-            |option in the app to stop sending reminders for it.
+    .container
+      .salutation 
+        |Hello #{userTo},
         
-        else if scheduleData.upToDate
-          .specialcase.uptodate 
-            |Congratulations! You've checked off all the tips scheduled so far.
-          
-        else
-          - var tipList = scheduleData.tipList
-          .scheduletips
-            each weekNumber in (Object.keys(tipList))
-              - var weeklyTipList = tipList[weekNumber]
-              .tipsforweek
-                if (weekNumber == 0)
-                  .tipsforweeklabel
-                    |before the term starts
-                else
-                  .tipsforweeklabel
-                    |week ##{weekNumber}
-                
-                each tip in weeklyTipList
-                  - var tipHTML = tip.tiptext  
-                  if tip.evenTip
-                    .tipdetails.tipdetails-even
-                      |!{tipHTML}
-                  else
-                    .tipdetails.tipdetails-odd
-                      |!{tipHTML}
-                  
-
-          
+      .greeting 
+        |This is your weekly reminder from 
+        a(href=notificationInfo.appURL) InstructorTips 
+        |for the week beginning #{dateStamp}, 
+        |reporting the tips you scheduled but haven't checked off yet.
       
+      - var scheduleList = notificationInfo.scheduleList    
+      each scheduleData in scheduleList 
+        .schedule
+          .schedulename= scheduleData.scheduleName
+        
+          if scheduleData.pastDue
+            .specialcase.pastdue 
+              |The current date is later than the end date for this schedule. 
+              |You can use the 
+              strong 
+                em Notification 
+              |option in the app to stop sending reminders for it.
+          
+          else if scheduleData.upToDate
+            .specialcase.uptodate 
+              |Congratulations! You've checked off all the tips scheduled so far.
+            
+          else
+            - var tipList = scheduleData.tipList
+            .scheduletips
+              each weekNumber in (Object.keys(tipList))
+                - var weeklyTipList = tipList[weekNumber]
+                .tipsforweek
+                  if (weekNumber == 0)
+                    .tipsforweeklabel
+                      |before the term starts
+                  else
+                    .tipsforweeklabel
+                      |week ##{weekNumber}
+                  
+                  each tip in weeklyTipList
+                    - var tipHTML = tip.tiptext  
+                    if tip.evenTip
+                      .tipdetails.tipdetails-even
+                        |!{tipHTML}
+                    else
+                      .tipdetails.tipdetails-odd
+                        |!{tipHTML}

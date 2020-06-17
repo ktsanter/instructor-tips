@@ -115,6 +115,11 @@ app.use(function (req, res, next) {
 //------------------------------------------
 // email management
 //------------------------------------------
+const tmp = require('tmp');
+
+//------------------------------------------
+// email management
+//------------------------------------------
 var nodemailer = require('nodemailer');
 const gMailerClass = require('./classes/gmailer');
 const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD});
@@ -147,7 +152,8 @@ const messageManagement = new messageManagementClass({
   "pug": pug, 
   "appURL": INSTRUCTORTIPS_URL, 
   "fileServices": fileservices,
-  "HTMLToImage": puppeteer
+  "HTMLToImage": puppeteer,
+  "tempFileMaker": tmp
 });
 
 //------------------------------------------

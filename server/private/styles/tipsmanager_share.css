@@ -69,7 +69,7 @@
 .tipshare .tipshare-contents .tipshare-send .tipshare-confirmcancelcontainer.disable-me {
   color: var(--bgTertiaryEmphasis);
   background-color: transparent;
-  border-color: transparent;
+  border-color: var(--bgTertiaryEmphasis);
   cursor: default;
 }
 

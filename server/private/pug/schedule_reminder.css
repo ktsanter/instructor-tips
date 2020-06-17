@@ -5,11 +5,12 @@ body {
 	font-size: 13px;
 }
 
-.salutation {}
+.container {}
+.container .salutation {}
       
-.greeting {}
+.container .greeting {}
 
-.schedule {
+.container .schedule {
   margin-top: 1.0em;
   margin-bottom: 2.0em;
   border-style: solid;
@@ -17,47 +18,47 @@ body {
   border-width: 0 1px 1px 1px;  
 }
 
-.schedule .schedulename {
+.container .schedule .schedulename {
   color: white;
   background-color: rgba(66, 98, 150, 1.0);
   padding: 0.2em 0.2em 0.3em 0.2em;  
 }
 
-.schedule .scheduletips {
+.container .schedule .scheduletips {
   margin-left: 0.8em;  
 }
 
-.schedule .specialcase {
+.container .schedule .specialcase {
   background-color: white;
   padding: 0.2em 0 0.2em 0.8em;
   max-width: 70%; 
 }
 
-.schedule .uptodate {}
+.container .schedule .uptodate {}
 
-.schedule .pastdue {}
+.container .schedule .pastdue {}
 
-.schedule .scheduletips .tipsforweek {
+.container .schedule .scheduletips .tipsforweek {
   margin-top: 1.0em;
 }
 
-.schedule .scheduletips .tipsforweek .tipsforweeklabel {
+.container .schedule .scheduletips .tipsforweek .tipsforweeklabel {
   color: white;
   background-color: rgba(66, 98, 150, 1.0);
   display: inline;
   padding: 0 0.3em 0.1em 0.3em;
 }
 
-.schedule .scheduletips .tipsforweek .tipdetails {
+.container .schedule .scheduletips .tipsforweek .tipdetails {
   max-width: 70%;
   margin-top: -0.8em;
   padding: 0em 0.2em 0em 0.2em;    
 }
 
-.schedule .scheduletips .tipsforweek .tipdetails.tipdetails-even {
+.container .schedule .scheduletips .tipsforweek .tipdetails.tipdetails-even {
   background-color: white;
 }
 
-.schedule .scheduletips .tipsforweek .tipdetails.tipdetails-odd {
+.container .schedule .scheduletips .tipsforweek .tipdetails.tipdetails-odd {
   background-color: transparent;
 }

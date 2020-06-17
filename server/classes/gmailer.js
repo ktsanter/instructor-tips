@@ -39,13 +39,14 @@ module.exports = internal.GMailer = class {
       mailOptions.attachments = attachments;
     }
 
+    console.log(mailOptions);
     if (this.DEBUG) {
-      console.log('GMailer.sendMessage: debug mode on -> message to ' + addresseeList + ' not mailed');
+      console.log('GMailer.sendMessage: debug mode on => message to ' + addresseeList + ' not mailed');
       
     } else {
       this._transporter.sendMail(mailOptions, function(error, info){
         if (error) {
-          console.log('GMailer.sendMessageerror: ' + JSON.stringify(error));
+          console.log('GMailer.sendMessage error: ' + JSON.stringify(error));
           return {"success": false};
         }
       });     
@@ -53,22 +54,4 @@ module.exports = internal.GMailer = class {
     
     return {"success": true};
   }  
-
-  async sendTestMessage(reqParams, resBody) {
-    var emailSuccessful = false;
-    
-    var mailOptions = {
-      from: this._defaultSender,
-      to: 'ktsanter@gmail.com',
-      subject: 'test of sending email using express.js',
-      text: 'That was easy!',
-      html: 'That was <strong>easy!</strong>'
-    };
-    
-    let info = await this._transporter.sendMail(mailOptions);
-    console.log(info);
-    emailSuccessful = (info.accepted && info.accepted.length > 0);
-    
-    return {success: emailSuccessful};
-  }
 }
