@@ -11,10 +11,104 @@
     <link href="../styles/help.css" rel="stylesheet" type="text/css">   
   </head>
 
-  <body>
-    <div> Intro </div>
+  <body class="instructortips-colorscheme">
+    <div class="instructortips-help tipediting">
+      <div class="section">
+        <div class="section-title"> Intro </div>
+        <div> 
+          You can use plain text for tips - what you type in will be what you see. 
+          If you're interested in adding other types of content, it's available using a "language" called <em><strong>Markdown</strong></em>.
+          <br><br>
+          Take a look at the reference table below to see what you can add to your tips.
+        </div>
+      </div>
+     <div class="break">
+     
+      <div class="section">
+        <div class="section-title"> Markdown reference</div>
+        <br>
 
-    <div> Markdown reference</div>
+        <table>
+          <thead>
+            <tr>
+              <th class="label"></th>
+              <th>type this...</th>
+              <th>to get this...</th>
+            </tr>
+          </thead>
+          
+          <tbody>
+            <tr>
+              <td class="label"> italics </td>
+              <td> *italics* </td>
+              <td> <em>italics</em> </td>
+            </tr>
 
+            <tr>
+              <td class="label"> bold </td>
+              <td> **bold** </td>
+              <td> <strong>bold</strong> </td>
+            </tr>
+            
+            <tr>
+              <td class="label"> bold and italics </td>
+              <td> ***bold italics*** </td>
+              <td> <strong><em>bold</em></strong> </td>
+            </tr>
+            
+            <tr>
+              <td class="label"> line break </td>
+              <td> a blank line<br><br>will cause a line break </td>
+              <td> a blank line<br><br>will cause a line break </td>
+            </tr>
+
+            <tr>
+              <td class="label"> unordered list </td>
+              <td> -first item <br> -second item </td>
+              <td> <ul><li>first item</li><li>second item</li></ul> </td>
+            </tr>
+            
+            <tr>
+              <td class="label"> ordered list </td>
+              <td> 1. first item <br> 2. second item </td>
+              <td> <ol><li>first item</li><li>second item</li></ol> </td>
+            </tr>
+            
+            <tr>
+              <td class="label"> link </td>
+              <td> an [inline link](https://www.google.com "go to google.com") </td>
+              <td> <a href="https://www.google.com" title="go to google.com" target="_blank">inline link</a></td>
+            </tr>
+
+            <tr>
+              <td class="label"> image </td>
+              <td> ![alt text](https://goo.gl/hGjWgi "I'm a smiley face") </td>
+              <td> <img src="https://goo.gl/hGjWgi" title="I'm a smiley face" width="30em"></td>
+            </tr>
+            
+            <tr>
+              <td class="label"> <a href="http://rabbit.eng.miami.edu/info/htmlchars.html" target="_blank" title="HTML ampersand characters">special characters</a> </td>
+              <td> Bon jour, mon fr&amp;eacute;re.<br>&amp;iexcl;Hola Se&amp;ntilde;or! </td>
+              <td> Bon jour, mon fr&eacute;re.<br>&iexcl;Hola Se&ntilde;or Smith! </td>
+            </tr>
+            
+            <tr>
+              <td class="label"> horizontal rule </td>
+              <td> A line consisting of four underline characters<br>____<br>will add a horizontal rule </td>
+              <td>  A line consisting of four underline characters<hr>will add a horizontal rule </td>
+            </tr>
+            
+            <tr>
+              <td class="label"> heading styles</td>
+              <td>  # this is H1<br>## this is H2<br>### this is H3<br>#### this is H4<br>##### this is H5<br>###### this is H6</td>
+              <td>  <h1>this is H1</h1><h2>this is H2</h2><h3>this is H3</h3><h4>this is H4</h4><h5>this is H5</h5><h6>this is H6</h6> </td>
+            </tr>
+
+          </tbody>
+        </table>
+        
+      </div>
+      
+    </div>
   </body>
 </html>

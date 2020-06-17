@@ -25,6 +25,87 @@ body {
   display: none;
 }
 
+.instructortips-help .section {
+  width: 60%;
+  padding-bottom: 2.0em;
+}
+
+.instructortips-help .section .section-title {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);  
+  padding: 0.2em 0.2em;  
+}
+
+.instructortips-help .section .section-row {
+  color: black;
+  background-color: var(--bgOverall);
+  border: 1px solid var(--bgTertiaryEmphasis);
+  border-top: none;
+  width: 60%;
+  padding: 0.2em 0.2em;  
+}
+
+.instructortips-help .section .section-row .section-col {
+  display: inline-block;
+  width: 38%;
+}
+
+.instructortips-help .section .section-row .section-col.label {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  width: 20%;
+}
+.instructortips-help .section .section-row.title {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+.instructortips-help .section .section-row .section-col.title {}
+
+/*-------------------------------------------------------------
+ * tipediting
+ *------------------------------------------------------------*/
+.instructortips-help.tipediting {
+  width: 80%;
+}
+
+.instructortips-help.tipediting table{
+  border-collapse: collapse;
+}
+
+.instructortips-help.tipediting th {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  border: 1px solid var(--bgTertiaryEmphasis);
+  font-weight: normal;
+  text-align: left;
+  padding: 0.4em
+}
+
+.instructortips-help.tipediting td {
+  border: 1px solid var(--bgTertiaryEmphasis);
+  padding: 0.4em;
+  vertical-align: top;
+}
+
+.instructortips-help.tipediting th.label {
+  background-color: transparent;
+  border: none;
+}
+
+.instructortips-help.tipediting td.label {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+.instructortips-help.tipediting td.label a:link {
+  color: white;
+}
+
+.instructortips-help.tipediting td.label a:visited {
+  color: white;
+}
+
 /*-------------------------------------------------------------
  * scrollbar
  *------------------------------------------------------------*/

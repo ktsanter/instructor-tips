@@ -13,7 +13,6 @@
 
 - select multiple target names for sharing ?
 
-- hide common button in editing for non-admin
 
 
 

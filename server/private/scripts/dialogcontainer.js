@@ -359,10 +359,11 @@ class DialogContainer {
       this._handleCancel(this);
       return;
     }
-
+    
     var elemMsg = this._container.getElementsByClassName('dialogcontainer-message')[0];
-    var msg = 'This tip will be deleted and deletions cannot be undone.' +
-              '<br><br>Are you sure you want to delete this tip?';
+    var msg = 'This tip will be deleted and deletions cannot be undone.';
+    if (params.common) msg += ' <strong>Note: this tip is marked as "common".</strong>';
+    msg += '<br><br>Are you sure you want to delete this tip?';
     
     elemMsg.innerHTML = msg;
     elemMsg.tipId = params.tipid;
