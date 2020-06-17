@@ -9,7 +9,7 @@ const internal = {};
 
 module.exports = internal.MessageManagement = class {
   constructor(params) {
-    this.DEBUG = false;
+    this.DEBUG = true;
     if (this.DEBUG) console.log('MessageManagement: debug mode is on');
     
     this._dbManager = params.dbManager;
@@ -23,7 +23,9 @@ module.exports = internal.MessageManagement = class {
     
     this._tempDir = 'temp';
     this._sharePugFile = './private/pug/schedule_share.pug';
+    this._sharePugWrapperFile = './private/pug/schedule_share_wrapper.pug';
     this._reminderPugFile = './private/pug/schedule_reminder.pug';
+    this._reminderPugWrapperFile = './private/pug/schedule_reminder_wrapper.pug';
   }
   
 //---------------------------------------------------------------
@@ -63,63 +65,24 @@ module.exports = internal.MessageManagement = class {
       return result;
     }
     
-    var pugParams = {
+    var mailParams = {
       userTo: notificationInfo.username,
       userFrom: params.userInfo.userName,
       scheduleName: scheduleInfo.schedulename,
       comment: params.comment,
       appURL: this._appURL
     };      
-
-    var rendered = this._pug.renderFile(this._sharePugFile, {shareInfo: pugParams});
-    if (this.DEBUG) {
-      var fileName = 'log/share_' + params.userInfo.userId + '_' + params.userIdTo + '_' + params.scheduleId + '.html';
-      this._fileServices.writeFile(fileName, rendered, function (err) {
-        if (err) {
-          console.log('MessageManagement: error writing ' + fileName);
-          console.log(err);
-        } else {
-          console.log('MessageManagement: wrote ' + fileName);
-        }
-      });
-    }    
     
-    //var imageFileName = this._tempFileMaker.tmpNameSync({tmpdir: this._tempDir}) + '.png'; 
-    //imageFileName = this._tempDir + '/' + imageFileName.split('\\').pop().split('/').pop();
-    var imageFileName = this._tempDir + '/' + 'share.png';
+    var mailResult = await this._prepAndSendMessage({
+      id: params.userInfo.userId + '_' + params.userIdTo + '_' + params.scheduleId,
+      emailTo: notificationInfo.email,
+      subject: 'an InstructorTips schedule has been shared with you',
+      pugFile: this._sharePugFile,
+      pugWrapperFile: this._sharePugWrapperFile,
+      pugParams: mailParams
+    });
     
-    var madeImageFile = await this._makeImage(rendered, imageFileName);
-    if (!madeImageFile) {
-      console.log('MessageManagement.sendSharedScheduleNotification: failed to make image file - ' + imageFileName);
-      return {success: false};
-    }
-    
-    var mailResult = {success: false};
-    
-    if (this.DEBUG) {
-      mailResult.success = true;
-      result.success = true;
-      result.details = 'notification message sent';
-      
-      
-    } else {
-      var msgSubject = 'an InstructorTips schedule has been shared with you';
-      var imageFileRelativePath = imageFileName;
-      var imageFileCID = imageFileName.split('\\').pop().split('/').pop() + 'xxx';
-      
-      var imageHTML = 
-        '<img src="cid:' + (imageFileCID) + '"/>' + 
-        '<br><div>You can access InstructorTips at <a href=' + this._appURL + '>' + this._appURL + '</a></div>';
-
-      var imageAttachments = [{
-        path: imageFileRelativePath,
-        cid: imageFileCID
-      }];
-
-      var mailResult = await this._mailer.sendMessage(notificationInfo.email, msgSubject, '', imageHTML, imageAttachments); 
-    }
-    
-    if (mailResult.success) {
+    if (mailResult) {
       result.success = true;
       result.details = 'notification message sent';
     } else {
@@ -192,8 +155,7 @@ module.exports = internal.MessageManagement = class {
       return;
     }
     
-    var emailTo = queryResults.data.user[0].email;
-    var msgSubject = 'InstructorTips weekly reminder';
+    var emailToAddress = queryResults.data.user[0].email;
     
     var params = {
       appURL: this._appURL,
@@ -240,53 +202,14 @@ module.exports = internal.MessageManagement = class {
       params.scheduleList.push(scheduleInfo);
     }
     
-    var rendered = this._pug.renderFile(this._reminderPugFile, {notificationInfo: params});
-    if (this.DEBUG) {
-      var fileName = 'log/notification_' + userId + '.html';
-      this._fileServices.writeFile(fileName, rendered, function (err) {
-        if (err) {
-          console.log('MessageManagement: error writing ' + fileName);
-          console.log(err);
-        } else {
-          console.log('MessageManagement: wrote ' + fileName);
-        }
-      });
-    }    
-    
-    //var imageFileName = this._tempFileMaker.tmpNameSync({tmpdir: this._tempDir}) + '.png'; 
-    //imageFileName = this._tempDir + '/' + imageFileName.split('\\').pop().split('/').pop();
-    var imageFileName = this._tempDir + '/' + 'reminder.png';
-    
-    var madeImageFile = await this._makeImage(rendered, imageFileName);
-    if (!madeImageFile) {
-      console.log('MessageManagement._sendScheduleNotificationForUser: failed to make image file - ' + imageFileName);
-      return false;
-    }
-  
-    if (!this.DEBUG) {
-      var imageFileRelativePath = imageFileName;
-      var imageFileCID = imageFileName.split('\\').pop().split('/').pop() + 'xxx';
-      
-      var imageHTML = 
-        '<img src="cid:' + (imageFileCID) + '"/>' + 
-        '<br><div>You can access InstructorTips at <a href=' + this._appURL + '>' + this._appURL + '</a></div>';
-
-      var imageAttachments = [{
-        path: imageFileRelativePath,
-        cid: imageFileCID
-      }];
-      
-      var mailResult = await this._mailer.sendMessage(emailTo, msgSubject, '', imageHTML, imageAttachments);
-      if (!mailResult.success) {
-        console.log('MessageManagement: failed to send email to ' + emailTo);
-        return false;
-        
-      } else {
-        //if (this._fileServices.existsSync(imageFileName)) this._fileServices.unlinkSync(imageFileName);
-      }
-    }
-    
-    return true;
+    return await this._prepAndSendMessage({
+      id: userId,
+      emailTo: emailToAddress,
+      subject: 'InstructorTips weekly reminder',
+      pugFile: this._reminderPugFile,
+      pugWrapperFile: this._reminderPugWrapperFile,
+      pugParams: params
+    });
   }
   
 
@@ -313,7 +236,102 @@ module.exports = internal.MessageManagement = class {
     
     return organized;
   }
+
+  async _prepAndSendMessage(params) {
+    //--------------------------------------
+    // expected in params
+    //  id: "unique" id for debugging
+    //  emailTo: (email address),
+    //  subject: (subject text for email)
+    //  pugFile: xxx,
+    //  pugWrapperFile: xxx,
+    //  pugParams: xxx
+    //--------------------------------------
+
+    console.log('MessageManagement._prepAndSendMessage');
+    console.log(params);
     
+    var rendered = this._pug.renderFile(params.pugFile, {params: params.pugParams});
+    
+    if (this.DEBUG) {
+      var fileNameOnly = params.pugFile.split('\\').pop().split('/').pop();
+      var fileNameWithoutExtension = fileNameOnly.split('.').pop();
+      var debugFileName = 'log/' + fileNameWithoutExtension + '_' + params.id + '.html';
+      this._fileServices.writeFile(debugFileName, rendered, function (err) {
+        if (err) {
+          console.log('MessageManagement._prepAndSendMessage: error writing ' + debugFileName);
+          console.log(err);
+        } else {
+          console.log('MessageManagement._prepAndSendMessage: wrote ' + debugFileName);
+        }
+      });
+    }    
+    
+    var imageFileName = this._tempFileMaker.tmpNameSync({tmpdir: this._tempDir}) + '.png'; 
+    imageFileName = this._tempDir + '/' + imageFileName.split('\\').pop().split('/').pop();
+    //var imageFileName = this._tempDir + '/' + params.imageFile;
+    
+    var madeImageFile = await this._makeImage(rendered, imageFileName);
+    if (!madeImageFile) {
+      console.log('MessageManagement._prepAndSendMessage: failed to make image file - ' + imageFileName);
+      return false;
+    }
+    
+    var imageFileRelativePath = imageFileName;
+    var imageFileCID = imageFileName.split('\\').pop().split('/').pop() + 'xxx';
+
+    var wrapperParams = {
+      "imageFileCID": imageFileCID,
+      "appURL": this._appURL
+    }
+    var renderedWrapper = this._pug.renderFile(params.pugWrapperFile, {params: wrapperParams});
+    
+    if (this.DEBUG) this._writeRenderedToFile(params.pugWrapperFile, params.id, renderedWrapper);    
+    
+    if (!this.DEBUG) {      
+      // use pugWrapper here instead
+      var imageHTML = 
+        '<img src="cid:' + (imageFileCID) + '"/>' + 
+        '<br><div>You can access InstructorTips at <a href=' + this._appURL + '>' + this._appURL + '</a></div>';
+
+      var imageAttachments = [{
+        path: imageFileRelativePath,
+        cid: imageFileCID
+      }];
+      
+      var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', imageHTML, imageAttachments);
+      if (!mailResult.success) {
+        console.log('MessageManagement._prepAndSendMessage: failed to send email to ' + emailTo);
+        return false;
+        
+      } else {
+        // this seems to break things for nodemailer
+        //if (this._fileServices.existsSync(imageFileName)) this._fileServices.unlinkSync(imageFileName);
+      }
+    }
+    
+    return true;
+  }
+  
+  _writeRenderedToFile(fileName, id, renderedHTML) {
+    console.log(fileName);
+    var fileNameOnly = fileName.split('\\').pop().split('/').pop();
+    console.log(fileNameOnly);
+    var fileNameWithoutExtension = fileNameOnly.split('.')[0];
+    console.log(fileNameWithoutExtension);
+    var debugFileName = 'log/' + fileNameWithoutExtension + '_' + id + '.html';
+    console.log(debugFileName);
+    
+    this._fileServices.writeFile(debugFileName, renderedHTML, function (err) {
+      if (err) {
+        console.log('MessageManagement._prepAndSendMessage: error writing ' + debugFileName);
+        console.log(err);
+      } else {
+        console.log('MessageManagement._prepAndSendMessage: wrote ' + debugFileName);
+      }
+    });
+  }
+  
   async _makeImage(html, targetFileName) {
     const browser = await this._HTMLToImage.launch()
     const page = await browser.newPage()
@@ -324,9 +342,11 @@ module.exports = internal.MessageManagement = class {
             });            
     await page.setContent(html)
     await page.screenshot({path: targetFileName, fullPage: true})
-    await browser.close()
+    await browser.close()  
     
-    return this._fileServices.existsSync(targetFileName);
+    var exists = this._fileServices.existsSync(targetFileName);
+
+    return exists;
   }
 
 //--------------------------------------------------------------

@@ -11,16 +11,10 @@
   - add profile page
   - add "other" page
 
-- HTML -> image -> email
-
 - select multiple target names for sharing ?
 
-- randomize image file names for messages
-
 - on messages
-  - remove inline link
   - image map for link
-  - add standalone link (and URL?)
   - why isn't attachment showing?
 
 

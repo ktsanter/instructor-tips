@@ -7,8 +7,8 @@ html
       include schedule_reminder.css
       
   body  
-    - var userTo = notificationInfo.userTo
-    - var dateStamp = notificationInfo.dateStamp
+    - var userTo = params.userTo
+    - var dateStamp = params.dateStamp
     
     .container
       .salutation 
@@ -16,11 +16,11 @@ html
         
       .greeting 
         |This is your weekly reminder from 
-        a(href=notificationInfo.appURL) InstructorTips 
+        a(href=params.appURL) InstructorTips 
         |for the week beginning #{dateStamp}, 
         |reporting the tips you scheduled but haven't checked off yet.
       
-      - var scheduleList = notificationInfo.scheduleList    
+      - var scheduleList = params.scheduleList    
       each scheduleData in scheduleList 
         .schedule
           .schedulename= scheduleData.scheduleName

@@ -113,7 +113,7 @@ app.use(function (req, res, next) {
 })
 
 //------------------------------------------
-// email management
+// temp file management
 //------------------------------------------
 const tmp = require('tmp');
 
@@ -122,7 +122,7 @@ const tmp = require('tmp');
 //------------------------------------------
 var nodemailer = require('nodemailer');
 const gMailerClass = require('./classes/gmailer');
-const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD});
+const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD, fileServices: fileservices});
 
 //------------------------------------------
 // user management

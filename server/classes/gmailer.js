@@ -8,7 +8,7 @@
 const internal = {};
 
 module.exports = internal.GMailer = class {
-  constructor(nodemailer, credentials) {
+  constructor(nodemailer, params) {
     this.DEBUG = true;  
     if (this.DEBUG) console.log('MessageManagement: debug mode is on');
     
@@ -17,12 +17,13 @@ module.exports = internal.GMailer = class {
     this._transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: credentials.user,
-        pass: credentials.password     
+        user: params.user,
+        pass: params.password     
       }
     });
     
-    this._defaultSender = credentials.user;
+    this._defaultSender = params.user;
+    this._fileServices = params.fileServices;
   }
   
 //---------------------------------------------------------------
@@ -37,8 +38,10 @@ module.exports = internal.GMailer = class {
       html: bodyHTML ? bodyHTML : bodyText
     };
     
-    if (attachments) {
-      mailOptions.attachments = attachments;
+    if (attachments && attachments.length > 0) {
+      if (this._fileServices.existsSync(attachments[0].path)) {
+        mailOptions.attachments = attachments;
+      }
     }
 
     if (this.DEBUG) {

@@ -7,10 +7,10 @@ html
       include schedule_share.css
       
   body  
-    - var userTo = shareInfo.userTo
-    - var userFrom = shareInfo.userFrom
-    - var scheduleName = shareInfo.scheduleName
-    - var comment = shareInfo.comment
+    - var userTo = params.userTo
+    - var userFrom = params.userFrom
+    - var scheduleName = params.scheduleName
+    - var comment = params.comment
     
     .container 
       .salutation
@@ -18,7 +18,7 @@ html
 
       .message.message-share
         |#{userFrom} shared a schedule with you in the 
-        a(href=shareInfo.appURL) InstructorTips 
+        a(href=params.appURL) InstructorTips 
         |application.
         
       .schedule
