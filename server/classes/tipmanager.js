@@ -26,10 +26,10 @@ module.exports = internal.TipManager = class {
       dbResult = await this._getScheduleList(params, postData, userInfo);
       
     } else if (params.queryName == 'controlstate-scheduling') {
-      dbResult = await this._getControlState(params, postData, userInfo, 'scheduling');
+      dbResult = await this._getControlState(params, postData, userInfo, 'scheduling', funcCheckPrivilege);
       
     } else if (params.queryName == 'controlstate-filtering') {
-      dbResult = await this._getControlState(params, postData, userInfo, 'filtering');
+      dbResult = await this._getControlState(params, postData, userInfo, 'filtering', funcCheckPrivilege);
       
     } else if (params.queryName == 'schedule-details') {
       dbResult = await this._getScheduleDetails(params, postData, userInfo);
@@ -173,7 +173,7 @@ module.exports = internal.TipManager = class {
     return result;
   }
   
-  async _getControlState(params, postData, userInfo, controlGroup) {
+  async _getControlState(params, postData, userInfo, controlGroup, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
     
     var queryList = {};
@@ -188,7 +188,12 @@ module.exports = internal.TipManager = class {
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.controlstate = queryResults.data.controlstate;
+      
+      var controlState = queryResults.data.controlstate;
+      var allowCommonEdit = funcCheckPrivilege(userInfo, 'admin');
+      controlState[0].state = controlState[0].state.replace(/\"allowcommonedit\": .*\}/, '"allowcommonedit": ' + allowCommonEdit + '}');
+      
+      result.controlstate = controlState;
 
     } else {
       result.details = queryResults.details;

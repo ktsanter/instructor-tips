@@ -52,6 +52,7 @@ class TipBrowse {
     this._container.appendChild(this._renderTitle());
     
     var filterConfig = {updateCallback: (params) => {this._updateFromFilter(params);}};
+    filterConfig.editing = this._config.editing;
     this._tipFilter = new TipFilter(filterConfig);
     
     this._container.appendChild(await this._renderContents());

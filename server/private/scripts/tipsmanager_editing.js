@@ -25,7 +25,6 @@ class TipEditing {
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
 
-    //this._container.appendChild(this._renderTitle());
     this._container.appendChild(await this._renderContents());
     
     var categoryList = await this._loadCategoryListFromDB();
@@ -46,13 +45,6 @@ class TipEditing {
     this._container.appendChild(this._deleteTipDialog.render());    
 
     return this._container;
-  }
-  
-  _renderTitle() {
-    var container = CreateElement.createDiv(null, 'tipmanager-title');
-    container.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
-    
-    return container;
   }
 
   async _renderContents() {

@@ -27,7 +27,8 @@ const app = function () {
     page.body.classList.add('instructortips-colorscheme');
     
     page.body.appendChild(_renderPage());
-    _navDispatch('home');
+
+    settings.navbar.selectOption('Home');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -57,8 +58,10 @@ const app = function () {
       
       hamburgeritems: []
     };
+    
+    settings.navbar = new NavigationBar(navConfig);
         
-    return (new NavigationBar(navConfig)).render();
+    return settings.navbar.render();
   }
   
   function _renderContents() {

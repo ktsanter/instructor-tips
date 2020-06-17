@@ -66,7 +66,12 @@
 }
 
 .tipfilter .tipfilter-inputs .tipfilter-common .tipfilter-commonswitch {
+  visibility: hidden;
   margin-top: 0.4em;
+}
+
+.tipfilter .tipfilter-inputs .tipfilter-common .tipfilter-commonswitch:not(.hidecommonedit) {
+  visibility: visible;
 }
 
 .tipfilter .tipfilter-inputs .lookupinput .lookupinput-inputcontainer  {

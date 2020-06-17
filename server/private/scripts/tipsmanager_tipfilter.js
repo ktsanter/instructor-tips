@@ -66,7 +66,7 @@ class TipFilter {
     container.appendChild(subcontainer);
     
     var handler = (e) => {this._handleCommonChange(e);};
-    elem = CreateElement.createSliderSwitch('common', 'common', 'tipfilter-commonswitch', handler, false);
+    elem = CreateElement.createSliderSwitch('common', 'common', 'tipfilter-commonswitch hidecommonedit', handler, false);
     subcontainer.appendChild(elem);
     elem.title = 'include "common" tips in results';
     CreateElement.setSliderValue(elem, true);
@@ -132,6 +132,12 @@ class TipFilter {
     elemSearch.value = filterState.search;   
     this._keywordInput.setSelectedValues(filterState.keywords);
     CreateElement.setSliderValue(elemCommon, filterState.common);
+    if (this._config.editing) {
+      UtilityKTS.setClass(elemCommon, 'hidecommonedit', !filterState.allowcommonedit);
+    } else {
+      UtilityKTS.setClass(elemCommon, 'hidecommonedit', false);
+    }
+      
   }
   
   async _loadFilterStateFromDB() {
