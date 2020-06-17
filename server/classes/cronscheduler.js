@@ -34,7 +34,7 @@ module.exports = internal.CronScheduler = class {
   _createInitialJobs() {    
     this.createJob({
       jobName: 'schedulepush',
-      fireTime: '*/1 * * * * *',  // change to once a day for prod
+      fireTime: (this.DEBUG ? '*/5 * * * * *' : '* * * */1 * *'),  // once a day for prod, every 5 seconds for debug
 
       funcOnTick: (function(me) {
         return async function() { 

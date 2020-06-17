@@ -5,9 +5,16 @@ html
     meta(charset="utf-8")
       
   body  
-    - var imageFileCID = params.imageFileCID
+    - var imageFileCID = 'cid:' + params.imageFileCID
     - var appURL = params.appURL
+    - var imagemapId = '#imagemap'
+    
+    img(src=imageFileCID, alt="InstructorTips reminder", usemap="imagemapId")
+    map(name=imagemap)
+      area(shape="rect", coords="200,25, 285,40", href=appURL)
+    
+    br
     
     div
-      |!{imageFileCID}
-      |!{appURL}
+      |You can access InstructorTips at &nbsp;
+      a(href=appURL) !{appURL}

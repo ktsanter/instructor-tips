@@ -13,9 +13,7 @@
 
 - select multiple target names for sharing ?
 
-- on messages
-  - image map for link
-  - why isn't attachment showing?
+
 
 
 

@@ -1,7 +1,6 @@
 "use strict";
 //---------------------------------------------------------------
-// task scheduler 
-// package doc: https://www.npmjs.com/package/cron
+// MessageManagement class
 //---------------------------------------------------------------
 // TODO:
 //---------------------------------------------------------------
@@ -9,7 +8,7 @@ const internal = {};
 
 module.exports = internal.MessageManagement = class {
   constructor(params) {
-    this.DEBUG = true;
+    this.DEBUG = false;
     if (this.DEBUG) console.log('MessageManagement: debug mode is on');
     
     this._dbManager = params.dbManager;
@@ -120,6 +119,7 @@ module.exports = internal.MessageManagement = class {
     }
     
     var scheduleInfo = queryResults.data;
+    
     var schedulesByUser = {};
     for (var i = 0; i < scheduleInfo.length; i++) {
       var schedItem = scheduleInfo[i];
@@ -238,38 +238,10 @@ module.exports = internal.MessageManagement = class {
   }
 
   async _prepAndSendMessage(params) {
-    //--------------------------------------
-    // expected in params
-    //  id: "unique" id for debugging
-    //  emailTo: (email address),
-    //  subject: (subject text for email)
-    //  pugFile: xxx,
-    //  pugWrapperFile: xxx,
-    //  pugParams: xxx
-    //--------------------------------------
-
-    console.log('MessageManagement._prepAndSendMessage');
-    console.log(params);
-    
     var rendered = this._pug.renderFile(params.pugFile, {params: params.pugParams});
-    
-    if (this.DEBUG) {
-      var fileNameOnly = params.pugFile.split('\\').pop().split('/').pop();
-      var fileNameWithoutExtension = fileNameOnly.split('.').pop();
-      var debugFileName = 'log/' + fileNameWithoutExtension + '_' + params.id + '.html';
-      this._fileServices.writeFile(debugFileName, rendered, function (err) {
-        if (err) {
-          console.log('MessageManagement._prepAndSendMessage: error writing ' + debugFileName);
-          console.log(err);
-        } else {
-          console.log('MessageManagement._prepAndSendMessage: wrote ' + debugFileName);
-        }
-      });
-    }    
     
     var imageFileName = this._tempFileMaker.tmpNameSync({tmpdir: this._tempDir}) + '.png'; 
     imageFileName = this._tempDir + '/' + imageFileName.split('\\').pop().split('/').pop();
-    //var imageFileName = this._tempDir + '/' + params.imageFile;
     
     var madeImageFile = await this._makeImage(rendered, imageFileName);
     if (!madeImageFile) {
@@ -286,20 +258,17 @@ module.exports = internal.MessageManagement = class {
     }
     var renderedWrapper = this._pug.renderFile(params.pugWrapperFile, {params: wrapperParams});
     
-    if (this.DEBUG) this._writeRenderedToFile(params.pugWrapperFile, params.id, renderedWrapper);    
-    
-    if (!this.DEBUG) {      
-      // use pugWrapper here instead
-      var imageHTML = 
-        '<img src="cid:' + (imageFileCID) + '"/>' + 
-        '<br><div>You can access InstructorTips at <a href=' + this._appURL + '>' + this._appURL + '</a></div>';
-
-      var imageAttachments = [{
-        path: imageFileRelativePath,
-        cid: imageFileCID
-      }];
+    if (this.DEBUG) {
+      this._writeRenderedToFile(params.pugFile, params.id, rendered);
+      this._writeRenderedToFile(params.pugWrapperFile, params.id, renderedWrapper);
       
-      var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', imageHTML, imageAttachments);
+    } else {
+      var imageAttachments = [
+        {path: imageFileRelativePath, cid: imageFileCID},
+        {path: imageFileRelativePath}
+      ];
+      
+      var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', renderedWrapper, imageAttachments);
       if (!mailResult.success) {
         console.log('MessageManagement._prepAndSendMessage: failed to send email to ' + emailTo);
         return false;
@@ -314,20 +283,16 @@ module.exports = internal.MessageManagement = class {
   }
   
   _writeRenderedToFile(fileName, id, renderedHTML) {
-    console.log(fileName);
     var fileNameOnly = fileName.split('\\').pop().split('/').pop();
-    console.log(fileNameOnly);
     var fileNameWithoutExtension = fileNameOnly.split('.')[0];
-    console.log(fileNameWithoutExtension);
     var debugFileName = 'log/' + fileNameWithoutExtension + '_' + id + '.html';
-    console.log(debugFileName);
     
     this._fileServices.writeFile(debugFileName, renderedHTML, function (err) {
       if (err) {
-        console.log('MessageManagement._prepAndSendMessage: error writing ' + debugFileName);
+        console.log('MessageManagement._writeRenderedToFile: error writing ' + debugFileName);
         console.log(err);
       } else {
-        console.log('MessageManagement._prepAndSendMessage: wrote ' + debugFileName);
+        console.log('MessageManagement._writeRenderedToFile: wrote file ' + debugFileName);
       }
     });
   }
