@@ -9,8 +9,10 @@ const internal = {};
 
 module.exports = internal.GMailer = class {
   constructor(nodemailer, credentials) {
-    this._nodemailer = nodemailer;
     this.DEBUG = true;  
+    if (this.DEBUG) console.log('MessageManagement: debug mode is on');
+    
+    this._nodemailer = nodemailer;
     
     this._transporter = nodemailer.createTransport({
       service: 'gmail',
@@ -39,7 +41,6 @@ module.exports = internal.GMailer = class {
       mailOptions.attachments = attachments;
     }
 
-    console.log(mailOptions);
     if (this.DEBUG) {
       console.log('GMailer.sendMessage: debug mode on => message to ' + addresseeList + ' not mailed');
       
@@ -47,6 +48,7 @@ module.exports = internal.GMailer = class {
       this._transporter.sendMail(mailOptions, function(error, info){
         if (error) {
           console.log('GMailer.sendMessage error: ' + JSON.stringify(error));
+          console.log(mailOptions);
           return {"success": false};
         }
       });     
