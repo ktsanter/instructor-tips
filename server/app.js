@@ -17,6 +17,8 @@ const SESSION_SECRET = getEnv('SESSION_SECRET', true);
 
 const INSTRUCTORTIPS_URL = getEnv('INSTRUCTORTIPS_URL', true);
 
+const PASSWORD_SALT = getEnv('PASSWORD_SALT', true);
+
 const EMAIL_USER = getEnv('EMAIL_USER', true);
 const EMAIL_PASSWORD = getEnv('EMAIL_PASSWORD', true);
 
@@ -222,7 +224,7 @@ app.get('/usermanagement/logout', function (req, res) {
 app.post('/usermanagement/passwordchange', async function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
     var result = await userManagement.changePassword(req.body, req.session);
-    console.log('result');
+    console.log('changePassword result');
     console.log(result);
     
     if (result.success) {
@@ -238,6 +240,17 @@ app.post('/usermanagement/passwordchange', async function (req, res) {
     
     res.send(result);
   }
+}) 
+
+app.get('/usermanagement/passwordsalt', function (req, res) {
+  var result = {
+    success: true,
+    details: 'query succeeded',
+    data: {salt: PASSWORD_SALT}
+  };
+  
+  res.send(result);
+  
 })  
 
 //------------------------------------------------------

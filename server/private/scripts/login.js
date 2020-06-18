@@ -17,7 +17,15 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init () {
-		page.body = document.getElementsByTagName('body')[0];
+    var queryResults = await SQLDBInterface.doGetQuery('usermanagement', 'passwordsalt');
+    if (!queryResults.success) {
+      console.log('failed to get password salt');
+      return;
+    } 
+    
+    settings.salt = queryResults.data.salt;
+    
+   	page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
     
     page.body.appendChild(_renderPage());
@@ -59,7 +67,7 @@ const app = function () {
     return container;    
   }
   
-  function _renderLoginForm() {
+    function _renderLoginForm() {
     var elemForm = CreateElement._createElement('form', null, null);
     elemForm.action = '/login_attempt';
     elemForm.method = 'post';
@@ -83,6 +91,11 @@ const app = function () {
     elemPassword.name = 'userPassword';
     elemPassword.placeholder = 'password';
     elemPassword.autocomplete = 'off';
+    elemPassword.addEventListener('input', (e) => {return _handlePasswordChange(e, this._salt);});
+    
+    var elemHashedPassword = CreateElement.createTextInput(null, 'hashedPassword');
+    passwordContainer.appendChild(elemHashedPassword);
+    elemHashedPassword.style.display = 'none';
     
     var elemSubmit = CreateElement._createElement('input', null, 'login-submit');
     elemForm.appendChild(elemSubmit);
@@ -107,10 +120,18 @@ const app = function () {
       this._retryArea.innerHTML = 'login failed, please retry';
     }
   }    
-      
+
+  function _hashPassword(pwd) {
+    return settings.salt + pwd;
+  }
+  
   //---------------------------------------
 	// handlers
 	//----------------------------------------
+  function _handlePasswordChange(e) {
+    var elemHashed = page.body.getElementsByClassName('hashedPassword')[0];
+    elemHashed.value = _hashPassword(e.target.value);
+  }
   
   //---------------------------------------
 	// return from wrapper function
