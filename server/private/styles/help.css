@@ -25,6 +25,18 @@ body {
   display: none;
 }
 
+.instructortips-help a.anchor {
+    display: block;
+    position: relative;
+    top: -2.8em;
+    visibility: hidden;
+}
+
+.instructortips-help a.anchor-top {
+  color: white;
+  float: right;
+}
+
 .instructortips-help .section {
   width: 60%;
   padding-bottom: 2.0em;

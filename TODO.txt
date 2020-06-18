@@ -13,6 +13,7 @@
 
 - select multiple target names for sharing ?
 
+- finish help
 
 
 
