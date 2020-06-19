@@ -182,6 +182,14 @@ CREATE TABLE schedulenotification
 #--------------------------------------------------------------------------
 select "creating triggers" as comment;
     
+#-- add default privilege level for new users
+CREATE TRIGGER trigger_newuser_privilege
+  AFTER INSERT ON user FOR EACH ROW
+    INSERT userprivilege (userid, privilegeid)
+    SELECT new.userid, privilegeid
+    FROM privilege
+    WHERE privilegename = 'instructor';
+    
 #-- add default scheduling control state for new users
 CREATE TRIGGER trigger_newuser_controlstate1
   AFTER INSERT ON user FOR EACH ROW
@@ -194,7 +202,7 @@ CREATE TRIGGER trigger_newuser_controlstate2
     INSERT controlstate (userid, controlgroup, state)
     SELECT new.userid, 'filtering' AS courseid, '{"search": "", "keywords": [], "common": true, "allowcommonedit": false}' as state;
     
-#-- add share notification default tfor new users
+#-- add share notification default for new users
 CREATE TRIGGER trigger_newuser_notification
   AFTER INSERT ON user FOR EACH ROW
     INSERT sharenotification (userid, notificationon)

@@ -42,24 +42,24 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- userprivilege
 #-------------------------------------------------------------
-select "loading userprivilege" as comment;
-
-INSERT INTO userprivilege (userid, privilegeid)
-  SELECT user.userid, privilege.privilegeid 
-  FROM user, privilege
-  WHERE user.usershortname = 'ksanter' and privilege.privilegename = 'superadmin';
-INSERT INTO userprivilege (userid, privilegeid)
-  SELECT user.userid, privilege.privilegeid 
-  FROM user, privilege
-  WHERE user.usershortname = 'test_admin' and privilege.privilegename = 'admin';
-INSERT INTO userprivilege (userid, privilegeid)
-  SELECT user.userid, privilege.privilegeid 
-  FROM user, privilege
-  WHERE user.usershortname = 'test_lead' and privilege.privilegename = 'lead';
-INSERT INTO userprivilege (userid, privilegeid)
-  SELECT user.userid, privilege.privilegeid 
-  FROM user, privilege
-  WHERE user.usershortname = 'test_instructor' and privilege.privilegename = 'instructor';
+select "updating userprivilege - disabled" as comment;
+#--
+#--INSERT INTO userprivilege (userid, privilegeid)
+#--  SELECT user.userid, privilege.privilegeid 
+#--   FROM user, privilege
+#--   WHERE user.usershortname = 'ksanter' and privilege.privilegename = 'superadmin';
+#-- INSERT INTO userprivilege (userid, privilegeid)
+#--   SELECT user.userid, privilege.privilegeid 
+#--   FROM user, privilege
+#--   WHERE user.usershortname = 'test_admin' and privilege.privilegename = 'admin';
+#-- INSERT INTO userprivilege (userid, privilegeid)
+#--   SELECT user.userid, privilege.privilegeid 
+#--   FROM user, privilege
+#--   WHERE user.usershortname = 'test_lead' and privilege.privilegename = 'lead';
+#-- INSERT INTO userprivilege (userid, privilegeid)
+#--   SELECT user.userid, privilege.privilegeid 
+#--   FROM user, privilege
+#--   WHERE user.usershortname = 'test_instructor' and privilege.privilegename = 'instructor';
 
 #-------------------------------------------------------------
 #-- category

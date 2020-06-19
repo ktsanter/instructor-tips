@@ -1,7 +1,5 @@
 - passwords
-  - include reset request option on login
-  - build user account creation page
-  - force password specification/reset if null
+  - finish reset request
 
 - discuss SQL setup with Noah
 
@@ -17,6 +15,8 @@
 - figure out how to do this: https://www.screencast.com/t/SniVZPKN
 
 - add Admin option to enable/disable email
+
+- add display name editing to profile
 
 
 

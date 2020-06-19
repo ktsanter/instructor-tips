@@ -156,12 +156,17 @@ const app = function () {
     elem.name = 'userName';
     elem.placeholder = 'username';
     elem.autocomplete = 'off';
-    elem.addEventListener('input', (e) => {return _handleUserNameChange(e);});     
+    elem.addEventListener('input', (e) => {return _handleUserNameChange(e);}); 
+    UtilityKTS.denyDoubleQuotes(elem);    
 
     elem = CreateElement.createSpan(null, 'form-comment username-message');
     subcontainer.appendChild(elem);
     if (settings.invalidUser) {
-      elem.innerHTML = 'user name not found, please try again';
+      if (settings.createAccount) {
+        elem.innerHTML = 'an account for this user already exists, please try again';
+      } else if (settings.resetAccount) {
+        elem.innerHTML = 'an account for this user was not found, please try again';
+      }
     }
     
     return container;    

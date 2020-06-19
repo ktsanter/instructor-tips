@@ -125,7 +125,7 @@ class TipEditing {
   }
   
   _handleDelete(tipInfo) {
-    tipInfo.deletable = true;  // sort this out
+    tipInfo.deletable = true;
 
     this._showContents(false);
     this._deleteTipDialog.show(true);

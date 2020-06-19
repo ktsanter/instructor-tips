@@ -129,6 +129,48 @@ module.exports = internal.UserManagement = class {
     return result;
   }
   
+  async createAccount(postData) {
+    var result = this._dbManager.queryFailureResult();    
+    
+    var userName = postData.userName;
+    var hashedPassword = postData.hashedPassword;
+    
+    var query = 
+      'select userid ' +
+      'from user ' + 
+      'where usershortname = "' + userName + '"';
+      
+    var queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.data.length > 0) {
+      result.details = 'invaliduser=true';
+      return result;
+    }    
+
+    var queryList = {
+      user:
+        'insert into user(usershortname, username, email, password) ' +
+        'values (' +
+          '"' + userName + '", ' +
+          '"' + userName + '", ' +
+          '""' + ', ' +
+          '"' + hashedPassword + '" ' +
+        ')',
+    };    
+    
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    if (!queryResults.success) {
+      console.log('UserManagement.createAccount failed');
+      console.log(postData);
+      console.log(queryResults.details);
+      result.details = 'queryfailed=true';
+    } else {      
+      result.success = true;
+      result.details = 'account created';
+    }
+
+    return result;
+  }
+  
 //---------------------------------------------------------------
 // private methods
 //---------------------------------------------------------------    

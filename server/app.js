@@ -226,9 +226,13 @@ app.get('/usermanagement/createaccount', function (req, res) {
 })
 
 app.post('/usermanagement/createaccount_attempt', async function (req, res) {
-  console.log('createaccount_attempt');
-  console.log('redirecting to login');
-  res.redirect('/login.html');
+  var result = await userManagement.createAccount(req.body);
+  
+  if (result.success) {
+    res.redirect('/login.html');
+  } else {
+    res.redirect('/login.html?createaccount=true&' + result.details);
+  }
 }) 
 
 app.get('/usermanagement/resetaccount', function (req, res) {
