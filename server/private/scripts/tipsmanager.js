@@ -80,7 +80,7 @@ const app = function () {
       
       hamburgeritems: [           
         {label: 'help', markselected: false, callback: _showHelp},
-        {label: 'logout', markselected: false, callback: _doLogout}
+        {label: 'sign out', markselected: false, callback: _doLogout}
       ]      
     };
     

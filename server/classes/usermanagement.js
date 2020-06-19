@@ -87,32 +87,45 @@ module.exports = internal.UserManagement = class {
   
   async changePassword(postData, sessionInfo) {
     var result = this._dbManager.queryFailureResult();    
-    console.log('UserManagement.changePassword');
-    console.log(postData);
-    console.log(sessionInfo.userInfo);
-
-    var result = this._dbManager.queryFailureResult();
     
     var query = 'update user ' +
                  'set password = "' + postData.passwordHash + '" ' +
                  'where userid = ' + sessionInfo.userInfo.userId;
-                 
-    console.log(query);
     
     var queryResults = await this._dbManager.dbQuery(query);
-    console.log('queryResults');
-    console.log(queryResults);
-
     if (queryResults.success) {
       this.logout(sessionInfo);
       result.success = true;
-      result.details = 'query succeeded';
+      result.details = 'password change succeeded';
       result.data = queryResults.data;
       
     } else {
       result.details = queryResults.details;
     }
     
+    return result;
+  }
+  
+  async resetRequest(postData) {
+    var result = this._dbManager.queryFailureResult();    
+    var userName = postData.userName;
+    
+    var query = 
+      'select userid ' +
+      'from user ' + 
+      'where usershortname = "' + userName + '"';
+      
+    var queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.data.length == 0) {
+      result.details = 'invaliduser=true';
+      return result;
+    }
+
+    console.log('UserManagement.resetRequest: finish implementation');
+
+    result.success = true;
+    result.details = 'reset request succeeded';
+
     return result;
   }
   

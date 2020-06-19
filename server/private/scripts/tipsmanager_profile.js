@@ -80,7 +80,6 @@ class TipProfile {
   }
   
   _renderPassword() {
-    //*** add password hasing
     var container = CreateElement._createElement('form', null, 'tipprofile-section tipprofile-password');
     container.action = '/change_password';
     container.method = 'post';
@@ -213,9 +212,10 @@ class TipProfile {
     var pwdConfirm = elemPwdConfirm.value;
 
     var newValid = (pwdNew.length >= 8 && pwdNew.length <= 20); 
-    newValid = newValid && (pwdNew.match(/[A-Z]/) != null);
-    newValid = newValid && (pwdNew.match(/[a-z]/) != null);
-    newValid = newValid && (pwdNew.match(/[0-9]/) != null);
+    // no further validity checks for now
+    //newValid = newValid && (pwdNew.match(/[A-Z]/) != null);
+    //newValid = newValid && (pwdNew.match(/[a-z]/) != null);
+    //newValid = newValid && (pwdNew.match(/[0-9]/) != null);
     newValid = newValid || (pwdNew.length == 0);
    
    var confirmValid = (pwdNew == pwdConfirm);
@@ -223,7 +223,7 @@ class TipProfile {
     elemCommentNew.innerHTML = '';
     elemCommentConfirm.innerHTML = '';
     if (!newValid) {
-      elemCommentNew.innerHTML = 'Passwords must be at least 8 characters long and no more than 20.  They must include at least one uppercase letter, one lowercase letter, and a digit.';
+      elemCommentNew.innerHTML = 'Passwords must be at least 8 characters long and no more than 20.';
     }
     if (!confirmValid) {
       elemCommentConfirm.innerHTML = 'passwords do not match';
@@ -311,7 +311,6 @@ class TipProfile {
   }
   
   async _handlePasswordSubmit(e) {
-    console.log('_handlePasswordSubmit');
     e.preventDefault();
     
     var elemForm = e.target;

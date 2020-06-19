@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------
- * styling for Tips Manager login page
+ * styling for InstructorTips login pages
  *------------------------------------------------------------------*/
 
 body {
@@ -10,16 +10,23 @@ body {
 }
 
 .title-container {
+  color: white;
   background-color: var(--bgPrimaryEmphasis);
+  font-size: 1.1em;
   margin-top: -8px;
   padding-bottom: 2px;
   padding-top: 3px;  
 }
 
-.title {
+.title-container .title {
+  display: inline-block;
+}
+
+.title-container .titlelink {
   display: inline-block;
   color: white;
-  font-size: 1.1em;
+  text-decoration: none;
+  cursor: pointer;
   border: 1px solid white;
   border-radius: 6px;
   margin: 4px;
@@ -27,13 +34,18 @@ body {
   padding-right: 3px;  
 }
 
+.title-container .titlelabel {
+  display: inline-block;
+  margin-left: 0.4em;
+}
+
 .contents-container {
   margin-top: 1.0em;
 }
 
-.login-textfield {
+.contents-container .userform .login-textfield {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-	display: block;
+	display: inline-block;
 	color: #444;
 	line-height: 1.0;
 	padding: .6em 1.4em .5em .8em;
@@ -50,7 +62,15 @@ body {
 	background-color: #fff;
 }
 
-.login-submit {
+.contents-container .userform .login-textfield.invalid {
+	background-color: #fcfb9d;
+}
+
+.contents-container .userform .form-comment {
+  margin-left: 0.4em;
+}
+
+.contents-container .userform .form-submit {
   margin-top: 0.4em;
   width: 20em;
   height: 2.5em;
@@ -61,18 +81,30 @@ body {
   outline: none;
 }
 
-.login-submit:active {
+.contents-container .userform .form-submit:active {
   color: black;
   background-color: var(--bgQuaternaryEmphasis);
 }
 
-.login-submit:disabled {
+.contents-container .userform .form-submit:disabled {
   color: var(--bgTertiaryEmphasis);
   background-color: var(--bgQuaternaryEmphasis); 
   border: 1px solid var(--bgTertiaryEmphasis);
 }
 
-.retryarea {
+.contents-container .errorarea {
+  font-style: italic;
   margin-top: 0.4em;
 }
 
+.contents-container .resetarea {
+  margin-top: 0.6em;
+}
+
+.contents-container .resetarea .newaccount {
+  display: block;
+}
+
+.contents-container .resetarea .resetaccount {
+  display: block;
+}

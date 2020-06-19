@@ -77,7 +77,7 @@
  * password
  *------------------------------------------------------------------*/
 .tipprofile .tipprofile-contents .tipprofile-section.tipprofile-password .tipprofile-passwordinput.password-invalid {
-  background-color: yellow;
+  background-color: #fcfb9d;
 }
 
 .tipprofile .tipprofile-contents .tipprofile-section.tipprofile-password .tipprofile-comment {

@@ -206,7 +206,7 @@ app.get('/login.html', function (req, res) {
   res.sendFile(path.join(__dirname, 'private', 'login.html'))
 })
 
-app.post('/login_attempt', async function (req, res) {
+app.post('/usermanagement/login_attempt', async function (req, res) {
   var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.hashedPassword);
  
   if (loginSuccess) {
@@ -221,21 +221,37 @@ app.get('/usermanagement/logout', function (req, res) {
   res.redirect('/login.html');
 })
 
+app.get('/usermanagement/createaccount', function (req, res) {
+  res.redirect('/login.html?createaccount=true');
+})
+
+app.post('/usermanagement/createaccount_attempt', async function (req, res) {
+  console.log('createaccount_attempt');
+  console.log('redirecting to login');
+  res.redirect('/login.html');
+}) 
+
+app.get('/usermanagement/resetaccount', function (req, res) {
+  res.redirect('/login.html?resetaccount=true');
+})
+
+app.post('/usermanagement/resetaccount_attempt', async function (req, res) {
+  var result = await userManagement.resetRequest(req.body);
+  
+  if (result.success) {
+    res.redirect('/login.html');    
+  } else {
+    res.redirect('/login.html?resetaccount=true&' + result.details);
+  }
+}) 
+
 app.post('/usermanagement/passwordchange', async function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
     var result = await userManagement.changePassword(req.body, req.session);
-    console.log('changePassword result');
-    console.log(result);
-    
     if (result.success) {
-      console.log('password change succeeded: redirecting...');
       userManagement.logout(req.session);
-      result.details = 'password change succeeded';
       result.data = {};
       result.data.redirectURL = '/login.html';
-      
-    } else {
-      console.log('password change failed: sending result...');
     }
     
     res.send(result);
