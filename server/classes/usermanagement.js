@@ -22,8 +22,10 @@ module.exports = internal.UserManagement = class {
     sessionInfo.userInfo = {userId: -1};
   }
   
-  async attemptLogin(sessionInfo, userName, enteredPassword) {
+  async attemptLogin(sessionInfo, userName, hashedEnteredPassword) {
     this.logout(sessionInfo);
+    
+    if (hashedEnteredPassword.length == 0) return false;
     
     var queryResults = await this._getInfoForUsername(userName);
     if (!queryResults.success) {
@@ -36,7 +38,7 @@ module.exports = internal.UserManagement = class {
     if (userDataList.length == 0) return false;  // no such user
     
     var userData = userDataList[0];
-    if (enteredPassword != userData.password) return false;  // passwords don't match
+    if (hashedEnteredPassword != userData.password) return false;
  
     sessionInfo.userInfo = {
       userId: userData.userid,

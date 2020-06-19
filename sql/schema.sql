@@ -18,7 +18,7 @@ CREATE TABLE user
   usershortname     varchar(30) NOT NULL ,
   username          varchar(100) NOT NULL ,
   email             varchar(100) NULL,
-  password          varchar(20) NULL,
+  password          varchar(200) NULL,
 
   PRIMARY KEY (userid),
   CONSTRAINT UNIQUE(usershortname)

@@ -1,5 +1,4 @@
 - passwords
-  - query to get salt on user side
   - include reset request option on login
   - build user account creation page
   - force password specification/reset if null
@@ -14,6 +13,10 @@
 - select multiple target names for sharing ?
 
 - finish help
+
+- figure out how to do this: https://www.screencast.com/t/SniVZPKN
+
+
 
 
 

@@ -207,7 +207,7 @@ app.get('/login.html', function (req, res) {
 })
 
 app.post('/login_attempt', async function (req, res) {
-  var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.userPassword);
+  var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.hashedPassword);
  
   if (loginSuccess) {
     res.redirect('/tipsmanager.html');

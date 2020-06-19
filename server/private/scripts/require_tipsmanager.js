@@ -21,6 +21,7 @@ define(function (require) {
   require('dialogcontainer');
   require('lookupinput');
   require('utilitykts');
+  require('usermanagement');
   
   document.addEventListener('DOMContentLoaded', app.init());
 });

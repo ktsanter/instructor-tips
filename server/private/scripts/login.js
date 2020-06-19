@@ -17,13 +17,8 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init () {
-    var queryResults = await SQLDBInterface.doGetQuery('usermanagement', 'passwordsalt');
-    if (!queryResults.success) {
-      console.log('failed to get password salt');
-      return;
-    } 
-    
-    settings.salt = queryResults.data.salt;
+    settings.userManagement = new UserManagement();
+    await settings.userManagement.init();
     
    	page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
@@ -81,6 +76,7 @@ const app = function () {
     elemUserName.name = 'userName';
     elemUserName.placeholder = 'username';
     elemUserName.autocomplete = 'off';
+    elemUserName.addEventListener('input', (e) => {return _handleUserNameChange(e);});
     
     var passwordContainer = CreateElement.createDiv(null, null);
     elemForm.appendChild(passwordContainer);
@@ -88,19 +84,24 @@ const app = function () {
     var elemPassword = CreateElement._createElement('input', 'userPassword', 'login-textfield');
     passwordContainer.appendChild(elemPassword);
     elemPassword.type = 'password';
-    elemPassword.name = 'userPassword';
+    elemPassword.name = ''; // no name => not included in form submission
     elemPassword.placeholder = 'password';
     elemPassword.autocomplete = 'off';
     elemPassword.addEventListener('input', (e) => {return _handlePasswordChange(e, this._salt);});
     
-    var elemHashedPassword = CreateElement.createTextInput(null, 'hashedPassword');
-    passwordContainer.appendChild(elemHashedPassword);
-    elemHashedPassword.style.display = 'none';
+    var hashedPasswordContainer = CreateElement.createDiv(null, null);
+    elemForm.appendChild(hashedPasswordContainer);
     
-    var elemSubmit = CreateElement._createElement('input', null, 'login-submit');
+    var elemHashedPassword = CreateElement._createElement('input', 'hashedPassword', 'hashedPassword');
+    hashedPasswordContainer.appendChild(elemHashedPassword);
+    elemHashedPassword.type = 'hidden';
+    elemHashedPassword.name = 'hashedPassword';
+    
+    var elemSubmit = CreateElement._createElement('input', null, 'login-submit submit-disabled');
     elemForm.appendChild(elemSubmit);
     elemSubmit.type = 'submit';
     elemSubmit.value = 'login';
+    elemSubmit.disabled = true;
     
     return elemForm;
   }
@@ -121,16 +122,32 @@ const app = function () {
     }
   }    
 
-  function _hashPassword(pwd) {
-    return settings.salt + pwd;
+  function _updateSubmitEnable() {
+    var elemSubmit = page.body.getElementsByClassName('login-submit')[0];
+    var elemList = page.body.getElementsByClassName('login-textfield');
+    var val0 = elemList[0].value;
+    var val1 = elemList[1].value;
+    
+    var disableSubmit = (val0.length == 0 || val1.length == 0);
+    UtilityKTS.setClass(elemSubmit, 'submit-disabled', disableSubmit);
+    elemSubmit.disabled = disableSubmit;
   }
   
   //---------------------------------------
 	// handlers
 	//----------------------------------------
+  function _handleUserNameChange(e) {
+    _updateSubmitEnable();
+  }
+  
   function _handlePasswordChange(e) {
     var elemHashed = page.body.getElementsByClassName('hashedPassword')[0];
-    elemHashed.value = _hashPassword(e.target.value);
+    
+    elemHashed.value = '';
+    var hashResult = settings.userManagement.hashPassword(e.target.value);
+    if (hashResult.success) elemHashed.value = hashResult.hashedPassword;
+
+    _updateSubmitEnable();
   }
   
   //---------------------------------------

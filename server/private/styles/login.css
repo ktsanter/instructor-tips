@@ -66,6 +66,12 @@ body {
   background-color: var(--bgQuaternaryEmphasis);
 }
 
+.login-submit:disabled {
+  color: var(--bgTertiaryEmphasis);
+  background-color: var(--bgQuaternaryEmphasis); 
+  border: 1px solid var(--bgTertiaryEmphasis);
+}
+
 .retryarea {
   margin-top: 0.4em;
 }

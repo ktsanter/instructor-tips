@@ -20,6 +20,9 @@ class TipProfile {
   // initial rendering
   //--------------------------------------------------------------
   async render() {
+    this._userManagement = new UserManagement();
+    await this._userManagement.init();
+    
     this._container = CreateElement.createDiv(null, 'tipprofile ' + this._HIDE_CLASS);
     
     this._notice = new StandardNotice(this._container, this._container);
@@ -77,6 +80,7 @@ class TipProfile {
   }
   
   _renderPassword() {
+    //*** add password hasing
     var container = CreateElement._createElement('form', null, 'tipprofile-section tipprofile-password');
     container.action = '/change_password';
     container.method = 'post';
@@ -264,16 +268,24 @@ class TipProfile {
   
   async _saveNewPassword() {
     var elemPassword = this._container.getElementsByClassName('password-new')[0];
+ 
+    var hashedPassword = '';
+    var hashResult = this._userManagement.hashPassword(elemPassword.value);
+    if (hashResult.success) {
+      hashedPassword = hashResult.hashedPassword;
+    } else {
+      return hashResult;
+    }
+    
     var params = {
-      passwordHash: this._hashPassword(elemPassword.value)
+      passwordHash: hashedPassword
     }
     
     var queryResults = await SQLDBInterface.doPostQuery('usermanagement/passwordchange', '', params, this._notice);
-    console.log(queryResults);
     
     return queryResults;
   }
- 
+   
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
@@ -303,16 +315,15 @@ class TipProfile {
     e.preventDefault();
     
     var elemForm = e.target;
-    var elemPassword = elemForm.getElementsByClassName('password-new')[0];
-    
+    var elemPassword = elemForm.getElementsByClassName('password-new')[0];    
+
     var result = await this._saveNewPassword(this._hashPassword(elemPassword.value));
-    console.log(result);
     if (result.success) {
       window.open(result.data.redirectURL, '_self'); 
     }
     
-    // always...
-    alert('beep');
+    // alert('password update failed');
+    // always... to prevent propagation
     return false;
   }
     
