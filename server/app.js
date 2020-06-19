@@ -336,6 +336,15 @@ app.get('/usermanagement/getuser', async function (req, res) {
   }
 })  
 
+app.get('/usermanagement/refreshuser', async function (req, res) {
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {;
+    res.send(await userManagement.refreshUserInfo(req.session));
+
+  } else {
+    res.send(_failedRequest('get'));
+  }
+})  
+
 //------------------------------------------------------
 // POST requests
 //------------------------------------------------------

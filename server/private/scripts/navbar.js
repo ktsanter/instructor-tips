@@ -166,6 +166,18 @@ class NavigationBar {
     if (elemToTarget) elemToTarget.click();
   }
   
+  changeOptionLabel(currentLabel, newLabel) {
+    var elemMainItems = this._navbar.getElementsByClassName('navbar-item');
+    var elemToTarget = null;
+    
+    for (var i = 0; i < elemMainItems.length && !elemToTarget; i++) {
+      var elem = elemMainItems[i];
+      if (elem.innerHTML.indexOf(currentLabel) >= 0) elemToTarget = elem;
+    }
+
+    if (elemToTarget) elemToTarget.innerHTML = newLabel;
+  }
+  
   //--------------------------------------------------------------
   // utility methods
   //--------------------------------------------------------------  

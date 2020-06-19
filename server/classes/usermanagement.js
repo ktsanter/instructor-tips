@@ -85,6 +85,23 @@ module.exports = internal.UserManagement = class {
     return result;
   }  
   
+  async refreshUserInfo(sessionInfo) {
+    var result = {success: false, details: 'error in refreshUserInfo'};
+    
+    var queryResults = await this._getInfoForUsername(sessionInfo.userInfo.userShortName);
+    
+    if (!queryResults.success) return result;
+    
+    sessionInfo.userInfo.userName = queryResults.data[0].username;
+    
+    var result = {
+      success: true,
+      userInfo: this.getUserInfo(sessionInfo)
+    };
+    
+    return result;
+  }  
+  
   async changePassword(postData, sessionInfo) {
     var result = this._dbManager.queryFailureResult();    
     

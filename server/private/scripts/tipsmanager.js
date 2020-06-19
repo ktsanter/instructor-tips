@@ -44,18 +44,37 @@ const app = function () {
 	//-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------  
-  async function _renderPage() {    
-    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
-    settings.userInfo = null;
-    if (dbResult.success) {
-      settings.userInfo = dbResult.userInfo;
-    }    
+  async function _renderPage() {        
+    await _getUserInfo();
     
     page.maincontainer.appendChild(await _renderSubContainers());
     settings.navbar = await _renderNavbar();
     page.body.insertBefore(settings.navbar, page.body.firstChild);
     attachShareCountElement();
     page.maincontainer.classList.add('bump-down');
+  }
+  
+  async function _getUserInfo() {
+    console.log('_getUserInfo');
+    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
+    settings.userInfo = null;
+    if (dbResult.success) {
+      settings.userInfo = dbResult.userInfo;
+    }     
+    console.log(settings.userInfo);
+  }
+  
+  async function _refreshUserInfo() {
+    var oldName = settings.userInfo.userName;
+    
+    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'refreshuser');
+
+    settings.userInfo = null;
+    if (dbResult.success) {
+      settings.userInfo = dbResult.userInfo;
+    }     
+
+    settings.objNavbar.changeOptionLabel(oldName, settings.userInfo.userName);
   }
   
   async function _renderNavbar() {
@@ -125,7 +144,9 @@ const app = function () {
     settings.editing = new TipEditing();
     container.appendChild(await settings.editing.render());
     
-    settings.profile = new TipProfile();
+    settings.profile = new TipProfile({
+      displayNameCallback: (params) => {_handleDisplayNameChange(params);}
+    });
     container.appendChild(await settings.profile.render());
 
     for (var i = 0; i < settings.adminTypes.length; i++) {
@@ -193,6 +214,12 @@ const app = function () {
     elem.parentNode.title = msg;
     if (elem.classList.contains('hide-me')) elem.classList.remove('hide-me');
     if (count == 0) elem.classList.add('hide-me');
+  }
+  
+  async function _handleDisplayNameChange(params) {
+    console.log('_handleDisplayNameChange');
+    await _refreshUserInfo();
+    console.log(settings.userInfo);
   }
   
   //---------------------------------------

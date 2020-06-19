@@ -16,7 +16,6 @@
 
 - add Admin option to enable/disable email
 
-- add display name editing to profile
 
 
 

@@ -36,7 +36,11 @@ class TipProfile {
   _renderContents() {
     var container = CreateElement.createDiv(null, 'tipprofile-contents');
     
+    container.appendChild(this._renderDisplayName());
+    
+    container.appendChild(CreateElement.createDiv(null, 'tipprofile-spacer'));
     container.appendChild(this._renderEmail());
+
     container.appendChild(CreateElement.createDiv(null, 'tipprofile-spacer'));
     container.appendChild(this._renderPassword());
     
@@ -50,7 +54,34 @@ class TipProfile {
     
     return container;
   }
-  
+    
+  _renderDisplayName() {
+    var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-displayname');
+    
+    container.appendChild(this._renderSectionTitle('display name'));
+    
+    var subcontainer = CreateElement.createDiv('tipprofile-subsection');
+    container.appendChild(subcontainer);
+    
+    var elem = CreateElement.createTextInput(null, 'tipprofile-input tipprofile-displaynameinput');
+    subcontainer.appendChild(elem);
+    elem.placeholder = 'used in reminders and sharing';
+    elem.maxLength = 40;
+    elem.addEventListener('input', (e) => {this._handleDisplayNameChange(e);});
+    elem.addEventListener('keyup', (e) => {this._handleDisplayNameKeyup(e)});
+    UtilityKTS.denyDoubleQuotes(elem);
+    
+    
+    subcontainer = CreateElement.createDiv('tipprofile-subsection');
+    container.appendChild(subcontainer);
+    
+    var handler = (e) => {this._handleDisplayNameConfirm();};
+    var elem = CreateElement.createButton(null, 'tipprofile-button tipprofile-confirmdisplayname', 'save', 'save new display name', handler);
+    subcontainer.appendChild(elem);
+    
+    return container;
+  }
+
   _renderEmail() {
     var container = CreateElement.createDiv(null, 'tipprofile-section tipprofile-email');
     
@@ -150,11 +181,27 @@ class TipProfile {
     var state = await this._loadStateFromDB();
    
     if (state) {
+      this._updateDisplayName(state.displayname);
+      this._updateDisplayNameConfirm();
       this._updateEmail(state.email);
       this._updateEmailConfirm();
       this._updatePassword();
       this._updatePasswordConfirm();
     }
+  }
+  
+  _updateDisplayName(displayName) {
+    var elem = this._container.getElementsByClassName('tipprofile-displaynameinput')[0];
+    elem.value = displayName;
+    elem.origDisplayNameValue = displayName;
+  }
+
+  _updateDisplayNameConfirm() {
+    var elem = this._container.getElementsByClassName('tipprofile-displaynameinput')[0];
+    var enableConfirm = (elem.value != elem.origDisplayNameValue);
+    
+    elem = this._container.getElementsByClassName('tipprofile-confirmdisplayname')[0];
+    elem.disabled = !enableConfirm;
   }
   
   _updateEmail(email) {
@@ -240,9 +287,11 @@ class TipProfile {
   // process state
   //--------------------------------------------------------------
   _getStateFromControls() {
+    var elemDisplayName = this._container.getElementsByClassName('tipprofile-displaynameinput')[0];
     var elemEmail = this._container.getElementsByClassName('tipprofile-emailinput')[0];
     
     var state = {
+      displayname: elemDisplayName.value,
       email: elemEmail.value
     };
 
@@ -289,6 +338,25 @@ class TipProfile {
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
+  async _handleDisplayNameConfirm(e) {
+    var state = this._getStateFromControls();
+    if (this._saveStateToDB(state)) {
+      this.update();
+      await this._config.displayNameCallback();
+    }
+  }
+
+  _handleDisplayNameChange(e) {
+    this._updateDisplayNameConfirm();
+  }
+  
+  _handleDisplayNameKeyup(e) {
+    if (e.code == 'Escape') {
+      e.target.value = e.target.origDisplayNameValue;
+      this._updateDisplayNameConfirm();
+    }
+  }  
+  
   _handleEmailConfirm(e) {
     if (this._saveStateToDB(this._getStateFromControls())) {
       this.update();

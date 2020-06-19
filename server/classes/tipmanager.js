@@ -207,7 +207,7 @@ module.exports = internal.TipManager = class {
     
     var queryList = {
       notificationoptions: 
-        'select email ' +
+        'select username as displayname, email ' +
         'from user ' +
         'where userid = ' + userInfo.userId + ' '
     };
@@ -755,10 +755,12 @@ module.exports = internal.TipManager = class {
 
     var query, queryResults;
     var email = this._sanitizeText(postData.email).replace(/\s/g, '');
+    var userName = this._sanitizeText(postData.displayname);
     
     query =
       'update user ' +
       'set ' + 
+        'username = "' + userName + '", ' + 
         'email = "' + email + '" ' +
       'where userid = ' + userInfo.userId + ' ';
 
