@@ -6,15 +6,17 @@
 // TODO: 
 //-----------------------------------------------------------------------------------
 class UserManagement {
-  constructor () {
+  constructor (sodium) {
     this._version = '1.00';    
     this._salt = null;
+    this._sodium = sodium;
   }
       
 //-----------------------------------------------------------------------------------
 // public methods 
 //-----------------------------------------------------------------------------------
-  async init() {    
+  async init() {
+    await this._sodium.ready;
     this._salt = await this._getSalt();
     
     return this._salt != null;    
@@ -32,8 +34,10 @@ class UserManagement {
       return result;
     }
     
+    var hashedPassword = this._sodium.to_hex(this._sodium.crypto_generichash(64, this._salt + password));
+    
     result.success = true;
-    result.hashedPassword = this._salt + password;
+    result.hashedPassword = hashedPassword;
     result.details = 'hashing succeeded';
     
     return result;

@@ -23,5 +23,8 @@ define(function (require) {
   require('utilitykts');
   require('usermanagement');
   
-  document.addEventListener('DOMContentLoaded', app.init());
+  require('libsodium');
+  const libsodiumWrappers = require('libsodium-wrappers');
+ 
+  document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));
 });

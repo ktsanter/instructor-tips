@@ -26,8 +26,11 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	async function init () {
+	async function init (sodium) {
     document.title = appInfo.appName;
+    
+    settings.sodium = sodium;
+    
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
     
@@ -140,7 +143,8 @@ const app = function () {
     container.appendChild(await settings.editing.render());
     
     settings.profile = new TipProfile({
-      displayNameCallback: (params) => {_handleDisplayNameChange(params);}
+      displayNameCallback: (params) => {_handleDisplayNameChange(params);},
+      sodium: settings.sodium
     });
     container.appendChild(await settings.profile.render());
 

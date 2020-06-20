@@ -20,7 +20,7 @@ class TipProfile {
   // initial rendering
   //--------------------------------------------------------------
   async render() {
-    this._userManagement = new UserManagement();
+    this._userManagement = new UserManagement(this._config.sodium);
     await this._userManagement.init();
     
     this._container = CreateElement.createDiv(null, 'tipprofile ' + this._HIDE_CLASS);

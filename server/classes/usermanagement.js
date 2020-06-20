@@ -187,7 +187,6 @@ module.exports = internal.UserManagement = class {
   }
   
   async resetPendingRequest(postData) {
-    console.log('UserManagement.resetPendingRequest');
     var result = this._dbManager.queryFailureResult();    
     
     var query, queryList, queryResults;
@@ -205,7 +204,6 @@ module.exports = internal.UserManagement = class {
       result.details='pending=true&invaliduser=true&id=' + identifier;
       return result;
     }
-    console.log(queryResults);
 
     var userId = queryResults.data[0].userid;
     
@@ -215,9 +213,7 @@ module.exports = internal.UserManagement = class {
       'where userid = ' + userId + ' ' +
         'and identifier = "' + identifier + '" ';
         
-    console.log(query);
     queryResults = await this._dbManager.dbQuery(query);
-    console.log(queryResults);
     if (!queryResults.success || queryResults.data.length == 0) {
       result.details='invalidpending=true';
       return result;

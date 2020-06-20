@@ -35,7 +35,6 @@ module.exports = internal.MessageManagement = class {
 // public methods
 //---------------------------------------------------------------
   async sendSharedScheduleNotification(params) {
-    console.log('MessageManagement.sendSharedScheduleNotification');
     var result = this._dbManager.queryFailureResult();
     
     var queryList, queryResults;
@@ -55,8 +54,6 @@ module.exports = internal.MessageManagement = class {
     };
 
     queryResults = await this._dbManager.dbQueries(queryList);
-    console.log('queryResults');
-    console.log(queryResults);
     if (!queryResults) {
       result.details = queryResults.details;
       return result;

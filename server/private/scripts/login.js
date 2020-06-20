@@ -27,10 +27,10 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	async function init () {
+	async function init (sodium) {
     checkQueryParams();
     
-    settings.userManagement = new UserManagement();
+    settings.userManagement = new UserManagement(sodium);
     await settings.userManagement.init();
     
    	page.body = document.getElementsByTagName('body')[0];
