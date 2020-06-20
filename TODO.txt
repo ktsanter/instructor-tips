@@ -1,18 +1,13 @@
 - passwords
-  - finish reset request
+   - add real hashing
 
 - discuss SQL setup with Noah
 
 - build help pages
-  - include Markdown section in tip editing section
-  - add profile page
-  - add "other" page
-
-- select multiple target names for sharing ?
 
 - finish help
 
-- figure out how to do this: https://www.screencast.com/t/SniVZPKN
+- figure out how to do this:   https://www.screencast.com/t/SniVZPKN
 
 - add Admin option to enable/disable email
 

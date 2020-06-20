@@ -186,6 +186,68 @@ module.exports = internal.UserManagement = class {
     return result;
   }
   
+  async resetPendingRequest(postData) {
+    console.log('UserManagement.resetPendingRequest');
+    var result = this._dbManager.queryFailureResult();    
+    
+    var query, queryList, queryResults;
+    var userName = postData.userName;
+    var hashedPassword = postData.hashedPassword;
+    var identifier = postData.identifier;  
+
+    query = 
+      'select userid ' +
+      'from user ' + 
+      'where usershortname = "' + userName + '"';
+      
+    queryResults = await this._dbManager.dbQuery(query);
+    if (!queryResults.success ||queryResults.data.length == 0) {
+      result.details='pending=true&invaliduser=true&id=' + identifier;
+      return result;
+    }
+    console.log(queryResults);
+
+    var userId = queryResults.data[0].userid;
+    
+    query = 
+      'select resetpendingid ' +
+      'from resetpending ' +
+      'where userid = ' + userId + ' ' +
+        'and identifier = "' + identifier + '" ';
+        
+    console.log(query);
+    queryResults = await this._dbManager.dbQuery(query);
+    console.log(queryResults);
+    if (!queryResults.success || queryResults.data.length == 0) {
+      result.details='invalidpending=true';
+      return result;
+    }
+    
+    var resetPendingId = queryResults.data[0].resetpendingid;
+    queryList = {
+      deletePending:
+        'delete ' +
+        'from resetpending ' +
+        'where resetpendingid = ' + resetPendingId,
+        
+      updatePassword:
+        'update user ' +
+        'set password = "' + hashedPassword + '" ' +
+        'where userid = ' + userId
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details='invalidpending=true';
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'pending reset complete';
+    
+    return result;
+  }
+
   async createAccount(postData) {
     var result = this._dbManager.queryFailureResult();    
     
@@ -225,6 +287,28 @@ module.exports = internal.UserManagement = class {
       result.details = 'account created';
     }
 
+    return result;
+  }
+  
+  async clearExpiredRequests() {
+    var result = this._dbManager.queryFailureResult();
+    var query, queryResults;
+    
+    query =
+      'delete ' +
+      'from resetpending ' +
+      'where NOW() > expiration ';
+      
+    queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'expired requests removed';
+    } else {
+      console.log('UserManagement.clearExpiredRequests failed');
+      console.log(queryResults.details);
+      result.details = queryResults.details;
+    }
+    
     return result;
   }
   

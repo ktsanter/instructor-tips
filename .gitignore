@@ -1,8 +1,9 @@
 #gitignore for InstructorTips project
 server/node_modules/
-server/startserver.bat
+server/*.bat
 server/log
 server/temp/*.*
+sql/*.bat
 
 # Honor .ignore
 *.ignore

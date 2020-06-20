@@ -25,22 +25,26 @@ module.exports = internal.CronScheduler = class {
 
     this._cron = params.cron;
     this._messageManagement = params.messageManagement;
+    this._userManagement = params.userManagement;
     
     this._jobList = {};
     this._createInitialJobs();
     this._startInitialJobs();
   }
   
-  _createInitialJobs() {    
+  _createInitialJobs() {
+    //---------------------------------------
+    // weekly schedule reminder emails    
+    //---------------------------------------
     this.createJob({
       jobName: 'schedulepush',
-      fireTime: (this.DEBUG ? '*/5 * * * * *' : '* * * */1 * *'),  // once a day for prod, every 5 seconds for debug
+      fireTime: (this.DEBUG ? '*/5 * * * * *' : '* * * */1 * *'),  // once a day for prod, once after 5 seconds for debug
 
       funcOnTick: (function(me) {
         return async function() { 
           await me._messageManagement.sendSchedulePushNotifications(); 
           if (me.DEBUG) {
-            console.log('CronScheduler: debug mode on => stopping job after one run');
+            console.log('CronScheduler: debug mode on => stopping "schedulepush" after one run');
             me.stopJob('schedulepush');
             return;
           }
@@ -52,11 +56,33 @@ module.exports = internal.CronScheduler = class {
       timeZone: 'America/Detroit'
     });
     
-    console.log('CronScheduler._createInitialJobs: add sweep for expired reset requests');
+    //---------------------------------------
+    // clear expired account reset requests    
+    //---------------------------------------
+    this.createJob({
+      jobName: 'clearexpiredrequests',
+      fireTime: (this.DEBUG ? '*/10 * * * * *' : '* * * */1 * *'),  // hourly(?) for prod, once after 10 seconds for debug
+
+      funcOnTick: (function(me) {
+        return async function() { 
+          var result = await me._userManagement.clearExpiredRequests(); 
+          if (me.DEBUG) {
+            console.log('CronScheduler: debug mode on => stopping "clearexpiredrequests" after one run');
+            me.stopJob('clearexpiredrequests');
+            return;
+          }
+        }
+      })(this),
+
+      funcOnComplete: null,
+      start: false,
+      timeZone: 'America/Detroit'
+    });
   }
       
   _startInitialJobs() {
     this.startJob('schedulepush');
+    this.startJob('clearexpiredrequests');
   }
 
 //---------------------------------------------------------------

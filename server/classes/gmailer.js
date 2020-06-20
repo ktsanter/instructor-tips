@@ -10,7 +10,7 @@ const internal = {};
 module.exports = internal.GMailer = class {
   constructor(nodemailer, params) {
     this.DEBUG = true;  
-    if (this.DEBUG) console.log('MessageManagement: debug mode is on');
+    if (this.DEBUG) console.log('GMailer: debug mode is on');
     
     this._nodemailer = nodemailer;
     

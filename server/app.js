@@ -165,7 +165,8 @@ var cron = require('cron');
 const cronSchedulerClass = require('./classes/cronscheduler')
 const cronScheduler = new cronSchedulerClass({
   "cron": cron, 
-  "messageManagement": messageManagement
+  "messageManagement": messageManagement,
+  "userManagement": userManagement
 });
 
 //------------------------------------------
@@ -246,6 +247,16 @@ app.post('/usermanagement/resetaccount_attempt', async function (req, res) {
     res.redirect('/login.html');    
   } else {
     res.redirect('/login.html?resetaccount=true&' + result.details);
+  }
+}) 
+
+app.post('/usermanagement/pendingaccount_attempt', async function (req, res) {
+  var result = await userManagement.resetPendingRequest(req.body);
+  
+  if (result.success) {
+    res.redirect('/login.html');    
+  } else {
+    res.redirect('/login.html?' + result.details);
   }
 }) 
 

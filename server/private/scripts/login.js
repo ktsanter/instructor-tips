@@ -19,7 +19,9 @@ const app = function () {
     urlCreateAccountAttempt: '/usermanagement/createaccount_attempt',
     
     urlResetAccount: '/usermanagement/resetaccount',
-    urlResetAccountAttempt: '/usermanagement/resetaccount_attempt'
+    urlResetAccountAttempt: '/usermanagement/resetaccount_attempt',
+    
+    urlPendingResetAttempt: '/usermanagement/pendingaccount_attempt'
   };
   
 	//---------------------------------------
@@ -47,11 +49,17 @@ const app = function () {
     var createAccount = urlParams.has('createaccount') ? urlParams.get('createaccount') == 'true' : false;
     var resetAccount = urlParams.has('resetaccount') ? urlParams.get('resetaccount') == 'true' : false;
     var invalidUser = urlParams.has('invaliduser') ? urlParams.get('invaliduser') == 'true' : false;
+    var pendingResetAccount = urlParams.has('pending') ? urlParams.get('pending') == 'true' : false;
+    var resetId = urlParams.has('id') ? urlParams.get('id') : null;
+    var invalidPending = urlParams.has('invalidpending') ? urlParams.get('invalidpending') == 'true' : false;
     
     settings.retryLogin = retryLogin;
     settings.createAccount = createAccount;
     settings.resetAccount = resetAccount;
     settings.invalidUser = invalidUser;
+    settings.pendingResetAccount = pendingResetAccount;
+    settings.resetId = resetId;
+    settings.invalidPending = invalidPending;
   } 
   
 	//-----------------------------------------------------------------------------
@@ -91,7 +99,7 @@ const app = function () {
     if (settings.retryLogin) this._errorMessage.innerHTML = 'login failed, please try again';
     
     if (settings.createAccount) {
-      _updateTitle('create account');
+      _updateTitle( 'create account');
       container.appendChild(_renderCreateAccountForm());
       container.appendChild(_renderLinkArea());
       
@@ -100,7 +108,17 @@ const app = function () {
       container.appendChild(_renderResetAccountForm());
       container.appendChild(_renderLinkArea());
       
-    }   else {
+    } else if (settings.pendingResetAccount) {
+      _updateTitle( 'pending account reset');
+      container.appendChild(_renderPendingResetAccountForm());
+      container.appendChild(_renderLinkArea());
+      
+    } else if (settings.invalidPending) {
+      _updateTitle( '');
+      container.appendChild(_renderInvalidPending());
+      container.appendChild(_renderLinkArea());
+      
+    } else {
       _updateTitle('sign in');
       container.appendChild(_renderLoginForm());
       container.appendChild(_renderLinkArea());
@@ -144,6 +162,29 @@ const app = function () {
     return elemForm;
   }
   
+  function _renderPendingResetAccountForm() {
+    var elemForm = CreateElement._createElement('form', null, 'userform pendingresetform');
+    elemForm.action = settings.urlPendingResetAttempt;
+    elemForm.method = 'post';
+        
+    elemForm.appendChild(_renderUserNameField());
+    elemForm.appendChild(_renderPasswordField(true));
+    elemForm.appendChild(_renderIdField());
+    elemForm.appendChild(_renderSubmit('submit new password'));    
+    
+    return elemForm;
+  }  
+  
+  function _renderInvalidPending() {
+    var container = CreateElement.createDiv(null, 'invalidpending');
+        
+    var msgContainer = CreateElement.createDiv(null, 'invalidpending-contents');
+    container.appendChild(msgContainer);
+    msgContainer.innerHTML = 'Unable to reset account. The account reset request is expired or invalid.';
+    
+    return container;
+  }
+  
   function _renderUserNameField() {
     var container = CreateElement.createDiv(null, null);
     var subcontainer = CreateElement.createDiv(null, 'subcontainer');
@@ -164,7 +205,7 @@ const app = function () {
     if (settings.invalidUser) {
       if (settings.createAccount) {
         elem.innerHTML = 'an account for this user already exists, please try again';
-      } else if (settings.resetAccount) {
+      } else if (settings.resetAccount || settings.pendingResetAccount) {
         elem.innerHTML = 'an account for this user was not found, please try again';
       }
     }
@@ -184,7 +225,11 @@ const app = function () {
 
     elem.type = 'password';
     elem.name = ''; // no name => not included in form submission
-    elem.placeholder = 'password';
+    if (settings.pendingResetAccount) {
+      elem.placeholder = 'new password';
+    } else {
+      elem.placeholder = 'password';
+    }
     elem.autocomplete = 'off';
     elem.addEventListener('input', (e) => {return _handlePasswordChange(e, this._salt);});
     
@@ -217,6 +262,21 @@ const app = function () {
     return container;
   }
   
+  function _renderIdField() {
+    var container = CreateElement.createDiv(null, null);
+
+    var subcontainer = CreateElement.createDiv(null, 'subcontainer');
+    container.appendChild(subcontainer);
+    
+    elem = CreateElement._createElement('input', 'identifier', 'identifier');
+    subcontainer.appendChild(elem);
+    elem.type = 'hidden';
+    elem.name = 'identifier';
+    elem.value = settings.resetId;
+    
+    return container;
+  }
+  
   function _renderSubmit(value) {
     var elem = CreateElement._createElement('input', null, 'form-submit submit-disabled');
     elem.type = 'submit';
@@ -241,11 +301,16 @@ const app = function () {
       // no links
       
     } else if (settings.resetAccount) {
+      var elem = CreateElement.createDiv(null, 'resetaccount-message');
+      container.appendChild(elem);
+      elem.innerHTML = 'An email will be sent to the address specified for your account, providing a link to reset your password.';
+      
+    } else if (settings.pendingResetAccount) {
       // no links
       
     } else {
       container.appendChild(CreateElement.createLink(null, 'newaccount', 'Create a new account?', null, settings.urlCreateAccount)); 
-      container.appendChild(CreateElement.createLink(null, 'resetaccount', 'Forgot your user name or password?', null, settings.urlResetAccount)); 
+      container.appendChild(CreateElement.createLink(null, 'resetaccount', 'Forgot your password?', null, settings.urlResetAccount)); 
     }
     
     return container;
@@ -275,7 +340,7 @@ const app = function () {
       
     var disableSubmit = true;
 
-    if (settings.createAccount) {
+    if (settings.createAccount || settings.pendingResetAccount) {
       var name = elemUserName.value;
       var pwd = elemPassword.value;
       var pwdConfirm = elemConfirm.value;
@@ -284,7 +349,7 @@ const app = function () {
       var pwdValid = (pwd.length >= 8 && pwd.length <= 20);
       var confirmValid = (pwd == pwdConfirm);
       
-      if (!nameValid && name.length > 0) {
+      if (!nameValid && name.length > 0 && settings.createAccount) {
         elemNameMessage.innerHTML = 'user name length must be at least 6 and no more than 20';
         UtilityKTS.setClass(elemUserName, 'invalid', true);        
       }

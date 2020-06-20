@@ -41,7 +41,6 @@ module.exports = internal.MariaDBManager = class {
         
     } catch (err) {
       dbResult.details = err;
-      //throw err;
       
     } finally {
       if (conn) conn.release();

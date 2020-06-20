@@ -8,7 +8,7 @@ const internal = {};
 
 module.exports = internal.MessageManagement = class {
   constructor(params) {
-    this.DEBUG = true;
+    this.DEBUG = false;
     if (this.DEBUG) console.log('MessageManagement: debug mode is on');
     
     this._dbManager = params.dbManager;
@@ -35,6 +35,7 @@ module.exports = internal.MessageManagement = class {
 // public methods
 //---------------------------------------------------------------
   async sendSharedScheduleNotification(params) {
+    console.log('MessageManagement.sendSharedScheduleNotification');
     var result = this._dbManager.queryFailureResult();
     
     var queryList, queryResults;
@@ -54,6 +55,8 @@ module.exports = internal.MessageManagement = class {
     };
 
     queryResults = await this._dbManager.dbQueries(queryList);
+    console.log('queryResults');
+    console.log(queryResults);
     if (!queryResults) {
       result.details = queryResults.details;
       return result;
@@ -118,7 +121,7 @@ module.exports = internal.MessageManagement = class {
     
     queryResults = await this._dbManager.dbQuery(query);
     if (!queryResults.success) {
-      console.log('MessageManagement: query failed: ' + queryResults.details);
+      console.log('MessageManagement.sendSchedulePushNotifications: query failed: ' + queryResults.details);
       return;
     }
     
@@ -141,21 +144,25 @@ module.exports = internal.MessageManagement = class {
   }
   
   async sendAccountResetNotification(userId, identifier, expiration) {
-    console.log('MessageManagement.sendAccountResetNotification');
+    var query, queryResults;
     var expirationStamp = this._formatDateStamp(expiration).slice(0, -4);
     
-    console.log(userId + ' ' + identifier + ' ' + expirationStamp);
+    query =  
+      'select username, email ' +
+      'from user ' +
+      'where userid = ' + userId;
     
-    // get user name and email
-    var userName = 'Mr. User';
-    var userEmail = '**dummy email**';
-    console.log(this._appURL);
+    queryResults = await this._dbManager.dbQuery(query);
+    if (!queryResults.success) {
+      console.log('MessageManagement.sendAccountResetNotification: query failed: ' + queryResults.details);
+      return;
+    }
+    
+    var userName = queryResults.data[0].username;
+    var userEmail = queryResults.data[0].email;
     var pageNameOnly = this._appURL.split('\\').pop().split('/').pop();
-    console.log(pageNameOnly);
     var pathToApp = this._appURL.slice(0, -1 * pageNameOnly.length);
-    console.log(pathToApp);
     var resetLink = pathToApp + 'login.html?pending=true&id=' + identifier;
-    console.log(resetLink);
     
     var params = {
       emailTo: userEmail,
@@ -178,7 +185,7 @@ module.exports = internal.MessageManagement = class {
       this._writeRenderedToFile(params.pugFile, params.id, rendered);
       
     } else {
-      var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', renderedWrapper);
+      var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', rendered);
       if (!mailResult.success) {
         console.log('MessageManagement._prepAndSendMessage: failed to send email to ' + emailTo);
         return false;
