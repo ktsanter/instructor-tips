@@ -313,7 +313,13 @@ app.get('/admin/query/:queryName',  async function (req, res) {
     res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
 
   } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin') && req.params.queryName == 'cronstatus') {
-    res.send({success: true, details: 'cronstatus', data: {isRunning: cronScheduler.isRunning('schedulepush')}});
+    res.send({
+      success: true, 
+      details: 'cronstatus', 
+      data: {
+        scheduleNotificationsRunning: cronScheduler.isRunning('schedulepush'),
+        mailerDebugMode: gMailer.isDebugModeOn()
+      }});
 
   } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
     res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
@@ -372,12 +378,20 @@ app.post('/admin/insert/:queryName', async function (req, res) {
 
 app.post('/admin/update/:queryName', async function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin') && req.params.queryName == 'cronstatus') {
-    if (req.body.enableJob) {
+    if (req.body.enablePushNotifications) {
       cronScheduler.startJob('schedulepush');
     } else {
       cronScheduler.stopJob('schedulepush');
     }
-    res.send({success: true, details: 'cronstatus', data: {isRunning: cronScheduler.isRunning('schedulepush')}});
+    gMailer.setDebugMode(req.body.setMailerDebugMode);
+    res.send({
+      success: true, 
+      details: 'cronstatus', 
+      data: {
+        enablePushNotifications: cronScheduler.isRunning('schedulepush'),
+        setMailerDebugMode: gMailer.isDebugModeOn()
+      }
+    });
 
   } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
     res.send(await dbAdminUpdate.doUpdate(req.params, req.body));

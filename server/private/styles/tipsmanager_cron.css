@@ -16,6 +16,7 @@
 
 .tipcron .tipcron-contents .tipcron-statuslabel {
   display: inline-block;
+  width: 10em;
   vertical-align: bottom;
   padding-bottom: 0.6em;
 }

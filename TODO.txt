@@ -3,13 +3,11 @@
 
 - discuss SQL setup with Noah
 
-- build help pages
-
 - finish help
 
 - figure out how to do this:   https://www.screencast.com/t/SniVZPKN
 
-- add Admin option to enable/disable email
+- procedure for clearing temp directory
 
 
 

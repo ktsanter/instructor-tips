@@ -40,16 +40,26 @@ class TipCron {
   
   _renderContents() {
     var container = CreateElement.createDiv(null, 'tipcron-contents');
+
+    container.appendChild(this._renderItem('schedulepush', 'push notification job', 'enabled', 'disabled'));
+    container.appendChild(this._renderItem('maildebug', 'mailer debug mode', 'on', 'off'));
+    
+    return container;
+  }
+  
+  _renderItem(addedClass, msgLabel, msgControlOn, msgControlOff) {
+    var container = CreateElement.createDiv(null, 'tipcron-item');
     
     var subcontainer = CreateElement.createDiv(null, 'tipcron-statuslabel');
     container.appendChild(subcontainer);
-    subcontainer.appendChild(CreateElement.createDiv(null, 'tipcron-statuslabeltext', 'push notification job'));
+    subcontainer.appendChild(CreateElement.createDiv(null, 'tipcron-statuslabeltext', msgLabel));
     
     subcontainer = CreateElement.createDiv(null, 'tipcron-status');
     container.appendChild(subcontainer);
     
     var handler = (e) => {this._handleSwitchChange(e);};
-    var elemStatus = CreateElement.createSliderSwitch('enabled', 'disabled', 'tipcron-statuscontrol', handler, false);
+    var className = 'tipcron-statuscontrol ' + addedClass;
+    var elemStatus = CreateElement.createSliderSwitch(msgControlOn, msgControlOff, className, handler, false);
     subcontainer.appendChild(elemStatus);    
     
     return container;
@@ -87,6 +97,7 @@ class TipCron {
     
     var queryResults = await SQLDBInterface.doGetQuery('admin/query', 'cronstatus', this._notice);
     if (queryResults.success) {
+      console.log(queryResults);
       state = queryResults.data;
     };
     console.log('_loadStateFromServer: ' + JSON.stringify(state));
@@ -96,9 +107,12 @@ class TipCron {
  
   async _setServerState() {
     console.log('_setServerState');
-    var elemSwitch = this._container.getElementsByClassName('tipcron-statuscontrol')[0];
+    var  elemSchedulePush = this._container.getElementsByClassName('schedulepush')[0];
+    var  elemMailDebugMode = this._container.getElementsByClassName('maildebug')[0];
+
     var queryData = {
-      enableJob: CreateElement.getSliderValue(elemSwitch)
+      enablePushNotifications: CreateElement.getSliderValue(elemSchedulePush),
+      setMailerDebugMode: CreateElement.getSliderValue(elemMailDebugMode)
     };
 
     var queryResults = await SQLDBInterface.doPostQuery('admin/update', 'cronstatus', queryData, this._notice);
@@ -106,8 +120,10 @@ class TipCron {
 
   _setUIState(newState) {
     console.log('_setUIState');
-    var  elemSwitch = this._container.getElementsByClassName('tipcron-statuscontrol')[0];
-    CreateElement.setSliderValue(elemSwitch, newState.isRunning);
+    var  elemSchedulePush = this._container.getElementsByClassName('schedulepush')[0];
+    var  elemMailDebugMode = this._container.getElementsByClassName('maildebug')[0];
+    CreateElement.setSliderValue(elemSchedulePush, newState.scheduleNotificationsRunning);
+    CreateElement.setSliderValue(elemMailDebugMode, newState.mailerDebugMode);
   }
      
   //--------------------------------------------------------------

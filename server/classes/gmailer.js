@@ -9,8 +9,7 @@ const internal = {};
 
 module.exports = internal.GMailer = class {
   constructor(nodemailer, params) {
-    this.DEBUG = true;  
-    if (this.DEBUG) console.log('GMailer: debug mode is on');
+    this.setDebugMode(true);  // note: can be changed with outside call
     
     this._nodemailer = nodemailer;
     
@@ -29,6 +28,15 @@ module.exports = internal.GMailer = class {
 //---------------------------------------------------------------
 // public methods - general messages
 //---------------------------------------------------------------
+  setDebugMode(setDebugModeOn) {
+    this.DEBUG = setDebugModeOn;
+    console.log('GMailer: debug mode is ' + (this.DEBUG ? 'on' : 'off'));
+  }
+  
+  isDebugModeOn() {
+    return this.DEBUG;
+  }
+  
   async sendMessage(addresseeList, subjectText, bodyText, bodyHTML, attachments) {
     var mailOptions = {
       from: this._defaultSender,
