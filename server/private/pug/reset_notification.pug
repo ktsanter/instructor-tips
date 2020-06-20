@@ -1,0 +1,36 @@
+mixin link(href, name)
+  a(href=href)&attributes(attributes)= name
+
+doctype html
+html
+  head
+    title InstructorTips account reset
+    meta(charset="utf-8")
+    style
+      include reset_notification.css
+      
+  body  
+    - var userTo = params.userTo
+    - var identifier = params.identifier
+    - var resetLink = params.resetLink
+    - var expiration = params.expiration
+    - var contactName = params.contactName
+    - var contactEmail = params.contactEmail
+    - var contactEmailLink = 'mailto:' + params.contactEmail
+
+    .container 
+      .salutation
+        |Hello #{userTo},
+
+      .message
+        |Your InstructorTips password has been reset.
+        |You can specify a new one using 
+        +link(resetLink, 'this link.')(class="applink")
+        br
+        |Please note the link becomes invalid at !{expiration}.
+      
+      .closing
+        em
+          |This is an automated message - please do not reply to it.
+          |If you have questions contact !{contactName} at 
+          a(href=contactEmailLink) !{contactEmail}

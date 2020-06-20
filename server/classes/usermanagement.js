@@ -7,8 +7,12 @@
 const internal = {};
 
 module.exports = internal.UserManagement = class {
-  constructor(dbManager) {
-    this._dbManager = dbManager;
+  constructor(params) {
+    this._dbManager = params.dbManager;
+    this._tempFileManager = params.tempFileManager;
+    this._messageManager = params.messageManager;
+    
+    this._tempDir = 'temp';
   }
   
 //---------------------------------------------------------------
@@ -38,7 +42,7 @@ module.exports = internal.UserManagement = class {
     if (userDataList.length == 0) return false;  // no such user
     
     var userData = userDataList[0];
-    if (hashedEnteredPassword != userData.password) return false;
+    if (!userData.password || hashedEnteredPassword != userData.password) return false;
  
     sessionInfo.userInfo = {
       userId: userData.userid,
@@ -138,8 +142,44 @@ module.exports = internal.UserManagement = class {
       return result;
     }
 
-    console.log('UserManagement.resetRequest: finish implementation');
+    var userId = queryResults.data[0].userid;
 
+    var identifier = this._tempFileManager.tmpNameSync({tmpdir: this._tempDir})
+    identifier = identifier.split('\\').pop().split('/').pop();
+
+    var queryList = {
+      pending: 
+        'replace into resetpending(userid, expiration, identifier) ' +
+        'values( ' +
+          userId + ', ' +
+          'date_add(now(), interval 1 day), ' +
+          '"' + identifier + '"' + 
+        ')',
+        
+      expiration: 
+        'select expiration ' +
+        'from resetpending ' +
+        'where userid = ' + userId,
+        
+      resetpassword:
+        'update user ' +
+        'set password = null ' +
+        'where userid = ' + userId
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var expiration = queryResults.data.expiration[0].expiration;
+    
+    if (!await this._messageManager.sendAccountResetNotification(userId, identifier, expiration)) {
+      result.details = 'reset notification failed';
+      return result;
+    }
+    
     result.success = true;
     result.details = 'reset request succeeded';
 

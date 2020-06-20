@@ -177,6 +177,18 @@ CREATE TABLE schedulenotification
   CONSTRAINT FOREIGN KEY (scheduleid) REFERENCES schedule (scheduleid) ON DELETE CASCADE
 );
 
+CREATE TABLE resetpending
+(
+  resetpendingid int unsigned NOT NULL AUTO_INCREMENT ,
+  userid          int unsigned NOT NULL,
+  identifier     varchar(200) NOT NULL,
+  expiration     datetime NOT NULL,
+
+  PRIMARY KEY (resetpendingid),
+  CONSTRAINT UNIQUE (userid),
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES User (userid) ON DELETE CASCADE
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------

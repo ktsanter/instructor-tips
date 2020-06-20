@@ -55,26 +55,21 @@ const app = function () {
   }
   
   async function _getUserInfo() {
-    console.log('_getUserInfo');
     var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
     settings.userInfo = null;
     if (dbResult.success) {
       settings.userInfo = dbResult.userInfo;
     }     
-    console.log(settings.userInfo);
   }
   
   async function _refreshUserInfo() {
-    var oldName = settings.userInfo.userName;
-    
+    var oldName = settings.userInfo.userName;    
     var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'refreshuser');
-
     settings.userInfo = null;
     if (dbResult.success) {
       settings.userInfo = dbResult.userInfo;
+      settings.objNavbar.changeOptionLabel(oldName, settings.userInfo.userName);
     }     
-
-    settings.objNavbar.changeOptionLabel(oldName, settings.userInfo.userName);
   }
   
   async function _renderNavbar() {
@@ -217,9 +212,7 @@ const app = function () {
   }
   
   async function _handleDisplayNameChange(params) {
-    console.log('_handleDisplayNameChange');
     await _refreshUserInfo();
-    console.log(settings.userInfo);
   }
   
   //---------------------------------------

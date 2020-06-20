@@ -51,6 +51,8 @@ module.exports = internal.CronScheduler = class {
       start: false,
       timeZone: 'America/Detroit'
     });
+    
+    console.log('CronScheduler._createInitialJobs: add sweep for expired reset requests');
   }
       
   _startInitialJobs() {

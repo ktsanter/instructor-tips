@@ -8,7 +8,7 @@ const internal = {};
 
 module.exports = internal.MessageManagement = class {
   constructor(params) {
-    this.DEBUG = false;
+    this.DEBUG = true;
     if (this.DEBUG) console.log('MessageManagement: debug mode is on');
     
     this._dbManager = params.dbManager;
@@ -21,10 +21,14 @@ module.exports = internal.MessageManagement = class {
     this._tempFileMaker = params.tempFileMaker;
     
     this._tempDir = 'temp';
+    
     this._sharePugFile = './private/pug/schedule_share.pug';
     this._sharePugWrapperFile = './private/pug/schedule_share_wrapper.pug';
+    
     this._reminderPugFile = './private/pug/schedule_reminder.pug';
     this._reminderPugWrapperFile = './private/pug/schedule_reminder_wrapper.pug';
+    
+    this._resetPugFile = './private/pug/reset_notification.pug';
   }
   
 //---------------------------------------------------------------
@@ -72,7 +76,7 @@ module.exports = internal.MessageManagement = class {
       appURL: this._appURL
     };      
     
-    var mailResult = await this._prepAndSendMessage({
+    var mailResult = await this._prepAndSendMessageWithWrapper({
       id: params.userInfo.userId + '_' + params.userIdTo + '_' + params.scheduleId,
       emailTo: notificationInfo.email,
       subject: 'an InstructorTips schedule has been shared with you',
@@ -134,6 +138,54 @@ module.exports = internal.MessageManagement = class {
         return;
       }
     }
+  }
+  
+  async sendAccountResetNotification(userId, identifier, expiration) {
+    console.log('MessageManagement.sendAccountResetNotification');
+    var expirationStamp = this._formatDateStamp(expiration).slice(0, -4);
+    
+    console.log(userId + ' ' + identifier + ' ' + expirationStamp);
+    
+    // get user name and email
+    var userName = 'Mr. User';
+    var userEmail = '**dummy email**';
+    console.log(this._appURL);
+    var pageNameOnly = this._appURL.split('\\').pop().split('/').pop();
+    console.log(pageNameOnly);
+    var pathToApp = this._appURL.slice(0, -1 * pageNameOnly.length);
+    console.log(pathToApp);
+    var resetLink = pathToApp + 'login.html?pending=true&id=' + identifier;
+    console.log(resetLink);
+    
+    var params = {
+      emailTo: userEmail,
+      subject: 'InstructorTips account reset',
+      id: userId,
+      pugFile: this._resetPugFile,
+      pugParams: {
+        "userTo": userName,
+        "resetLink": resetLink,
+        "identifier": identifier,
+        "expiration": expirationStamp,
+        "contactName": 'Kevin Santer',
+        "contactEmail": 'ktsanter@gmail.com'
+      }
+    };
+    
+    var rendered = this._pug.renderFile(params.pugFile, {params: params.pugParams});
+    
+    if (this.DEBUG) {
+      this._writeRenderedToFile(params.pugFile, params.id, rendered);
+      
+    } else {
+      var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', renderedWrapper);
+      if (!mailResult.success) {
+        console.log('MessageManagement._prepAndSendMessage: failed to send email to ' + emailTo);
+        return false;
+      }
+    }
+    
+    return true;
   }
   
 //---------------------------------------------------------------
@@ -202,7 +254,7 @@ module.exports = internal.MessageManagement = class {
       params.scheduleList.push(scheduleInfo);
     }
     
-    return await this._prepAndSendMessage({
+    return await this._prepAndSendMessageWithWrapper({
       id: userId,
       emailTo: emailToAddress,
       subject: 'InstructorTips weekly reminder',
@@ -237,7 +289,7 @@ module.exports = internal.MessageManagement = class {
     return organized;
   }
 
-  async _prepAndSendMessage(params) {
+  async _prepAndSendMessageWithWrapper(params) {
     var rendered = this._pug.renderFile(params.pugFile, {params: params.pugParams});
     
     var imageFileName = this._tempFileMaker.tmpNameSync({tmpdir: this._tempDir}) + '.png'; 
@@ -245,7 +297,7 @@ module.exports = internal.MessageManagement = class {
     
     var madeImageFile = await this._makeImage(rendered, imageFileName);
     if (!madeImageFile) {
-      console.log('MessageManagement._prepAndSendMessage: failed to make image file - ' + imageFileName);
+      console.log('MessageManagement._prepAndSendMessageWithWrapper: failed to make image file - ' + imageFileName);
       return false;
     }
     
@@ -270,7 +322,7 @@ module.exports = internal.MessageManagement = class {
       
       var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', renderedWrapper, imageAttachments);
       if (!mailResult.success) {
-        console.log('MessageManagement._prepAndSendMessage: failed to send email to ' + emailTo);
+        console.log('MessageManagement._prepAndSendMessageWithWrapper: failed to send email to ' + emailTo);
         return false;
         
       } else {
@@ -343,14 +395,17 @@ module.exports = internal.MessageManagement = class {
 //--------------------------------------------------------------
   _getDateStamp() {
     var now = new Date();
-;
-    var yr = now.getFullYear();
-    var mo = ('00' + (now.getMonth() + 1)).slice(-2);
-    var da = ('00' + now.getDate()).slice(-2);
-    var hr = ('00' + now.getHours()).slice(-2);
-    var mi = ('00' + now.getMinutes()).slice(-2);
-    var se = ('00' + now.getSeconds()).slice(-2);
-    var ms = ('000' + now.getMilliseconds()).slice(-3);
+    return this._formatDateStamp(now);
+  }
+  
+  _formatDateStamp(d) {
+    var yr = d.getFullYear();
+    var mo = ('00' + (d.getMonth() + 1)).slice(-2);
+    var da = ('00' + d.getDate()).slice(-2);
+    var hr = ('00' + d.getHours()).slice(-2);
+    var mi = ('00' + d.getMinutes()).slice(-2);
+    var se = ('00' + d.getSeconds()).slice(-2);
+    var ms = ('000' + d.getMilliseconds()).slice(-3);
     
     var dateStamp = yr + '-' + mo + '-' + da + ' ' + hr + ':' + mi + ':' + se + '.' + ms;
     

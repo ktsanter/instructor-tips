@@ -127,12 +127,6 @@ const gMailerClass = require('./classes/gmailer');
 const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD, fileServices: fileservices});
 
 //------------------------------------------
-// user management
-//------------------------------------------
-const userManagementClass = require('./classes/usermanagement')
-const userManagement = new userManagementClass(mariaDBManager);
-
-//------------------------------------------
 // Pug management
 //------------------------------------------
 const pug = require('pug')
@@ -157,6 +151,12 @@ const messageManagement = new messageManagementClass({
   "HTMLToImage": puppeteer,
   "tempFileMaker": tmp
 });
+
+//------------------------------------------
+// user management
+//------------------------------------------
+const userManagementClass = require('./classes/usermanagement')
+const userManagement = new userManagementClass({dbManager: mariaDBManager, tempFileManager: tmp, messageManager: messageManagement});
 
 //------------------------------------------
 // cron management
