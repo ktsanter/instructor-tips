@@ -135,7 +135,7 @@ module.exports = internal.CronScheduler = class {
       return false;
     }
     
-    return this._jobList['schedulepush'].job.running;
+    return this._jobList[jobName].job.running;
   }
   
 //---------------------------------------------------------------

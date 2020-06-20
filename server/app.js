@@ -318,13 +318,11 @@ app.get('/admin/query/:queryName',  async function (req, res) {
       details: 'cronstatus', 
       data: {
         scheduleNotificationsRunning: cronScheduler.isRunning('schedulepush'),
+        clearExpiredRequestisRunning: cronScheduler.isRunning('clearexpiredrequests'),
         mailerDebugMode: gMailer.isDebugModeOn()
       }});
 
   } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
-    res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
-
-  } else if (req.params.queryName == 'calendars') {
     res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
     
   } else {
@@ -383,12 +381,19 @@ app.post('/admin/update/:queryName', async function (req, res) {
     } else {
       cronScheduler.stopJob('schedulepush');
     }
+    if (req.body.enableClearExpired) {
+      cronScheduler.startJob('clearexpiredrequests');
+    } else {
+      cronScheduler.stopJob('clearexpiredrequests');
+    }
+
     gMailer.setDebugMode(req.body.setMailerDebugMode);
     res.send({
       success: true, 
       details: 'cronstatus', 
       data: {
         enablePushNotifications: cronScheduler.isRunning('schedulepush'),
+        enableClearExpired: cronScheduler.isRunning('clearexpiredrequests'),
         setMailerDebugMode: gMailer.isDebugModeOn()
       }
     });

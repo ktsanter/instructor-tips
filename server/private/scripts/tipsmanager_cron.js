@@ -6,7 +6,7 @@
 class TipCron {
   constructor(config) {
     this._version = '0.01';
-    this._title = 'Cron status';
+    this._title = 'Cron status (updates each second)';
     
     this._HIDE_CLASS = 'tipcron-hide';
 
@@ -42,6 +42,7 @@ class TipCron {
     var container = CreateElement.createDiv(null, 'tipcron-contents');
 
     container.appendChild(this._renderItem('schedulepush', 'push notification job', 'enabled', 'disabled'));
+    container.appendChild(this._renderItem('clearexpiredrequests', 'clear expired reset requests job', 'enabled', 'disabled'));
     container.appendChild(this._renderItem('maildebug', 'mailer debug mode', 'on', 'off'));
     
     return container;
@@ -70,6 +71,7 @@ class TipCron {
   //--------------------------------------------------------------
   show(makeVisible) {
     this._showElement(this._container, makeVisible);
+    this._setAutoUpdate(makeVisible);
   }
   
   _showElement(elem, makeVisible) {
@@ -83,10 +85,23 @@ class TipCron {
   }
 
   async update() {
-    console.log('update');
     var state = await this._loadStateFromServer();
    
     if (state) this._setUIState(state);
+  }
+  
+  _setAutoUpdate(timerOn) {
+    if (this._timerHandle) clearInterval(this._timerHandle);
+    if (timerOn) {
+      this._timerHandle = setInterval(
+        (function(me) {
+          return function() { 
+            me.update();
+          }
+        })(this),
+        1000
+      );        
+    }
   }
   
   //--------------------------------------------------------------
@@ -97,21 +112,20 @@ class TipCron {
     
     var queryResults = await SQLDBInterface.doGetQuery('admin/query', 'cronstatus', this._notice);
     if (queryResults.success) {
-      console.log(queryResults);
       state = queryResults.data;
     };
-    console.log('_loadStateFromServer: ' + JSON.stringify(state));
     
     return state;
   }
  
   async _setServerState() {
-    console.log('_setServerState');
     var  elemSchedulePush = this._container.getElementsByClassName('schedulepush')[0];
+    var  elemExpired = this._container.getElementsByClassName('clearexpiredrequests')[0];
     var  elemMailDebugMode = this._container.getElementsByClassName('maildebug')[0];
 
     var queryData = {
       enablePushNotifications: CreateElement.getSliderValue(elemSchedulePush),
+      enableClearExpired: CreateElement.getSliderValue(elemExpired),
       setMailerDebugMode: CreateElement.getSliderValue(elemMailDebugMode)
     };
 
@@ -119,10 +133,11 @@ class TipCron {
   }
 
   _setUIState(newState) {
-    console.log('_setUIState');
     var  elemSchedulePush = this._container.getElementsByClassName('schedulepush')[0];
+    var  elemExpired = this._container.getElementsByClassName('clearexpiredrequests')[0];
     var  elemMailDebugMode = this._container.getElementsByClassName('maildebug')[0];
     CreateElement.setSliderValue(elemSchedulePush, newState.scheduleNotificationsRunning);
+    CreateElement.setSliderValue(elemExpired, newState.clearExpiredRequestisRunning);
     CreateElement.setSliderValue(elemMailDebugMode, newState.mailerDebugMode);
   }
      

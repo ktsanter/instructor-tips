@@ -1,6 +1,3 @@
-- passwords
-   - add real hashing
-
 - discuss SQL setup with Noah
 
 - finish help
@@ -8,6 +5,7 @@
 - figure out how to do this:   https://www.screencast.com/t/SniVZPKN
 
 - procedure for clearing temp directory
+
 
 
 
