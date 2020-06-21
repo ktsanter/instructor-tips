@@ -1,0 +1,28 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title InstructorTips help - home
+    meta(charset="utf-8")
+    style
+      include ../styles/colorscheme.css
+      include ../styles/help_subpage.css
+        
+  body(class="instructortips-colorscheme")
+    
+    div(class="instructortips-help home")
+      div(class="overview overview1")
+        +about
+      div(class="overview overview2")      
+        |InstructorTips is a tool for building schedules with checklists of weekly tips.
+        ul(class="labeledlist" myLabel="With it users can:")
+          li create schedules, specifying the number of weeks and the start date
+          li write their own tips and add them to any schedule
+          li reuse tips on any schedule
+          li choose from a repository of common tips
+          li classify tips e.g. course launch, engagement, course end, etc.
+          li share tips and schedules with other users
+          li enable weekly notification reminders of tips that have yet to be checked off
+        
+      +snapshot("schedule_snapshot_001.png", 600, "Here's a snapshot of a few weeks from a schedule")

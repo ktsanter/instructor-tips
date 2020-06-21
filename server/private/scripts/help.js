@@ -70,7 +70,7 @@ const app = function () {
     for (var i = 0; i < settings.optionList.length; i++) {
       var opt = settings.optionList[i];
       var classList = 'help-subcontents help-' + opt;
-      var url = 'help_' + opt + '.html';
+      var url = 'subpages/help_' + opt + '.html';
       var elem = CreateElement.createIframe(null, classList, url, null, null, false);
       container.appendChild(elem);
       page[opt] = elem;

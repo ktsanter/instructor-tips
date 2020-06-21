@@ -1,0 +1,30 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title InstructorTips help - notification
+    meta(charset="utf-8")
+    style
+      include ../styles/colorscheme.css
+      include ../styles/help_subpage.css
+      
+  body(class="instructortips-colorscheme")
+    - var shareText = "notifications for shared schedules"
+    - var reminderText = "schedule reminder notifications"
+    
+    div(class="instructortips-help notification")
+      +anchorLink("top")      
+      div TBD
+      
+      ul
+        +inpageLinkItem("#share", shareText)
+        +inpageLinkItem("#reminder", reminderText)
+        
+      +sectionHead("share", shareText)
+      div(class="section-contents") 
+        div TBD 
+        
+      +sectionHead("reminder", reminderText)
+      div(class="section-contents") 
+        div TBD 

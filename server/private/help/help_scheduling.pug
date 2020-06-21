@@ -1,0 +1,48 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title InstructorTips help - scheduling
+    meta(charset="utf-8")
+    style
+      include ../styles/colorscheme.css
+      include ../styles/help_subpage.css
+      
+  body(class="instructortips-colorscheme")
+    - var addScheduleText = "add, edit and delete schedule"
+    - var addTipText = "add new tips"
+    - var moveTipText = "move tips"
+    - var browseTipText = "browse for tips"
+    - var addWeekText = "add and remove weeks in schedule"
+    
+    div(class="instructortips-help scheduling")
+      +anchorLink("top")  
+      div TBD
+
+      ul
+        +inpageLinkItem("#addSchedule", addScheduleText)
+        +inpageLinkItem("#addTip", addTipText)
+        +inpageLinkItem("#moveTip", moveTipText)
+        +inpageLinkItem("#browseTip", browseTipText)
+        +inpageLinkItem("#addWeek", addWeekText)
+
+      +sectionHead("addSchedule", addScheduleText)
+      div(class="section-contents") 
+        div TBD 
+
+      +sectionHead("addTip", addTipText)
+      div(class="section-contents") 
+        div TBD  
+
+      +sectionHead("moveTip", moveTipText)
+      div(class="section-contents") 
+        div TBD 
+        
+      +sectionHead("browseTip", browseTipText)
+      div(class="section-contents") 
+        div TBD  
+        
+      +sectionHead("addWeek", addWeekText)
+      div(class="section-contents") 
+        div TBD 

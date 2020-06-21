@@ -1,0 +1,30 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title InstructorTips help - sharing
+    meta(charset="utf-8")
+    style
+      include ../styles/colorscheme.css
+      include ../styles/help_subpage.css
+      
+  body(class="instructortips-colorscheme")
+    - var shareText = "sharing a schedule"
+    - var acceptText = "accepting a shared schedule"
+    
+    div(class="instructortips-help sharing")
+      +anchorLink("top")  
+      div TBD
+
+      ul
+        +inpageLinkItem("#share", shareText)
+        +inpageLinkItem("#accept", acceptText)
+
+      +sectionHead("share", shareText)
+      div(class="section-contents") 
+        div TBD 
+
+      +sectionHead("accept", acceptText)
+      div(class="section-contents") 
+        div TBD  

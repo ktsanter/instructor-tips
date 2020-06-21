@@ -295,16 +295,22 @@ app.get('/scripts/:script', function (req, res) {
   res.sendFile(path.join(__dirname, 'private', 'scripts/' + req.params.script))
 })
 
-app.get('/help/images/:helpfile', function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.sendFile(path.join(__dirname, 'private', 'help/images/' + req.params.helpfile))
-  }
+// help pages
+app.get('/help/:helpfile', function (req, res) {
+  sendFileIfExists(res, path.join(__dirname, 'private', 'help/' + req.params.helpfile));
 })
 
-app.get('/help/:helpfile', function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.sendFile(path.join(__dirname, 'private', 'help/' + req.params.helpfile))
+app.get('/help/images/:helpfile', function (req, res) {
+  sendFileIfExists(res, path.join(__dirname, 'private', 'help/images/' + req.params.helpfile))
+})
+
+app.get('/help/subpages/:helpfile', function (req, res) {
+  var helpFileInfo = req.params.helpfile.split('.');
+  if (helpFileInfo[1] != 'html') {
+    sendFailedAccess(res);
+    return;
   }
+  renderAndSendPugIfExists(res, path.join(__dirname, 'private', 'help/' + helpFileInfo[0] + '.pug'));
 })
 
 // InstructorTips admin
@@ -462,10 +468,30 @@ app.post('/tipmanager/delete/:queryName', async function (req, res) {
 })
 
 //------------------------------------------
-// boilerplate response for failed request
+// boilerplate responses for failed requests
 //------------------------------------------
 function _failedRequest(requestType) {
   return {success: false, details: requestType + ' failed'};
+}
+
+function sendFileIfExists(res, fileName) {
+  if (fileservices.existsSync(fileName)) {
+    res.sendFile(fileName);
+  } else {
+    sendFailedAccess(res); 
+  }
+}
+
+function renderAndSendPugIfExists(res, pugFileName) {
+  if (fileservices.existsSync(pugFileName)) {
+    res.send(pug.renderFile(pugFileName));
+  } else {
+    sendFailedAccess(res); 
+  }
+}
+
+function sendFailedAccess(res) {
+  res.send('cannot access page');  
 }
 
 //------------------------------------------------------

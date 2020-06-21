@@ -1,0 +1,36 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title InstructorTips help - other
+    meta(charset="utf-8")
+    style
+      include ../styles/colorscheme.css
+      include ../styles/help_subpage.css
+      
+  body(class="instructortips-colorscheme")
+    - var profileText = "profile"
+    - var helpText = "help"
+    - var signoutText = "sign out"
+    
+    div(class="instructortips-help other")
+      +anchorLink("top")  
+      div TBD
+
+      ul
+        +inpageLinkItem("#profile", profileText)
+        +inpageLinkItem("#help", helpText)
+        +inpageLinkItem("#other", signoutText)
+
+      +sectionHead("profile", profileText)
+      div(class="section-contents") 
+        div TBD 
+
+      +sectionHead("help", helpText)
+      div(class="section-contents") 
+        div TBD  
+
+      +sectionHead("signout", signoutText)
+      div(class="section-contents") 
+        div TBD 
