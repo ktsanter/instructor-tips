@@ -54,4 +54,7 @@ mixin snapshot(imageSrc, imageWidth="400", label="", hotspots=[])
 
 mixin hotspotIcon()
   i(class="fas fa-plus-circle hotspoticon")
-
+  
+mixin pageName(name)
+  em
+    strong #{name} 

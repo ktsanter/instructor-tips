@@ -21,11 +21,11 @@ html
     div(class="instructortips-help sharing")
       +anchorLink("top")  
       div(class="section-contents") 
-      |Once you have a schedule configured to your liking you may want to share it with another instructor.
-      |The 
-      em 
-        strong Sharing 
-      |option is where you can share schedules with others and accept those that have been shared with you.
+        div(class="subsection-contents")
+        |Once you have a schedule configured to your liking you may want to share it with another instructor.
+        |The 
+        +pageName("Sharing") 
+        |option is where you can share schedules with others and accept those that have been shared with you.
 
       ul
         +inpageLinkItem("#share", shareText)
@@ -41,14 +41,51 @@ html
           |Hover over the 
           +hotspotIcon 
           |icon to learn what each field is for
-        div(class='subsection-contents', style="position: relative")
+        div(class='subsection-contents')
           +snapshot("sharing_sharewith_001.png", 500, "", [
-            {location: " left: 16.1em; top: 1.8em;", text: "select a schedule to share"},
-            {location: " left: 26.1em; top: 1.8em;", text: "select the user with whom to share the schedule"},
-            {location: " left: 32.1em; top: 1.8em;", text: "click here when you're ready to share"},
-            {location: " left:  5.3em; top: 3.9em;", text: "(optional) add a comment to include with the schedule"}
+            {location: "left: 16.1em; top: 1.8em;", text: "select a schedule to share"},
+            {location: "left: 26.1em; top: 1.8em;", text: "select the user with whom to share the schedule"},
+            {location: "left: 32.1em; top: 1.8em;", text: "click here when you're ready to share"},
+            {location: "left:  5.3em; top: 3.9em;", text: "(optional) add a comment to include with the schedule"}
           ])
 
       +sectionHead("accept", acceptText)
       div(class="section-contents") 
-        div TBD  
+        div(class="subsection-contents")
+          |Once a schedule has been shared with you, you have the option of accepting or deleting it.
+          br
+          |You can see how many schedules are in this "waiting to be accepted" stage any time by
+          |noting if there's a number above the 
+          +pageName("Sharing")
+          |option on the navigation bar
+        div(class='subsection-contents')
+          +snapshot("sharing_sharecount_001.png", 350)
+        br
+        div(class='subsection-contents')
+          |Information about each schedule that has been shared with you is listed on the 
+          +pageName("Sharing")
+          |page. You can accept a schedule, assigning it a new name, or choose to remove it from your list. 
+          br
+          br
+          |Hover over the 
+          +hotspotIcon 
+          |icon to learn what each field is for
+        div(class='subsection-contents')
+          +snapshot("sharing_accept_001.png", 800, "", [
+            {location: "left: 0.5em; top: 2.5em;", text: "click here to accept the shared schedule, adding it to your list"},
+            {location: "left: 9.5em; top: 2.5em;", text: "timestamp of when the schedule was shared"},
+            {location: "left: 17.5em; top: 2.5em;", text: "the user who shared the schedule"},
+            {location: "left: 35.5em; top: 2.5em;", text: "the original name of the schedue - you can change this when accepting"},
+            {location: "left: 49.5em; top: 2.5em;", text: "remove the schedule from your list (only visible when you hover)"}
+          ])
+        br
+        br
+        div(class='subsection-contents')
+          |When you choose to accept a schedule you can specify the name you'll use for it
+          |and comfirm (or cancel) your acceptance.  Once it's accepted, you can find it in
+          |your list of schedules on the 
+          +pageName("Scheduling")
+          |page
+        div(class='subsection-contents')
+          +snapshot("sharing_accept_002.png", 350)
+          

@@ -21,7 +21,7 @@ body {
 
 .instructortips-help .section-head {
   width: 60%;
-  margin-top: 2.0em;
+  margin-top: 3.0em;
 }
 
 .instructortips-help .section-head .section-title {
@@ -31,8 +31,12 @@ body {
 }
 
 .instructortips-help .section-head .section-title .anchor-top {
-  color: white;
+  color: transparent;
   float: right;
+}
+
+.instructortips-help .section-head .section-title .anchor-top:hover {
+  color: white;
 }
 
 .instructortips-help .section-contents {
@@ -43,6 +47,13 @@ body {
 .instructortips-help .section-contents .subsection-contents {
   margin-bottom: 0.6em;
   margin-left: 0.4em;
+}
+
+.instructortips-help .section-contents .subsection-contents.important-note {
+  display: inline-block;
+  background-color: white;
+  border: 1px solid var(--bgTertiaryEmphasis);
+  padding: 0.2em;
 }
 
 /*-------------------------------------------------------------

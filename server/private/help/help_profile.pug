@@ -17,9 +17,10 @@ html
     div(class="instructortips-help profile")
       +anchorLink("top")  
       div(class='section-contents') 
-        |Your profile settings let you specify a display name, an email address for notifications, and change your password.
-        br
-        |You can access it by clicking on your current display name at the right end of the navigation bar.
+        div(class="subsection-contents")
+          |Your profile settings let you specify a display name, an email address for notifications, and change your password.
+          br
+          |You can access it by clicking on your current display name at the right end of the navigation bar.
         div(class='subsection-contents')
           +snapshot("navbar_profile_001.png", 500)
 
@@ -45,9 +46,11 @@ html
       div(class="section-contents") 
         div(class="subsection-contents")
           |This is the email address used to notify you and for sending password reset messages.
-          br
+        div(class="subsection-contents important-note")
           strong Note: 
           |you cannot request an "I forgot my password" message if this isn't set.
+          br
+          |Also, you won't receive any schedule reminders or notes about shared schedules.
         div(class="subsection-contents")
           +snapshot("profile_email_001.png", 200)
 

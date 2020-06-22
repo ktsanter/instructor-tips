@@ -21,7 +21,13 @@ html
     
     div(class="instructortips-help tipediting")
       +anchorLink("top")  
-      div TBD
+      div(class="section-contents") 
+        div(class="subsection-contents") 
+          |You can edit your tips, assign them to categories for filtering, and delete them. 
+        div(class="subsection-contents important-note")
+          strong Note: 
+          |you can only edit tips authored by you, and only delete them if they're not
+          |currently used in a schedule (either yours or one you've shared).
 
       ul
         +inpageLinkItem("#editTip", editText)
@@ -29,47 +35,44 @@ html
 
       +sectionHead("editTip", editText)
       div(class="section-contents") 
-        div TBD 
-        br
+        div(class="subsection-contents") 
+          |TBD 
 
       +sectionHead("formatTip", formatText)
       div(class="section-contents")
-        div      
+        div(class="subsection-contents") 
           |You can use plain text for tips - what you type in will be what you see.
-          
-        div
           |If you're interested in adding other types of content, you can use a "language" called 
           em Markdown
-          
-        p
-        div
+          br
+          br
           |Take a look at this reference table to see what you can add to your tips.
-        p
         
-      table(class="help-table")
-        thead
-          +tableRow("th", "", "type this...", "to get this...")
-            
-        tbody
-          +tableRow("td", "italics", "*italics*", "<em>italics</em>")
-          
-          +tableRow("td", "bold", "**bold**", "<strong>bold</strong>")
-          
-          +tableRow("td", "bold and italics", "***bold and italics***", "<strong><em>italics</em></strong>")
-          
-          +tableRow("td", "line break", "a blank line<br><br>will cause a line break", "a blank line<br><br>will cause a line break")
-          
-          +tableRow("td", "unordered list", " -first item <br> -second item", "<ul><li>first item</li><li>second item</li></ul>")
-          
-          +tableRow("td", "ordererd list", "1. first item <br> 2. second item", "<ol><li>first item</li><li>second item</li></ol>")
-          
-          +tableRow("td", "link", "an [inline link](https://www.google.com \"go to google.com\")", "<a href=\"https://www.google.com\" title=\"go to google.com\" target=\"_blank\">inline link</a>")
-          
-          +tableRow("td", "image", "![alt text](https://goo.gl/hGjWgi \"I'm a smiley face\")", "<img src=\"https://goo.gl/hGjWgi\" title=\"I'm a smiley face\" width=\"30em\">")
-          
-          +tableRow("td", "<a href=\"http://rabbit.eng.miami.edu/info/htmlchars.html\" target=\"_blank\" title=\"HTML ampersand characters\">special characters</a>", "Bon jour, mon fr&amp;eacute;re.<br>&amp;iexcl;Hola Se&amp;ntilde;or!", "Bon jour, mon fr&eacute;re.<br>&iexcl;Hola Se&ntilde;or Smith!")
-          
-          +tableRow("td", " horizontal rule", "A line consisting of four underline characters<br>____<br>will add a horizontal rule", "A line consisting of four underline characters<hr>will add a horizontal rule")
-          
-          +tableRow("td", "heading styles", "# this is H1<br>## this is H2<br>### this is H3<br>#### this is H4<br>##### this is H5<br>###### this is H6", "<h1>this is H1</h1><h2>this is H2</h2><h3>this is H3</h3><h4>this is H4</h4><h5>this is H5</h5><h6>this is H6</h6>")
-          
+      div(class="section-contents")
+        div(class="subsection-contents") 
+          table(class="help-table")
+            thead
+              +tableRow("th", "", "type this...", "to get this...")
+                
+            tbody
+              +tableRow("td", "italics", "*italics*", "<em>italics</em>")
+              
+              +tableRow("td", "bold", "**bold**", "<strong>bold</strong>")
+              
+              +tableRow("td", "bold and italics", "***bold and italics***", "<strong><em>italics</em></strong>")
+              
+              +tableRow("td", "line break", "a blank line<br><br>will cause a line break", "a blank line<br><br>will cause a line break")
+              
+              +tableRow("td", "unordered list", " -first item <br> -second item", "<ul><li>first item</li><li>second item</li></ul>")
+              
+              +tableRow("td", "ordererd list", "1. first item <br> 2. second item", "<ol><li>first item</li><li>second item</li></ol>")
+              
+              +tableRow("td", "link", "an [inline link](https://www.google.com \"go to google.com\")", "<a href=\"https://www.google.com\" title=\"go to google.com\" target=\"_blank\">inline link</a>")
+              
+              +tableRow("td", "image", "![alt text](https://goo.gl/hGjWgi \"I'm a smiley face\")", "<img src=\"https://goo.gl/hGjWgi\" title=\"I'm a smiley face\" width=\"30em\">")
+              
+              +tableRow("td", "<a href=\"http://rabbit.eng.miami.edu/info/htmlchars.html\" target=\"_blank\" title=\"HTML ampersand characters\">special characters</a>", "Bon jour, mon fr&amp;eacute;re.<br>&amp;iexcl;Hola Se&amp;ntilde;or!", "Bon jour, mon fr&eacute;re.<br>&iexcl;Hola Se&ntilde;or Smith!")
+              
+              +tableRow("td", " horizontal rule", "A line consisting of four underline characters<br>____<br>will add a horizontal rule", "A line consisting of four underline characters<hr>will add a horizontal rule")
+              
+              +tableRow("td", "heading styles", "# this is H1<br>## this is H2<br>### this is H3<br>#### this is H4<br>##### this is H5<br>###### this is H6", "<h1>this is H1</h1><h2>this is H2</h2><h3>this is H3</h3><h4>this is H4</h4><h5>this is H5</h5><h6>this is H6</h6>")

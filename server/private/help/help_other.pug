@@ -15,12 +15,12 @@ html
     
     div(class="instructortips-help other")
       +anchorLink("top")  
-      div You can use the "hamburger" item on the navigation bar to use other features.
       div(class="section-contents") 
+        div(class="subsection-contents")
+          |You can use the "hamburger" item on the navigation bar to use other features.
         div(class="subsection-contents")
           +snapshot("navbar_other_001.png", 160)  
       
-
       ul
         +inpageLinkItem("#help", helpText)
         +inpageLinkItem("#other", signoutText)
@@ -30,7 +30,7 @@ html
         div(class="subsection-contents")
           |The 
           em help 
-          |option opens up this help tool.        
+          |option opens up this help tool (but you probably already know that... 😁)        
 
       +sectionHead("signout", signoutText)
       div(class="section-contents") 
