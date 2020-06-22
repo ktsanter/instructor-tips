@@ -15,7 +15,7 @@ mixin about
   - var title='InstructorTips'
   - var version = '0.57';
   - var author = "Kevin Santer"
-  - var email = 'ksanter@michiganvirtual.org'
+  - var email = 'ktsanter@gmail.com'
   - var emailHref = 'mailto:' + email
   
   link(
@@ -37,11 +37,21 @@ mixin about
       a(class="about-infoitem", href=emailHref, target="_blank") #{email}
       
 
-mixin snapshot(imageSrc, imageWidth="400", label="snapshot")
+mixin snapshot(imageSrc, imageWidth="400", label="", hotspots=[])
   - var fullImageSrc = '/help/images/' + imageSrc
   
+  link(
+    rel="stylesheet", 
+    href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay",
+    crossorigin="anonymous")
+    
   div(class="snapshot")
     div(class="snapshot-label") #{label}
     div(class="snapshot-imagecontainer")
       img(src=fullImageSrc, width=imageWidth)
+      each hotspot in hotspots
+        i(class="fas fa-plus-circle hotspoticon hotspot", title=hotspot.text, style=hotspot.location)
+
+mixin hotspotIcon()
+  i(class="fas fa-plus-circle hotspoticon")
 

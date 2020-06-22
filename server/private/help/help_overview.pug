@@ -13,8 +13,6 @@ html
     
     div(class="instructortips-help home")
       div(class="overview overview1")
-        +about
-      div(class="overview overview2")      
         |InstructorTips is a tool for building schedules with checklists of weekly tips.
         ul(class="labeledlist" myLabel="With it users can:")
           li create schedules, specifying the number of weeks and the start date
@@ -24,5 +22,9 @@ html
           li classify tips e.g. course launch, engagement, course end, etc.
           li share tips and schedules with other users
           li enable weekly notification reminders of tips that have yet to be checked off
+      div(class="overview overview2")      
+        +about
         
-      +snapshot("schedule_snapshot_001.png", 600, "Here's a snapshot of a few weeks from a schedule")
+      div(class="section-contents") 
+        div(class='subsection-contents')
+          +snapshot("schedule_snapshot_001.png", 600, "Here's a snapshot of a few weeks from a schedule")

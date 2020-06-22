@@ -4,12 +4,14 @@
 // environment variables
 //------------------------------------------
 const THIS_PORT =getEnv('THIS_PORT', true);
-const THIS_HOST = getEnv('THIS_HOST', true);
 
+
+const MARIA_HOST = getEnv('MARIA_HOST', true);
 const MARIA_USER = getEnv('MARIA_USER', true);
 const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
 const MARIA_DBNAME = getEnv('MARIA_DBNAME', true);
 
+const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
 const SESSION_PASSWORD = getEnv('SESSION_PASSWORD', true);
 const SESSION_DBNAME = getEnv('SESSION_DBNAME', true);
@@ -64,7 +66,7 @@ const mariadb = require('mariadb')
 
 const mariadbParams = {
     reqd: mariadb,
-    host: THIS_HOST,
+    host: MARIA_HOST,
     user: MARIA_USER,
     password: MARIA_PASSWORD,
     dbName: MARIA_DBNAME, 
@@ -82,7 +84,7 @@ var mySQL = require('mysql')
 var MySQLStore = require('express-mysql-session')(session);
 
 var mysqlPool = mySQL.createPool({
-    host: THIS_HOST, //'localhost',
+    host: SESSION_HOST,
     user: SESSION_USER,
     password: SESSION_PASSWORD,
     database: SESSION_DBNAME

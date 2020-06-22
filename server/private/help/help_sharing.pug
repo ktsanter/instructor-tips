@@ -8,6 +8,11 @@ html
     style
       include ../styles/colorscheme.css
       include ../styles/help_subpage.css
+    
+    link(
+    rel="stylesheet", 
+    href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay",
+    crossorigin="anonymous")
       
   body(class="instructortips-colorscheme")
     - var shareText = "sharing a schedule"
@@ -15,7 +20,12 @@ html
     
     div(class="instructortips-help sharing")
       +anchorLink("top")  
-      div TBD
+      div(class="section-contents") 
+      |Once you have a schedule configured to your liking you may want to share it with another instructor.
+      |The 
+      em 
+        strong Sharing 
+      |option is where you can share schedules with others and accept those that have been shared with you.
 
       ul
         +inpageLinkItem("#share", shareText)
@@ -23,7 +33,21 @@ html
 
       +sectionHead("share", shareText)
       div(class="section-contents") 
-        div TBD 
+        div(class="subsection-contents")
+          |To share one of your schedules select the schedule and the user with whom to share it.  You can optionally add a comment that will
+          |be included with your message and the share information. When you're ready press the "Share the selected schedule" button.
+          br
+          br
+          |Hover over the 
+          +hotspotIcon 
+          |icon to learn what each field is for
+        div(class='subsection-contents', style="position: relative")
+          +snapshot("sharing_sharewith_001.png", 500, "", [
+            {location: " left: 16.1em; top: 1.8em;", text: "select a schedule to share"},
+            {location: " left: 26.1em; top: 1.8em;", text: "select the user with whom to share the schedule"},
+            {location: " left: 32.1em; top: 1.8em;", text: "click here when you're ready to share"},
+            {location: " left:  5.3em; top: 3.9em;", text: "(optional) add a comment to include with the schedule"}
+          ])
 
       +sectionHead("accept", acceptText)
       div(class="section-contents") 

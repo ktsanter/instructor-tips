@@ -10,27 +10,34 @@ html
       include ../styles/help_subpage.css
       
   body(class="instructortips-colorscheme")
-    - var profileText = "profile"
     - var helpText = "help"
     - var signoutText = "sign out"
     
     div(class="instructortips-help other")
       +anchorLink("top")  
-      div TBD
+      div You can use the "hamburger" item on the navigation bar to use other features.
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          +snapshot("navbar_other_001.png", 160)  
+      
 
       ul
-        +inpageLinkItem("#profile", profileText)
         +inpageLinkItem("#help", helpText)
         +inpageLinkItem("#other", signoutText)
 
-      +sectionHead("profile", profileText)
-      div(class="section-contents") 
-        div TBD 
-
       +sectionHead("help", helpText)
       div(class="section-contents") 
-        div TBD  
+        div(class="subsection-contents")
+          |The 
+          em help 
+          |option opens up this help tool.        
 
       +sectionHead("signout", signoutText)
       div(class="section-contents") 
-        div TBD 
+        div(class="subsection-contents") TBD 
+          |The 
+          em sign out 
+          |option logs you out of InstructorTips
+          |and routes you to the sign in page.
+        div(class="subsection-contents")
+          +snapshot("login_001.png", 200)  

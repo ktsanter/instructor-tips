@@ -16,11 +16,7 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	async function init (sodium) {
-    console.log('init (inside)');
-    await sodium.ready;
-    console.log(sodium.to_hex(sodium.crypto_generichash(64, 'test')));
-
+	async function init () {
     document.title = appInfo.appName;
 
 		page.body = document.getElementsByTagName('body')[0];

@@ -16,7 +16,7 @@ const app = function () {
 	const page = {};
   
 	const settings = {
-    optionList: ['home', 'scheduling', 'tipediting', 'sharing', 'notification', 'other']
+    optionList: ['overview', 'scheduling', 'tipediting', 'sharing', 'notification', 'profile', 'other']
   };
   
 	//---------------------------------------
@@ -28,7 +28,7 @@ const app = function () {
     
     page.body.appendChild(_renderPage());
 
-    settings.navbar.selectOption('Home');
+    settings.navbar.selectOption('Overview');
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -48,11 +48,12 @@ const app = function () {
       title: appInfo.appName,
       
       items: [
-        {label: 'Home', callback: () => {return _navDispatch('home');}, subitems: null, rightjustify: false},
+        {label: 'Overview', callback: () => {return _navDispatch('overview');}, subitems: null, rightjustify: false},
         {label: 'Scheduling', callback: () => {return _navDispatch('scheduling');}, subitems: null, rightjustify: false},
         {label: 'Tip editing', callback: () => {return _navDispatch('tipediting');}, subitems: null, rightjustify: false},
         {label: 'Sharing', callback: () => {return _navDispatch('sharing');}, subitems: null, rightjustify: false},
         {label: 'Notification', callback: () => {return _navDispatch('notification');}, subitems: null, rightjustify: false},
+        {label: 'Profile', callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: false},
         {label: 'Other', callback: () => {return _navDispatch('other');}, subitems: null, rightjustify: false}
       ],
       
