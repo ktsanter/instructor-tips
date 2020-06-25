@@ -18,7 +18,12 @@ html
     
     div(class="instructortips-help scheduling")
       +anchorLink("top")  
-      div TBD
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          |The 
+          +pageName("Scheduling") 
+          |page is where you'll spend most of your time.
+          |With it you can create new schedules, edit existing ones, and check off items as you complete them.
 
       ul
         +inpageLinkItem("#addSchedule", addScheduleText)
@@ -29,20 +34,92 @@ html
 
       +sectionHead("addSchedule", addScheduleText)
       div(class="section-contents") 
-        div TBD 
+        div(class="subsection-contents")
+          |Hover over the gear icon next to the schedule selection dropdown to access
+          |the options for adding, editing, and deleting schedules.
+        div(class='subsection-contents')
+          +snapshot("scheduling_options_001.png", 400)
+        div(class='subsection-contents')
+          ul
+            li when adding a schedule you can specify its name, the number of weeks, and the starting date
+            li when editing a schedule you can change its name and the starting date.  Note you can't change 
+              |the length directly but you can 
+              a(href="#addWeek") add and remove weeks 
+              | on the main scheduling page
+            li when deleting a schedule you'll get the chance to confirm your decision
+        
 
       +sectionHead("addTip", addTipText)
       div(class="section-contents") 
-        div TBD  
+        div(class="subsection-contents")
+          |If you hover over the righthand end of the week label in a schedule
+          |one of the options is to create a new tip and add it to the week's schedule.
+        div(class='subsection-contents')
+          +snapshot("scheduling_addtip_001.png", 450)
+        br
+        br
+        div(class='subsection-contents')
+          |When creating a new tip you can enter its text and choose one or more categories for it.
+          |The categories are helpful when searching through existing tips.
+          br
+          |For more information about formatting tips see the 
+          +pageName('Tip editing') 
+          |page
+          br
+          br
+          |Hover over the 
+          +hotspotIcon 
+          |icon to learn what each field is for
+        div(class='subsection-contents')
+          +snapshot("scheduling_addtip_002.png", 600, "", [
+            {location: "left: 18.5em; top: 2.0em;", text: "original text for the tip"},
+            {location: "left: 37.0em; top: 2.0em;", text: "a preview of what the tip will look like when displayed"},
+            {location: "left: 17.5em; top: 17.0em;", text: "categories to which the text is assigned"}
+          ])
 
       +sectionHead("moveTip", moveTipText)
       div(class="section-contents") 
-        div TBD 
+        div(class='subsection-contents')
+          |If you hover over the lefthand edge of a tip a drag handle will appear.
+          |You can drag the tip to another week or location within a week.
+        div(class='subsection-contents')
+          +snapshot("scheduling_movetip_001.png", 400)
         
       +sectionHead("browseTip", browseTipText)
       div(class="section-contents") 
-        div TBD  
+        div(class='subsection-contents')
+          |You can reuse existing tips with the 
+          em Browse Tips 
+          |feature 
+        div(class='subsection-contents')
+          +snapshot("scheduling_browsetip_001.png", 400)
+        br
+        div(class='subsection-contents')
+          |Any tip found while browsing can be dragged and dropped into the schedule.
+          |You can filter the result list by searching for specific contents, 
+          |restricting the categories, and by adding or excluding "Common" tips available to all users.
+          br
+          br
+          |Hover over the 
+          +hotspotIcon 
+          |icon to learn about the features
+        div(class='subsection-contents')
+          +snapshot("scheduling_browsetip_002.png", 500, "", [
+            {location: "left: 18.5em; top: 2.0em;", text: "narrow the list of results by searching for specific content"},
+            {location: "left: 18.5em; top: 4.0em;", text: "narrow the list of results by specifying one or more categories"},
+            {location: "left: 25.3em; top: 4.0em;", text: "include/exclude common tips available to all users"},
+            {location: "left:  1.0em; top: 10.0em;", text: "drag tip and drop it on your schedule"}
+          ])
         
       +sectionHead("addWeek", addWeekText)
       div(class="section-contents") 
-        div TBD 
+        div(class='subsection-contents')
+          |You can add or remove a week from the schedule.  Hover over the righthand end of 
+          |the label for the week to see these options. The dates for the following weeks will
+          |be automatically adjusted.
+        div(class="subsection-contents important-note")
+          strong Note: 
+          |you cannot recover a week that has been deleted.
+          
+        div(class='subsection-contents')
+          +snapshot("scheduling_addweek_001.png", 400)

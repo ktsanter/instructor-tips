@@ -6,6 +6,12 @@
 
 - procedure for clearing temp directory
 
+- vet the "common" tips
+  - replace double quotes
+  - retain/rewrite for Bspace
+
+- remove progress checks from category list
+
 
 
 

@@ -33,7 +33,7 @@
 
 .schedulecontrol .schedulecontrol-iconcontainer {
   display: inline-block;
-  color: black;
+  color: white;
   background-color: var(--bgSecondaryChoice);
   border: 1px solid black;
   padding: 0.28em 0.1em 0.28em 0;
