@@ -50,7 +50,10 @@ mixin snapshot(imageSrc, imageWidth="400", label="", hotspots=[])
     div(class="snapshot-imagecontainer")
       img(src=fullImageSrc, width=imageWidth)
       each hotspot in hotspots
-        i(class="fas fa-plus-circle hotspoticon hotspot", title=hotspot.text, style=hotspot.location)
+        if hotspot.debug
+          i(class="hotspot debug-hotspot", title=hotspot.text, style=hotspot.location)
+        else
+          i(class="hotspot", title=hotspot.text, style=hotspot.location)
 
 mixin hotspotIcon()
   i(class="fas fa-plus-circle hotspoticon")

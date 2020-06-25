@@ -137,18 +137,20 @@ body::-webkit-scrollbar-thumb:hover {
 
 .instructortips-help .snapshot .snapshot-imagecontainer img {
   margin-left: 0.6em;
-  filter: drop-shadow(5px 5px 5px var(--bgTertiaryEmphasis));
+  filter: drop-shadow(0.3em 0.3em 0.3em var(--bgTertiaryEmphasis));
   border: 1px solid var(--bgTertiaryEmphasis);
-}
-
-.instructortips-help .hotspoticon {
-  color: var(--bgTertiaryChoice);
-  font-size: 1.2em;
-  padding-right: 0.4em;
 }
 
 .instructortips-help .snapshot .snapshot-imagecontainer .hotspot {
   position: absolute;
+}
+      
+.snapshot .snapshot-imagecontainer .hotspot:hover {
+  border: 2px solid var(--bgTertiaryChoice);
+}
+      
+.instructortips-help .snapshot .snapshot-imagecontainer .hotspot.debug-hotspot  {
+  border: 1px solid red;
 }
 
 /*-------------------------------------------------------------
