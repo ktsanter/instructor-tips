@@ -69,8 +69,8 @@ const mariadbParams = {
     host: MARIA_HOST,
     user: MARIA_USER,
     password: MARIA_PASSWORD,
-    dbName: MARIA_DBNAME, 
-    connectionLimit: 5
+    dbName: MARIA_DBNAME /*, 
+    connectionLimit: 5 */
 };
     
 const mariaDBManagerClass = require('./classes/mariadb_management')

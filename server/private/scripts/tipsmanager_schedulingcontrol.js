@@ -183,7 +183,7 @@ class TipManagerSchedulingControl {
       }
       
       var elemSelectMessage = this._container.getElementsByClassName('schedulecontrol-selectmessage')[0];
-      var msg = (valueList.length == 0 ? 'you currently have no schedules' : '');
+      var msg = (valueList.length == 0 ? 'You currently have no schedules. You can use the gear icon to create one.' : '');
       elemSelectMessage.innerHTML = msg;
     }
   }

@@ -1,16 +1,15 @@
 - discuss SQL setup with Noah
 
-- finish help
+- help videos
 
 - figure out how to do this:   https://www.screencast.com/t/SniVZPKN
 
 - procedure for clearing temp directory
 
 - vet the "common" tips
-  - replace double quotes
-  - retain/rewrite for Bspace
+  - update content and links for Bspace
 
-- remove progress checks from category list
+
 
 
 

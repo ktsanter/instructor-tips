@@ -88,7 +88,7 @@ class TipEditing {
       this._editTipDialog.show(false);
       this._deleteTipDialog.show(false);
     }
-      this._showContents(makeVisible);
+    this._showContents(makeVisible);
   }
   
   _showContents(makeVisible) {

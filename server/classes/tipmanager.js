@@ -418,7 +418,7 @@ module.exports = internal.TipManager = class {
       
       consolidatedList[tipItem.tipid].categorylist.push(tipItem.categorytext);
     }
-    
+        
     for (var id in consolidatedList) {
       var consolidatedItem = consolidatedList[id];
       var categorySet = new Set(consolidatedItem.categorylist);

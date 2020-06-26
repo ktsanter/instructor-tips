@@ -42,24 +42,23 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- userprivilege
 #-------------------------------------------------------------
-select "updating userprivilege - disabled" as comment;
-#--
-#--INSERT INTO userprivilege (userid, privilegeid)
-#--  SELECT user.userid, privilege.privilegeid 
-#--   FROM user, privilege
-#--   WHERE user.usershortname = 'ksanter' and privilege.privilegename = 'superadmin';
-#-- INSERT INTO userprivilege (userid, privilegeid)
-#--   SELECT user.userid, privilege.privilegeid 
-#--   FROM user, privilege
-#--   WHERE user.usershortname = 'test_admin' and privilege.privilegename = 'admin';
-#-- INSERT INTO userprivilege (userid, privilegeid)
-#--   SELECT user.userid, privilege.privilegeid 
-#--   FROM user, privilege
-#--   WHERE user.usershortname = 'test_lead' and privilege.privilegename = 'lead';
-#-- INSERT INTO userprivilege (userid, privilegeid)
-#--   SELECT user.userid, privilege.privilegeid 
-#--   FROM user, privilege
-#--   WHERE user.usershortname = 'test_instructor' and privilege.privilegename = 'instructor';
+select "updating userprivilege" as comment;
+
+update userprivilege as up
+set up.privilegeid = (select p.privilegeid from privilege as p where p.privilegename = 'superadmin')
+where up.userid = (select u.userid from user as u where u.usershortname = 'ksanter');
+
+update userprivilege as up
+set up.privilegeid = (select p.privilegeid from privilege as p where p.privilegename = 'admin')
+where up.userid = (select u.userid from user as u where u.usershortname = 'test_admin');
+
+update userprivilege as up
+set up.privilegeid = (select p.privilegeid from privilege as p where p.privilegename = 'lead')
+where up.userid = (select u.userid from user as u where u.usershortname = 'test_lead');
+
+update userprivilege as up
+set up.privilegeid = (select p.privilegeid from privilege as p where p.privilegename = 'instructor')
+where up.userid = (select u.userid from user as u where u.usershortname = 'test_instructor');
 
 #-------------------------------------------------------------
 #-- category
@@ -68,7 +67,6 @@ select "loading category" as comment;
 
 INSERT INTO category (categorytext) SELECT 'course prep';
 INSERT INTO category (categorytext) SELECT 'course launch';
-INSERT INTO category (categorytext) SELECT 'progress check';
 INSERT INTO category (categorytext) SELECT 'check-in / concerns';
 INSERT INTO category (categorytext) SELECT 'ESR';
 INSERT INTO category (categorytext) SELECT 'engagement';

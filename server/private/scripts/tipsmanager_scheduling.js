@@ -18,7 +18,7 @@ class TipScheduling {
     
     this._container = null;
   }
- 
+  
   //--------------------------------------------------------------
   // initial rendering
   //--------------------------------------------------------------
@@ -27,8 +27,6 @@ class TipScheduling {
     
     this._notice = new StandardNotice(this._container, this._container);
     this._notice.setNotice('');
-
-    //this._container.appendChild(this._renderTitle());
 
     this._control = new TipManagerSchedulingControl({
       disableCallback: (params) => {return this._disableContents(params);},
@@ -71,13 +69,6 @@ class TipScheduling {
     return this._container;
   }
   
-  _renderTitle() {
-    var container = CreateElement.createDiv(null, 'tipmanager-title');
-    container.appendChild(CreateElement.createSpan(null, 'tipmanager-titletext', this._title));
-    
-    return container;
-  }
-
   _renderContents() {
     var container = CreateElement.createDiv(null, 'tipschedule-contents');
     
@@ -124,7 +115,7 @@ class TipScheduling {
     }
   }
 
-  async update(reRenderControls) {
+  async update(reRenderControls, scrollToWeek) {
     if (reRenderControls) await this._control.update();
     
     var controlState = this._control.state();
@@ -135,6 +126,10 @@ class TipScheduling {
     
     if (controlState.scheduleid > 0) {
       await this._loadScheduleContents(controlState.scheduleid);
+      if (scrollToWeek && scrollToWeek > 0) {
+        console.log('scrolling to week #' + scrollToWeek);
+        this._scrollToTargetAdjusted(this._getWeeklyTipElement(scrollToWeek));      
+      }
     }
   }
   
@@ -362,17 +357,13 @@ class TipScheduling {
   
   _disableContents(disable) {
     var contents = this._container.getElementsByClassName('tipschedule-contents')[0];
- 
-    //var title = this._container.getElementsByClassName('tipmanager-title')[0];
 
     if (disable) {
       contents.style.display = 'none';
-      //title.style.display = 'none';
       this._browse.show(false);
       
     } else {
       contents.style.display = 'block';
-      //title.style.display = 'block';
       this._browse.show(this._control.state().showbrowse);
     }
   }
@@ -454,7 +445,7 @@ class TipScheduling {
 
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams, this._notice);
     if (queryResults.success) {
-      this.update(false);
+      this.update(false, addParams.schedulelocation);
       this._disableContents(false);
       this._control.show(true);    
 
@@ -482,7 +473,7 @@ class TipScheduling {
 
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'tiptextandcategory', editParams, this._notice);
     if (queryResults.success) {
-      this.update(false);
+      this.update(false, info.params.schedulelocation);
       this._disableContents(false);
       this._control.show(true); 
       
@@ -510,7 +501,7 @@ class TipScheduling {
     
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'addscheduletip', addParams, this._notice);
     if (queryResults.success) {
-      this.update(false);
+      await this.update(false, destinationInfo.schedulelocation);
     }
   }
   
@@ -527,16 +518,39 @@ class TipScheduling {
     
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'movescheduletip', moveParams, this._notice);
     if (queryResults.success || queryResults.details == 'tip is already assigned to week') {
-      this.update(false);
+      await this.update(false, destinationInfo.schedulelocation);
     }
   }
     
   async _removeTip(params) {
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/delete', 'scheduletip', params, this._notice);
     if (queryResults.success) {
-      this.update(false);
+      await this.update(false, params.schedulelocation);
     }
   }  
+  
+  _getWeeklyTipElement(weeknum) {
+    var elemWeek = null;
+    var weeklyContainers = this._container.getElementsByClassName('weeklytip');
+    for (var i = 0; i < weeklyContainers.length && !elemWeek; i++) {
+      if (weeklyContainers[i].weeknum == weeknum) elemWeek = weeklyContainers[i];
+    }
+    
+    return elemWeek;
+  }
+  
+  _scrollToTargetAdjusted(elem){
+    if (!elem) return;
+    
+    var headerOffset = 45;
+    var elementPosition = elem.getBoundingClientRect().top;
+    var offsetPosition = elementPosition - headerOffset;
+
+    window.scrollTo({
+         top: offsetPosition,
+         behavior: "auto"
+    });
+}  
   
   //--------------------------------------------------------------
   // drag and drop for tips
@@ -567,7 +581,7 @@ class TipScheduling {
         this._trashTarget.addEventListener('drop', (e) => {this._finishTipDrop(e);});
       }
     }
-    
+
     return true;
   }
   
