@@ -195,11 +195,11 @@ const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager, messa
 //------------------------------------------------------
 // login/logout and main page
 //------------------------------------------------------
-app.get('/tipsmanager.html', function (req, res) {
+app.get('/instructortips.html', function (req, res) {
   var loggedin = userManagement.isLoggedIn(req.session);
 
   if (loggedin) {
-    res.sendFile(path.join(__dirname, 'private', 'tipsmanager.html'))
+    res.sendFile(path.join(__dirname, 'private', 'instructortips.html'))
   } else {
     res.redirect('/login.html');
   }
@@ -213,7 +213,7 @@ app.post('/usermanagement/login_attempt', async function (req, res) {
   var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.hashedPassword);
  
   if (loginSuccess) {
-    res.redirect('/tipsmanager.html');
+    res.redirect('/instructortips.html');
   } else {
     res.redirect('/login.html?retry=true');
   }
