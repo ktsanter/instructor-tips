@@ -297,9 +297,18 @@ app.get('/scripts/:script', function (req, res) {
   res.sendFile(path.join(__dirname, 'private', 'scripts/' + req.params.script))
 })
 
-// help pages
+
+// help
 app.get('/help/:helpfile', function (req, res) {
   sendFileIfExists(res, path.join(__dirname, 'private', 'help/' + req.params.helpfile));
+})
+
+app.get('/styles/help/:stylesheet', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', 'styles/help/' + req.params.stylesheet))
+})
+
+app.get('/scripts/help/:scriptfile', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', 'scripts/help/' + req.params.scriptfile))
 })
 
 app.get('/help/images/:helpfile', function (req, res) {
@@ -312,7 +321,22 @@ app.get('/help/subpages/:helpfile', function (req, res) {
     sendFailedAccess(res);
     return;
   }
+
   renderAndSendPugIfExists(res, path.join(__dirname, 'private', 'help/' + helpFileInfo[0] + '.pug'));
+})
+
+
+// treasurehunt
+app.get('/treasurehunt/:treasurehuntfile', function (req, res) {
+  sendFileIfExists(res, path.join(__dirname, 'private', 'treasurehunt/' + req.params.treasurehuntfile));
+})
+
+app.get('/styles/treasurehunt/:stylesheet', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', 'styles/treasurehunt/' + req.params.stylesheet))
+})
+
+app.get('/scripts/treasurehunt/:scriptfile', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', 'scripts/treasurehunt/' + req.params.scriptfile))
 })
 
 // InstructorTips admin
