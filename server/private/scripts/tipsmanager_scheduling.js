@@ -115,7 +115,7 @@ class TipScheduling {
     }
   }
 
-  async update(reRenderControls, scrollToWeek) {
+  async update(reRenderControls) {
     if (reRenderControls) await this._control.update();
     
     var controlState = this._control.state();
@@ -126,11 +126,31 @@ class TipScheduling {
     
     if (controlState.scheduleid > 0) {
       await this._loadScheduleContents(controlState.scheduleid);
-      if (scrollToWeek && scrollToWeek > 0) {
-        console.log('scrolling to week #' + scrollToWeek);
-        this._scrollToTargetAdjusted(this._getWeeklyTipElement(scrollToWeek));      
-      }
     }
+  }
+
+  async _updateScheduleWeekItem(itemLocation, itemLocationOrder) {
+    var scheduleId = this._control.state().scheduleid;
+    if (scheduleId <= 0) return;
+    
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/query', 'schedule-details', {scheduleid: scheduleId}, this._notice);
+    if (!queryResults.success) return;
+    
+    var scheduleDetails = queryResults.data.scheduledetails;    
+    var itemInfo = scheduleDetails[itemLocation][itemLocationOrder];
+    
+    var elemWeek = this._getWeeklyTipElement(itemLocation);
+    var elemItemContainer = elemWeek.getElementsByClassName('weeklytip-container')[itemLocationOrder];
+    elemItemContainer.itemInfo = itemInfo;
+    
+    var elemTipStateIcon = elemItemContainer.getElementsByClassName('weeklytip-state')[0].getElementsByClassName('weeklytip-icon')[0];
+    UtilityKTS.setClass(elemTipStateIcon, 'far', itemInfo.tipstate == 0);
+    UtilityKTS.setClass(elemTipStateIcon, 'fa-square', itemInfo.tipstate == 0);
+    UtilityKTS.setClass(elemTipStateIcon, 'fas', itemInfo.tipstate == 1);
+    UtilityKTS.setClass(elemTipStateIcon, 'fa-check-square', itemInfo.tipstate == 1);
+
+    var elemTipContents = elemItemContainer.getElementsByClassName('weeklytip-singletip')[0];
+    elemTipContents.innerHTML = MarkdownToHTML.convert(itemInfo.tiptext);
   }
   
   async _configureBrowseDisplay(showbrowse) { 
@@ -381,11 +401,13 @@ class TipScheduling {
       this._notice
     );
     if (queryResults.success) {
-      this.update(false);
+      this._updateScheduleWeekItem(itemInfo.schedulelocation, itemInfo.schedulelocationorder);
     }
   }
   
   async _handleConfigChoice(e, choiceType) {
+    this._saveScrollPosition();
+    
     e.stopPropagation();
     var elemIcon = e.target;
     var elemWeeklyTip = elemIcon.parentNode.parentNode.parentNode;
@@ -400,6 +422,8 @@ class TipScheduling {
       this._disableContents(true);
       this._control.show(false);
       
+      this._addingToWeekNumber = weekNum;
+      
       this._addTipDialog.show(true);
       this._addTipDialog.update({
         scheduleid: this._control.state().scheduleid,
@@ -413,12 +437,14 @@ class TipScheduling {
         this._control.show(false);
         this._editTipDialog.show(true);
         this._editTipDialog.update(itemInfo);
+        this._editingItemInfo = itemInfo;
       }
       
     } else if (choiceType == 'addweek') {
       var queryResults = await SQLDBInterface.doPostQuery('tipmanager/insert', 'addscheduleweek', {scheduleid: scheduleId, afterweek: weekNum}, this._notice);
       if (queryResults.success) {
-        this.update(false);
+        await this.update(false);
+        this._restoreScrollPosition();
       }
       
     } else if (choiceType == 'removeweek') {
@@ -428,7 +454,8 @@ class TipScheduling {
       if (confirm(msg)) {
         var queryResults = await SQLDBInterface.doPostQuery('tipmanager/delete', 'removescheduleweek', {scheduleid: scheduleId, week: weekNum}, this._notice);
         if (queryResults.success) {
-          this.update(false);
+          await this.update(false);
+          this._restoreScrollPosition();
         }
       }
     }
@@ -445,9 +472,10 @@ class TipScheduling {
 
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'addtipandscheduletip', addParams, this._notice);
     if (queryResults.success) {
-      this.update(false, addParams.schedulelocation);
+      await this.update(false);
       this._disableContents(false);
       this._control.show(true);    
+      this._restoreScrollPosition();
 
     } else if (queryResults.details == '*ERROR: in dbPost, "duplicate tip for user"') {
       this._notice.setNotice('');
@@ -461,6 +489,7 @@ class TipScheduling {
   _cancelAddTip() {
     this._disableContents(false);
     this._control.show(true);
+    this._restoreScrollPosition();
   }
   
   async _finishEditTip(info) { 
@@ -473,9 +502,10 @@ class TipScheduling {
 
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'tiptextandcategory', editParams, this._notice);
     if (queryResults.success) {
-      this.update(false, info.params.schedulelocation);
+      this._updateScheduleWeekItem(info.params.schedulelocation, info.params.schedulelocationorder);
       this._disableContents(false);
       this._control.show(true); 
+      this._restoreScrollPosition();
       
     } else if (queryResults.details == '*ERROR: in dbPost, "duplicate tip for user"') {
       this._notice.setNotice('');
@@ -489,6 +519,7 @@ class TipScheduling {
   _cancelEditTip() {
     this._disableContents(false);
     this._control.show(true);
+    this._restoreScrollPosition();
   }
 
   async _addTip(tipId, destinationInfo) {
@@ -501,7 +532,9 @@ class TipScheduling {
     
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'addscheduletip', addParams, this._notice);
     if (queryResults.success) {
-      await this.update(false, destinationInfo.schedulelocation);
+      this._saveScrollPosition();
+      await this.update(false);
+      this._restoreScrollPosition();
     }
   }
   
@@ -518,14 +551,18 @@ class TipScheduling {
     
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'movescheduletip', moveParams, this._notice);
     if (queryResults.success || queryResults.details == 'tip is already assigned to week') {
-      await this.update(false, destinationInfo.schedulelocation);
+      this._saveScrollPosition();
+      await this.update(false);
+      this._restoreScrollPosition();
     }
   }
     
   async _removeTip(params) {
     var queryResults = await SQLDBInterface.doPostQuery('tipmanager/delete', 'scheduletip', params, this._notice);
     if (queryResults.success) {
-      await this.update(false, params.schedulelocation);
+      this._saveScrollPosition();
+      await this.update(false);
+      this._restoreScrollPosition();
     }
   }  
   
@@ -796,5 +833,16 @@ class TipScheduling {
   _isValidDate(str) {
     var d = new Date(str);
     return !isNaN(d);
+  }
+  
+  _saveScrollPosition() {
+    this._lastScrollPosition = {
+      scrollLeft: document.documentElement.scrollLeft,
+      scrollTop:  document.documentElement.scrollTop
+    }
+  }
+    
+  _restoreScrollPosition() {
+    window.scrollTo(this._lastScrollPosition.scrollLeft, this._lastScrollPosition.scrollTop);
   }
 }
