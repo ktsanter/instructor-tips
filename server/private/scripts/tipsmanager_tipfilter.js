@@ -131,9 +131,10 @@ class TipFilter {
 
     elemSearch.value = filterState.search;   
     this._keywordInput.setSelectedValues(filterState.keywords);
+    
     CreateElement.setSliderValue(elemCommon, filterState.common);
     if (this._config.editing) {
-      UtilityKTS.setClass(elemCommon, 'hidecommonedit', !filterState.allowcommonedit);
+      UtilityKTS.setClass(elemCommon, 'hidecommonedit', !filterState.showcommonui);
     } else {
       UtilityKTS.setClass(elemCommon, 'hidecommonedit', false);
     }

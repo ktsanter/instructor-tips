@@ -190,8 +190,8 @@ module.exports = internal.TipManager = class {
       result.details = 'query succeeded';
       
       var controlState = queryResults.data.controlstate;
-      var allowCommonEdit = funcCheckPrivilege(userInfo, 'admin');
-      controlState[0].state = controlState[0].state.replace(/\"allowcommonedit\": .*\}/, '"allowcommonedit": ' + allowCommonEdit + '}');
+      var showCommonUI = funcCheckPrivilege(userInfo, 'admin');
+      controlState[0].state = controlState[0].state.replace('}', ', "showcommonui": ' + showCommonUI + '}');
       
       result.controlstate = controlState;
 
@@ -978,7 +978,8 @@ module.exports = internal.TipManager = class {
         'from tip ' +
         'where (userid = ' + userInfo.userId + ' ' +
           'or common) ' + 
-          'and tiptext = "' + tipText + '" '
+          'and tiptext = "' + tipText + '" ' +
+          'and tipid != ' + postData.tipid
     };
 
     queryResults = await this._dbManager.dbQueries(queryList);

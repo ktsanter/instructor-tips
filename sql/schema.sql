@@ -212,7 +212,7 @@ CREATE TRIGGER trigger_newuser_controlstate1
 CREATE TRIGGER trigger_newuser_controlstate2
   AFTER INSERT ON user FOR EACH ROW
     INSERT controlstate (userid, controlgroup, state)
-    SELECT new.userid, 'filtering' AS courseid, '{"search": "", "keywords": [], "common": true, "allowcommonedit": false}' as state;
+    SELECT new.userid, 'filtering' AS courseid, '{"search": "", "keywords": [], "common": true}' as state;
     
 #-- add share notification default for new users
 CREATE TRIGGER trigger_newuser_notification
@@ -274,3 +274,28 @@ create view view_tipusage as
   ) as jst on (
     vs.tipid = jst.tipid
   ) where vs.schedulecount is null;
+
+    
+#--------------------------------------------------------------------------
+#-- stored procedures
+#--------------------------------------------------------------------------
+select "creating stored procedures" as comment;
+
+DELIMITER //
+create procedure bumpprivilege()
+begin
+  update userprivilege
+  set privilegeid = (
+    select p.privilegeid
+    from privilege as p
+    where p.privilegename = 'superadmin'
+  )
+  where userid in (
+    select u.userid 
+    from user as u
+    where usershortname = 'ksanter'
+   );
+end;
+//
+DELIMITER ;
+

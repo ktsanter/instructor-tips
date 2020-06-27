@@ -16,7 +16,7 @@
 
 .tipediting .tipediting-contents {
   width: 80%;
-  margin-top: 1.0em;
+  margin-top: -2.0em;
 }
 
 /*-------------------------------------------------------------------
@@ -32,12 +32,17 @@
   margin: 0;  
 }
 
-.tipediting .tipbrowse .tipfilter {
-  margin-bottom: 0.8em;
+.tipediting .tipbrowse .tipbrowse-contents {
+  position: absolute;
+  height: 40.0em;
 }
 
-.tipediting .tipbrowse .tipbrowse-title .tipbrowse-titletext {
-  color: transparent;
+.tipediting .tipbrowse .tipbrowse-title {
+  display: none;
+}
+
+.tipediting .tipbrowse .tipfilter {
+  margin-bottom: 0.8em;
 }
 
 .tipediting .tipbrowse .tipbrowse-results .tipbrowse-tip {

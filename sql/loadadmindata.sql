@@ -31,34 +31,12 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- user
 #-------------------------------------------------------------
-select "loading user" as comment;
-
-load data local infile 'initial_load_data/user.txt'
-into table user
-FIELDS TERMINATED BY '|'
-LINES TERMINATED BY '\r\n'
-(usershortname, username, email);
+select "loading user - disabled" as comment;
 
 #-------------------------------------------------------------
 #-- userprivilege
 #-------------------------------------------------------------
-select "updating userprivilege" as comment;
-
-update userprivilege as up
-set up.privilegeid = (select p.privilegeid from privilege as p where p.privilegename = 'superadmin')
-where up.userid = (select u.userid from user as u where u.usershortname = 'ksanter');
-
-update userprivilege as up
-set up.privilegeid = (select p.privilegeid from privilege as p where p.privilegename = 'admin')
-where up.userid = (select u.userid from user as u where u.usershortname = 'test_admin');
-
-update userprivilege as up
-set up.privilegeid = (select p.privilegeid from privilege as p where p.privilegename = 'lead')
-where up.userid = (select u.userid from user as u where u.usershortname = 'test_lead');
-
-update userprivilege as up
-set up.privilegeid = (select p.privilegeid from privilege as p where p.privilegename = 'instructor')
-where up.userid = (select u.userid from user as u where u.usershortname = 'test_instructor');
+select "updating userprivilege - disabled" as comment;
 
 #-------------------------------------------------------------
 #-- category

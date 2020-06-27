@@ -38,7 +38,7 @@ class SQLDBInterface {
     const METHOD_TITLE = 'dbGet';
     
     var url = this.__buildApiUrl__(queryType, queryName);
-
+console.log(url);
     var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
 
     try {
