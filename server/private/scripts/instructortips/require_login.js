@@ -1,9 +1,10 @@
 define(function (require) {
-  require('login');
-  require('create_element');
-  require('sqldbinterface');  
-  require('utilitykts');
+  require('../create_element');
+  require('../sqldbinterface');  
+  require('../utilitykts');
+  
   require('usermanagement');
+  require('login');
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
  

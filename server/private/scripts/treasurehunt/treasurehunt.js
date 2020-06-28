@@ -16,7 +16,7 @@ const app = function () {
 	const page = {};
   
   const settings = {
-    optionList: ['choice1', 'choice2', 'choice3']
+    optionList: ['choice1', 'choice2', 'choice3', 'profile']
   };
    
 	//---------------------------------------
@@ -52,10 +52,14 @@ const app = function () {
       items: [
         {label: 'Choice1', callback: () => {return _navDispatch('choice1');}, subitems: null, rightjustify: false},
         {label: 'Choice2', callback: () => {return _navDispatch('choice2');}, subitems: null, rightjustify: false},
-        {label: 'Choice3', callback: () => {return _navDispatch('choice3');}, subitems: null, rightjustify: false}
+        {label: 'Choice3', callback: () => {return _navDispatch('choice3');}, subitems: null, rightjustify: false},
+        {label: 'Mr. User', callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
       ],
       
-      hamburgeritems: []
+      hamburgeritems: [           
+        {label: 'help', markselected: false, callback: _showHelp},
+        {label: 'sign out', markselected: false, callback: _doLogout}
+      ]   
     };
     
     settings.navbar = new NavigationBar(navConfig);
@@ -88,6 +92,14 @@ const app = function () {
     
     UtilityKTS.setClass(page[arg], 'treasurehunt-hideme', false);
 
+  }
+  
+  function _showHelp() {
+    console.log('show help');
+  }
+  
+  function _doLogout() {
+    console.log('do logout');
   }
   
   //---------------------------------------
