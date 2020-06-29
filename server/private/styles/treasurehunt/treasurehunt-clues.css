@@ -1,0 +1,10 @@
+/*------------------------------------------------------------
+ * style settings for TreasureHuntClues class
+ *------------------------------------------------------------*/
+.treasurehuntclues {}
+
+.treasurehuntclues.treasurehuntclues-hide {
+  display: none;
+}
+
+.treasurehuntclues .treasurehuntclues-contents{}

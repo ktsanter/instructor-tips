@@ -16,7 +16,7 @@ const app = function () {
 	const page = {};
   
   const settings = {
-    optionList: ['choice1', 'choice2', 'choice3', 'profile']
+    optionList: ['layout', 'clues', 'profile']
   };
    
 	//---------------------------------------
@@ -28,20 +28,27 @@ const app = function () {
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
     
-    page.body.appendChild(_render());    
+    page.body.appendChild(await _render());
+    
+    await settings.projectControl.update();
+    settings.navbar.selectOption('Layout');    
 	}
 	
 	//-----------------------------------------------------------------------------
 	// rendering
 	//-----------------------------------------------------------------------------  
-  function _render() {
+  async function _render() {
     var container = CreateElement.createDiv(null, 'treasurehunt');
     
     container.appendChild(_renderNavbar());
-    container.appendChild(_renderContents());    
-
-    settings.navbar.selectOption('Choice1');
     
+    settings.projectControl = new TreasureHuntProjectControl({
+      updateCallback: _controlUpdateCallback
+    });
+    container.appendChild(await settings.projectControl.render());
+
+    container.appendChild(await _renderContents());    
+
     return container;
   }
   
@@ -50,9 +57,8 @@ const app = function () {
       title: appInfo.appName,
       
       items: [
-        {label: 'Choice1', callback: () => {return _navDispatch('choice1');}, subitems: null, rightjustify: false},
-        {label: 'Choice2', callback: () => {return _navDispatch('choice2');}, subitems: null, rightjustify: false},
-        {label: 'Choice3', callback: () => {return _navDispatch('choice3');}, subitems: null, rightjustify: false},
+        {label: 'Layout', callback: () => {return _navDispatch('layout');}, subitems: null, rightjustify: false},
+        {label: 'Clues', callback: () => {return _navDispatch('clues');}, subitems: null, rightjustify: false},
         {label: 'Mr. User', callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
       ],
       
@@ -67,13 +73,34 @@ const app = function () {
     return settings.navbar.render();
   }  
   
-  function _renderContents() {
+  async function _renderContents() {
     var container = CreateElement.createDiv(null, 'treasurehunt-contents');
     
     for (var i = 0; i < settings.optionList.length; i++) {
       var opt = settings.optionList[i];
-      var classList = 'treasurehunt-subcontents treasurehunt-' + opt + ' treasurehunt-hideme';
-      var elem = CreateElement.createDiv(null, classList, '[contents for ' + opt + ']');
+      
+      var elem;
+      if (opt == 'layout') {
+        var suggestedValue = {  // get these from DB
+          imageName: 'suggested value for imageName',
+          message: 'suggested value for message',
+          positiveResponse: 'suggested value for positiveResponse',
+          negativeResponse: 'suggested value for negativeResponse'
+        };
+        
+        settings.layout = new TreasureHuntLayout({
+          "projectControl": settings.projectControl,
+          "suggestedValue": suggestedValue
+        });
+        
+      } else if (opt == 'clues' ){
+        settings.clues = new TreasureHuntClues();
+        
+      } else if (opt == 'profile') {
+        settings.profile = new TreasureHuntProfile();
+      }
+      
+      var elem = await settings[opt].render();
       container.appendChild(elem);
       page[opt] = elem;
     }
@@ -84,14 +111,15 @@ const app = function () {
   //---------------------------------------
 	// handlers
 	//----------------------------------------
-  function _navDispatch(arg) {
+  async function _navDispatch(arg) {
     for (var i = 0; i < settings.optionList.length; i++) {
       var opt = settings.optionList[i];
-      UtilityKTS.setClass(page[opt], 'treasurehunt-hideme', true);
+      settings[opt].show(false);
     }
     
-    UtilityKTS.setClass(page[arg], 'treasurehunt-hideme', false);
-
+    settings.projectControl.show(arg != 'profile');
+    await settings[arg].update(settings.projectControl.getProjectInfo());
+    settings[arg].show(true);
   }
   
   function _showHelp() {
@@ -100,6 +128,11 @@ const app = function () {
   
   function _doLogout() {
     console.log('do logout');
+  }
+  
+  function _controlUpdateCallback(params) {
+    settings.layout.update(params);
+    settings.clues.update(params);
   }
   
   //---------------------------------------

@@ -41,7 +41,7 @@
 }
 
 .schedulecontrol .schedulecontrol-iconcontainer.notshown {
-  color: gray;
+  color: black;
   background-color: transparent;
   border: 1px solid transparent;
 }

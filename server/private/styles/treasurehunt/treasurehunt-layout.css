@@ -1,0 +1,49 @@
+/*------------------------------------------------------------
+ * style settings for TreasureHuntLayout class
+ *------------------------------------------------------------*/
+.treasurehuntlayout {}
+
+.treasurehuntlayout.layout-hide {
+  display: none;
+}
+
+.treasurehuntlayout .layout-contents {}
+
+.treasurehuntlayout .layout-contents .section .sectionheader .suggestion {
+  float: right;  
+  padding: 0.2em 0.4em;
+  color: transparent;
+}
+
+.treasurehuntlayout .layout-contents .section .sectionheader .suggestion:hover {
+  color: white;
+}
+
+.treasurehuntlayout  .layout-contents .imagesection {}
+
+.treasurehuntlayout  .layout-contents .imagesection .image-name {
+  width: 50.0em;
+}
+
+.treasurehuntlayout  .layout-contents .imagesection .image-fullpage {
+  margin-top: 0.4em;
+}
+
+.treasurehuntlayout  .layout-contents .message {
+  width: 30em;
+}  
+
+.treasurehuntlayout  .layout-contents .message-preview {
+  width: 30em;
+}  
+
+.treasurehuntlayout  .layout-contents .response {
+  width: 30em;
+  min-height: 10.0em;
+}  
+
+.treasurehuntlayout  .layout-contents .response-preview {
+  width: 30em;
+  min-height: 10.0em;
+}  
+
