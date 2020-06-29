@@ -77,6 +77,25 @@ body {
 	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
 } 
 
+.treasurehunt input.treasurehunt-spinner {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 1.0em;
+	display: inline-block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 1.4em .5em .8em;
+  width: 5em;
+	box-sizing: border-box;
+	margin: 0.3em 0.2em 0 0 ;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	border-radius: .3em;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #fff;
+ }
+ 
 .treasurehunt div.inputpreview {
   display: inline-block;
   background-color: white;

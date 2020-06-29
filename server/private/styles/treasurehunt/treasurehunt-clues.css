@@ -3,8 +3,87 @@
  *------------------------------------------------------------*/
 .treasurehuntclues {}
 
-.treasurehuntclues.treasurehuntclues-hide {
+.treasurehuntclues.clues-hide {
   display: none;
 }
 
-.treasurehuntclues .treasurehuntclues-contents{}
+.treasurehuntclues .clues-contents {}
+
+.treasurehuntclues .clues-contents .clue {
+  padding: 0.4em 0.4em;
+}
+
+.treasurehuntclues .clues-contents .clue:nth-child(odd) {
+  background-color: white;
+}
+
+.treasurehuntclues .clues-contents .clue.header {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+.treasurehuntclues .clues-contents .clue:not(.header) {
+  cursor: pointer;
+}
+
+.treasurehuntclues .clues-contents .clue .clueval {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;  
+  padding: 0.2em;
+}
+
+.treasurehuntclues .clues-contents .clue:not(.header) .clueval:hover {
+  font-weight: bold;
+}
+
+.treasurehuntclues .clues-contents .clue .clueval.editing {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+.treasurehuntclues .clues-contents .clue .clueval.clue-number {
+  width: 5%;
+}
+
+.treasurehuntclues .clues-contents .clue .clueval.clue-prompt {
+  width: 40%;
+}
+
+.treasurehuntclues .clues-contents .clue .clueval.clue-response {
+  width: 20%;
+}
+
+.treasurehuntclues .clues-contents .clue .clueval.clue-action {
+  width: 10%;
+}
+
+.treasurehuntclues .clues-contents .clue .clueval.clue-confirmation {
+  width: 20%;
+}
+
+.treasurehuntclues .clues-contents .clue .clueicon {
+  float: right;
+  padding: 0.2em;
+  color: transparent;
+}
+
+.treasurehuntclues .clues-contents .clue .clueicon:hover {
+  color: black;
+}
+
+.treasurehuntclues .clues-contents .clue.header .clueicon:hover {
+  color: white;
+}
+
+.treasurehuntclues .clues-contents .clue .editcontainer {
+  border: 1px solid var(--bgTertiaryEmphasis);
+  padding-left: 0.2em;
+}
+
+.treasurehuntclues .clues-contents .clue .editcontainer .editicon {
+  font-size: 1.4em; 
+  margin: 0 0.2em;
+}
+

@@ -31,7 +31,7 @@ const app = function () {
     page.body.appendChild(await _render());
     
     await settings.projectControl.update();
-    settings.navbar.selectOption('Layout');    
+    settings.navbar.selectOption('Clues'); //'Layout');    
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -67,7 +67,7 @@ const app = function () {
         {label: 'sign out', markselected: false, callback: _doLogout}
       ]   
     };
-    
+
     settings.navbar = new NavigationBar(navConfig);
         
     return settings.navbar.render();
@@ -94,7 +94,14 @@ const app = function () {
         });
         
       } else if (opt == 'clues' ){
-        settings.clues = new TreasureHuntClues();
+        settings.clues = new TreasureHuntClues({
+          defaultClue: {
+            prompt: 'default prompt',
+            response: 'default response',
+            action: {type: 'none'},
+            confirmation: 'default confirmation'            
+          }
+        });
         
       } else if (opt == 'profile') {
         settings.profile = new TreasureHuntProfile();
