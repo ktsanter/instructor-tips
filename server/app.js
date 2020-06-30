@@ -216,7 +216,7 @@ app.get('/instructortips/instructortips.html', function (req, res) {
   if (loggedin) {
     res.sendFile(path.join(__dirname, 'private', '/instructortips/instructortips.html'))
   } else {
-    res.redirect('/login.html');
+    res.redirect('/instructortips/login.html');
   }
 })
 

@@ -9,10 +9,14 @@
 
 .treasurehuntclues .clues-contents {}
 
+
 .treasurehuntclues .clues-contents .clue {
   padding: 0.4em 0.4em;
 }
 
+/*------------------------------------------------------------
+ * clue and clue.header class
+ *------------------------------------------------------------*/
 .treasurehuntclues .clues-contents .clue:nth-child(odd) {
   background-color: white;
 }
@@ -26,21 +30,23 @@
   cursor: pointer;
 }
 
+.treasurehuntclues .clues-contents .clue.editing {
+  border: 2px solid black;
+}
+
+/*------------------------------------------------------------
+ * clueval class
+ *------------------------------------------------------------*/
 .treasurehuntclues .clues-contents .clue .clueval {
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;  
-  padding: 0.2em;
+  padding: 0.2em 0.4em;
 }
 
-.treasurehuntclues .clues-contents .clue:not(.header) .clueval:hover {
+.treasurehuntclues .clues-contents .clue:not(.header) .clueval:hover:not(.editing) {
   font-weight: bold;
-}
-
-.treasurehuntclues .clues-contents .clue .clueval.editing {
-  color: white;
-  background-color: var(--bgPrimaryEmphasis);
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-number {
@@ -48,7 +54,7 @@
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-prompt {
-  width: 40%;
+  width: 30%;
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-response {
@@ -56,7 +62,7 @@
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-action {
-  width: 10%;
+  width: 15%;
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-confirmation {
@@ -77,13 +83,49 @@
   color: white;
 }
 
+/*------------------------------------------------------------
+ * editing classes
+ *------------------------------------------------------------*/
+.treasurehuntclues .clues-contents .clue .clueval.editing {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis_trans);
+}
+
 .treasurehuntclues .clues-contents .clue .editcontainer {
+  background-color: var(--bgPrimaryEmphasis_trans);
   border: 1px solid var(--bgTertiaryEmphasis);
   padding-left: 0.2em;
+  padding-bottom: 0.4em;
+  margin-top: 0.8em;
 }
 
 .treasurehuntclues .clues-contents .clue .editcontainer .editicon {
-  font-size: 1.4em; 
+  color: white;
+  font-size: 1.6em;
+  vertical-align: top;
+  padding-top: 0.2em;  
   margin: 0 0.2em;
 }
 
+.treasurehuntclues .clues-contents .clue .editcontainer .edittext {
+  width: 70%;
+}
+
+.treasurehuntclues .clues-contents .clue .editcontainer .editaction {
+  display: inline-block;
+  background-color: var(--bgOverall);
+  border: 1px solid var(--bgTertiaryEmphasis);
+  padding: 0.4em 0.2em;
+  margin-top: 0.2em;
+  min-width: 30%;
+}
+
+.treasurehuntclues .clues-contents .clue .editcontainer .editaction .select-css {
+  min-width: 40%;
+  max-width: 100%;
+  font-size: 1.0em;
+}
+
+.treasurehuntclues .clues-contents .clue .editcontainer .editaction .actioneffect-select{
+  margin-top: 0.4em;
+}

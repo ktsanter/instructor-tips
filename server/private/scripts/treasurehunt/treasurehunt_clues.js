@@ -13,6 +13,14 @@ class TreasureHuntClues {
     this._config = {};
     if (config) this._config = config;
     
+    this._config.effectDescription = {
+      none: 'none',
+      effect: 'special effect',
+      url: 'URL link',
+      google_search: 'Google search',
+      header: 'action'
+    };
+    
     this._container = null;
     this._editContainer = null;
     
@@ -40,13 +48,13 @@ class TreasureHuntClues {
       },
       {
         clueId: 103,
-        prompt: 'prompt3xxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyy',
-        response: 'response3',
+        prompt: 'prompt3xxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyzzzzzzzzzzzzzzzzzzzzzzzzz',
+        response: 'response3xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
         action: {
           type: 'google_search',
           searchfor: 'do a barrel roll'
         },
-        confirmation: 'confirmation3'
+        confirmation: 'confirmation3zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
       },
       {      
         clueId: 104,
@@ -58,6 +66,25 @@ class TreasureHuntClues {
           message: 'well done!!'
         },
         confirmation: 'confirmation1'
+      },
+      {      
+        clueId: 105,
+        prompt: 'prompt5',
+        response: 'response5',
+        action: {
+          type: 'none'
+        },
+        confirmation: 'confirmation5'
+      },
+      {      
+        clueId: 106,
+        prompt: 'prompt6',
+        response: 'response6',
+        action: {
+          type: 'effect',
+          effecttype: 'fireworks'
+        },
+        confirmation: 'confirmation6'
       }      
     ];
   }
@@ -115,7 +142,7 @@ class TreasureHuntClues {
       number: '#',
       prompt: 'prompt',
       response: 'response',
-      action: {type: 'action'},
+      action: {type: 'header'},
       confirmation: 'confirmation'
     };
     container.appendChild(this._renderClue(header, true));
@@ -151,7 +178,9 @@ class TreasureHuntClues {
     elem.editType = 'response';
     elem.addEventListener('click', handler);
     
-    elem = CreateElement.createDiv(null, 'clue-action ' + classList, clue.action.type)
+    var fieldVal = this._config.effectDescription[clue.action.type];
+    if (clue.action.type == 'effect') fieldVal = 'effect (' + clue.action.effecttype + ')';
+    elem = CreateElement.createDiv(null, 'clue-action ' + classList, fieldVal);
     container.appendChild(elem);
     elem.editType = 'action';
     elem.addEventListener('click', handler);
@@ -177,8 +206,13 @@ class TreasureHuntClues {
   // clue editing
   //--------------------------------------------------------------
   _startEdit(editType, clueInfo, elemTarget) {
-    if (this._editContainer) this._closeEdit();
+    if (this._editContainer && (this._editTarget == elemTarget)) {
+      this._closeEdit();
+      return;
+    }
 
+    if (this._editContainer) this._closeEdit();
+    
     var elemEdit = CreateElement.createDiv(null, 'editcontainer');
     elemEdit.clueInfo = clueInfo;
     
@@ -186,25 +220,32 @@ class TreasureHuntClues {
     
     if (editType == 'number') {
       var nClues = this.clueInfo.length;
-      elemField = CreateElement.createSpinner(null, 'editnumber treasurehunt-spinner', clueInfo.number, 1, nClues, 1);  // calculate max
+      elemField = CreateElement.createSpinner(null, 'editnumber treasurehunt-spinner', clueInfo.number, 1, nClues, 1); 
       
     } else if (editType == 'prompt') {
-      console.log('prompt');
+      elemField = CreateElement.createTextInput(null, 'editprompt edittext treasurehunt-input', clueInfo.prompt);
+      elemField.maxLength = 100;
+      elemField.placeholder = 'prompt for clue';
       
     } else if (editType == 'response') {
-      console.log('response');
+      elemField = CreateElement.createTextInput(null, 'editresponse edittext treasurehunt-input', clueInfo.response);
+      elemField.maxLength = 100;
+      elemField.placeholder = 'correct response for clue';
       
     } else if (editType =='action') {
-      console.log('action');
+      elemField = this._buildActionDialog(clueInfo.action);
       
     } else if (editType == 'confirmation') {
-      console.log('confirmation');
+      elemField = CreateElement.createTextInput(null, 'editconfirmation edittext treasurehunt-input', clueInfo.confirmation);
+      elemField.maxLength = 100;
+      elemField.placeholder = 'confirmation message to send to instructor';
     }
     
     if (elemField) {
       this._editContainer = elemEdit;
       this._editTarget = elemTarget;
       UtilityKTS.setClass(elemTarget, 'editing', true);
+      UtilityKTS.setClass(elemTarget.parentNode, 'editing', true);
       
       elemEdit.appendChild(elemField);
 
@@ -224,8 +265,69 @@ class TreasureHuntClues {
     if (!this._editContainer) return;
     
     UtilityKTS.setClass(this._editTarget, 'editing', false);
+    UtilityKTS.setClass(this._editTarget.parentNode, 'editing', false);
     this._editContainer.parentNode.removeChild(this._editContainer);
     this._editContainer = null;
+    this._editTarget = null;
+  }
+ 
+  _buildActionDialog(actionInfo) {
+    var container = CreateElement.createDiv(null, 'editaction');
+    container.actionInfo = actionInfo;
+    
+    var actionTypes = [
+      {value: 'none', textval: this._config.effectDescription['none']},
+      {value: 'url', textval: this._config.effectDescription['url']},
+      {value: 'effect', textval: this._config.effectDescription['effect']},
+      {value: 'google_search', textval: this._config.effectDescription['google_search']}
+    ];
+    
+    var handler = (e) => {return this._handleActionSelect(e);};
+    var elem = CreateElement.createSelect(null, 'editaction-select select-css', handler, actionTypes);
+    container.appendChild(elem);
+    elem.value = actionInfo.type;
+    
+    if (actionInfo.type == 'url') {
+      var elem = CreateElement.createTextInput(null, 'actionurl treasurehunt-input', actionInfo.target);
+      elem.maxLength = 100;
+      elem.placeholder = 'https://';
+      container.appendChild(elem);
+      
+    } else if (actionInfo.type == 'effect') {
+      var effectTypes = [
+        {value: 'bouncing_text', textval: 'bouncing text'}, 
+        {value: 'fireworks', textval: 'fireworks'},
+        {value: 'cannon_text', textval: 'cannon text'}
+      ];
+      var handler = (e) => {return this._handleActionEffectSelect(e);};
+      var elem = CreateElement.createSelect(null, 'actioneffect-select select-css', handler, effectTypes)
+      container.appendChild(elem);
+      elem.value = actionInfo.effecttype;
+
+      if (actionInfo.effecttype == 'bouncing_text' || actionInfo.effecttype == 'cannon_text') {
+        var elem = CreateElement.createTextInput(null, 'actioneffect-message treasurehunt-input', actionInfo.message);
+        elem.maxLength = 100;
+        elem.placeholder = 'message';
+        container.appendChild(elem);
+      }
+
+    } else if (actionInfo.type == 'google_search') {
+      var elem = CreateElement.createTextInput(null, 'actionsearch treasurehunt-input', actionInfo.searchfor);
+      elem.maxLength = 100;
+      elem.placeholder = 'search phrase';
+      container.appendChild(elem);
+    }
+    
+    return container;
+  }
+  
+  _rebuildActionDialog(actionType) {
+    var currentContainer = this._container.getElementsByClassName('editaction')[0];
+    var actionInfo = currentContainer.actionInfo;
+    actionInfo.type = actionType;
+
+    var newContainer = this._buildActionDialog(actionInfo);
+    currentContainer.parentNode.replaceChild(newContainer, currentContainer);
   }
   
   //--------------------------------------------------------------
@@ -240,16 +342,15 @@ class TreasureHuntClues {
   async _dbInsertClue() {
     console.log('insert clue');
     var params = this._config.defaultClue;
-    console.log(params);
   }
   
   async _dbUpdateClue(clueInfo) {
-    var clueId = clueInfo.clueId
+    var clueId = clueInfo.clueId;
     console.log('update clue: id=' + clueId);
   }
   
   async _dbDeleteClue(clueInfo) {
-    var clueId = clueInfo.clueId
+    var clueId = clueInfo.clueId;
     console.log('delete clue: id=' + clueId);
   }    
    
@@ -283,12 +384,20 @@ class TreasureHuntClues {
   
   async _handleEditSave(e) {
     console.log('edit save');
-    console.log(e.target.parentNode);
+    this._closeEdit();
   }
   
   async _handleEditCancel(e) {
-    console.log('edit cancel');
     this._closeEdit();
+  }
+  
+  _handleActionSelect(e) {
+    this._rebuildActionDialog(e.target.value);
+  }
+  
+  _handleActionEffectSelect(e) {
+    e.target.parentNode.actionInfo.effecttype = e.target.value;
+    this._rebuildActionDialog(e.target.parentNode.actionInfo.type);
   }
   
   //--------------------------------------------------------------
