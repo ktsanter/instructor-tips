@@ -31,12 +31,17 @@ LINES TERMINATED BY '\r\n'
 #-------------------------------------------------------------
 #-- user
 #-------------------------------------------------------------
-select "loading user - disabled" as comment;
+select "loading user" as comment;
+
+insert into user(usershortname, username, email)
+values ('ksanter', 'Kevin Santer', 'ktsanter2@gmail.com');
 
 #-------------------------------------------------------------
 #-- userprivilege
 #-------------------------------------------------------------
 select "updating userprivilege - disabled" as comment;
+
+call bumpPrivilege();
 
 #-------------------------------------------------------------
 #-- category

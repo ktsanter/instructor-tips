@@ -6,6 +6,7 @@ define(function (require) {
   require('../standard_notice');
   require('../utilitykts');
   require('../markdowntohtml');
+  require('../sqldbinterface');  
   
   require('treasurehunt_layout');
   require('treasurehunt_clues');

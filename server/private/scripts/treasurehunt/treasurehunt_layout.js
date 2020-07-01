@@ -155,14 +155,7 @@ class TreasureHuntLayout {
   }
 
   async update(params) {
-    console.log('TreasureHuntLayout.update');
-    console.log(params);
-    
-    var state = await this._loadStateFromDB();
-   
-    if (state) {
-      this._setControlsFromState(state);
-    }
+    this._setControlsFromState(params);
   }
 
   _updatePreviewText(elemMessage, elemPreview) {
@@ -177,17 +170,17 @@ class TreasureHuntLayout {
   _updateSaveCancel() {
     var state = this._getStateFromControls();
     var changed = 
-      (state.imageName != this._originalState.imageName) || 
-      (state.imageFullPage != this._originalState.imageFullPage) || 
+      (state.imagename != this._originalState.imagename) || 
+      (state.imagefullpage != this._originalState.imagefullpage) || 
       (state.message != this._originalState.message) || 
-      (state.positiveResponse != this._originalState.positiveResponse) || 
-      (state.negativeResponse != this._originalState.negativeResponse);
+      (state.positiveresponse != this._originalState.positiveresponse) || 
+      (state.negativeresponse != this._originalState.negativeresponse);
       
     var valid = 
-      (state.imageName != '') &&
+      (state.imagename != '') &&
       (state.message != '') && 
-      (state.positiveResponse != '') && 
-      (state.negativeResponse != '');
+      (state.positiveresponse != '') && 
+      (state.negativeresponse != '');
       
     var elemSave = this._container.getElementsByClassName('save')[0];
     var elemCancel = this._container.getElementsByClassName('cancel')[0];
@@ -224,11 +217,11 @@ class TreasureHuntLayout {
     var elemNegativeResponse = this._container.getElementsByClassName('negativeresponse')[0];
     
     var state = {  // sanitize 
-      imageName: elemImageName.value,
-      imageFullPage: CreateElement.getSliderValue(elemImageFullPage),
+      imagename: elemImageName.value,
+      imagefullpage: CreateElement.getSliderValue(elemImageFullPage),
       message: elemMessage.value,
-      positiveResponse: elemPositiveResponse.value,
-      negativeResponse: elemNegativeResponse.value
+      positiveresponse: elemPositiveResponse.value,
+      negativeresponse: elemNegativeResponse.value
     };
     
     return state;
@@ -242,34 +235,13 @@ class TreasureHuntLayout {
     var elemNegativeResponse = this._container.getElementsByClassName('negativeresponse')[0];
     
     // de-sanitize if necessary
-    elemImageName.value = state.imageName;
-    CreateElement.setSliderValue(elemImageFullPage, state.imageFullPage);
+    elemImageName.value = state.imagename;
+    CreateElement.setSliderValue(elemImageFullPage, state.imagefullpage);
     elemMessage.value = state.message;
-    elemPositiveResponse.value = state.positiveResponse;
-    elemNegativeResponse.value = state.negativeResponse;
-  }
+    elemPositiveResponse.value = state.positiveresponse;
+    elemNegativeResponse.value = state.negativeresponse;
     
-  async _loadStateFromDB() {
-    console.log('TreasureHuntLayout._loadStateFromDB');
-    var state = {
-      imageName: '',
-      imageFullPage: false,
-      message: 'test message',
-      positiveResponse: '',
-      negativeResponse: ''
-    };
-    
-    /*
-    var queryResults = await SQLDBInterface.doGetQuery('tipmanager/query', 'profile', this._notice);
-    if (queryResults.success) {
-      state = queryResults.data;
-    };
-    */
-    
-    this._originalState = state;  // only do this on success
-    console.log(state);
-
-    return state;
+    this._originalState = state;
   }
   
   async _saveStateToDB(state) {

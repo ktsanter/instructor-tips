@@ -9,7 +9,8 @@ const THIS_PORT =getEnv('THIS_PORT', true);
 const MARIA_HOST = getEnv('MARIA_HOST', true);
 const MARIA_USER = getEnv('MARIA_USER', true);
 const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
-const MARIA_DBNAME = getEnv('MARIA_DBNAME', true);
+const MARIA_DBNAME_INSTRUCTORTIPS = getEnv('MARIA_DBNAME_INSTRUCTORTIPS', true);
+const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -64,17 +65,27 @@ const fileservices = require('fs');
 //------------------------------------------
 const mariadb = require('mariadb')
 
-const mariadbParams = {
+const mariadbParams_InstructorTips = {
     reqd: mariadb,
     host: MARIA_HOST,
     user: MARIA_USER,
     password: MARIA_PASSWORD,
-    dbName: MARIA_DBNAME /*, 
+    dbName: MARIA_DBNAME_INSTRUCTORTIPS /*, 
+    connectionLimit: 5 */
+};
+    
+const mariadbParams_TreasureHunt = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_TREASUREHUNT /*, 
     connectionLimit: 5 */
 };
     
 const mariaDBManagerClass = require('./classes/mariadb_management')
-const mariaDBManager = new mariaDBManagerClass(mariadbParams);
+const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
+const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
     
 //------------------------------------------
 // session management
@@ -144,7 +155,7 @@ const puppeteer = require('puppeteer');
 var commonmark = require('commonmark');
 const messageManagementClass = require('./classes/messagemanagement')
 const messageManagement = new messageManagementClass({
-  "dbManager": mariaDBManager, 
+  "dbManager": mariaDBManager_InstructorTips, 
   "mailer": gMailer, 
   "commonmark": commonmark, 
   "pug": pug, 
@@ -158,7 +169,7 @@ const messageManagement = new messageManagementClass({
 // user management
 //------------------------------------------
 const userManagementClass = require('./classes/usermanagement')
-const userManagement = new userManagementClass({dbManager: mariaDBManager, tempFileManager: tmp, messageManager: messageManagement});
+const userManagement = new userManagementClass({dbManager: mariaDBManager_InstructorTips, tempFileManager: tmp, messageManager: messageManagement});
 
 //------------------------------------------
 // cron management
@@ -175,22 +186,28 @@ const cronScheduler = new cronSchedulerClass({
 // InstructorTips admin query objects
 //------------------------------------------
 const dbAdminQueryClass = require('./classes/dbadmin_query')
-const dbAdminQuery = new dbAdminQueryClass(userManagement, mariaDBManager);
+const dbAdminQuery = new dbAdminQueryClass(userManagement, mariaDBManager_InstructorTips);
 
 const dbAdminInsertClass = require('./classes/dbadmin_insert')
-const dbAdminInsert = new dbAdminInsertClass(userManagement, mariaDBManager);
+const dbAdminInsert = new dbAdminInsertClass(userManagement, mariaDBManager_InstructorTips);
 
 const dbAdminUpdateClass = require('./classes/dbadmin_update')
-const dbAdminUpdate = new dbAdminUpdateClass(userManagement, mariaDBManager);
+const dbAdminUpdate = new dbAdminUpdateClass(userManagement, mariaDBManager_InstructorTips);
 
 const dbAdminDeleteClass = require('./classes/dbadmin_delete')
-const dbAdminDelete = new dbAdminDeleteClass(userManagement, mariaDBManager);
+const dbAdminDelete = new dbAdminDeleteClass(userManagement, mariaDBManager_InstructorTips);
 
 //------------------------------------------
 // InstructorTips general query objects
 //------------------------------------------
 const dbTipManagerClass = require('./classes/tipmanager')
-const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager, messageManagement);
+const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager_InstructorTips, messageManagement);
+
+//------------------------------------------
+// TreasureHunt general query objects
+//------------------------------------------
+const dbTreasureHuntClass = require('./classes/treasurehunt')
+const dbTreasureHunt = new dbTreasureHuntClass(userManagement, mariaDBManager_TreasureHunt);
 
 //----------------------------------------------------------------------------------------------------------------------
 // GET and POST requests
@@ -497,7 +514,7 @@ app.get('/help/subpages/:helpfile', function (req, res) {
 })
 
 //------------------------------------------------------
-// treasure hunt app
+// TreasureHunt general
 //------------------------------------------------------
 app.get('/treasurehunt/:treasurehuntfile', function (req, res) {
   sendFileIfExists(res, path.join(__dirname, 'private', 'treasurehunt/' + req.params.treasurehuntfile));
@@ -509,6 +526,20 @@ app.get('/styles/treasurehunt/:stylesheet', function (req, res) {
 
 app.get('/scripts/treasurehunt/:scriptfile', function (req, res) {
   res.sendFile(path.join(__dirname, 'private', 'scripts/treasurehunt/' + req.params.scriptfile))
+})
+
+//------------------------------------------------------
+// TreasureHunt queries
+//------------------------------------------------------
+app.get('/treasurehunt/query/:queryName', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
+    res.send(await dbTreasureHunt.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+
+  } else {
+    res.send(_failedRequest('get'));
+  }
 })
 
 //------------------------------------------

@@ -61,3 +61,21 @@ select "creating views" as comment;
 #-- stored procedures
 #--------------------------------------------------------------------------
 select "creating stored procedures" as comment;
+    
+#--------------------------------------------------------------------------
+#-- test data
+#--------------------------------------------------------------------------
+select "loading test data" as comment;
+  
+insert into project (userid, projectname, imagename, imagefullpage, message, positiveresponse, negativeresponse) 
+select 
+  u.userid, 
+  'test project #1' as projectname,
+  '' as imagename,
+  0 as imagefullpage,
+  'hello there' as message,
+  'yippie!' as positiveresponse,
+  'doh' as negativeresponse
+from instructortips.user as u
+  where u.usershortname = 'ksanter';
+

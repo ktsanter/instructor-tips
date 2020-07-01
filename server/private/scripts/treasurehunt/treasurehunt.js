@@ -31,7 +31,7 @@ const app = function () {
     page.body.appendChild(await _render());
     
     await settings.projectControl.update();
-    settings.navbar.selectOption('Clues'); //'Layout');    
+    settings.navbar.selectOption('Layout');    
 	}
 	
 	//-----------------------------------------------------------------------------

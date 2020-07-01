@@ -99,30 +99,28 @@ class TreasureHuntProjectControl {
   }
 
   async update() {
-    console.log('TreasureHuntProjectControl.update');
+    this._config.projectList = await this._getProjectList();
 
-    var handler = (e) => {return this._handleProjectSelect(e);};
-    var projectList = await this._getProjectList();
+    var handler = (e) => {return this._handleProjectSelect(e);};    
+    var selectList = [];
+    for (var i = 0; i < this._config.projectList.length; i++) {
+      var project = this._config.projectList[i];
+      selectList.push({value: project.projectid, textval: project.projectname});
+    }
 
     var elemCurrentSelect = this._container.getElementsByClassName('projectselect')[0];
-    var elemNewSelect = CreateElement.createSelect(null, 'projectselect select-css', handler, projectList);
+    var elemNewSelect = CreateElement.createSelect(null, 'projectselect select-css', handler, selectList);
     elemCurrentSelect.parentNode.replaceChild(elemNewSelect, elemCurrentSelect);    
-    return;
-    
-    /*
-    var state = await this._loadStateFromDB();
-   
-    if (state) {
-      //update particulars
-    }
-    */
   }
   
   async _getProjectList() {
-    var projectList = [
-      {value: 1, textval: 'Foundations of Programming B (2020-2021 Sem1'},
-      {value: 2, textval: 'JavaScript Game Design (2020-2021 Sem1'}
-    ];
+    var projectList;
+    
+    var queryResults = await SQLDBInterface.doGetQuery('treasurehunt/query', 'projectlist', this._notice);
+
+    if (queryResults.success) {
+      projectList = queryResults.projects;
+    }
     
     return projectList;
   }
@@ -133,10 +131,7 @@ class TreasureHuntProjectControl {
     var elemSelect = this._container.getElementsByClassName('projectselect')[0];
     var index = elemSelect.selectedIndex;
     if (index >= 0) {
-      projectInfo = {
-        projectId: elemSelect[index].value,
-        projectName: elemSelect[index].text
-      };
+      projectInfo = this._config.projectList[index];
     }
     
     return projectInfo;
