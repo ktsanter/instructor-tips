@@ -73,19 +73,86 @@ module.exports = internal.TreasureHunt = class {
   async _getProjectList(params, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
-    var queryList = {};
-
-    queryList.projects =
-      'select projectid, projectname, imagename, imagefullpage, message, positiveresponse, negativeresponse ' +
-      'from project ' +
-      'where userid = ' + userInfo.userId;
-              
-    var queryResults = await this._dbManager.dbQueries(queryList);
+    var queryList, queryResults;
+/*
+    queryList = {
+      projects:
+        'select ' + 
+          'p.projectid, p.projectname, ' + 
+          'p.imagename, p.imagefullpage, ' +
+          'p.message, p.positiveresponse, p.negativeresponse, ' +
+          'c.clueid, c.cluenumber, ' +
+          'c.clueprompt, c.clueresponse, ' +
+          'c.clueactiontype, c.clueactiontarget, c.clueactionmessage, c.cluesearchfor, ' +
+          'c.clueconfirmation ' +
+        'from project as p, clue as c ' +
+        'where userid = ' + userInfo.userId + ' ' +
+          'and p.projectid = c.projectid'
+    };
+  */            
+    queryList = {
+      projects:
+        'select ' + 
+          'p.projectid, p.projectname, ' + 
+          'p.imagename, p.imagefullpage, ' +
+          'p.message, p.positiveresponse, p.negativeresponse ' +
+        'from project as p ' +
+        'where p.userid = ' + userInfo.userId
+    };
     
+    queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var projectInfo = queryResults.data.projects;
+    queryList = {};
+    for (var i = 0; i < projectInfo.length; i++) {
+      var project = projectInfo[i];
+      queryList[project.projectid] = 
+        'select ' + 
+          'c.clueid, c.cluenumber, ' +
+          'c.clueprompt, c.clueresponse, ' +
+          'c.clueactiontype, c.clueactiontarget, c.clueactionmessage, c.cluesearchfor, ' +
+          'c.clueconfirmation ' +
+        'from clue as c ' +
+        'where c.projectid = ' + project.projectid
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var clueInfo = {};
+    for (var key in queryResults.data) {
+      var clueList = queryResults.data[key];
+      clueInfo[key] = [];
+      for (var i = 0; i < clueList.length; i++) {
+        var clue = clueList[i];
+        clueInfo[key].push({
+          clueid: clue.clueid,
+          number: clue.cluenumber,
+          prompt: clue.clueprompt,
+          response: clue.clueresponse,
+          action: {
+            type: clue.clueactiontype,
+            target: clue.clueactiontarget,
+            message: clue.clueactionmessage,
+            searchfor: clue.cluesearchfor
+          },
+          confirmation: clue.clueconfirmation
+        })
+      }
+    }
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.projects = queryResults.data.projects;
+      result.projects = projectInfo;
+      result.clues = clueInfo;
 
     } else {
       result.details = queryResults.details;

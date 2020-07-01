@@ -27,12 +27,22 @@ const app = function () {
 
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
+   
+    await _getUserInfo();
     
     page.body.appendChild(await _render());
     
     await settings.projectControl.update();
     settings.navbar.selectOption('Layout');    
 	}
+  
+  async function _getUserInfo() {
+    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
+    settings.userInfo = null;
+    if (dbResult.success) {
+      settings.userInfo = dbResult.userInfo;
+    }     
+  }  
 	
 	//-----------------------------------------------------------------------------
 	// rendering
@@ -43,7 +53,7 @@ const app = function () {
     container.appendChild(_renderNavbar());
     
     settings.projectControl = new TreasureHuntProjectControl({
-      updateCallback: _controlUpdateCallback
+      callbackSelectionChanged: _callbackSelectionChanged
     });
     container.appendChild(await settings.projectControl.render());
 
@@ -59,7 +69,7 @@ const app = function () {
       items: [
         {label: 'Layout', callback: () => {return _navDispatch('layout');}, subitems: null, rightjustify: false},
         {label: 'Clues', callback: () => {return _navDispatch('clues');}, subitems: null, rightjustify: false},
-        {label: 'Mr. User', callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
+        {label: settings.userInfo.userName, callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
       ],
       
       hamburgeritems: [           
@@ -95,6 +105,7 @@ const app = function () {
         
       } else if (opt == 'clues' ){
         settings.clues = new TreasureHuntClues({
+          projectControl: settings.projectControl,
           defaultClue: {
             prompt: 'default prompt',
             response: 'default response',
@@ -125,8 +136,11 @@ const app = function () {
     }
     
     settings.projectControl.show(arg != 'profile');
-    await settings[arg].update(settings.projectControl.getProjectInfo());
-    settings[arg].show(true);
+    settings.projectControl.setPairedChild(settings[arg]);
+    
+    if (settings.projectControl.isProjectSelected() || arg == 'profile') {
+      settings[arg].show(true);
+    }
   }
   
   function _showHelp() {
@@ -137,9 +151,9 @@ const app = function () {
     console.log('do logout');
   }
   
-  function _controlUpdateCallback(params) {
-    settings.layout.update(params);
-    settings.clues.update(params);
+  function _callbackSelectionChanged() {
+    settings.layout.projectSelectionChanged();
+    settings.clues.projectSelectionChanged();
   }
   
   //---------------------------------------

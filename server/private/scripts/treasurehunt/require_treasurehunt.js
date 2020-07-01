@@ -12,6 +12,7 @@ define(function (require) {
   require('treasurehunt_clues');
   require('treasurehunt_profile');
   require('treasurehunt_projectcontrol');
+  require('treasurehunt_dialog');
 
   document.addEventListener('DOMContentLoaded', app.init());
 });

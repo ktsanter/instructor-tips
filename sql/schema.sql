@@ -41,8 +41,8 @@ CREATE TABLE userprivilege
 
   PRIMARY KEY (userprivilegeid),
   CONSTRAINT UNIQUE (userid),
-  CONSTRAINT FOREIGN KEY (userid) REFERENCES User (userid) ON DELETE CASCADE,
-  CONSTRAINT FOREIGN KEY (privilegeid) REFERENCES Privilege (privilegeid) ON DELETE CASCADE
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE,
+  CONSTRAINT FOREIGN KEY (privilegeid) REFERENCES privilege (privilegeid) ON DELETE CASCADE
 );
 
 CREATE TABLE tip
@@ -186,7 +186,7 @@ CREATE TABLE resetpending
 
   PRIMARY KEY (resetpendingid),
   CONSTRAINT UNIQUE (userid),
-  CONSTRAINT FOREIGN KEY (userid) REFERENCES User (userid) ON DELETE CASCADE
+  CONSTRAINT FOREIGN KEY (userid) REFERENCES user (userid) ON DELETE CASCADE
 );
 
 #--------------------------------------------------------------------------

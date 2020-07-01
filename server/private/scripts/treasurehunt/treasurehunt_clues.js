@@ -23,70 +23,6 @@ class TreasureHuntClues {
     
     this._container = null;
     this._editContainer = null;
-    
-    this.dummyClueInfo = [
-      {
-        clueId: 101,
-        prompt: 'prompt1',
-        response: 'response1',
-        action: {
-          type: 'url',
-          target: 'http://andrew.wang-hoyer.com/experiments/cloth/'
-        },
-        confirmation: 'confirmation1'
-      },      
-      {
-        clueId: 102,
-        prompt: 'prompt2',
-        response: 'response2',
-        action: {
-          type: 'effect',
-          effecttype: 'bouncing_text',
-          message: 'Congratulations!'
-        },
-        confirmation: 'confirmation2'
-      },
-      {
-        clueId: 103,
-        prompt: 'prompt3xxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyzzzzzzzzzzzzzzzzzzzzzzzzz',
-        response: 'response3xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        action: {
-          type: 'google_search',
-          searchfor: 'do a barrel roll'
-        },
-        confirmation: 'confirmation3zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz'
-      },
-      {      
-        clueId: 104,
-        prompt: 'prompt4',
-        response: 'response4',
-        action: {
-          type: 'effect',
-          effecttype: 'cannon_text',
-          message: 'well done!!'
-        },
-        confirmation: 'confirmation1'
-      },
-      {      
-        clueId: 105,
-        prompt: 'prompt5',
-        response: 'response5',
-        action: {
-          type: 'none'
-        },
-        confirmation: 'confirmation5'
-      },
-      {      
-        clueId: 106,
-        prompt: 'prompt6',
-        response: 'response6',
-        action: {
-          type: 'effect',
-          effecttype: 'fireworks'
-        },
-        confirmation: 'confirmation6'
-      }      
-    ];
   }
  
   //--------------------------------------------------------------
@@ -126,12 +62,11 @@ class TreasureHuntClues {
     }
   }
 
-  async update(params) {
-    console.log('TreasureHuntClues.update');
-    this.projectParams = params;
-    this.clueInfo = await this._getClueInfo(params);
-    
-    this._updateClues(this.clueInfo);
+  projectSelectionChanged() {
+    this.clueInfo = this._config.projectControl.getProjectClues();
+    if (this.clueInfo) {
+      this._updateClues(this.clueInfo);
+    }
   }
   
   _updateClues(clueInfo) {
@@ -333,12 +268,6 @@ class TreasureHuntClues {
   //--------------------------------------------------------------
   // save and load with DB
   //--------------------------------------------------------------
-  async _getClueInfo(params) {
-    console.log('TreasureHuntClues._getClueInfo for id=' + params.projectId + ' name=' + params.projectName);
-    
-    return this.dummyClueInfo;  // get from DB
-  }
-
   async _dbInsertClue() {
     console.log('insert clue');
     var params = this._config.defaultClue;

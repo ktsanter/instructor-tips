@@ -7,6 +7,10 @@
   display: none;
 }
 
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-hide {
+  display: none;
+}
+
 .treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents {}
 
 .treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions {
@@ -64,6 +68,7 @@
 .treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectselect{
   display: inline-block;
   font-size: 1.0em;
+  min-width: 30%;
 }
 
 .treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectpreview {

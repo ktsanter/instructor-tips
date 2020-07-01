@@ -9,7 +9,7 @@ const internal = {};
 module.exports = internal.MariaDBManager = class {
   constructor(initialDBParams) {
     var connectionPool = initialDBParams.reqd.createPool({
-      host: initialDBParams.hostName,
+      host: initialDBParams.host,
       user: initialDBParams.user,
       password: initialDBParams.password,
       connectionLimit: initialDBParams.connectionLimit

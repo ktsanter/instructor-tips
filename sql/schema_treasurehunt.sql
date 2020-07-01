@@ -79,3 +79,16 @@ select
 from instructortips.user as u
   where u.usershortname = 'ksanter';
 
+insert into clue (projectid, cluenumber, clueprompt, clueresponse, clueactiontype, clueactiontarget, clueactioneffecttype, clueactionmessage, cluesearchfor, clueconfirmation)
+values (
+  1,
+  1,
+  'test prompt',
+  'test response',
+  'none',
+  '',
+  '',
+  '',
+  '',
+  'test confirmation'
+);

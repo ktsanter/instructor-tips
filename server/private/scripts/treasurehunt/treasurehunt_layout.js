@@ -154,10 +154,13 @@ class TreasureHuntLayout {
     }
   }
 
-  async update(params) {
-    this._setControlsFromState(params);
+  projectSelectionChanged() {
+    var layoutInfo = this._config.projectControl.getProjectLayout();
+    if (layoutInfo) {
+      this._setFieldsFromState(layoutInfo);
+    }
   }
-
+  
   _updatePreviewText(elemMessage, elemPreview) {
     var msg = elemMessage.value.trim();
 
@@ -168,7 +171,7 @@ class TreasureHuntLayout {
   }
   
   _updateSaveCancel() {
-    var state = this._getStateFromControls();
+    var state = this._getStateFromFields();
     var changed = 
       (state.imagename != this._originalState.imagename) || 
       (state.imagefullpage != this._originalState.imagefullpage) || 
@@ -209,7 +212,7 @@ class TreasureHuntLayout {
   //--------------------------------------------------------------
   // process state
   //--------------------------------------------------------------
-  _getStateFromControls() {
+  _getStateFromFields() {
     var elemImageName = this._container.getElementsByClassName('image-name')[0];
     var elemImageFullPage = this._container.getElementsByClassName('image-fullpage')[0];
     var elemMessage = this._container.getElementsByClassName('message')[0];
@@ -227,7 +230,7 @@ class TreasureHuntLayout {
     return state;
   }
   
-  _setControlsFromState(state) {
+  _setFieldsFromState(state) {
     var elemImageName = this._container.getElementsByClassName('image-name')[0];
     var elemImageFullPage = this._container.getElementsByClassName('image-fullpage')[0];
     var elemMessage = this._container.getElementsByClassName('message')[0];
@@ -276,12 +279,12 @@ class TreasureHuntLayout {
   }
   
   _handleSave(e) {
-    this._saveStateToDB(this._getStateFromControls());
+    this._saveStateToDB(this._getStateFromFields());
     this._updateSaveCancel();
   }
   
   _handleCancel(e) {
-    this._setControlsFromState(this._originalState);
+    this._setFieldsFromState(this._originalState);
     this._updateSaveCancel();
   }
       
