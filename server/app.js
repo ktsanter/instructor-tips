@@ -542,6 +542,39 @@ app.get('/treasurehunt/query/:queryName', async function (req, res) {
   }
 })
 
+app.post('/treasurehunt/insert/:queryName', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
+    res.send(await dbTreasureHunt.doInsert(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+
+  } else {
+    res.send(_failedRequest('post'));
+  }
+})
+
+app.post('/treasurehunt/update/:queryName', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
+    res.send(await dbTreasureHunt.doUpdate(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+
+  } else {
+    res.send(_failedRequest('post'));
+  }
+})
+
+app.post('/treasurehunt/delete/:queryName', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
+    res.send(await dbTreasureHunt.doDelete(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+
+  } else {
+    res.send(_failedRequest('post'));
+  }
+})
+
 //------------------------------------------
 // boilerplate responses for failed requests
 //------------------------------------------

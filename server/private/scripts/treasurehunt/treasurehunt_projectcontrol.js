@@ -211,18 +211,18 @@ class TreasureHuntProjectControl {
   }
   
   async _insertProject(params) {
-    console.log('add project: name=' + params.projectname + ' - add DB interface');
-    return true; // succcess or failure
+    var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/insert', 'project', params, this._notice);
+    return queryResults;
   }
   
   async _updateProject(params) {
-    console.log('update project: id=' + params.projectid + ' name=' + params.projectname + ' - add DB interface');
-    return true; // succcess or failure
+    var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/update', 'project', params, this._notice);
+    return queryResults;
   }
   
   async _deleteProject(params) {
-    console.log('delete project: id=' + params.projectid + ' - add DB interface');
-    return true; // succcess or failure
+    var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/delete', 'project', params, this._notice);
+    return queryResults.success;
   }
   
   //--------------------------------------------------------------
@@ -267,17 +267,34 @@ class TreasureHuntProjectControl {
   
   // finish dialogs (action confirmed)
   async _finishProjectAdd(params) {
-    if (await this._insertProject(params)) {
+    var result = await this._insertProject(params);
+    if (result.success) {
       this._endDialog(this._addProjectDialog);
       await this.update();
-    }   
+          console.log('remember this project and select it');
+      
+    } else if (result.details.match('ER_DUP_ENTRY')) { 
+      this._notice.setNotice('');
+      alert('A project with the name "' + params.projectname + '" already exists.  Please try again.');
+      this._endDialog(this._addProjectDialog);
+    }
   }
   
   async _finishProjectEdit(params) {
-    if (await this._updateProject(params)) {
+    var fullParams = this.getProjectLayout();
+    fullParams.projectname = params.projectname;
+    
+    var result = await this._updateProject(fullParams);
+    if (result.success) {
       this._endDialog(this._editProjectDialog);
       await this.update();
-    }      
+          console.log('remember the current selection and reuse it on update');
+      
+    } else if (result.details.match('ER_DUP_ENTRY')) {
+      this._notice.setNotice('');
+      alert('A project with the name "' + params.projectname + '" already exists.  Please try again.');
+      this._endDialog(this._editProjectDialog);
+    }
   }
   
   async _finishProjectDelete(params) {
