@@ -17,6 +17,12 @@
 /*------------------------------------------------------------
  * clue and clue.header class
  *------------------------------------------------------------*/
+.treasurehuntclues .clues-contents .clue.dragsource {
+  opacity: 0.5;
+  color: white;
+  background-color:white;
+}
+
 .treasurehuntclues .clues-contents .clue:nth-child(odd) {
   background-color: white;
 }
@@ -45,12 +51,21 @@
   padding: 0.2em 0.4em;
 }
 
-.treasurehuntclues .clues-contents .clue:not(.header) .clueval:hover:not(.editing) {
+.treasurehuntclues .clues-contents .clue:not(.header) .clueval:hover:not(.editing):not(.clue-handle) {
   font-weight: bold;
 }
 
-.treasurehuntclues .clues-contents .clue .clueval.clue-number {
-  width: 5%;
+.treasurehuntclues .clues-contents .clue .clueval.clue-reorder {
+  width: 1%;
+}
+
+.treasurehuntclues .clues-contents .clue .clueval.clue-handle {
+  width: 1%;
+  color: transparent;  
+}
+
+.treasurehuntclues .clues-contents .clue .clueval.clue-handle:hover {
+  color: #808080;  
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-prompt {
@@ -70,6 +85,7 @@
 }
 
 .treasurehuntclues .clues-contents .clue .clueicon {
+  font-size: 1.2em;
   float: right;
   padding: 0.2em;
   color: transparent;

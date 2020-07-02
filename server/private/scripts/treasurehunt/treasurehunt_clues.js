@@ -66,6 +66,8 @@ class TreasureHuntClues {
     this.clueInfo = this._config.projectControl.getProjectClues();
     if (this.clueInfo) {
       this._updateClues(this.clueInfo);
+    } else {
+      this.show(false);
     }
   }
   
@@ -74,7 +76,6 @@ class TreasureHuntClues {
     UtilityKTS.removeChildren(container);
     
     var header = {
-      number: '#',
       prompt: 'prompt',
       response: 'response',
       action: {type: 'header'},
@@ -90,18 +91,28 @@ class TreasureHuntClues {
   }
   
   _renderClue(clue, isHeader) {
+    var elem;
     var classList = 'clue';
     if (isHeader) classList += ' header';
+    
     var container = CreateElement.createDiv(null, classList);
     container.clueInfo = clue;
+    container.addEventListener('dragover', (e) => {return this._dragoverHandler(e);});
+    container.addEventListener('drop', (e) => {return this._dropHandler(e);});
     
     classList = 'clueval';
     var handler = (e) => {return this._handleClueEdit(e);};
     
-    var elem = CreateElement.createDiv(null, 'clue-number ' + classList, clue.number);
+    if (isHeader) {
+      elem = CreateElement.createDiv(null, 'clue-reorder ' + classList);
+    } else {
+      var iconHandler = null;
+      elem = CreateElement.createIcon(null, 'clue-handle fas fa-grip-vertical ' + classList, null, iconHandler);
+      elem.draggable = true;
+      elem.addEventListener('dragstart', (e) => {this._dragstartHandler(e)});
+      elem.addEventListener('dragend', (e) => {this._dragendHandler(e)});
+    }
     container.appendChild(elem);
-    elem.editType = 'number';
-    elem.addEventListener('click', handler);
     
     elem = CreateElement.createDiv(null, 'clue-prompt ' + classList, clue.prompt);
     container.appendChild(elem);
@@ -265,30 +276,48 @@ class TreasureHuntClues {
     currentContainer.parentNode.replaceChild(newContainer, currentContainer);
   }
   
-  //--------------------------------------------------------------
-  // save and load with DB
-  //--------------------------------------------------------------
-  async _dbInsertClue() {
-    console.log('insert clue');
-    var params = this._config.defaultClue;
+  _getClueInfoFromEditing(container) {
+    var clueInfo = container.clueInfo;
+    
+    var elemType = container.firstChild;
+    if (elemType.classList.contains('editprompt')) {
+      clueInfo.prompt = elemType.value;
+      
+    } else if (elemType.classList.contains('editresponse')) {
+      clueInfo.response = elemType.value;
+
+    } else if (elemType.classList.contains('editaction')) {
+      var action = {type: elemType.getElementsByClassName('editaction-select')[0].value};
+      if (action.type == 'url') {
+        action.target = elemType.getElementsByClassName('actionurl')[0].value;
+
+      } else if (action.type == 'effect') {
+        action.effecttype = elemType.getElementsByClassName('actioneffect-select')[0].value;
+        if (action.effecttype == 'bouncing_text' || action.effecttype == 'cannon_text') {
+          action.message = elemType.getElementsByClassName('actioneffect-message')[0].value
+        }
+
+      } else if (action.type == 'google_search') {
+        action.searchfor = elemType.getElementsByClassName('actionsearch')[0].value;
+      }
+      clueInfo.action = action;
+
+    } else if (elemType.classList.contains('editconfirmation')) {
+      clueInfo.confirmation = elemType.value;
+    }
+    
+    return clueInfo;
   }
-  
-  async _dbUpdateClue(clueInfo) {
-    var clueId = clueInfo.clueId;
-    console.log('update clue: id=' + clueId);
-  }
-  
-  async _dbDeleteClue(clueInfo) {
-    var clueId = clueInfo.clueId;
-    console.log('delete clue: id=' + clueId);
-  }    
    
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
   async _handleClueAdd(e) {
-    await this._dbInsertClue();
-    await this.update(this.projectParams);
+    var params = this._config.defaultClue;
+    params.projectid = this._config.projectControl.getProjectLayout().projectid;
+    params.number = this.clueInfo.length + 1;
+    
+    await this._config.projectControl.insertClue(params);
   }
   
   _handleClueEdit(e) {
@@ -306,13 +335,14 @@ class TreasureHuntClues {
     msg += '\n\nAre you sure?';
     
     if (confirm(msg)) {
-      await this._dbDeleteClue(clueInfo);
-      await this.update(this.projectParams);
+      await this._config.projectControl.deleteClue(clueInfo);
     }
   }
   
   async _handleEditSave(e) {
-    console.log('edit save');
+    var params = this._getClueInfoFromEditing(e.target.parentNode);
+    await this._config.projectControl.updateClue(params);
+
     this._closeEdit();
   }
   
@@ -327,6 +357,70 @@ class TreasureHuntClues {
   _handleActionEffectSelect(e) {
     e.target.parentNode.actionInfo.effecttype = e.target.value;
     this._rebuildActionDialog(e.target.parentNode.actionInfo.type);
+  }
+  
+  //--------------------------------------------------------------
+  // drag and drop
+  //-------------------------------------------------------------- 
+  _dragstartHandler(e) {
+    console.log('_dragStartHandler');
+    var clueInfo = e.target.parentNode.clueInfo;
+    if (!clueInfo) {
+      e.preventDefault();
+      return false;
+    }
+    
+    this._dragTarget = null;
+    
+    e.dataTransfer.setData('text', JSON.stringify(clueInfo));
+    UtilityKTS.setClass(e.target.parentNode, 'dragsource', true);
+    return true;
+  }
+  
+  _dragendHandler(e) {
+    if (this._dragTarget) this._dragTarget.parentNode.removeChild(this._dragTarget);
+    this._dragTarget = null;
+
+    UtilityKTS.setClass(e.target.parentNode, 'dragsource', false);
+
+    return true;
+  }
+  
+  _dragoverHandler(e) {
+    if (this._dragTarget) this._dragTarget.parentNode.removeChild(this._dragTarget);
+    this._dragTarget = null;
+    
+    var dropContainer = this._getDropContainer(e.target);
+
+    this._dragTarget = CreateElement._createElement('hr', null, 'dragtarget');    
+    dropContainer.appendChild(this._dragTarget);
+    
+    e.preventDefault();
+  }
+  
+  _dropHandler(e) {
+    console.log('_dropHandler');
+    console.log(e.target);
+    var data = e.dataTransfer.getData('text');
+    if (!data) return false;
+    
+    var clueInfo = JSON.parse(data);
+    console.log(clueInfo);
+    
+    var dropContainer = this._getDropContainer(e.target);
+    console.log(dropContainer);
+    
+    return true;    
+  }
+  
+  _getDropContainer(elemDroppedOn) {
+    var container = null;
+    var node = elemDroppedOn;
+    for (var i = 0; i < 5  && !container; i++) {
+      if (node.classList.contains('clue')) container = node;
+      node = node.parentNode;
+    }
+    return container;
   }
   
   //--------------------------------------------------------------

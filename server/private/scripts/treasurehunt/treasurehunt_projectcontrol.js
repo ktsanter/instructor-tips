@@ -143,6 +143,12 @@ class TreasureHuntProjectControl {
     var elemCurrentSelect = this._container.getElementsByClassName('projectselect')[0];
     var elemNewSelect = CreateElement.createSelect(null, 'projectselect select-css', handler, selectList);
     elemCurrentSelect.parentNode.replaceChild(elemNewSelect, elemCurrentSelect);
+    
+    var elemEditProjectIcon = this._container.getElementsByClassName('icon subicon edit')[0];
+    var elemDeleteProjectIcon = this._container.getElementsByClassName('icon subicon delete')[0];
+    UtilityKTS.setClass(elemEditProjectIcon, 'disable', selectList.length == 0);
+    UtilityKTS.setClass(elemDeleteProjectIcon, 'disable', selectList.length == 0);
+
     this._config.callbackSelectionChanged();
   }
 
@@ -194,6 +200,15 @@ class TreasureHuntProjectControl {
     this._showContents(true);
   }
 
+  _selectProjectByName(projectname) {
+    var elemSelect = this._container.getElementsByClassName('projectselect')[0];
+
+    for (var i = 0; i < elemSelect.options.length; i++) {
+      var opt = elemSelect.options[i];
+      if (opt.text == projectname) elemSelect.selectedIndex = i;        
+    }
+  }
+  
   //--------------------------------------------------------------
   // DB interactions
   //-------------------------------------------------------------- 
@@ -215,7 +230,7 @@ class TreasureHuntProjectControl {
     return queryResults;
   }
   
-  async _updateProject(params) {
+  async updateProject(params) {
     var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/update', 'project', params, this._notice);
     return queryResults;
   }
@@ -225,6 +240,42 @@ class TreasureHuntProjectControl {
     return queryResults.success;
   }
   
+  async insertClue(params) {
+    var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/insert', 'clue', params, this._notice);
+    if (queryResults.success) {
+      var projectName = this.getProjectLayout().projectname;
+      await this.update();
+      this._selectProjectByName(projectName);
+      this._config.callbackSelectionChanged();
+    }
+    
+    return queryResults;
+  }
+  
+  async updateClue(params) {
+    var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/update', 'clue', params, this._notice);
+    if (queryResults.success) {
+      var projectName = this.getProjectLayout().projectname;
+      await this.update();
+      this._selectProjectByName(projectName);
+      this._config.callbackSelectionChanged();
+    }
+    
+    return queryResults;
+  }
+
+  async deleteClue(params) {
+    var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/delete', 'clue', params, this._notice);
+    if (queryResults.success) {
+      var projectName = this.getProjectLayout().projectname;
+      await this.update();
+      this._selectProjectByName(projectName);
+      this._config.callbackSelectionChanged();
+    }
+    
+    return queryResults;
+  }
+
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
@@ -271,7 +322,7 @@ class TreasureHuntProjectControl {
     if (result.success) {
       this._endDialog(this._addProjectDialog);
       await this.update();
-          console.log('remember this project and select it');
+      this._selectProjectByName(params.projectname);
       
     } else if (result.details.match('ER_DUP_ENTRY')) { 
       this._notice.setNotice('');
@@ -284,11 +335,11 @@ class TreasureHuntProjectControl {
     var fullParams = this.getProjectLayout();
     fullParams.projectname = params.projectname;
     
-    var result = await this._updateProject(fullParams);
+    var result = await this.updateProject(fullParams);
     if (result.success) {
       this._endDialog(this._editProjectDialog);
       await this.update();
-          console.log('remember the current selection and reuse it on update');
+      this._selectProjectByName(params.projectname);
       
     } else if (result.details.match('ER_DUP_ENTRY')) {
       this._notice.setNotice('');

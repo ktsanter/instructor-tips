@@ -34,6 +34,9 @@ module.exports = internal.TreasureHunt = class {
     if (params.queryName == 'project') {
       dbResult = await this._insertProject(params, postData, userInfo);
             
+    } else if (params.queryName == 'clue') {
+      dbResult = await this._insertClue(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -47,6 +50,9 @@ module.exports = internal.TreasureHunt = class {
     if (params.queryName == 'project') {
       dbResult = await this._updateProject(params, postData, userInfo);      
     
+    } else if (params.queryName == 'clue') {
+      dbResult = await this._updateClue(params, postData, userInfo);      
+    
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -59,6 +65,9 @@ module.exports = internal.TreasureHunt = class {
     
     if (params.queryName == 'project') {
       dbResult = await this._deleteProject(params, postData, userInfo);
+            
+    } else if (params.queryName == 'clue') {
+      dbResult = await this._deleteClue(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -82,7 +91,8 @@ module.exports = internal.TreasureHunt = class {
           'p.imagename, p.imagefullpage, ' +
           'p.message, p.positiveresponse, p.negativeresponse ' +
         'from project as p ' +
-        'where p.userid = ' + userInfo.userId
+        'where p.userid = ' + userInfo.userId + ' ' +
+        'order by p.projectname'
     };
     
     queryResults = await this._dbManager.dbQueries(queryList);
@@ -99,10 +109,11 @@ module.exports = internal.TreasureHunt = class {
         'select ' + 
           'c.clueid, c.cluenumber, ' +
           'c.clueprompt, c.clueresponse, ' +
-          'c.clueactiontype, c.clueactiontarget, c.clueactionmessage, c.cluesearchfor, ' +
+          'c.clueactiontype, c.clueactiontarget, c.clueactioneffecttype, c.clueactionmessage, c.cluesearchfor, ' +
           'c.clueconfirmation ' +
         'from clue as c ' +
-        'where c.projectid = ' + project.projectid
+        'where c.projectid = ' + project.projectid + ' ' +
+        'order by c.cluenumber'
     };
 
     queryResults = await this._dbManager.dbQueries(queryList);
@@ -124,6 +135,7 @@ module.exports = internal.TreasureHunt = class {
           response: clue.clueresponse,
           action: {
             type: clue.clueactiontype,
+            effecttype: clue.clueactioneffecttype,
             target: clue.clueactiontarget,
             message: clue.clueactionmessage,
             searchfor: clue.cluesearchfor
@@ -183,6 +195,47 @@ module.exports = internal.TreasureHunt = class {
     return result;
   }  
 
+  async _insertClue(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();  
+    
+    var query, queryResults;
+    
+    var actionTarget = postData.action.target ? postData.action.target : '';
+    var actionEffectType = postData.action.effecttype ? postData.action.effecttype : '';
+    var actionMessage = postData.action.message ? postData.action.message : '';
+    var actionSearchFor = postData.action.searchfor ? postData.action.searchfor : '';
+    
+    query =
+      'insert into clue (' +
+        'projectid, ' +
+        'cluenumber, clueprompt, clueresponse, clueconfirmation, ' +
+        'clueactiontype, clueactiontarget, clueactioneffecttype, clueactionmessage, cluesearchfor ' +
+      ') values (' +
+        postData.projectid + ', ' +
+        postData.number + ', ' +
+        '"' + postData.prompt + '", ' +
+        '"' + postData.response + '", ' +
+        '"' + postData.confirmation + '", ' +
+        '"' + postData.action.type + '", ' +
+        '"' + actionTarget + '", ' +
+        '"' + actionEffectType + '", ' +
+        '"' + actionMessage + '", ' +
+        '"' + actionSearchFor + '" ' +
+      ')';
+      
+    queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = null;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+
 //---------------------------------------------------------------
 // specific update methods
 //---------------------------------------------------------------
@@ -215,6 +268,43 @@ module.exports = internal.TreasureHunt = class {
     return result;
   }  
   
+  async _updateClue(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();
+    
+    var query, queryResults;
+    
+    var actionTarget = postData.action.target ? postData.action.target : '';
+    var actionEffectType = postData.action.effecttype ? postData.action.effecttype : '';
+    var actionMessage = postData.action.message ? postData.action.message : '';
+    var actionSearchFor = postData.action.searchfor ? postData.action.searchfor : '';
+
+    query = 
+      'update clue ' +
+      'set ' +
+        'cluenumber = ' + postData.number + ', ' +
+        'clueprompt = "' + postData.prompt + '", ' +
+        'clueresponse = "' + postData.response + '", ' +
+        'clueconfirmation = "' + postData.confirmation + '", ' +
+        'clueactiontype = "' + postData.action.type + '", ' +
+        'clueactiontarget = "' + actionTarget + '", ' +
+        'clueactioneffecttype = "' + actionEffectType + '", ' +
+        'clueactionmessage = "' + actionMessage + '", ' +
+        'cluesearchfor = "' + actionSearchFor + '" ' +
+      'where clueid = ' + postData.clueid;
+    
+    queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }  
+  
 //---------------------------------------------------------------
 // specific delete methods
 //---------------------------------------------------------------
@@ -229,6 +319,57 @@ module.exports = internal.TreasureHunt = class {
         'and userid = ' + userInfo.userId;
          
     var queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+
+  async _deleteClue(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();
+    
+    var query, queryList, queryResults;
+    
+    query = 
+      'select userid, projectid ' +
+      'from project ' +
+      'where projectid in (' +
+        'select projectid ' +
+        'from clue ' +
+        'where clueid = ' + postData.clueid + 
+      ')';
+        
+    queryResults = await this._dbManager.dbQuery(query);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    if (queryResults.data.length == 0 || queryResults.data[0].userid != userInfo.userId) {
+      result.details = 'invalid user for deletion';
+      return result;
+    }
+    
+    var projectId = queryResults.data[0].projectid;
+    
+    queryList = {
+      deletion: 
+        'delete from clue ' +
+        'where clueid = ' + postData.clueid,
+        
+      update: 
+        'update clue ' +
+        'set cluenumber = cluenumber - 1 ' +
+        'where projectid = ' + projectId + ' ' +
+          'and cluenumber > ' + postData.number
+    };
+      
+    var queryResults = await this._dbManager.dbQueries(queryList);
     if (queryResults.success) {
       result.success = true;
       result.details = 'delete succeeded';

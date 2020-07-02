@@ -53,8 +53,7 @@ class TreasureHuntLayout {
     elem.addEventListener('input', (e) => {this._handleImageName(e);});
     UtilityKTS.denyDoubleQuotes(elem);
     
-    var handler = null;
-    var elem = CreateElement.createSliderSwitch('full page', 'full page', 'image-fullpage', handler);
+    var elem = CreateElement.createSliderSwitch('full page', 'full page', 'image-fullpage', (e) => {this._handleImageFullPage(e);});
     container.appendChild(elem);
     
     return container;
@@ -158,6 +157,8 @@ class TreasureHuntLayout {
     var layoutInfo = this._config.projectControl.getProjectLayout();
     if (layoutInfo) {
       this._setFieldsFromState(layoutInfo);
+    } else {
+      this.show(false);
     }
   }
   
@@ -248,14 +249,17 @@ class TreasureHuntLayout {
   }
   
   async _saveStateToDB(state) {
-    console.log('TreasureHuntLayout._saveStateToDB');
-    console.log(state);
-    /*
-    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'profile', state, this._notice);
-    
-    return queryResults.success;
-    */
-    this._originalState = state;  // only do this on success;
+    var params = this._config.projectControl.getProjectLayout();
+    params.imagename = state.imagename;
+    params.imagefullpage = state.imagefullpage ? 1 : 0;
+    params.message = state.message;
+    params.positiveresponse = state.positiveresponse;
+    params.negativeresponse = state.negativeresponse;
+
+    var result = await this._config.projectControl.updateProject(params);
+    if (result.success) {
+      this._originalState = state;
+    }
   }
    
   //--------------------------------------------------------------
@@ -268,6 +272,10 @@ class TreasureHuntLayout {
   
   _handleImageName(e) {
     this._updateSaveCancel();       
+  }
+  
+  _handleImageFullPage(e) {
+    this._updateSaveCancel();
   }
   
   _handleMessageChange(e) {

@@ -19,31 +19,35 @@
   color: white;
 }
 
-.treasurehuntlayout  .layout-contents .imagesection {}
+.treasurehuntlayout .layout-contents .imagesection {}
 
-.treasurehuntlayout  .layout-contents .imagesection .image-name {
+.treasurehuntlayout .layout-contents .imagesection .image-name {
   width: 50.0em;
 }
 
-.treasurehuntlayout  .layout-contents .imagesection .image-fullpage {
+.treasurehuntlayout .layout-contents .imagesection .image-fullpage {
   margin-top: 0.4em;
 }
 
-.treasurehuntlayout  .layout-contents .message {
+.treasurehuntlayout .layout-contents .message {
   width: 30em;
 }  
 
-.treasurehuntlayout  .layout-contents .message-preview {
+.treasurehuntlayout .layout-contents .message-preview {
   width: 30em;
 }  
 
-.treasurehuntlayout  .layout-contents .response {
+.treasurehuntlayout .layout-contents .response {
   width: 30em;
   min-height: 10.0em;
 }  
 
-.treasurehuntlayout  .layout-contents .response-preview {
+.treasurehuntlayout .layout-contents .response-preview {
   width: 30em;
   min-height: 10.0em;
 }  
+
+.treasurehuntlayout .layout-contents .section.savesection {
+  margin-top: 0;
+}
 

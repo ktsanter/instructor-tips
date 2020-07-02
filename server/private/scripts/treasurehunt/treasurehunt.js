@@ -138,9 +138,7 @@ const app = function () {
     settings.projectControl.show(arg != 'profile');
     settings.projectControl.setPairedChild(settings[arg]);
     
-    if (settings.projectControl.isProjectSelected() || arg == 'profile') {
-      settings[arg].show(true);
-    }
+    settings[arg].show(settings.projectControl.isProjectSelected() || arg == 'profile');
   }
   
   function _showHelp() {
