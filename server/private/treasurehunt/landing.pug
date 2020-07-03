@@ -1,0 +1,32 @@
+doctype html
+html
+  head
+    title TreasureHunt landing page
+    meta(charset="utf-8")
+    style
+      include ../styles/colorscheme.css
+      include ../styles/treasurehunt/landing.css
+      
+  body(class="instructortips-colorscheme")
+    - var projectName = params.projectname
+    - var imageName = params.imagename
+    - var imageFullPage = params.imagefullpage
+    - var message = params.message
+    - var positiveresponse = params.positiveresponse;
+    - var negativeresponse = params.negativeresponse;
+    
+    div(class="treasurehunt-landing")
+      |Landing page
+      br      
+      |projectName: #{projectName}
+      br     
+      |imageName: #{imageName}
+      br      
+      |imageFullPage: #{imageFullPage}
+      br      
+      |message: #{message}
+      br      
+      |positiveresponse: #{positiveresponse}
+      br      
+      |negativeresponse: #{negativeresponse}
+

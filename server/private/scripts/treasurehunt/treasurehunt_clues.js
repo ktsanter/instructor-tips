@@ -76,6 +76,8 @@ class TreasureHuntClues {
     UtilityKTS.removeChildren(container);
     
     var header = {
+      clueid: -1,
+      number: 0,
       prompt: 'prompt',
       response: 'response',
       action: {type: 'header'},
@@ -107,7 +109,7 @@ class TreasureHuntClues {
       elem = CreateElement.createDiv(null, 'clue-reorder ' + classList);
     } else {
       var iconHandler = null;
-      elem = CreateElement.createIcon(null, 'clue-handle fas fa-grip-vertical ' + classList, null, iconHandler);
+      elem = CreateElement.createIcon(null, 'clue-handle fas fa-grip-vertical fa-lg ' + classList, null, iconHandler);
       elem.draggable = true;
       elem.addEventListener('dragstart', (e) => {this._dragstartHandler(e)});
       elem.addEventListener('dragend', (e) => {this._dragendHandler(e)});
@@ -363,7 +365,6 @@ class TreasureHuntClues {
   // drag and drop
   //-------------------------------------------------------------- 
   _dragstartHandler(e) {
-    console.log('_dragStartHandler');
     var clueInfo = e.target.parentNode.clueInfo;
     if (!clueInfo) {
       e.preventDefault();
@@ -376,6 +377,18 @@ class TreasureHuntClues {
     UtilityKTS.setClass(e.target.parentNode, 'dragsource', true);
     return true;
   }
+
+  _dragoverHandler(e) {
+    if (this._dragTarget) this._dragTarget.parentNode.removeChild(this._dragTarget);
+    this._dragTarget = null;
+    
+    var dropContainer = this._getDropContainer(e.target);
+
+    this._dragTarget = CreateElement._createElement('hr', null, 'dragtarget');    
+    dropContainer.after(this._dragTarget);
+    
+    e.preventDefault();
+  }  
   
   _dragendHandler(e) {
     if (this._dragTarget) this._dragTarget.parentNode.removeChild(this._dragTarget);
@@ -386,29 +399,24 @@ class TreasureHuntClues {
     return true;
   }
   
-  _dragoverHandler(e) {
-    if (this._dragTarget) this._dragTarget.parentNode.removeChild(this._dragTarget);
-    this._dragTarget = null;
-    
-    var dropContainer = this._getDropContainer(e.target);
-
-    this._dragTarget = CreateElement._createElement('hr', null, 'dragtarget');    
-    dropContainer.appendChild(this._dragTarget);
-    
-    e.preventDefault();
-  }
-  
-  _dropHandler(e) {
-    console.log('_dropHandler');
-    console.log(e.target);
+  async _dropHandler(e) {
     var data = e.dataTransfer.getData('text');
     if (!data) return false;
     
-    var clueInfo = JSON.parse(data);
-    console.log(clueInfo);
+    var sourceClueInfo = JSON.parse(data);
+    var destClueInfo = this._getDropContainer(e.target).clueInfo;
+    var projectInfo = this._config.projectControl.getProjectLayout();
+
+    var params = {
+      projectid: projectInfo.projectid,
+      sourceclueid: sourceClueInfo.clueid,
+      sourcecluenumber: sourceClueInfo.number,
+      destcluenumber: destClueInfo.number
+    }
     
-    var dropContainer = this._getDropContainer(e.target);
-    console.log(dropContainer);
+    if (params.sourcecluenumber == params.destcluenumber) return true; // no move
+    
+    await this._config.projectControl.repositionClue(params);
     
     return true;    
   }
@@ -420,6 +428,7 @@ class TreasureHuntClues {
       if (node.classList.contains('clue')) container = node;
       node = node.parentNode;
     }
+    
     return container;
   }
   

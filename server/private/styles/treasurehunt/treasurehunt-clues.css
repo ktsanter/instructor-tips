@@ -14,6 +14,12 @@
   padding: 0.4em 0.4em;
 }
 
+.treasurehuntclues .clues-contents .dragtarget {
+  border: 3px solid var(--bgTertiaryEmphasis);
+  margin-left: 2.0em;
+  margin-right: 2.0em;
+}
+
 /*------------------------------------------------------------
  * clue and clue.header class
  *------------------------------------------------------------*/
@@ -21,6 +27,7 @@
   opacity: 0.5;
   color: white;
   background-color:white;
+  border: 1px solid var(--bgTertiaryEmphasis);
 }
 
 .treasurehuntclues .clues-contents .clue:nth-child(odd) {
@@ -40,6 +47,8 @@
   border: 2px solid black;
 }
 
+
+
 /*------------------------------------------------------------
  * clueval class
  *------------------------------------------------------------*/
@@ -56,15 +65,17 @@
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-reorder {
-  width: 1%;
+  width: 1.1%;
+  padding-left: 0;
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-handle {
-  width: 1%;
+  width: 1.1%;
   color: transparent;  
+  padding-left: 0;
 }
 
-.treasurehuntclues .clues-contents .clue .clueval.clue-handle:hover {
+.treasurehuntclues .clues-contents .clue:not(.dragsource) .clueval.clue-handle:hover {
   color: #808080;  
 }
 

@@ -43,7 +43,6 @@ create table clue
   clueconfirmation      varchar(200) not null,
   
   primary key (clueid),
-  constraint unique(projectid, cluenumber),
   constraint foreign key (projectid) references project (projectid) on delete cascade
 );
 
@@ -62,33 +61,3 @@ select "creating views" as comment;
 #--------------------------------------------------------------------------
 select "creating stored procedures" as comment;
     
-#--------------------------------------------------------------------------
-#-- test data
-#--------------------------------------------------------------------------
-select "loading test data" as comment;
-  
-insert into project (userid, projectname, imagename, imagefullpage, message, positiveresponse, negativeresponse) 
-select 
-  u.userid, 
-  'test project #1' as projectname,
-  '' as imagename,
-  0 as imagefullpage,
-  'hello there' as message,
-  'yippie!' as positiveresponse,
-  'doh' as negativeresponse
-from instructortips.user as u
-  where u.usershortname = 'ksanter';
-
-insert into clue (projectid, cluenumber, clueprompt, clueresponse, clueactiontype, clueactiontarget, clueactioneffecttype, clueactionmessage, cluesearchfor, clueconfirmation)
-values (
-  1,
-  1,
-  'test prompt',
-  'test response',
-  'none',
-  '',
-  '',
-  '',
-  '',
-  'test confirmation'
-);

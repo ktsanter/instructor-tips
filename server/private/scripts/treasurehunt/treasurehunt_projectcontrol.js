@@ -276,6 +276,23 @@ class TreasureHuntProjectControl {
     return queryResults;
   }
 
+  async repositionClue(params) {
+    var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/update', 'reposition-clue', params, this._notice);
+    if (queryResults.success) {
+      var projectName = this.getProjectLayout().projectname;
+      await this.update();
+      this._selectProjectByName(projectName);
+      this._config.callbackSelectionChanged();
+    }
+    
+    return queryResults;
+  }
+  
+  async openPreview(params) {
+    var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/query', 'project-landing', params, this._notice);
+    return queryResults;
+  }
+
   //--------------------------------------------------------------
   // handlers
   //-------------------------------------------------------------- 
@@ -299,8 +316,15 @@ class TreasureHuntProjectControl {
     this._config.callbackSelectionChanged();
   }
   
-  _handleProjectPreview(e) {
-    console.log('preview project');
+  async _handleProjectPreview(e) {
+    var params = {
+      projectid: this.getProjectLayout().projectid
+    }
+    var queryResults = await this.openPreview(params);
+    if (queryResults.success) {
+      var win = window.open(queryResults.data, '_blank');
+      win.focus();
+    }
   }
   
   // start dialogs

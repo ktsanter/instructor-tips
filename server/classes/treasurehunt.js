@@ -21,6 +21,9 @@ module.exports = internal.TreasureHunt = class {
     if (params.queryName == 'projectlist') {
       dbResult = await this._getProjectList(params, userInfo);
       
+    } else if (params.queryName == 'project-landing') {
+      dbResult = await this._getProjectLandingURL(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -51,7 +54,7 @@ module.exports = internal.TreasureHunt = class {
       dbResult = await this._updateProject(params, postData, userInfo);      
     
     } else if (params.queryName == 'clue') {
-      dbResult = await this._updateClue(params, postData, userInfo);      
+      dbResult = await this._updateClue(params, postData, userInfo);        
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -158,6 +161,29 @@ module.exports = internal.TreasureHunt = class {
     return result;
   }
  
+  async _getProjectLandingURL(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select projectid ' +
+      'from project ' +
+      'where projectid = ' + postData.projectid
+      
+    queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = '/treasurehunt/landing/' + postData.projectid;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------
@@ -302,6 +328,53 @@ module.exports = internal.TreasureHunt = class {
       result.details = queryResults.details;
     }
     
+    return result;
+  }  
+  
+  async _repositionClue(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();
+    
+    var queryList, queryResults;
+    
+    var finalClueNumber = postData.destcluenumber;
+    if (postData.sourcecluenumber > postData.destcluenumber) finalClueNumber++;
+    var growCutoff = postData.destcluenumber;
+    if (postData.sourcecluenumber < postData.destcluenumber) growCutoff--;
+    
+    queryList = {
+      removesource:
+        'update clue ' +
+        'set cluenumber = 0 ' +
+        'where clueid = ' + postData.sourceclueid,
+        
+      shrink:
+        'update clue ' +
+        'set cluenumber = cluenumber - 1 ' +
+        'where projectid = ' + postData.projectid + ' ' +
+          'and cluenumber > ' + postData.sourcecluenumber,
+        
+      grow:
+        'update clue ' +
+        'set cluenumber = cluenumber + 1 ' +
+        'where projectid = ' + postData.projectid + ' ' +
+          'and cluenumber > ' + growCutoff,
+        
+      reinsertsource:
+        'update clue ' +
+        'set cluenumber = ' + finalClueNumber + ' ' +
+        'where clueid = ' + postData.sourceclueid
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+
+    } else {
+      result.details = queryResults.details;
+    }
+
     return result;
   }  
   

@@ -209,6 +209,15 @@ const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager_Instru
 const dbTreasureHuntClass = require('./classes/treasurehunt')
 const dbTreasureHunt = new dbTreasureHuntClass(userManagement, mariaDBManager_TreasureHunt);
 
+const dbTreasureHuntLandingClass = require('./classes/treasurehunt_landing');
+const dbTreasureHuntLanding = new dbTreasureHuntLandingClass({
+  "dbManager": mariaDBManager_TreasureHunt,
+  "userManagement": userManagement,
+  "commonmark": commonmark, 
+  "pug": pug,
+  "fileServices": fileservices  
+});
+
 //----------------------------------------------------------------------------------------------------------------------
 // GET and POST requests
 //----------------------------------------------------------------------------------------------------------------------
@@ -542,6 +551,17 @@ app.get('/treasurehunt/query/:queryName', async function (req, res) {
   }
 })
 
+app.post('/treasurehunt/query/:queryName', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
+    res.send(await dbTreasureHunt.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+
+  } else {
+    res.send(_failedRequest('post'));
+  }
+})
+
 app.post('/treasurehunt/insert/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
     
@@ -575,13 +595,23 @@ app.post('/treasurehunt/delete/:queryName', async function (req, res) {
   }
 })
 
-//------------------------------------------
-// boilerplate responses for failed requests
-//------------------------------------------
-function _failedRequest(requestType) {
-  return {success: false, details: requestType + ' failed'};
-}
+//------------------------------------------------------
+// TreasureHunt landing page
+//------------------------------------------------------
 
+app.get('/treasurehunt/landing/:projectid', async function (req, res) {
+  var result = await dbTreasureHuntLanding.renderLandingPage(req.params, path.join(__dirname, 'private', 'treasurehunt/landing.pug'));
+  if (result.success) {
+    res.send(result.data);
+  } else {
+    sendFailedAccess(res);
+  }
+})
+
+
+//------------------------------------------------------
+// utility
+//------------------------------------------------------
 function sendFileIfExists(res, fileName) {
   if (fileservices.existsSync(fileName)) {
     res.sendFile(fileName);
@@ -599,7 +629,14 @@ function renderAndSendPugIfExists(res, pugFileName) {
 }
 
 function sendFailedAccess(res) {
-  res.send('cannot access page');  
+  res.send('cannot access page');
+}
+
+//------------------------------------------
+// boilerplate responses for failed requests
+//------------------------------------------
+function _failedRequest(requestType) {
+  return {success: false, details: requestType + ' failed'};
 }
 
 //------------------------------------------------------
