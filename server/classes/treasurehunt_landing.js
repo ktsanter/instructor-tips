@@ -42,7 +42,9 @@ module.exports = internal.TreasureHuntLanding = class {
     }
     
     var projectInfo = queryResults.data.project[0];
-    console.log(projectInfo);
+    projectInfo.message = this._convertToHTML(projectInfo.message);
+    projectInfo.positiveresponse = this._convertToHTML(projectInfo.positiveresponse);
+    projectInfo.negativeresponse = this._convertToHTML(projectInfo.negativeresponse);
     
     if (this._fileServices.existsSync(pugFileName)) {
       result.success = true;
@@ -54,6 +56,21 @@ module.exports = internal.TreasureHuntLanding = class {
 
 //---------------------------------------------------------------
 // other support methods
-//---------------------------------------------------------------
+//---------------------------------------------------------------     
+  _convertToHTML(str) {
+    var reader = new this._commonmark.Parser();
+    var writer = new this._commonmark.HtmlRenderer();
+    
+    var parsed = reader.parse(str);
+    var result = writer.render(parsed);
+    
+    result = result.replace(/%%(.*?)%%/g, '<span style=\"background-color: #FFFF00\">$1</span>');
+    
+    //if (result.slice(0, 3) == '<p>' && result.slice(-5) == '</p>\n') {
+    //  result = result.substring(3);
+    //  result = result.substring(0, result.length-5);
+    //}
 
+    return result;
+  }
 }

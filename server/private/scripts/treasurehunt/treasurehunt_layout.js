@@ -88,7 +88,7 @@ class TreasureHuntLayout {
     subcontainer.appendChild(elem);
     elem.placeholder = 'positive response';
     elem.maxLength = 800;
-    elem.addEventListener('input', (e) => {this._handleMessageChange(e);});
+    elem.addEventListener('input', (e) => {this._handlePositiveResponseChange(e);});
     UtilityKTS.denyDoubleQuotes(elem); 
 
     subcontainer.appendChild(CreateElement.createDiv(null, 'response-preview positiveresponse-preview inputpreview previewdefault', 'preview of positive response'));
@@ -100,7 +100,7 @@ class TreasureHuntLayout {
     subcontainer.appendChild(elem);
     elem.placeholder = 'negative response';
     elem.maxLength = 800;
-    elem.addEventListener('input', (e) => {this._handleMessageChange(e);});
+    elem.addEventListener('input', (e) => {this._handleNegativeResponseChange(e);});
     UtilityKTS.denyDoubleQuotes(elem); 
 
     subcontainer.appendChild(CreateElement.createDiv(null, 'response-preview negativeresponse-preview inputpreview previewdefault', 'preview of positive response'));    
@@ -245,6 +245,14 @@ class TreasureHuntLayout {
     elemPositiveResponse.value = state.positiveresponse;
     elemNegativeResponse.value = state.negativeresponse;
     
+    var elemMessagePreview = this._container.getElementsByClassName('message-preview')[0];
+    var elemPositiveResponsePreview = this._container.getElementsByClassName('positiveresponse-preview')[0];
+    var elemNegativeResponsePreview = this._container.getElementsByClassName('negativeresponse-preview')[0];
+
+    this._updatePreviewText(elemMessage, elemMessagePreview);
+    this._updatePreviewText(elemPositiveResponse, elemPositiveResponsePreview);
+    this._updatePreviewText(elemNegativeResponse, elemNegativeResponsePreview);
+    
     this._originalState = state;
   }
   
@@ -283,6 +291,22 @@ class TreasureHuntLayout {
     var elemPreview = this._container.getElementsByClassName('message-preview')[0];
     
     this._updatePreviewText(elemMessage, elemPreview);
+    this._updateSaveCancel();
+  }
+  
+  _handlePositiveResponseChange(e) {
+    var elemResponse = this._container.getElementsByClassName('positiveresponse')[0];
+    var elemPreview = this._container.getElementsByClassName('positiveresponse-preview')[0];
+    
+    this._updatePreviewText(elemResponse, elemPreview);
+    this._updateSaveCancel();
+  }
+  
+  _handleNegativeResponseChange(e) {
+    var elemResponse = this._container.getElementsByClassName('negativeresponse')[0];
+    var elemPreview = this._container.getElementsByClassName('negativeresponse-preview')[0];
+    
+    this._updatePreviewText(elemResponse, elemPreview);
     this._updateSaveCancel();
   }
   

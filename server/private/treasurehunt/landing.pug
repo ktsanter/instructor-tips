@@ -3,30 +3,47 @@ html
   head
     title TreasureHunt landing page
     meta(charset="utf-8")
-    style
-      include ../styles/colorscheme.css
-      include ../styles/treasurehunt/landing.css
+
+    link(rel="stylesheet", type="text/css" href="../../styles/colorscheme.css")
+    link(rel="stylesheet", type="text/css" href="../../styles/select.css")
+    
+    link(rel="stylesheet", type="text/css" href="../../styles/treasurehunt/landing.css")
+    
+    link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
+
+    script(src="../../scripts/commonmark_min.js")
+    script(data-main="../../scripts/treasurehunt/require_landing" src="../../scripts/require.js")    
       
   body(class="instructortips-colorscheme")
+    div(class="notice")
+    
     - var projectName = params.projectname
     - var imageName = params.imagename
     - var imageFullPage = params.imagefullpage
     - var message = params.message
-    - var positiveresponse = params.positiveresponse;
-    - var negativeresponse = params.negativeresponse;
+    - var positiveResponse = params.positiveresponse;
+    - var negativeResponse = params.negativeresponse;
     
     div(class="treasurehunt-landing")
-      |Landing page
-      br      
-      |projectName: #{projectName}
-      br     
-      |imageName: #{imageName}
-      br      
-      |imageFullPage: #{imageFullPage}
-      br      
-      |message: #{message}
-      br      
-      |positiveresponse: #{positiveresponse}
-      br      
-      |negativeresponse: #{negativeresponse}
+      div(class="image-container")
+        if imageName != ""
+          if (imageFullPage)
+            |make image full page
+          else
+            img(class="image" src=imageName)
+          
+      div(class="message-container")
+        |!{message}
+        
+      div(class="userinput-container")
+        input(class="userinput", type="text")
+        button(class="userinputcheck") Check
+        
+      div(class="response-container")
+        div(class="response positiveresponse hide-me") !{positiveResponse}
+        did(class="response negativeresponse hide-me") !{negativeResponse}
+
+      div(class="action-container hide-me")
+        |[action goes here]
+
 
