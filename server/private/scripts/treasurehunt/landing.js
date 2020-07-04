@@ -12,7 +12,6 @@ const app = function () {
 	//----------------------------------------
 	async function init () {
     settings.container = document.getElementsByClassName('treasurehunt-landing')[0];
-    console.log(settings.container);
     _buildNotice();
     _getResponseTemplates();
     _attachHandlers();
@@ -38,6 +37,10 @@ const app = function () {
   function _attachHandlers() {
     var elem = settings.container.getElementsByClassName('userinputcheck')[0];
     elem.addEventListener('click', _handleUserInputCheck);
+    
+    elem = settings.container.getElementsByClassName('userinput')[0];
+    console.log(elem);  
+    elem.addEventListener('keyup', _handleUserInputKeyup);
   }
   
   //----------------------------------------
@@ -47,17 +50,24 @@ const app = function () {
     var elemResultContainer = settings.container.getElementsByClassName('response-container')[0];
     
     UtilityKTS.removeChildren(elemResultContainer);
-    var result = await checkAnswer();
-    console.log(result);
+    var result = await _checkAnswer();
+
     if (result.success) {
       var resultParams = result.data;
       elemResultContainer.appendChild(_renderResponse(resultParams));
-      doAction(resultParams);
+      _doAction(resultParams);
     }
   }
   
+  async function _handleUserInputKeyup(e) {
+    if (e.key == 'Enter') {
+      var elemCheck = settings.container.getElementsByClassName('userinputcheck')[0];
+      elemCheck.click();
+    }
+    console.log(e);
+  }
+  
   function _renderResponse(responseInfo) {
-    console.log(responseInfo);
     var container = CreateElement.createDiv(null, 'response-specific');
     
     var posResponse = settings.positiveResponseTemplate
@@ -86,19 +96,55 @@ const app = function () {
     return container;
   }
   
-  function doAction(resultParams) {
+  function _doAction(resultParams) {
     var container = settings.container.getElementsByClassName('action-container')[0];
-    UtilityKTS.removeChildren(container);
-    if (resultParams.correct) {
-      container.appendChild(CreateElement.createDiv(null, 'action', JSON.stringify(resultParams.action)))
+      var actionLookup = {
+        'url': {className: 'action-url', func: _doActionURL},
+        'google_search': {className: 'action-search', func: _doActionSearch},
+        'effect': {className: 'action-effect', func: _doActionEffect},
+      };
+    
+    var actionElements = container.getElementsByClassName('action');
+    for (var i = 0; i < actionElements.length; i++) {
+      UtilityKTS.setClass(actionElements[i], 'hide-me', true);
     }
+    
+    if (resultParams.correct) {
+      var actionInfo = resultParams.action;
+      if (actionInfo.type != 'none') {
+        var lookupInfo = actionLookup[actionInfo.type];
+        var elem = container.getElementsByClassName(lookupInfo.className)[0];
+        lookupInfo.func(actionInfo, elem);
+      }
+    }
+    
     UtilityKTS.setClass(container, 'hide-me', !resultParams.correct);
+  }
+  
+  function _doActionURL(info, container) {
+    var elem = container.getElementsByClassName('action-url-link')[0];
+    elem.href = info.target;
+    
+    UtilityKTS.setClass(container, 'hide-me', false);
+  }
+  
+  function _doActionSearch(info, container) {
+    var elem = container.getElementsByClassName('action-search-text')[0];
+    elem.innerHTML = info.searchfor;
+    
+    UtilityKTS.setClass(container, 'hide-me', false);
+  }
+  
+  function _doActionEffect(info, container) {
+    UtilityKTS.setClass(container, 'hide-me', false);    
+    var effect = new TreasureHuntEffect({'effect': info.effecttype, 'arg1': info.message, 'container': container});  
+    effect.doEffect();    
   }
   
   //----------------------------------------
 	// DB interaction
 	//----------------------------------------
-  async function checkAnswer() {  // get from DB, including action
+  async function _checkAnswer() {
     var elemProjectId = settings.container.getElementsByClassName('projectid')[0];
     var elemUserInput = settings.container.getElementsByClassName('userinput')[0];
 

@@ -1,3 +1,4 @@
+InstructorTips
 - discuss SQL setup with Noah
 
 - help videos
@@ -11,11 +12,7 @@
 
 
 
-
-
-
-
-
-
-
-
+TreasureHunt
+- remove "full page image" option
+- handle blank main message
+- add instructor name (to be addressed by)
