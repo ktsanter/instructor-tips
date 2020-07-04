@@ -10,6 +10,15 @@ body {
 
 .treasurehunt-landing {}
 
+.treasurehunt-landing .hide-me {
+  display: none;
+}
+
+/*------------------
+ * project id
+ *------------------*/
+.treasurehunt-landing .projectid {}
+
 /*------------------
  * image
  *------------------*/
@@ -91,6 +100,3 @@ body {
  *------------------*/
 .treasurehunt-landing .action-container {}
 
-.treasurehunt-landing .action-container.hide-me {
-  display: none;
-}

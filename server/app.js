@@ -608,6 +608,16 @@ app.get('/treasurehunt/landing/:projectid', async function (req, res) {
   }
 })
 
+app.post('/treasurehunt/landing/check-answer', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
+    res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
+
+  } else {
+    res.send(_failedRequest('post'));
+  }
+})
 
 //------------------------------------------------------
 // utility

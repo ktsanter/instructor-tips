@@ -17,6 +17,7 @@ html
   body(class="instructortips-colorscheme")
     div(class="notice")
     
+    - var projectId = params.projectid
     - var projectName = params.projectname
     - var imageName = params.imagename
     - var imageFullPage = params.imagefullpage
@@ -25,6 +26,8 @@ html
     - var negativeResponse = params.negativeresponse;
     
     div(class="treasurehunt-landing")
+      div(class="projectid hide-me") #{projectId}
+      
       div(class="image-container")
         if imageName != ""
           if (imageFullPage)
