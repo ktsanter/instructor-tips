@@ -15,4 +15,8 @@ InstructorTips
 TreasureHunt
 - remove "full page image" option
 - handle blank main message
-- add instructor name (to be addressed by)
+- add instructor display name to profile (?)
+- change default to use standard box and current lingo in id 26
+- specify background color / gradient (?)
+- disable input and button during effect
+- show thumbnail of image on layout

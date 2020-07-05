@@ -1,5 +1,7 @@
-drop database if exists treasurehunt;
-drop database if exists instructortip;
-source schema.sql;
-source loadadmindata.sql;
-source schema_treasurehunt.sql;
+DROP DATABASE IF EXISTS sessionstore;
+DROP DATABASE IF EXISTS treasurehunt;
+DROP DATABASE IF EXISTS instructortip;
+SOURCE schema_sessionstore.sql;
+SOURCE schema_instructortips.sql;
+SOURCE loadadmindata.sql;
+SOURCE schema_treasurehunt.sql;

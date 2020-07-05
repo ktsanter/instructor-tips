@@ -1,4 +1,5 @@
 #gitignore for InstructorTips project
+instructions to use db on server.txt
 server/node_modules/
 server/*.bat
 server/log

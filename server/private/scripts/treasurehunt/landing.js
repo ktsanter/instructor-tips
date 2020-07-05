@@ -64,7 +64,6 @@ const app = function () {
       var elemCheck = settings.container.getElementsByClassName('userinputcheck')[0];
       elemCheck.click();
     }
-    console.log(e);
   }
   
   function _renderResponse(responseInfo) {

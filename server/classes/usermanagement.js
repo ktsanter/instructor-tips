@@ -74,8 +74,8 @@ module.exports = internal.UserManagement = class {
       'superadmin': 3
     };
         
-    var targetPrivilegeRank = levelRanks[targetPrivilegeLevel];
     var userPrivilegeRank = levelRanks[userPrivilegeLevel];
+    var targetPrivilegeRank = levelRanks[targetPrivilegeLevel];
 
     return (userPrivilegeRank >= targetPrivilegeRank);
   }

@@ -1,4 +1,0 @@
-superadmin
-admin
-lead
-instructor

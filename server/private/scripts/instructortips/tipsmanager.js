@@ -60,8 +60,10 @@ const app = function () {
   async function _getUserInfo() {
     var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
     settings.userInfo = null;
+    console.log(dbResult);
     if (dbResult.success) {
       settings.userInfo = dbResult.userInfo;
+      console.log(settings.userInfo);
     }     
   }
   
