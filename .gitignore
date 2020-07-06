@@ -9,3 +9,6 @@ sql/*.bat
 # Honor .ignore
 *.ignore
 *.ignore.*
+
+# server stuff
+/dhparam/*
