@@ -25,7 +25,7 @@ services:
       - backend
     volumes:
       - ./db-data:/var/lib/mysql
-      - ./init-sql:/docker-entrypoint-initdb.d/:ro
+      - ./init:/docker-entrypoint-initdb.d/:ro
       - ./sql:/sql/:ro
     environment:
       - MYSQL_ROOT_PASSWORD=swordfish
@@ -51,8 +51,8 @@ services:
       - SESSION_SECRET=hotpants
       - INSTRUCTORTIPS_URL=/instructortips/instructortips.html
       - PASSWORD_SALT=quei0Oot
-      - EMAIL_USER=
-      - EMAIL_PASSWORD=
+      - EMAIL_USER=hoopla
+      - EMAIL_PASSWORD=madeupstuff
     command: "npm start"
     volumes:
       - ./server:/home/node/app
