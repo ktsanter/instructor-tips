@@ -44,6 +44,7 @@ const app = function () {
     container.appendChild(_renderTitle());
     container.appendChild(_renderTarget());
     container.appendChild(_renderSwitches());
+    container.appendChild(_renderInstructions());
     container.appendChild(_renderTotal());
     
     return container;
@@ -128,6 +129,15 @@ const app = function () {
     container.appendChild(arrowContainer);  
     container.appendChild(sumContainer);
     
+    return container;
+  }
+  
+  function _renderInstructions() {
+    var container = CreateElement.createDiv(null, 'instructions');
+    
+    var instructions = 'Click on the 0s and 1s to set the binary value.  Hint: work from the left and keep an eye on the "remaining" amount.';
+    container.appendChild(CreateElement.createDiv(null, 'instructions-text', instructions));    
+
     return container;
   }
   

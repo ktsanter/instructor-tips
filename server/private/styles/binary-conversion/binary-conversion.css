@@ -214,6 +214,15 @@ body {
 .binary-conversion .sum-container .sum-value .sum-label {}
 
 /*------------------------------------------------------------
+ * instructions
+ *------------------------------------------------------------*/
+.binary-conversion .instructions {
+  margin-bottom: 1.0em;
+}
+
+.binary-conversion .instructions .instructions-text {}
+
+/*------------------------------------------------------------
  * totals
  *------------------------------------------------------------*/
 .binary-conversion .total {}
