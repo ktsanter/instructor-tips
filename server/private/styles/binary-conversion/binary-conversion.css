@@ -69,8 +69,6 @@ body {
   font-size: 1.0em;
   height: 2.2em;
   width: 4.8em;
-  margin-top: 0.2em;
-  margin-right: 0.2em;
   color: white;
   background-color: var(--bgSecondaryChoice);
   border: 1px solid #444;
@@ -248,5 +246,13 @@ body {
 .binary-conversion .total .total-section.total-status {
   padding: 0.2em 0.4em;
 }
+
+.binary-conversion .total .total-section.total-status.correct {
+  color: white;
+  background-color: var(--bgCorrect);
+  border: 1px solid var(--bgCorrect);
+  border-radius: 0.3em;
+}
+
 
 

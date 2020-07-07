@@ -12,4 +12,5 @@
   --bgPrimaryChoice:  #111111; /* #bc986a;*/  /*-- dark sand --*/
   --bgSecondaryChoice: var(--bgPrimaryEmphasis);
   --bgTertiaryChoice: #6093e5;  /*-- light blue --*/
+  --bgCorrect: green;
 }

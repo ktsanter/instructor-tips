@@ -171,10 +171,20 @@ const app = function () {
     elemTotalBinary.innerHTML = totalBinary;
     
     var msg = ''
-    if (totalDecimal > targetDecimal) msg = 'the value is too large';
-    else if (totalDecimal < targetDecimal) msg = (targetDecimal - totalDecimal) + ' remaining';
-    else if (totalDecimal == targetDecimal && targetDecimal != 0) msg = 'exactly right!';
+    var correct = false;
+    if (totalDecimal > targetDecimal) {
+      msg = 'the value is too large';
+      
+    } else if (totalDecimal < targetDecimal) {
+      msg = (targetDecimal - totalDecimal) + ' remaining';
+      
+    } else if (totalDecimal == targetDecimal && targetDecimal != 0) {
+      msg = 'exactly right!';
+      correct = true;
+    }
+    
     elemTotalStatus.innerHTML = msg
+    UtilityKTS.setClass(elemTotalStatus, 'correct', correct);
   }
   
   function _getSelectedValue() {
