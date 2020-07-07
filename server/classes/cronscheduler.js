@@ -20,7 +20,7 @@ const internal = {};
 
 module.exports = internal.CronScheduler = class {
   constructor(params) {
-    this.DEBUG = true;  
+    this.DEBUG = false;  
     if (this.DEBUG) console.log('CronScheduler: debug mode is on');
 
     this._cron = params.cron;

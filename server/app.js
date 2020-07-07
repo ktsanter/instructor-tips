@@ -598,7 +598,6 @@ app.post('/treasurehunt/delete/:queryName', async function (req, res) {
 //------------------------------------------------------
 // TreasureHunt landing page
 //------------------------------------------------------
-
 app.get('/treasurehunt/landing/:projectid', async function (req, res) {
   var result = await dbTreasureHuntLanding.renderLandingPage(req.params, path.join(__dirname, 'private', 'treasurehunt/landing.pug'));
   if (result.success) {
@@ -617,6 +616,21 @@ app.post('/treasurehunt/landing/check-answer', async function (req, res) {
   } else {
     res.send(_failedRequest('post'));
   }
+})
+
+//------------------------------------------------------
+// Binary conversion app general
+//------------------------------------------------------
+app.get('/binary-conversion', function (req, res) {
+  sendFileIfExists(res, path.join(__dirname, 'private', 'binary-conversion/binary-conversion.html'));
+})
+
+app.get('/styles/binary-conversion/:stylesheet', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', 'styles/binary-conversion/' + req.params.stylesheet))
+})
+
+app.get('/scripts/binary-conversion/:scriptfile', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', 'scripts/binary-conversion/' + req.params.scriptfile))
 })
 
 //------------------------------------------------------

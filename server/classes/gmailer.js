@@ -9,7 +9,7 @@ const internal = {};
 
 module.exports = internal.GMailer = class {
   constructor(nodemailer, params) {
-    this.setDebugMode(true);  // note: can be changed with outside call
+    this.setDebugMode(false);  // note: can be changed with outside call
     
     this._nodemailer = nodemailer;
     
