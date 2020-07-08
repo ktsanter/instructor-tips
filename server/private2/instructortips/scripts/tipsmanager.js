@@ -12,7 +12,7 @@ const app = function () {
 	const page = {};
   
 	const settings = {
-    helpURL: '../help/help.html',
+    helpURL: '/instructortips-help',
     logoutURL: '/usermanagement/logout',
     
     navOptions: [

@@ -1,0 +1,37 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title InstructorTips help - home
+    meta(charset="utf-8")
+    style
+      include ../styles/colorscheme.css
+      include ../styles/help/help_subpage.css
+        
+  body(class="instructortips-colorscheme")
+    
+    div(class="instructortips-help home")
+      div(class="overview overview1")
+        |InstructorTips is a tool for building schedules with checklists of weekly tips.
+        ul(class="labeledlist" myLabel="With it users can:")
+          li create schedules, specifying the number of weeks and the start date
+          li write their own tips and add them to any schedule
+          li reuse tips on any schedule
+          li choose from a repository of common tips
+          li classify tips e.g. course launch, engagement, course end, etc.
+          li share tips and schedules with other users
+          li enable weekly notification reminders of tips that have yet to be checked off
+      div(class="overview overview2")      
+        +about
+        
+      div(class="section-contents") 
+        div(class='subsection-contents')
+          +snapshot("schedule_snapshot_001.png", 600, "Here's a snapshot of a few weeks from a schedule. Hover over the image to learn about some of the features:", [
+            {location: "left:  0.9em; top:  0.8em; width:  1.6em; height:  1.9em;", text: "add/edit/delete schedules",},
+            {location: "left:  2.6em; top:  0.8em; width: 31.8em; height:  1.9em;", text: "select a schedule to work with from your list"},
+            {location: "left:  1.0em; top:  4.1em; width: 45.3em; height:  1.7em;", text: "schedule items for before the term starts"},
+            {location: "left:  1.0em; top: 10.7em; width: 45.3em; height:  1.7em;", text: "week number and scheduled date"},
+            {location: "left:  2.0em; top:  8.0em; width:  1.5em; height:  1.6em;", text: "check off items as you complete them"},
+            {location: "left:  3.4em; top: 20.4em; width: 42.6em; height:  9.0em;", text: "write tips using plain text or use features like links, lists, bold, italics..."}
+          ])

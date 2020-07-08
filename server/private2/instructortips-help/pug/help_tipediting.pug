@@ -1,0 +1,112 @@
+include help_mixins.pug
+
+mixin tableRow(cellTag, col1, ...columns)
+  tr
+    #{cellTag}(class="label")!=col1
+    each column in columns
+      #{cellTag}!= column
+        
+doctype html
+html
+  head
+    title InstructorTips help - tip editing
+    meta(charset="utf-8")
+    style
+      include ../styles/colorscheme.css
+      include ../styles/help/help_subpage.css
+      
+  body(class="instructortips-colorscheme")
+    - var editText = "edit and delete tips"
+    - var formatText = "format tips"
+    
+    div(class="instructortips-help tipediting")
+      +anchorLink("top")  
+      div(class="section-contents") 
+        div(class="subsection-contents") 
+          |You can edit your tips, assign them to categories for filtering, and delete them. 
+        div(class="subsection-contents important-note")
+          strong Note: 
+          |you can only edit tips authored by you, and only delete them if they're not
+          |currently used in a schedule (either yours or one you've shared).
+
+      ul
+        +inpageLinkItem("#editTip", editText)
+        +inpageLinkItem("#formatTip", formatText)
+
+      +sectionHead("editTip", editText)
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          |On the 
+          +pageName("Tip Editing")
+          |page you'll see a list of the tips you can edit, and in some cases delete.
+          |You can only edit the tips you've authored, and only delete tips that aren't currently used on a schedule.
+          |You can filter the list by entering a search value or by choosing one or more categories to narrow the results.
+          br
+          br
+          |Hover over the image to learn what each feature is for:
+        div(class='subsection-contents')
+          +snapshot("tipediting_001.png", 600, "", [
+            {location: "left:  1.0em; top:  1.8em; width: 21.5em; height:  2.1em;", text: "Narrow the list of results by searching for specific content"},
+            {location: "left:  1.0em; top:  4.2em; width: 21.5em; height:  2.1em;", text: "Narrow the list of results by specifying one or more categories"},
+            {location: "left:  1.2em; top:  8.0em; width:  1.6em; height:  1.6em;", text: "Edit this tip"},
+            {location: "left:  3.1em; top:  8.0em; width:  1.4em; height:  1.6em;", text: "Delete this tip (you'll get the chance to confirm this)"},
+            {location: "left:  3.1em; top: 10.4em; width:  1.4em; height:  1.6em;", text: "This tip can't be deleted - it's currently used on one or more schedules)"}
+          ])
+
+        br
+        br
+        div(class="subsection-contents")
+          |When you select a tip for editing you will be able to see the original text for the tip,
+          |a preview of how it will display, a summary of what schedules it's used on, and the categories it's been classified with.
+          |You can alter the text and change the categories. For more information about formatting text see the 
+          a(href="#formatTip")
+            +pageName('format tips')
+          |section below.
+          br
+          br
+          |Hover over the image to learn what each feature is for:
+        div(class='subsection-contents')
+          +snapshot("tipediting_edit_001.png", 700, "", [
+            {location: "left:  1.2em; top:  2.0em; width: 17.9em; height: 13.8em;", text: "original text for the tip"},
+            {location: "left: 19.7em; top:  2.0em; width: 17.4em; height: 13.8em;", text: "a preview of what the tip will look like when displayed"},
+            {location: "left: 37.4em; top:  2.0em; width: 16.8em; height:  3.6em;", text: "where the tip is currently used"},
+            {location: "left:  1.2em; top: 16.4em; width: 21.2em; height:  2.1em;", text: "categories to which the tip is assigned"}
+          ])
+      +sectionHead("formatTip", formatText)
+      div(class="section-contents")
+        div(class="subsection-contents") 
+          |You can use plain text for tips - what you type in will be what you see.
+          |If you're interested in adding other types of content, you can use a "language" called 
+          em Markdown
+          br
+          br
+          |Take a look at this reference table to see what you can add to your tips.
+        
+      div(class="section-contents")
+        div(class="subsection-contents") 
+          table(class="help-table")
+            thead
+              +tableRow("th", "", "type this...", "to get this...")
+                
+            tbody
+              +tableRow("td", "italics", "*italics*", "<em>italics</em>")
+              
+              +tableRow("td", "bold", "**bold**", "<strong>bold</strong>")
+              
+              +tableRow("td", "bold and italics", "***bold and italics***", "<strong><em>italics</em></strong>")
+              
+              +tableRow("td", "line break", "a blank line<br><br>will cause a line break", "a blank line<br><br>will cause a line break")
+              
+              +tableRow("td", "unordered list", " -first item <br> -second item", "<ul><li>first item</li><li>second item</li></ul>")
+              
+              +tableRow("td", "ordererd list", "1. first item <br> 2. second item", "<ol><li>first item</li><li>second item</li></ol>")
+              
+              +tableRow("td", "link", "an [inline link](https://www.google.com \'go to google.com\')", "<a href=\"https://www.google.com\" title=\"go to google.com\" target=\"_blank\">inline link</a>")
+              
+              +tableRow("td", "image", "![alt text](https://goo.gl/hGjWgi \'I am a smiley face\')", "<img src=\"https://goo.gl/hGjWgi\" title=\"I am a smiley face\" width=\"30em\">")
+              
+              +tableRow("td", "<a href=\'http://rabbit.eng.miami.edu/info/htmlchars.html\' target=\'_blank\' title=\"HTML ampersand characters\">special characters</a>", "Bon jour, mon fr&amp;eacute;re.<br>&amp;iexcl;Hola Se&amp;ntilde;or!", "Bon jour, mon fr&eacute;re.<br>&iexcl;Hola Se&ntilde;or Smith!")
+              
+              +tableRow("td", " horizontal rule", "A line consisting of four underline characters<br>____<br>will add a horizontal rule", "A line consisting of four underline characters<hr>will add a horizontal rule")
+              
+              +tableRow("td", "heading styles", "# this is H1<br>## this is H2<br>### this is H3<br>#### this is H4<br>##### this is H5<br>###### this is H6", "<h1>this is H1</h1><h2>this is H2</h2><h3>this is H3</h3><h4>this is H4</h4><h5>this is H5</h5><h6>this is H6</h6>")

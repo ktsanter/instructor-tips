@@ -229,28 +229,49 @@ var dbManagerLookup = {
 };
 
 //------------------------------------------------------
+// app specific routing and queries
+//------------------------------------------------------
+app.get('/instructortips', function (req, res) {
+  var loggedin = userManagement.isLoggedIn(req.session);
+
+  if (loggedin) {
+    res.sendFile(path.join(__dirname, 'private2', '/instructortips/html/instructortips.html'))
+    
+  } else {
+    res.redirect('/instructortips/login');
+  }
+})
+
+app.get('/treasurehunt', function (req, res) {
+  res.redirect('/treasurehunt-configuration');
+})
+
+app.get('/treasurehunt-landing/:projectid', async function (req, res) {
+  var result = await dbTreasureHuntLanding.renderLandingPage(req.params, path.join(__dirname, 'private2', 'treasurehunt-landing/pug/treasurehunt-landing.pug'));
+  if (result.success) {
+    res.send(result.data);
+    
+  } else {
+    sendFailedAccess(res);
+  }
+})
+
+app.post('/treasurehunt/landing/check-answer', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
+    res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
+
+  } else {
+    res.send(_failedRequest('post'));
+  }
+})
+
+//------------------------------------------------------
 // user management, login, logout, etc.
 //------------------------------------------------------
-app.get('/usermanagement/getuser', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.send(userManagement.queryUserInfo(req.session));
-
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})  
-
-app.get('/usermanagement/refreshuser', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {;
-    res.send(await userManagement.refreshUserInfo(req.session));
-
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})  
-
 app.get('/instructortips/login', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', '/instructortips/login.html'))
+  res.sendFile(path.join(__dirname, 'private2', '/instructortips-login/html/login.html'))
 })
 
 app.post('/usermanagement/login_attempt', async function (req, res) {
@@ -258,6 +279,7 @@ app.post('/usermanagement/login_attempt', async function (req, res) {
  
   if (loginSuccess) {
     res.redirect('/instructortips');
+
   } else {
     res.redirect('/instructortips/login?retry=true');
   }
@@ -326,9 +348,27 @@ app.get('/usermanagement/passwordsalt', function (req, res) {
     data: {salt: PASSWORD_SALT}
   };
   
-  res.send(result);
-  
+  res.send(result);  
 })  
+
+app.get('/usermanagement/getuser', async function (req, res) {
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
+    res.send(userManagement.queryUserInfo(req.session));
+
+  } else {
+    res.send(_failedRequest('get'));
+  }
+})  
+
+app.get('/usermanagement/refreshuser', async function (req, res) {
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {;
+    res.send(await userManagement.refreshUserInfo(req.session));
+
+  } else {
+    res.send(_failedRequest('get'));
+  }
+})  
+
 
 //------------------------------------------------------
 // common scripts and CSS
@@ -340,13 +380,6 @@ app.get('/styles/:stylesheet', function (req, res) {
 app.get('/scripts/:scriptfile', function (req, res) {
   if (req.params.scriptfile.slice(-3) != '.js') req.params.scriptfile += '.js';
   res.sendFile(path.join(__dirname, 'private2', 'common/scripts/' + req.params.scriptfile))
-})
-
-//------------------------------------------------------
-// app specific shortcut names
-//------------------------------------------------------
-app.get('/treasurehunt', function (req, res) {
-  res.redirect('/treasurehunt-configuration');
 })
 
 //------------------------------------------------------
@@ -504,30 +537,6 @@ app.post('/:app/delete/:queryName', async function (req, res) {
 })
 
 //------------------------------------------------------
-// app specific routing and queries
-//------------------------------------------------------
-app.get('/treasurehunt-landing/:projectid', async function (req, res) {
-  var result = await dbTreasureHuntLanding.renderLandingPage(req.params, path.join(__dirname, 'private2', 'treasurehunt-landing/pug/treasurehunt-landing.pug'));
-  if (result.success) {
-    res.send(result.data);
-    
-  } else {
-    sendFailedAccess(res);
-  }
-})
-
-app.post('/treasurehunt/landing/check-answer', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-    
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
-    res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-//------------------------------------------------------
 // utility
 //------------------------------------------------------
 function sendFileIfExists(res, fileName) {
@@ -558,8 +567,8 @@ function _failedRequest(requestType) {
 // boilerplate responses for failed requests
 //------------------------------------------
 app.get('/*', function(req, res) {
-  console.log('\nfailed to GET: ' + JSON.stringify(req.params));
-  res.send('cannot GET: ' + JSON.stringify(req.params));
+  console.log('\nfailed to GET: ' + req.params[0]);
+  res.send('cannot GET: ' + req.params[0]);
 });
 
 //------------------------------------------------------
