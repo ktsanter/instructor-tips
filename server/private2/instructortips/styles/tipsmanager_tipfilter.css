@@ -1,0 +1,84 @@
+/*-------------------------------------------------------------------
+ * styling for TipFilter class
+ *------------------------------------------------------------------*/
+
+.tipfilter {
+  border: 1px solid var(--bgPrimaryEmphasis);
+  padding: 0.5em 0 0.5em 0;
+  margin-bottom: 0.2em;
+}
+
+.tipfilter-hide {
+  display: none;
+}
+
+.tipfilter .tipfilter-controls {
+  display: inline-block;
+  vertical-align: top;
+  margin-top: -0.6em;
+}
+
+.tipfilter .tipfilter-controls .tipfilter-icon {
+  border: 1px solid var(--bgSecondaryChoice);
+  background-color: var(--bgSecondaryChoice);
+  font-size: 1.2em;
+  margin-top: 0.8em;
+  color: white;
+  padding: 0.2em;
+}
+
+.tipfilter .tipfilter-inputs {
+  display: inline-block;
+}
+
+.tipfilter .tipfilter-inputs .tipfilter-label {
+  display: inline-block;
+  width: 15%;
+  vertical-align: top;
+  padding: 0.8em 0.4em 0 0.2em;
+}
+
+.tipfilter .tipfilter-inputs input:not(.lookupinput) {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	display: inline-block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 1.4em .5em .8em;
+  width: 20em;
+	box-sizing: border-box;
+	margin: 0;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	border-radius: .3em;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #fff;
+}
+
+.tipfilter .tipfilter-inputs .tipfilter-keyword {
+  display: inline-block;
+}
+
+.tipfilter .tipfilter-inputs .tipfilter-common {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.tipfilter .tipfilter-inputs .tipfilter-common .tipfilter-commonswitch {
+  visibility: hidden;
+  margin-top: 0.4em;
+}
+
+.tipfilter .tipfilter-inputs .tipfilter-common .tipfilter-commonswitch:not(.hidecommonedit) {
+  visibility: visible;
+}
+
+.tipfilter .tipfilter-inputs .lookupinput .lookupinput-inputcontainer  {
+  margin-left: 1.2em;
+}
+
+.tipfilter .tipfilter-inputs .lookupinput .lookupinput-selectedcontainer  {
+  width: 76%;
+  margin-left: 1.2em;
+}

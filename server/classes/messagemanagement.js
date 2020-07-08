@@ -159,7 +159,7 @@ module.exports = internal.MessageManagement = class {
     var userEmail = queryResults.data[0].email;
     var pageNameOnly = this._appURL.split('\\').pop().split('/').pop();
     var pathToApp = this._appURL.slice(0, -1 * pageNameOnly.length);
-    var resetLink = pathToApp + 'login.html?pending=true&id=' + identifier;
+    var resetLink = pathToApp + 'login?pending=true&id=' + identifier;
     
     var params = {
       emailTo: userEmail,

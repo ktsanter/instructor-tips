@@ -175,7 +175,7 @@ module.exports = internal.TreasureHunt = class {
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.data = '/treasurehunt/landing/' + postData.projectid;
+      result.data = '/treasurehunt-landing/' + postData.projectid;
 
     } else {
       result.details = queryResults.details;

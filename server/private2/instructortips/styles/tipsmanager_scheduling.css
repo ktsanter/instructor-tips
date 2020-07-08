@@ -1,0 +1,338 @@
+/*-------------------------------------------------------------------
+ * styling for TipScheduling class
+ *------------------------------------------------------------------*/
+.tipschedule {
+  position: relative;
+  --itemBorder: #dddd;
+}
+
+.tipschedule-contents {
+  width: 50%;
+  margin-top: 1.8em;
+}
+
+.tipschedule-contents.browse {
+  float: left;
+}
+
+.tipschedule .tipbrowse {
+  top: 8.4em;
+}
+
+.tipschedule-icon {
+  font-size: 1.2em;
+  margin-right: 0.2em;
+  cursor: pointer;
+}
+
+.tipschedule-icon.collapse-icon {
+  display: none; /* disabled while I think it over */
+  font-size: 1.0em;
+  background-color: var(--bgSecondaryChoice);
+  padding: 0.2em;
+  margin-bottom: 0.2em;
+  border: 1px solid #aaa;
+  color: white;
+  border-radius: 4px;
+  width: 0.8em;
+  text-align: center;
+}
+
+.tipschedule .tipschedule-contents .tipschedule-draghandle {
+  display: flex;
+  align-items: center;
+  padding: 0.2em 0.4em;
+  border-left: 1px solid var(--itemBorder);
+  border-top: 1px solid var(--itemBorder);
+  border-bottom: 1px solid var(--itemBorder);
+  border-radius: 4px 0px 0px 4px;
+  cursor: pointer;  
+}
+
+.tipschedule .tipschedule-contents .tipschedule-draghandle.eventip {
+  border-right: 1px solid white;
+  background-color: white;
+  color: transparent;
+}
+
+.tipschedule .tipschedule-contents .tipschedule-draghandle.oddtip {
+  border-right: 1px solid var(--bgQuaternaryEmphasis);
+  background-color: var(--bgQuaternaryEmphasis);
+  color: transparent;
+}
+
+.tipschedule .tipschedule-contents .tipschedule-draghandle:hover:not(.during-drag) {
+  color: white;
+  background-color: var(--bgTertiaryEmphasis);  
+}
+
+/*
+@media screen and (pointer: fine) {
+  .tipschedule-content {
+    width: 60%;
+  }
+}
+*/
+
+/*-----------------------
+ * weekly tip boxes
+ *-----------------------*/
+ .weeklytip {
+   margin-bottom: 12px;
+ }
+ 
+ .weeklytip-collapse-icon {
+  font-size: 1.2em;
+  cursor: pointer;
+  padding-left: 0.4em;   
+}
+ 
+.weeklytip-label {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  padding: 0.4em 0 0.4em 0.2em;
+}
+
+.weeklytip-label-text {}
+
+.weeklytip-contents {
+  background-color: var(--bgOverall);
+}
+
+.weeklytip-container {
+  display: flex;
+  border: 1px solid var(--itemBorder);
+  border-radius: 4px 0 0 4px;
+  margin-bottom: 0.1em;
+}
+  
+.weeklytip-container.eventip.div {
+  background-color: white;
+}
+
+.weeklytip-container.oddtip.div {
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.weeklytip-container .weeklytip-state {
+  display: flex;
+  align-items: center;
+  padding: 0.2em 0.6em 0.2em 0.2em;
+}
+
+.weeklytip-container .weeklytip-state.eventip {
+  background-color: white;
+}
+
+.weeklytip-container .weeklytip-state.oddtip {
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.weeklytip-icon {
+  cursor: pointer;
+}
+
+.weeklytip-container .weeklytip-sub {
+  display: inline-block;
+  width: 100%;
+}
+
+.weeklytip-container .weeklytip-sub.eventip {
+  background-color: white;
+}
+
+.weeklytip-container .weeklytip-sub.oddtip {
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.weeklytip-container .weeklytip-controls {
+}
+
+.weeklytip-container .weeklytip-controls.eventip {
+  background-color: white;
+}
+
+.weeklytip-container .weeklytip-controls.oddtip {
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.weeklytip-container .weeklytip-controls .weeklytip-controls-icon {
+  color: var(--bgTertiaryEmphasis);
+  padding-left: 0.4em;
+  padding-right: 0.2em;
+  opacity: 0;
+}
+
+.weeklytip-container .weeklytip-controls .weeklytip-controls-icon.editable {
+  color: black;
+}
+
+.weeklytip-container .weeklytip-controls .weeklytip-controls-icon:hover {
+  opacity: 1;
+}
+
+.weeklytip .weeklytip-dragtarget {
+  background-color: var(--bgTertiaryEmphasis) !important;
+  border-left: 1px solid var(--bgPrimaryEmphasis);
+  border-top: 1px solid var(--bgPrimaryEmphasis);
+  border-bottom: 1px solid var(--bgPrimaryEmphasis);
+  border-radius: 4px 0px 0px 4px;
+  height: 1.8em;  
+}
+    
+.weeklytip-singletip {
+  display: inline-block;
+  padding: 0.2em 0.4em 0.2em 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.weeklytip-trashcontainer {
+  position: fixed;
+  bottom: 1.0em;
+  right: 1.0em;
+  color: var(--bgTertiaryEmphasis);
+  background-color: var(--bgOverall);
+  border: 2px solid var(--bgTertiaryEmphasis);
+  border-radius: 0.3em;
+  font-size: 2em;
+  padding: 0.3em 0.2em;
+}
+
+.weeklytip-trashcontainer.highlight {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis_trans);
+  border-color: black;
+}
+
+/*
+@media screen and (pointer: fine) {
+  .weeklytip-singletip {
+    max-width: 90%;
+  }
+}
+
+@media screen and (pointer: coarse) {
+  .weeklytip-singletip {
+    max-width: 80%;
+  }
+}
+*/
+
+.weeklytip-singletip p {
+  margin-top: 0;
+}
+
+.hide-weeklytip-contents {
+  display: none;
+}
+
+.weeklytip-config {
+  float: right;
+  padding-right: 0.4em;
+  opacity: 0;
+}
+
+.weeklytip-config:hover {
+  opacity: 1;
+}
+
+.weeklytip-config-icon {
+  font-size: 1.2em;
+  vertical-align: middle;
+  padding: 0 0.2em;
+}
+
+.tipschedule-newtip {
+  display: block;
+  background-color: var(--bgSecondaryChoice);
+  border: 1px solid var(--bgPrimaryEmphasis);
+}
+
+.tipschedule-newtip.notshown {
+  display: none;
+}
+
+.tipschedule-newtip .tipschedule-newtip-inputcontainer {
+  display: inline-block;
+  width: 90%;
+  padding-top: 0.2em;
+}
+
+.tipschedule-newtip .tipschedule-newtip-input {
+  width: 100%;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;  
+  margin-left: 0.2em;
+}
+
+.tipschedule-newtip .tipschedule-newtip-controlcontainer {
+  float: right;
+}
+
+.tipschedule-newtip .tipschedule-newtip-control {
+  font-size: 1.2em;
+  vertical-align: middle;
+  padding: 0 0.2em;
+}
+
+.tipschedule-newtip .tipschedule-newtip-control.disabled{
+  color: #c0c0c0;
+}
+
+.dragging {
+  display: none;
+}
+
+/*-----------------------
+ * schedule share 
+ *-----------------------*/
+ /*
+.tipschedule-share {
+  margin-top: 1.0em;
+  margin-bottom: 1.6em;
+}
+
+.tipschedule-share-contents {
+  min-width: 30%;
+  border: 1px solid var(--bgTertiaryEmphasis);
+  background-color: var(--bgTertiaryChoice);
+  padding: 0.1em 0.4em;
+  display: inline-block;
+}
+
+.tipschedule-share-titletext {
+  display: inline-block;
+  font-size: 1.1em;
+  font-style: italic;
+  padding-bottom: 0.3em;
+}
+
+
+.tipschedule-share-comment {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  margin-top: 0.6em;
+}
+  
+.tipschedule-share-controlcontainer {
+  margin-top: 0.6em;
+}
+
+.tipschedule-share-select {}
+
+.tipschedule-share-select.select-css {
+  max-width: none;
+  margin-left: 0;
+}
+
+.tipschedule-share-control {
+  cursor: pointer;
+  font-size: 1.5em;
+}
+
+.tipschedule-share-control.fa-check-square {
+  float: right;
+  padding-top: 0.7em;
+  padding-left: 0.5em;
+}
+*/

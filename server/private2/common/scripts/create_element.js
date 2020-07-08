@@ -303,7 +303,6 @@ class CreateElement {
     if (addedClassList && addedClassList != '') classList += ' ' + addedClassList;
     var container = CreateElement._createElement('label', null, classList);
     
-    
     var elemCheckbox = CreateElement._createElement('input', null, 'switch-input');
     elemCheckbox.type = 'checkbox';
     container.appendChild(elemCheckbox);

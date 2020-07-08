@@ -24,8 +24,8 @@ html
 
       .message
         |Your InstructorTips password has been reset.
-        |You can specify a new one using 
-        +link(resetLink, 'this link.')(class="applink")
+        |You can specify a new one using this link: 
+        +link(resetLink, resetLink)(class="applink")
         br
         |Please note the link becomes invalid at !{expiration}.
       

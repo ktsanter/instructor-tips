@@ -30,8 +30,9 @@ module.exports = internal.TreasureHuntLanding = class {
         'from project ' +
         'where projectid = ' + params.projectid
     };
-      
+    
     queryResults = await this._dbManager.dbQueries(queryList);
+    
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -45,7 +46,7 @@ module.exports = internal.TreasureHuntLanding = class {
     projectInfo.message = this._convertToHTML(projectInfo.message);
     projectInfo.positiveresponse = this._convertToHTML(projectInfo.positiveresponse);
     projectInfo.negativeresponse = this._convertToHTML(projectInfo.negativeresponse);
-    
+
     if (this._fileServices.existsSync(pugFileName)) {
       result.success = true;
       result.data = this._pug.renderFile(pugFileName, {"params": projectInfo});

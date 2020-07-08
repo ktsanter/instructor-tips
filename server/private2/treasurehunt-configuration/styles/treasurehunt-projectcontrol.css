@@ -1,0 +1,85 @@
+/*------------------------------------------------------------
+ * style settings for TreasureHuntProjectControl class
+ *------------------------------------------------------------*/
+.treasurehuntprojectcontrol {}
+
+.treasurehuntprojectcontrol.treasurehuntprojectcontrol-hide {
+  display: none;
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-hide {
+  display: none;
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents {}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions {
+  display: inline-block;
+  background-color: white;
+  border: 1px solid black;
+  padding: 0 0;
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions.notshown {
+  background-color: transparent;
+  border: none;
+}  
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions .iconcontainer {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgSecondaryChoice);
+  border: 1px solid black;
+  padding: 0.28em 0.1em 0.28em 0;
+  margin: -0.1em;
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions .iconcontainer.notshown {
+  color: black;
+  background-color: transparent;
+  border: 1px solid transparent;  
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions .suboptions {
+  display: inline-block;
+}
+  
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions .suboptions.notshown {
+  display: none;
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions .icon {
+  font-size: 1.0em;
+  margin-left: 0.4em;
+  margin-right: 0.4em;
+  vertical-align: middle;
+  cursor: pointer;  
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions .icon.subicon {
+  font-size: 1.0em;
+  margin-left: 0.6em;
+}
+  
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectoptions .icon.subicon.disable {
+  color: #c0c0c0;
+}
+    
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectselect{
+  display: inline-block;
+  font-size: 1.0em;
+  min-width: 30%;
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectpreview {
+  display: inline-block;
+  margin-left: 0.2em;
+}
+
+.treasurehuntprojectcontrol .treasurehuntprojectcontrol-contents .projectpreview .icon {
+  font-size: 1.1em;
+  margin-left: 0.4em;
+  margin-right: 0.4em;
+  vertical-align: middle;
+  cursor: pointer;  
+}

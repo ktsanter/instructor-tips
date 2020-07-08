@@ -10,6 +10,8 @@ InstructorTips
 - vet the "common" tips
   - update content and links for Bspace
 
+- check for "valid" email before sending from gmailer
+
 
 
 TreasureHunt

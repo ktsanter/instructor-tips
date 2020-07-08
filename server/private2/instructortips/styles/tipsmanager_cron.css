@@ -1,0 +1,27 @@
+/*-------------------------------------------------------------------
+ * styling for TipCron class
+ *------------------------------------------------------------------*/
+.tipcron {
+  position: relative;
+  --itemBorder: #dddd;
+}
+
+.tipcron.tipcron-hide {
+  display: none;
+}
+
+.tipcron .tipcron-contents {
+  margin-top: 2.0em;
+}
+
+.tipcron .tipcron-contents .tipcron-statuslabel {
+  display: inline-block;
+  width: 15em;
+  vertical-align: bottom;
+  padding-bottom: 0.6em;
+}
+
+.tipcron .tipcron-contents .tipcron-status {
+  display: inline-block;
+  margin-left: 0.5em;
+}

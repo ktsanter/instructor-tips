@@ -1,0 +1,106 @@
+/*-------------------------------------------------------------------
+ * styling for TipNotification class
+ *------------------------------------------------------------------*/
+.tipnotification {
+  position: relative;
+  --itemBorder: #dddd;
+}
+
+.tipnotification.tipnotification-hide {
+  display: none;
+}
+
+.tipnotification .tipnotification-contents {}
+
+/*-------------------------------------------------------------------
+ * section title
+ *------------------------------------------------------------------*/
+ .tipnotification .tipnotification-contents .tipnotification-section {
+   margin-top: 2.0em;
+   margin-bottom: 4.0em;
+ }
+ 
+.tipnotification .tipnotification-contents .tipnotification-section .tipnotification-sectiontitle {}
+
+.tipnotification .tipnotification-contents .tipnotification-section .tipnotification-sectiontitletext {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  border: 1px solid var(--itemBorder);
+  padding: 0.2em 0.4em 0.3em 0.4em;
+  min-width: 20em;
+  margin: 0 0.2em 0.4em 0;
+}
+
+/*-------------------------------------------------------------------
+ * share
+ *------------------------------------------------------------------*/
+.tipnotification .tipnotification-contents .tipnotification-share {}
+
+.tipnotification .tipnotification-contents .tipnotification-share .tipnotification-sharelabel {
+  display: inline-block;
+  margin-top: 0.6em;
+  padding: 0.4em 0.8em 0.4em 0.4em;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-share .tipnotification-sharecontrol {
+  margin-top: 0.7em;
+}
+
+/*-------------------------------------------------------------------
+ * schedule
+ *------------------------------------------------------------------*/
+.tipnotification .tipnotification-contents .tipnotification-schedule {
+  max-width: 50%;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-noschedules {
+  font-style: italic;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-schedulelabel {
+   font-weight: bold;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-scheduledetails {
+  position: relative;
+  min-height: 4.0em;
+  border: 1px solid var(--itemBorder);
+  margin-bottom: 0.2em;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-scheduledetails.even {
+  background-color: white;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule .tipnotification-scheduledetails.odd {
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails .tipnotification-schedulename {
+  display: inline-block;
+  max-width: 40%;
+  padding: 0.2em 0 0.2em 0.2em;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails .tipnotification-schedulecontrols {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.2em 0.4em 0 0;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails .tipnotification-schedulecontrols .tipnotification-controlitem.switch  {
+  width: 3.0em;
+  height: 1.7em;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails.even .tipnotification-schedulecontrols .tipnotification-controlitem.switch .switch-label {
+  background-color: white;
+  box-shadow: none;
+}
+
+.tipnotification .tipnotification-contents .tipnotification-schedule  .tipnotification-scheduledetails.odd .tipnotification-schedulecontrols .tipnotification-controlitem.switch .switch-label {
+  background-color: var(--bgQuaternaryEmphasis);
+}
+
