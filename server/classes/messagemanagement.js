@@ -22,13 +22,15 @@ module.exports = internal.MessageManagement = class {
     
     this._tempDir = 'temp';
     
-    this._sharePugFile = './private/pug/schedule_share.pug';
-    this._sharePugWrapperFile = './private/pug/schedule_share_wrapper.pug';
+    this._baseDir = params.baseDir;
+
+    this._sharePugFile = params.pugFiles.sharePugFile;
+    this._sharePugWrapperFile = params.pugFiles.sharePugWrapperFile;
     
-    this._reminderPugFile = './private/pug/schedule_reminder.pug';
-    this._reminderPugWrapperFile = './private/pug/schedule_reminder_wrapper.pug';
-    
-    this._resetPugFile = './private/pug/reset_notification.pug';
+    this._reminderPugFile = params.pugFiles.reminderPugFile;
+    this._reminderPugWrapperFile = params.pugFiles.reminderPugWrapperFile;
+
+    this._resetPugFile = params.pugFiles.resetPugFile;
   }
   
 //---------------------------------------------------------------

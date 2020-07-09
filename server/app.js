@@ -162,7 +162,17 @@ const messageManagement = new messageManagementClass({
   "appURL": INSTRUCTORTIPS_URL, 
   "fileServices": fileservices,
   "HTMLToImage": puppeteer,
-  "tempFileMaker": tmp
+  "tempFileMaker": tmp,
+  "baseDir": __dirname,
+  "pugFiles": {
+    sharePugFile : path.join(__dirname, 'private', '/instructortips/pug/schedule_share.pug'),
+    sharePugWrapperFile : path.join(__dirname, 'private', '/instructortips/pug/schedule_share_wrapper.pug'),
+    
+    reminderPugFile : path.join(__dirname, 'private', '/instructortips/pug/schedule_reminder.pug'),
+    reminderPugWrapperFile : path.join(__dirname, 'private', '/instructortips/pug/schedule_reminder_wrapper.pug'),
+
+    resetPugFile : path.join(__dirname, 'private', '/instructortips-login/pug/reset_notification.pug')
+  }
 });
 
 //------------------------------------------
@@ -218,36 +228,61 @@ const dbTreasureHuntLanding = new dbTreasureHuntLandingClass({
   "fileServices": fileservices  
 });
 
-//----------------------------------------------------------------------------------------------------------------------
-// GET and POST requests
-//----------------------------------------------------------------------------------------------------------------------
+//------------------------------------------
+// DB manager lookup
+//------------------------------------------
+var dbManagerLookup = {
+  "instructortips": dbTipManager,
+  "usermanagement": dbTipManager,
+  "tipmanager": dbTipManager,
+  "treasurehunt": dbTreasureHunt
+};
 
 //------------------------------------------------------
-// scripts and style sheets
-//------------------------------------------------------
-app.get('/styles/:stylesheet', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'styles/' + req.params.stylesheet))
-})
-
-app.get('/scripts/:script', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'scripts/' + req.params.script))
-})
-
-//------------------------------------------------------
-// login/logout and main page for InstructorTips
+// app specific routing and queries
 //------------------------------------------------------
 app.get('/instructortips', function (req, res) {
   var loggedin = userManagement.isLoggedIn(req.session);
 
   if (loggedin) {
-    res.sendFile(path.join(__dirname, 'private', '/instructortips/instructortips.html'))
+    res.sendFile(path.join(__dirname, 'private', '/instructortips/html/instructortips.html'))
+    
   } else {
     res.redirect('/instructortips/login');
   }
 })
 
+app.get('/treasurehunt', function (req, res) {
+  res.redirect('/treasurehunt-configuration');
+})
+
+app.get('/treasurehunt-landing/:projectid', async function (req, res) {
+  var fileName = path.join(__dirname, 'private', 'treasurehunt-landing/pug/treasurehunt-landing.pug');
+  var result = await dbTreasureHuntLanding.renderLandingPage(req.params, fileName);
+  if (result.success) {
+    res.send(result.data);
+    
+  } else {
+    sendFailedAccess(res, fileName);
+  }
+})
+
+app.post('/treasurehunt/landing/check-answer', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
+    res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
+
+  } else {
+    res.send(_failedRequest('post'));
+  }
+})
+
+//------------------------------------------------------
+// user management, login, logout, etc.
+//------------------------------------------------------
 app.get('/instructortips/login', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', '/instructortips/login.html'))
+  res.sendFile(path.join(__dirname, 'private', '/instructortips-login/html/login.html'))
 })
 
 app.post('/usermanagement/login_attempt', async function (req, res) {
@@ -255,6 +290,7 @@ app.post('/usermanagement/login_attempt', async function (req, res) {
  
   if (loginSuccess) {
     res.redirect('/instructortips');
+
   } else {
     res.redirect('/instructortips/login?retry=true');
   }
@@ -323,12 +359,69 @@ app.get('/usermanagement/passwordsalt', function (req, res) {
     data: {salt: PASSWORD_SALT}
   };
   
-  res.send(result);
-  
+  res.send(result);  
+})  
+
+app.get('/usermanagement/getuser', async function (req, res) {
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
+    res.send(userManagement.queryUserInfo(req.session));
+
+  } else {
+    res.send(_failedRequest('get'));
+  }
+})  
+
+app.get('/usermanagement/refreshuser', async function (req, res) {
+  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {;
+    res.send(await userManagement.refreshUserInfo(req.session));
+
+  } else {
+    res.send(_failedRequest('get'));
+  }
 })  
 
 //------------------------------------------------------
-// InstructorTips admin GET
+// common scripts and CSS
+//------------------------------------------------------
+app.get('/styles/:stylesheet', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', 'common/styles/' + req.params.stylesheet))
+})
+
+app.get('/scripts/:scriptfile', function (req, res) {
+  if (req.params.scriptfile.slice(-3) != '.js') req.params.scriptfile += '.js';
+  res.sendFile(path.join(__dirname, 'private', 'common/scripts/' + req.params.scriptfile))
+})
+
+//------------------------------------------------------
+// app specific scripts, CSS, and pug
+//------------------------------------------------------
+app.get('/:app', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', req.params.app + '/html/' + req.params.app + '.html'))
+})
+
+app.get('/styles/:app/:stylesheet', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', req.params.app + '/styles/' + req.params.stylesheet))
+})
+
+app.get('/scripts/:app/:scriptfile', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', req.params.app + '/scripts/' + req.params.scriptfile))
+})
+
+app.get('/pug/:app/:pugfile', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', req.params.app + '/pug/' + req.params.pugfile))
+})
+
+app.get('/images/:app/:imagefile', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', req.params.app + '/images/' + req.params.imagefile))
+})
+
+app.get('/subpage/:app/:helptype', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', req.params.app + '/pug/help_' + req.params.helptype + '.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName);
+})
+
+//------------------------------------------------------
+// protected queries
 //------------------------------------------------------
 app.get('/admin/query/:queryName',  async function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor') && req.params.queryName == 'navbar') {
@@ -352,9 +445,6 @@ app.get('/admin/query/:queryName',  async function (req, res) {
   }
 })
 
-//------------------------------------------------------
-// InstructorTips admin POST
-//------------------------------------------------------
 app.post('/admin/insert/:queryName', async function (req, res) {
   if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
     res.send(await dbAdminInsert.doInsert(req.params, req.body));
@@ -405,236 +495,64 @@ app.post('/admin/delete/:queryName', async function (req, res) {
   }
 })
 
-//------------------------------------------------------
-// InstructorTips general GET
-//------------------------------------------------------
-app.get('/styles/instructortips/:stylesheet', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'styles/instructortips/' + req.params.stylesheet))
-})
-
-app.get('/scripts/instructortips/:scriptfile', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'scripts/instructortips/' + req.params.scriptfile))
-})
-
-app.get('/tipmanager/query/:queryName', async function (req, res) {
+app.get('/:app/query/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
   
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
-    res.send(await dbTipManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+    var dbManager = dbManagerLookup[req.params.app];
+    res.send(await dbManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('get'));
   }
 })
 
-app.get('/usermanagement/getuser', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
-    res.send(userManagement.queryUserInfo(req.session));
-
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})  
-
-app.get('/usermanagement/refreshuser', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {;
-    res.send(await userManagement.refreshUserInfo(req.session));
-
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})  
-
-//------------------------------------------------------
-// InstructorTips general POST
-//------------------------------------------------------
-app.post('/tipmanager/query/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
-    res.send(await dbTipManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-app.post('/tipmanager/insert/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-    
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
-    req.body.appURL = INSTRUCTORTIPS_URL;    
-    res.send(await dbTipManager.doInsert(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-app.post('/tipmanager/update/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
-    res.send(await dbTipManager.doUpdate(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-app.post('/tipmanager/delete/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
-    res.send(await dbTipManager.doDelete(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-//------------------------------------------------------
-// InstructorTips help
-//------------------------------------------------------
-app.get('/help/:helpfile', function (req, res) {
-  sendFileIfExists(res, path.join(__dirname, 'private', 'help/' + req.params.helpfile));
-})
-
-app.get('/styles/help/:stylesheet', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'styles/help/' + req.params.stylesheet))
-})
-
-app.get('/scripts/help/:scriptfile', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'scripts/help/' + req.params.scriptfile))
-})
-
-app.get('/help/images/:helpfile', function (req, res) {
-  sendFileIfExists(res, path.join(__dirname, 'private', 'help/images/' + req.params.helpfile))
-})
-
-app.get('/help/subpages/:helpfile', function (req, res) {
-  var helpFileInfo = req.params.helpfile.split('.');
-  if (helpFileInfo[1] != 'html') {
-    sendFailedAccess(res);
-    return;
-  }
-
-  renderAndSendPugIfExists(res, path.join(__dirname, 'private', 'help/' + helpFileInfo[0] + '.pug'));
-})
-
-//------------------------------------------------------
-// TreasureHunt general
-//------------------------------------------------------
-app.get('/treasurehunt', function (req, res) {
-  sendFileIfExists(res, path.join(__dirname, 'private', 'treasurehunt/treasurehunt.html'));
-})
-
-app.get('/treasurehunt/:treasurehuntfile', function (req, res) {
-  sendFileIfExists(res, path.join(__dirname, 'private', 'treasurehunt/' + req.params.treasurehuntfile));
-})
-
-app.get('/styles/treasurehunt/:stylesheet', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'styles/treasurehunt/' + req.params.stylesheet))
-})
-
-app.get('/scripts/treasurehunt/:scriptfile', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'scripts/treasurehunt/' + req.params.scriptfile))
-})
-
-//------------------------------------------------------
-// TreasureHunt queries
-//------------------------------------------------------
-app.get('/treasurehunt/query/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
-    res.send(await dbTreasureHunt.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
-
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})
-
-app.post('/treasurehunt/query/:queryName', async function (req, res) {
+app.post('/:app/query/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
     
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
-    res.send(await dbTreasureHunt.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+    var dbManager = dbManagerLookup[req.params.app];
+    res.send(await dbManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));
   }
 })
 
-app.post('/treasurehunt/insert/:queryName', async function (req, res) {
+app.post('/:app/insert/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
     
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
-    res.send(await dbTreasureHunt.doInsert(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+    var dbManager = dbManagerLookup[req.params.app];
+    res.send(await dbManager.doInsert(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));
   }
 })
 
-app.post('/treasurehunt/update/:queryName', async function (req, res) {
+app.post('/:app/update/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
     
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
-    res.send(await dbTreasureHunt.doUpdate(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+    var dbManager = dbManagerLookup[req.params.app];
+    res.send(await dbManager.doUpdate(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));
   }
 })
 
-app.post('/treasurehunt/delete/:queryName', async function (req, res) {
+app.post('/:app/delete/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
     
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
-    res.send(await dbTreasureHunt.doDelete(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+    var dbManager = dbManagerLookup[req.params.app];
+    res.send(await dbManager.doDelete(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {
     res.send(_failedRequest('post'));
   }
-})
-
-//------------------------------------------------------
-// TreasureHunt landing page
-//------------------------------------------------------
-app.get('/treasurehunt/landing/:projectid', async function (req, res) {
-  var result = await dbTreasureHuntLanding.renderLandingPage(req.params, path.join(__dirname, 'private', 'treasurehunt/landing.pug'));
-  if (result.success) {
-    res.send(result.data);
-  } else {
-    sendFailedAccess(res);
-  }
-})
-
-app.post('/treasurehunt/landing/check-answer', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-    
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
-    res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-//------------------------------------------------------
-// Binary conversion app general
-//------------------------------------------------------
-app.get('/binary-conversion', function (req, res) {
-  sendFileIfExists(res, path.join(__dirname, 'private', 'binary-conversion/binary-conversion.html'));
-})
-
-app.get('/styles/binary-conversion/:stylesheet', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'styles/binary-conversion/' + req.params.stylesheet))
-})
-
-app.get('/scripts/binary-conversion/:scriptfile', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'scripts/binary-conversion/' + req.params.scriptfile))
 })
 
 //------------------------------------------------------
@@ -644,28 +562,33 @@ function sendFileIfExists(res, fileName) {
   if (fileservices.existsSync(fileName)) {
     res.sendFile(fileName);
   } else {
-    sendFailedAccess(res); 
+    sendFailedAccess(res, fileName); 
   }
 }
 
-function renderAndSendPugIfExists(res, pugFileName) {
+function renderAndSendPugIfExists(res, app, pugFileName) {
   if (fileservices.existsSync(pugFileName)) {
     res.send(pug.renderFile(pugFileName));
   } else {
-    sendFailedAccess(res); 
+    sendFailedAccess(res, pugFileName); 
   }
 }
 
-function sendFailedAccess(res) {
-  res.send('cannot access page');
+function sendFailedAccess(res, fileName) {
+  res.send('cannot access page: ' + fileName);
+}
+
+function _failedRequest(requestType) {
+  return {success: false, details: requestType + ' failed'};
 }
 
 //------------------------------------------
 // boilerplate responses for failed requests
 //------------------------------------------
-function _failedRequest(requestType) {
-  return {success: false, details: requestType + ' failed'};
-}
+app.get('/*', function(req, res) {
+  console.log('\nfailed to GET: ' + req.params[0]);
+  res.send('cannot GET: ' + req.params[0]);
+});
 
 //------------------------------------------------------
 // start up

@@ -12,7 +12,7 @@ const app = function () {
   };
   
 	const settings = {
-    urlLogin: '/login.html',
+    urlLogin: '/instructortips/login',
     urlLoginAttempt: '/usermanagement/login_attempt',
     
     urlCreateAccount: '/usermanagement/createaccount',

@@ -1,0 +1,211 @@
+/*-------------------------------------------------------------------
+ * styling for Tips Manager help sub pages
+ *------------------------------------------------------------------*/
+
+body {
+	color: black;
+	background-color: var(--bgOverall);
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.instructortips-help {}
+
+.instructortips-help .anchor {
+  display: block;
+  position: relative;
+  top: -2.8em;
+  height: 0;
+  visibility: hidden;
+}
+
+.instructortips-help .section-head {
+  width: 60%;
+  margin-top: 3.0em;
+}
+
+.instructortips-help .section-head .section-title {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);  
+  padding: 0.2em 0.2em;  
+}
+
+.instructortips-help .section-head .section-title .anchor-top {
+  color: transparent;
+  float: right;
+}
+
+.instructortips-help .section-head .section-title .anchor-top:hover {
+  color: white;
+}
+
+.instructortips-help .section-contents {
+  width: 60%;
+  margin: 0.4em 0 0.8em 0;
+}
+
+.instructortips-help .section-contents .subsection-contents {
+  margin-bottom: 0.6em;
+  margin-left: 0.4em;
+}
+
+.instructortips-help .section-contents .subsection-contents.important-note {
+  display: inline-block;
+  background-color: white;
+  border: 1px solid var(--bgTertiaryEmphasis);
+  padding: 0.2em;
+}
+
+/*-------------------------------------------------------------
+ * labeled list
+ *------------------------------------------------------------*/
+.instructortips-help ul[myLabel]::before {
+  content: attr(myLabel);
+  display: block;
+  margin-left: -2.0em;
+}
+
+.instructortips-help .labeledlist li {
+  margin-left: -0.4em;
+}
+
+/*-------------------------------------------------------------
+ * scrollbar
+ *------------------------------------------------------------*/
+body::-webkit-scrollbar {
+  width: 16px;
+}
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bgTertiaryEmphasis) var(--bgQuaternaryEmphasis);
+}
+body::-webkit-scrollbar-track {
+  background: var(--bgQuaternaryEmphasis);
+}
+body::-webkit-scrollbar-thumb {
+  background-color: var(--bgTertiaryEmphasis) ;
+  border-radius: 8px;
+  border: 3px solid var(--bgQuaternaryEmphasis);
+} 
+
+body::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bgPrimaryEmphasis_trans);
+} 
+
+/*-------------------------------------------------------------
+ * about
+ *------------------------------------------------------------*/
+.instructortips-help .about-container {
+  display: inline-block;
+  background-color: white;
+  border: 1px solid var(--bgTertiaryEmphasis);
+  margin: 0 0.4em 0 0;
+  padding: 0.4em 1.0em 0.2em 0.4em;
+}
+ 
+.instructortips-help .about-container .about-logosplash {
+  padding-bottom: 0.2em;
+}
+
+.instructortips-help .about-container .about-logosplash .about-logo {
+  font-size: 1.4em;
+  padding-right: 0.2em;
+}
+
+.instructortips-help .about-container .about-logosplash .about-logotitle {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+ 
+.instructortips-help .about-container .about-label {
+  margin-right: 0.2em;
+}
+ 
+/*-------------------------------------------------------------
+ * snapshots
+ *------------------------------------------------------------*/
+.instructortips-help .snapshot {}
+
+.instructortips-help .snapshot .snapshot-label {
+  font-style: italic;
+}
+
+.instructortips-help .snapshot .snapshot-imagecontainer{
+  display: inline-block;
+  position: relative;
+}
+
+.instructortips-help .snapshot .snapshot-imagecontainer img {
+  margin-left: 0.6em;
+  filter: drop-shadow(0.3em 0.3em 0.3em var(--bgTertiaryEmphasis));
+  border: 1px solid var(--bgTertiaryEmphasis);
+}
+
+.instructortips-help .snapshot .snapshot-imagecontainer .hotspot {
+  position: absolute;
+}
+      
+.snapshot .snapshot-imagecontainer .hotspot:hover {
+  border: 2px solid var(--bgTertiaryChoice);
+}
+      
+.instructortips-help .snapshot .snapshot-imagecontainer .hotspot.debug-hotspot  {
+  border: 1px solid red;
+}
+
+/*-------------------------------------------------------------
+ * table
+ *------------------------------------------------------------*/
+.instructortips-help table.help-table {
+  width: 80%;  
+  border-collapse: collapse;  
+}
+
+.instructortips-help .help-table th {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  border: 1px solid var(--bgTertiaryEmphasis);
+  font-weight: normal;
+  text-align: left;
+  padding: 0.4em  
+}
+
+.instructortips-help .help-table th.label {
+  background-color: transparent;
+  border: none;
+}
+
+.instructortips-help .help-table td {
+  border: 1px solid var(--bgTertiaryEmphasis);
+  padding: 0.4em;
+  vertical-align: top;
+}
+
+.instructortips-help .help-table td.label {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+.instructortips-help .help-table td.label a:link {
+  color: white;
+}
+
+.instructortips-help .help-table td.label a:visited {
+  color: white;
+}
+
+/*-------------------------------------------------------------
+ * help - overview page
+ *------------------------------------------------------------*/
+.instructortips-help.home {}
+
+.instructortips-help.home .overview {
+  display: inline-block;
+  vertical-align: top;
+}
+
+/*-------------------------------------------------------------
+ * help - tipediting page
+ *------------------------------------------------------------*/
+.instructortips-help.tipediting {}
+
