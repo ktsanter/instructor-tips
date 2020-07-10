@@ -287,6 +287,7 @@ module.exports = internal.UserManagement = class {
   }
   
   async clearExpiredRequests() {
+    console.log(this._getDateStamp() + ': UserManagement.sendSchedulePushNotifications');
     var result = this._dbManager.queryFailureResult();
     var query, queryResults;
     
@@ -334,4 +335,27 @@ module.exports = internal.UserManagement = class {
     
     return result;    
   }
+  
+  
+//--------------------------------------------------------------
+// utility
+//--------------------------------------------------------------
+  _getDateStamp() {
+    var now = new Date();
+    return this._formatDateStamp(now);
+  }
+  
+  _formatDateStamp(d) {
+    var yr = d.getFullYear();
+    var mo = ('00' + (d.getMonth() + 1)).slice(-2);
+    var da = ('00' + d.getDate()).slice(-2);
+    var hr = ('00' + d.getHours()).slice(-2);
+    var mi = ('00' + d.getMinutes()).slice(-2);
+    var se = ('00' + d.getSeconds()).slice(-2);
+    var ms = ('000' + d.getMilliseconds()).slice(-3);
+    
+    var dateStamp = yr + '-' + mo + '-' + da + ' ' + hr + ':' + mi + ':' + se + '.' + ms;
+    
+    return dateStamp;
+  }  
 }

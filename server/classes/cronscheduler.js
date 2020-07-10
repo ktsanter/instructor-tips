@@ -38,7 +38,7 @@ module.exports = internal.CronScheduler = class {
     //---------------------------------------
     this.createJob({
       jobName: 'schedulepush',
-      fireTime: (this.DEBUG ? '*/5 * * * * *' : '* * * */1 * *'),  // once a day for prod, once after 5 seconds for debug
+      fireTime: (this.DEBUG ? '*/5 * * * * *' : '0 0 6 */1 * *'),  // once a day at 6:00 for prod, once after 5 seconds for debug
 
       funcOnTick: (function(me) {
         return async function() { 
@@ -61,7 +61,7 @@ module.exports = internal.CronScheduler = class {
     //---------------------------------------
     this.createJob({
       jobName: 'clearexpiredrequests',
-      fireTime: (this.DEBUG ? '*/10 * * * * *' : '* * * */1 * *'),  // hourly(?) for prod, once after 10 seconds for debug
+      fireTime: (this.DEBUG ? '*/10 * * * * *' : '0 10 */1 * * *'),  // hourly at 10 minutes past the hour for prod, once after 10 seconds for debug
 
       funcOnTick: (function(me) {
         return async function() { 

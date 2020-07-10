@@ -8,7 +8,7 @@ const internal = {};
 
 module.exports = internal.MessageManagement = class {
   constructor(params) {
-    this.DEBUG = false;
+    this.DEBUG = true;
     if (this.DEBUG) console.log('MessageManagement: debug mode is on');
     
     this._dbManager = params.dbManager;
@@ -99,6 +99,7 @@ module.exports = internal.MessageManagement = class {
   }
   
   async sendSchedulePushNotifications() {    
+    console.log(this._getDateStamp() + ': MessageManagement.sendSchedulePushNotifications');
     var query, queryResults;
     
     var daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
