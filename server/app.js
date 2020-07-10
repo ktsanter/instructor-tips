@@ -165,13 +165,13 @@ const messageManagement = new messageManagementClass({
   "tempFileMaker": tmp,
   "baseDir": __dirname,
   "pugFiles": {
-    sharePugFile : path.join(__dirname, 'private', '/instructortips/pug/schedule_share.pug'),
-    sharePugWrapperFile : path.join(__dirname, 'private', '/instructortips/pug/schedule_share_wrapper.pug'),
+    sharePugFile : path.join(__dirname, 'private', '/instructortips-app/pug/schedule_share.pug'),
+    sharePugWrapperFile : path.join(__dirname, 'private', '/instructortips-app/pug/schedule_share_wrapper.pug'),
     
-    reminderPugFile : path.join(__dirname, 'private', '/instructortips/pug/schedule_reminder.pug'),
-    reminderPugWrapperFile : path.join(__dirname, 'private', '/instructortips/pug/schedule_reminder_wrapper.pug'),
+    reminderPugFile : path.join(__dirname, 'private', '/instructortips-app/pug/schedule_reminder.pug'),
+    reminderPugWrapperFile : path.join(__dirname, 'private', '/instructortips-app/pug/schedule_reminder_wrapper.pug'),
 
-    resetPugFile : path.join(__dirname, 'private', '/instructortips-login/pug/reset_notification.pug')
+    resetPugFile : path.join(__dirname, 'private', '/login/pug/reset_notification.pug')
   }
 });
 
@@ -229,7 +229,7 @@ const dbTreasureHuntLanding = new dbTreasureHuntLandingClass({
 });
 
 //------------------------------------------
-// DB manager lookup
+// DB manager lookup, app info lookup
 //------------------------------------------
 var dbManagerLookup = {
   "instructortips": dbTipManager,
@@ -238,23 +238,38 @@ var dbManagerLookup = {
   "treasurehunt": dbTreasureHunt
 };
 
+var appLookup = {
+  "instructortips" : {
+    appDescriptor: 'instructortips',
+    appName: 'InstructorTips',
+    routeRedirect: '/instructortips-app'
+  },
+  "treasurehunt" : {
+    appDescriptor: 'treasurehunt',
+    appName: 'Treasure Hunt',
+    routeRedirect: '/treasurehunt-configuration'
+  }
+};
+
 //------------------------------------------------------
 // app specific routing and queries
 //------------------------------------------------------
-app.get('/instructortips', function (req, res) {
+function routeIfLoggedIn(req, res, appDescriptor) {
   var loggedin = userManagement.isLoggedIn(req.session);
+  var appInfo = appLookup[appDescriptor];
+  
+  userManagement.setAppInfoForSession(req.session, appInfo);
 
   if (loggedin) {
-    res.sendFile(path.join(__dirname, 'private', '/instructortips/html/instructortips.html'))
+    res.redirect('/usermanagement/routeToApp/' + appInfo.appDescriptor);
     
   } else {
-    res.redirect('/instructortips/login');
+    res.redirect('/login');
   }
-})
+}
 
-app.get('/treasurehunt', function (req, res) {
-  res.redirect('/treasurehunt-configuration');
-})
+app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
+app.get('/treasurehunt', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
 
 app.get('/treasurehunt-landing/:projectid', async function (req, res) {
   var fileName = path.join(__dirname, 'private', 'treasurehunt-landing/pug/treasurehunt-landing.pug');
@@ -281,51 +296,65 @@ app.post('/treasurehunt/landing/check-answer', async function (req, res) {
 //------------------------------------------------------
 // user management, login, logout, etc.
 //------------------------------------------------------
-app.get('/instructortips/login', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', '/instructortips-login/html/login.html'))
+app.get('/usermanagement/routeToApp/:app', function (req, res) {
+  var appDescriptor = req.params.app;
+  
+  var appInfo = appLookup[appDescriptor];
+
+  if (appInfo && appInfo.routeRedirect) {
+    res.redirect(appInfo.routeRedirect);
+  } else {
+    sendFailedAccess(res, 'routeToApp/' + app);
+  }
+});
+
+app.get('/login', function (req, res) {
+  res.sendFile(path.join(__dirname, 'private', '/login/html/login.html'))
 })
 
 app.post('/usermanagement/login_attempt', async function (req, res) {
   var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.hashedPassword);
- 
+  
+  var appInfo = userManagement.getAppInfoForSession(req.session);
+  
   if (loginSuccess) {
-    res.redirect('/instructortips');
+    res.redirect('/usermanagement/routeToApp/' + appInfo.appDescriptor);
 
   } else {
-    res.redirect('/instructortips/login?retry=true');
+    res.redirect('/login?retry=true');
   }
 })
   
 app.get('/usermanagement/logout', function (req, res) {
   userManagement.logout(req.session);
-  res.redirect('/instructortips/login');
+  res.redirect('/login');
 })
 
 app.get('/usermanagement/createaccount', function (req, res) {
-  res.redirect('/instructortips/login?createaccount=true');
+  res.redirect('/login?createaccount=true');
 })
 
 app.post('/usermanagement/createaccount_attempt', async function (req, res) {
   var result = await userManagement.createAccount(req.body);
   
   if (result.success) {
-    res.redirect('/instructortips/login');
+    res.redirect('/login');
   } else {
-    res.redirect('/instructortips/login?createaccount=true&' + result.details);
+    res.redirect('/login?createaccount=true&' + result.details);
   }
 }) 
 
 app.get('/usermanagement/resetaccount', function (req, res) {
-  res.redirect('/instructortips/login?resetaccount=true');
+  res.redirect('/login?resetaccount=true');
 })
 
 app.post('/usermanagement/resetaccount_attempt', async function (req, res) {
   var result = await userManagement.resetRequest(req.body);
   
   if (result.success) {
-    res.redirect('/instructortips/login');    
+    res.redirect('/login');    
   } else {
-    res.redirect('/instructortips/login?resetaccount=true&' + result.details);
+    res.redirect('/login?resetaccount=true&' + result.details);
   }
 }) 
 
@@ -333,9 +362,9 @@ app.post('/usermanagement/pendingaccount_attempt', async function (req, res) {
   var result = await userManagement.resetPendingRequest(req.body);
   
   if (result.success) {
-    res.redirect('/instructortips/login');    
+    res.redirect('/login');    
   } else {
-    res.redirect('/instructortips/login?' + result.details);
+    res.redirect('/login?' + result.details);
   }
 }) 
 
@@ -345,7 +374,7 @@ app.post('/usermanagement/passwordchange', async function (req, res) {
     if (result.success) {
       userManagement.logout(req.session);
       result.data = {};
-      result.data.redirectURL = '/instructortips/login';
+      result.data.redirectURL = '/login';
     }
     
     res.send(result);
@@ -357,6 +386,16 @@ app.get('/usermanagement/passwordsalt', function (req, res) {
     success: true,
     details: 'query succeeded',
     data: {salt: PASSWORD_SALT}
+  };
+  
+  res.send(result);  
+})  
+
+app.get('/usermanagement/sessionappname', function (req, res) {
+  var result = {
+    success: true,
+    details: 'query succeeded',
+    data: {appname: userManagement.getAppInfoForSession(req.session).appName}
   };
   
   res.send(result);  

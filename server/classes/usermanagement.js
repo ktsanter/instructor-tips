@@ -26,6 +26,14 @@ module.exports = internal.UserManagement = class {
     sessionInfo.userInfo = {userId: -1};
   }
   
+  setAppInfoForSession(sessionInfo, appInfo) {
+    sessionInfo.appInfo = appInfo;
+  }
+  
+  getAppInfoForSession(sessionInfo) {
+    return sessionInfo.appInfo;
+  }
+  
   async attemptLogin(sessionInfo, userName, hashedEnteredPassword) {
     this.logout(sessionInfo);
     

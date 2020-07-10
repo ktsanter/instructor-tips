@@ -8,7 +8,7 @@ const internal = {};
 
 module.exports = internal.MessageManagement = class {
   constructor(params) {
-    this.DEBUG = true;
+    this.DEBUG = false;
     if (this.DEBUG) console.log('MessageManagement: debug mode is on');
     
     this._dbManager = params.dbManager;

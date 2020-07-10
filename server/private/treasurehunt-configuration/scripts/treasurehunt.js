@@ -16,6 +16,9 @@ const app = function () {
 	const page = {};
   
   const settings = {
+    helpURL: '/treasurehunt-help',
+    logoutURL: '/usermanagement/logout',
+    
     optionList: ['layout', 'clues', 'profile']
   };
    
@@ -141,14 +144,14 @@ const app = function () {
     settings[arg].show(settings.projectControl.isProjectSelected() || arg == 'profile');
   }
   
-  function _showHelp() {
-    console.log('show help');
+  function _showHelp() { 
+    window.open(settings.helpURL, '_blank');
   }
-  
-  function _doLogout() {
-    console.log('do logout');
+    
+  async function _doLogout() {
+    window.open(settings.logoutURL, '_self'); 
   }
-  
+    
   function _callbackSelectionChanged() {
     settings.layout.projectSelectionChanged();
     settings.clues.projectSelectionChanged();
