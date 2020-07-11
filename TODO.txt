@@ -12,6 +12,8 @@ InstructorTips
 
 - check for "valid" email before sending from gmailer
 
+- redirect to login when session expires
+
 
 
 TreasureHunt

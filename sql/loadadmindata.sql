@@ -40,7 +40,7 @@ select "loading user - disabled" as comment;
 #-------------------------------------------------------------
 select "updating userprivilege -disabled" as comment;
 
-#call bumpprivilege();
+call bumpprivilege();
 
 #-------------------------------------------------------------
 #-- category

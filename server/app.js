@@ -369,7 +369,9 @@ app.post('/usermanagement/pendingaccount_attempt', async function (req, res) {
 }) 
 
 app.post('/usermanagement/passwordchange', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
+  var userInfo = userManagement.getUserInfo(req.session);
+    
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
     var result = await userManagement.changePassword(req.body, req.session);
     if (result.success) {
       userManagement.logout(req.session);
@@ -381,7 +383,7 @@ app.post('/usermanagement/passwordchange', async function (req, res) {
   }
 }) 
 
-app.get('/usermanagement/passwordsalt', function (req, res) {
+app.get('/usermanagement/passwordsalt', function (req, res) { // note this is not privilege protected
   var result = {
     success: true,
     details: 'query succeeded',
@@ -391,7 +393,7 @@ app.get('/usermanagement/passwordsalt', function (req, res) {
   res.send(result);  
 })  
 
-app.get('/usermanagement/sessionappname', function (req, res) {
+app.get('/usermanagement/sessionappname', function (req, res) { // note this is not privilege protected
   var result = {
     success: true,
     details: 'query succeeded',
@@ -402,7 +404,9 @@ app.get('/usermanagement/sessionappname', function (req, res) {
 })  
 
 app.get('/usermanagement/getuser', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
     res.send(userManagement.queryUserInfo(req.session));
 
   } else {
@@ -411,7 +415,9 @@ app.get('/usermanagement/getuser', async function (req, res) {
 })  
 
 app.get('/usermanagement/refreshuser', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor')) {;
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {;
     res.send(await userManagement.refreshUserInfo(req.session));
 
   } else {
@@ -463,10 +469,12 @@ app.get('/subpage/:app/:helptype', function (req, res) {
 // protected queries
 //------------------------------------------------------
 app.get('/admin/query/:queryName',  async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'instructor') && req.params.queryName == 'navbar') {
-    res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor') && req.params.queryName == 'navbar') {
+    res.send(await dbAdminQuery.doQuery(req.params, res, userInfo));
 
-  } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin') && req.params.queryName == 'cronstatus') {
+  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus') {
     res.send({
       success: true, 
       details: 'cronstatus', 
@@ -476,8 +484,8 @@ app.get('/admin/query/:queryName',  async function (req, res) {
         mailerDebugMode: gMailer.isDebugModeOn()
       }});
 
-  } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
-    res.send(await dbAdminQuery.doQuery(req.params, res, userManagement.getUserInfo(req.session)));
+  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
+    res.send(await dbAdminQuery.doQuery(req.params, res, userInfo));
     
   } else {
     res.send(_failedRequest('get'));
@@ -485,7 +493,9 @@ app.get('/admin/query/:queryName',  async function (req, res) {
 })
 
 app.post('/admin/insert/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
     res.send(await dbAdminInsert.doInsert(req.params, req.body));
 
   } else {
@@ -494,7 +504,9 @@ app.post('/admin/insert/:queryName', async function (req, res) {
 })
 
 app.post('/admin/update/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin') && req.params.queryName == 'cronstatus') {
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus') {
     if (req.body.enablePushNotifications) {
       cronScheduler.startJob('schedulepush');
     } else {
@@ -517,7 +529,7 @@ app.post('/admin/update/:queryName', async function (req, res) {
       }
     });
 
-  } else if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
+  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
     res.send(await dbAdminUpdate.doUpdate(req.params, req.body));
 
   } else {
@@ -526,7 +538,9 @@ app.post('/admin/update/:queryName', async function (req, res) {
 })
 
 app.post('/admin/delete/:queryName', async function (req, res) {
-  if (userManagement.isAtLeastPrivilegeLevel(userManagement.getUserInfo(req.session), 'admin')) {
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
     res.send(await dbAdminDelete.doDelete(req.params, req.body));
 
   } else {
