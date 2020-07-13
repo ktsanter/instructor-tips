@@ -1,11 +1,12 @@
-body {
+body {}
+
+.container {
 	color: black;
-	background-color: #eee;
 	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-	font-size: 13px;
+	font-size: 13px;  
+  padding: 0.4em 0.4em;
 }
 
-.container {}
 .container .salutation {}
       
 .container .greeting {}
@@ -20,7 +21,7 @@ body {
 
 .container .schedule .schedulename {
   color: white;
-  background-color: rgba(66, 98, 150, 1.0);
+  background-color: #426296;
   padding: 0.2em 0.2em 0.3em 0.2em;  
 }
 
@@ -44,7 +45,7 @@ body {
 
 .container .schedule .scheduletips .tipsforweek .tipsforweeklabel {
   color: white;
-  background-color: rgba(66, 98, 150, 1.0);
+  background-color: #426296;
   display: inline;
   padding: 0 0.3em 0.1em 0.3em;
 }
@@ -60,5 +61,7 @@ body {
 }
 
 .container .schedule .scheduletips .tipsforweek .tipdetails.tipdetails-odd {
-  background-color: transparent;
+  background-color: #eee;
 }
+
+.container .message-action {}

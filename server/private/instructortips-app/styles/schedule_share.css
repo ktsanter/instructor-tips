@@ -1,11 +1,13 @@
-body {
-	color: black;
-	background-color: #eee;
+body {}
+
+.container {
 	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	font-size: 13px;
+  color: black;
+	background-color: #eee;
+  border: 1px solid #aaa;
+  padding: 0.4em 0.4em;
 }
-
-.container {}
 
 .container .salutation {}
 
@@ -15,16 +17,20 @@ body {
 
 .container .message.message-share {}
 
-.container .message.message-action {}
-
 .container .schedule {
+  display: inline-block;
   background-color: white;
   border: 1px solid rgba(66, 98, 150, 1.0);
   border-radius: 0.3em;
   margin: 0.4em 0;
-  padding: 0.2em 0.4em;  
+  padding: 0.2em 0.4em;
+  max-width: 80%;
 }
 
 .container .schedule .schedule-name{}
 
 .container .schedule .schedule-comment{}
+
+.container .message.message-action {
+  margin-top: 1.0em;
+}

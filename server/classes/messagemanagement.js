@@ -17,7 +17,7 @@ module.exports = internal.MessageManagement = class {
     this._pug = params.pug;
     this._appURL = params.appURL;
     this._fileServices = params.fileServices;
-    this._HTMLToImage = params.HTMLToImage;
+    this._HTMLToImage = params.HTMLToImage; 
     this._tempFileMaker = params.tempFileMaker;
     
     this._tempDir = 'temp';
@@ -299,10 +299,15 @@ module.exports = internal.MessageManagement = class {
   async _prepAndSendMessageWithoutWrapper(params) {
     var rendered = this._pug.renderFile(params.pugFile, {params: params.pugParams});
 
-    var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', rendered);
-    if (!mailResult.success) {
-      console.log('MessageManagement._prepAndSendMessageWithoutWrapper: failed to send email to ' + emailTo);
-      return false;
+    if (this.DEBUG) {
+      this._writeRenderedToFile(params.pugFile, params.id, rendered);
+
+    } else {      
+      var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', rendered);
+      if (!mailResult.success) {
+        console.log('MessageManagement._prepAndSendMessageWithoutWrapper: failed to send email to ' + emailTo);
+        return false;
+      }
     }
         
     return true;

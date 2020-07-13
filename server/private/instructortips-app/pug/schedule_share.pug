@@ -11,6 +11,7 @@ html
     - var userFrom = params.userFrom
     - var scheduleName = params.scheduleName
     - var comment = params.comment
+    - var appURL = params.appURL    
     
     .container 
       .salutation
@@ -32,3 +33,6 @@ html
         
       .message.message-action
         |You can use the app to either accept or delete the schedule at your convenience.
+        br
+        |You can access InstructorTips at &nbsp;
+        a(href=appURL) !{appURL}

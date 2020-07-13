@@ -9,6 +9,7 @@ html
   body  
     - var userTo = params.userTo
     - var dateStamp = params.dateStamp
+    - var appURL = params.appURL    
     
     .container
       .salutation 
@@ -57,3 +58,6 @@ html
                     else
                       .tipdetails.tipdetails-odd
                         |!{tipHTML}
+        .message-action
+          |You can access InstructorTips at &nbsp;
+          a(href=appURL) !{appURL}
