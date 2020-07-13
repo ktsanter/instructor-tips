@@ -78,7 +78,7 @@ module.exports = internal.MessageManagement = class {
       appURL: this._appURL
     };      
     
-    var mailResult = await this._prepAndSendMessageWithWrapper({
+    var mailResult = await this._prepAndSendMessageWithoutWrapper({ //await this._prepAndSendMessageWithWrapper({
       id: params.userInfo.userId + '_' + params.userIdTo + '_' + params.scheduleId,
       emailTo: notificationInfo.email,
       subject: 'an InstructorTips schedule has been shared with you',
@@ -261,7 +261,7 @@ module.exports = internal.MessageManagement = class {
       params.scheduleList.push(scheduleInfo);
     }
     
-    return await this._prepAndSendMessageWithWrapper({
+    return await this._prepAndSendMessageWithoutWrapper({  //await this._prepAndSendMessageWithWrapper({
       id: userId,
       emailTo: emailToAddress,
       subject: 'InstructorTips weekly reminder',
@@ -296,9 +296,21 @@ module.exports = internal.MessageManagement = class {
     return organized;
   }
 
+  async _prepAndSendMessageWithoutWrapper(params) {
+    var rendered = this._pug.renderFile(params.pugFile, {params: params.pugParams});
+
+    var mailResult = await this._mailer.sendMessage(params.emailTo, params.subject, '', rendered);
+    if (!mailResult.success) {
+      console.log('MessageManagement._prepAndSendMessageWithoutWrapper: failed to send email to ' + emailTo);
+      return false;
+    }
+        
+    return true;
+  }
+  
   async _prepAndSendMessageWithWrapper(params) {
     var rendered = this._pug.renderFile(params.pugFile, {params: params.pugParams});
-    
+
     var imageFileName = this._tempFileMaker.tmpNameSync({tmpdir: this._tempDir}) + '.png'; 
     imageFileName = this._tempDir + '/' + imageFileName.split('\\').pop().split('/').pop();
     
@@ -340,7 +352,7 @@ module.exports = internal.MessageManagement = class {
     
     return true;
   }
-  
+
   _writeRenderedToFile(fileName, id, renderedHTML) {
     var fileNameOnly = fileName.split('\\').pop().split('/').pop();
     var fileNameWithoutExtension = fileNameOnly.split('.')[0];

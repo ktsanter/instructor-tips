@@ -470,7 +470,7 @@ app.get('/subpage/:app/:helptype', function (req, res) {
 //------------------------------------------------------
 app.get('/admin/query/:queryName',  async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
-  
+
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor') && req.params.queryName == 'navbar') {
     res.send(await dbAdminQuery.doQuery(req.params, res, userInfo));
 
@@ -483,6 +483,10 @@ app.get('/admin/query/:queryName',  async function (req, res) {
         clearExpiredRequestisRunning: cronScheduler.isRunning('clearexpiredrequests'),
         mailerDebugMode: gMailer.isDebugModeOn()
       }});
+
+  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus-forcepush') {
+    await messageManagement.sendSchedulePushNotifications();
+    res.send({success: true, details: 'forced push notifications'});
 
   } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
     res.send(await dbAdminQuery.doQuery(req.params, res, userInfo));

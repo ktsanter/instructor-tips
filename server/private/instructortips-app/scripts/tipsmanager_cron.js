@@ -63,6 +63,11 @@ class TipCron {
     var elemStatus = CreateElement.createSliderSwitch(msgControlOn, msgControlOff, className, handler, false);
     subcontainer.appendChild(elemStatus);    
     
+    if (addedClass == 'schedulepush') {
+      handler = (e) => {this._handleForcePushNotification(e);};
+      container.appendChild(CreateElement.createButton(null, 'schedulepush-force', 'force push', 'force push notifications for this user', handler));
+    }      
+    
     return container;
   }
       
@@ -147,6 +152,11 @@ class TipCron {
   async _handleSwitchChange(e) {
     await this._setServerState();
     await this.update();
+  }
+  
+  async _handleForcePushNotification(e) {
+    var queryResults = await SQLDBInterface.doGetQuery('admin/query', 'cronstatus-forcepush', this._notice);
+    console.log(queryResults);
   }
   
   //--------------------------------------------------------------

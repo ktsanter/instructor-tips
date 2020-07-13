@@ -31,16 +31,23 @@ const app = function () {
     checkQueryParams();
     
     settings.userManagement = new UserManagement(sodium);
-    await settings.userManagement.init();
+    var initSuccessful = await settings.userManagement.init();
     
    	page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
+    
+    if (!initSuccessful) {
+      page.body.appendChild(CreateElement.createDiv(null, null, 'failed to initialize UserManagement'));
+      return false;
+    }
     
     page.body.appendChild(_renderPage());
     
     setTimeout(function() {
       document.getElementsByName('userName')[0].focus();
     }, 0);
+    
+    return true;
 	}
 	  
   function checkQueryParams() {
