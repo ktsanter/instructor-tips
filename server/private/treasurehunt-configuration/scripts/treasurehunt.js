@@ -27,7 +27,7 @@ const app = function () {
 	//----------------------------------------
 	async function init () {
     document.title = appInfo.appName;
-
+    
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
    
@@ -94,11 +94,11 @@ const app = function () {
       
       var elem;
       if (opt == 'layout') {
-        var suggestedValue = {  // get these from DB
-          imageName: 'suggested value for imageName',
-          message: 'suggested value for message',
-          positiveResponse: 'suggested value for positiveResponse',
-          negativeResponse: 'suggested value for negativeResponse'
+        var suggestedValue = {  
+          imageName: 'https://drive.google.com/uc?id=17nVXc-kbjAPIe8ALpG-AXSH-DbLh0rK0',
+          message: 'Welcome to the **[Course Name] Treasure Hunt!**',
+          positiveResponse: 'Congratulations! You\'ve found answer #[[cluenumber]] of [[numberofclues]].    \n\nLet InstructorName know by sending a message or text with this phrase',
+          negativeResponse: '*Sorry, that\'s not a valid answer. Feel free to try again*'
         };
         
         settings.layout = new TreasureHuntLayout({
@@ -110,10 +110,10 @@ const app = function () {
         settings.clues = new TreasureHuntClues({
           projectControl: settings.projectControl,
           defaultClue: {
-            prompt: 'default prompt',
-            response: 'default response',
+            prompt: '',
+            response: '',
             action: {type: 'none'},
-            confirmation: 'default confirmation'            
+            confirmation: ''            
           }
         });
         

@@ -150,6 +150,7 @@ const app = function () {
       projectid: elemProjectId.innerHTML,
       answer: elemUserInput.value
     };
+    
     var queryResults = await SQLDBInterface.doPostQuery('treasurehunt/landing', 'check-answer', params, settings.notice);
     return queryResults;
   }

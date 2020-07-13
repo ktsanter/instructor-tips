@@ -54,6 +54,7 @@ class TreasureHuntLayout {
     UtilityKTS.denyDoubleQuotes(elem);
     
     var elem = CreateElement.createSliderSwitch('full page', 'full page', 'image-fullpage', (e) => {this._handleImageFullPage(e);});
+    elem.style.display = 'none';
     container.appendChild(elem);
     
     return container;
@@ -202,11 +203,19 @@ class TreasureHuntLayout {
       var elemMessage = this._container.getElementsByClassName('message')[0];
       elemMessage.value = this._config.suggestedValue.message;
 
+      var elemMessagePreview = this._container.getElementsByClassName('message-preview')[0];           
+      this._updatePreviewText(elemMessage, elemMessagePreview);
+
     } else if (sectionName == 'responses') {
       var elemPositiveResponse = this._container.getElementsByClassName('positiveresponse')[0];
       var elemNegativeResponse = this._container.getElementsByClassName('negativeresponse')[0];
       elemPositiveResponse.value = this._config.suggestedValue.positiveResponse;
       elemNegativeResponse.value = this._config.suggestedValue.negativeResponse;
+
+      var elemPositiveResponsePreview = this._container.getElementsByClassName('positiveresponse-preview')[0];
+      var elemNegativeResponsePreview = this._container.getElementsByClassName('negativeresponse-preview')[0];
+      this._updatePreviewText(elemPositiveResponse, elemPositiveResponsePreview);
+      this._updatePreviewText(elemNegativeResponse, elemNegativeResponsePreview);
     }
   }
 
