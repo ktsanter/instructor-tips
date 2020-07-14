@@ -19,6 +19,8 @@ const app = function () {
 	//----------------------------------------
 	function init () {
     document.title = appInfo.appName;
+    
+    _checkQueryParams();
 
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('colorscheme');
@@ -27,6 +29,17 @@ const app = function () {
     _updateTotal();
 	}
 	
+	function _checkQueryParams() {
+    var result = false;
+
+    var urlParams = new URLSearchParams(window.location.search);
+		settings.proMode = urlParams.has('pro') ? urlParams.get('pro').toLowerCase() == 'true' : false;
+
+    console.log(urlParams);
+    console.log(settings);
+    
+    return result;
+  }  
 	//-----------------------------------------------------------------------------
 	// rendering
 	//-----------------------------------------------------------------------------  
@@ -63,16 +76,13 @@ const app = function () {
     
     container.appendChild(CreateElement.createDiv(null, 'target-label', 'Enter the decimal number you\'d like to convert to binary'))
 
-    var elem = CreateElement.createSpinner(null, 'target-input', 0, 0, 5000, 1);
+    var elem = CreateElement.createSpinner(null, 'target-input', 0, 0, 300, 1);
     container.appendChild(elem);
     elem.placeholder = 'decimal value';
     elem.maxLength = 4;
     elem.addEventListener('change', (e) => {_handleInputChange(e);});
     elem.addEventListener('input', (e) => {_handleInputChange(e);});
     
-    var handler = (e) => {_handleReset(e);};
-    container.appendChild(CreateElement.createButton(null, 'reset', 'reset', null, handler));
-        
     return container;
   }
   
@@ -86,12 +96,15 @@ const app = function () {
     
     var handler = (e) => {_handleSwitch(e);};
     
-    for (var i = 11; i >= 0; i--) {      
+    var upperPower = settings.proMode ? 5 : 7;
+    var lowerPower = upperPower - 7;
+    
+    for (var i = upperPower; i >= lowerPower; i--) {      
       var binValue = '2' + '<span class="super-me">' + i + '</span';
       var decValue = 2**i;
 
       var extraClasses = '';
-      if (i % 4 == 0 && i != 0) extraClasses = ' fourth';
+
       var binElem = CreateElement.createDiv(null, 'switch-value bin-switch' + extraClasses);
       binElem.appendChild(CreateElement.createDiv(null, 'switch-label', binValue));
       binElem.decValue = decValue;
@@ -135,8 +148,9 @@ const app = function () {
   function _renderInstructions() {
     var container = CreateElement.createDiv(null, 'instructions');
     
-    var instructions = 'Click on the 0s and 1s to set the binary value.  Hint: work from the left and keep an eye on the "remaining" amount.';
-    container.appendChild(CreateElement.createDiv(null, 'instructions-text', instructions));    
+    var instructions = 'Click on the 0s and 1s to set the binary value.  <br>Hint: work from the left and keep an eye on the "remaining" amount.';
+    var elem = CreateElement.createDiv(null, 'instructions-text', instructions);
+    container.appendChild(elem);    
 
     return container;
   }
@@ -152,13 +166,24 @@ const app = function () {
     
     container.appendChild(CreateElement.createDiv(null, 'total-section total-status'));
 
+    var handler = (e) => {_handleReset(e);};
+    container.appendChild(CreateElement.createButton(null, 'reset', 'reset', null, handler));
+        
     return container;
   }
   
   function _updateTotal() {
     var totalDecimal = _getSelectedValue();
-    var totalBinary = ('000000000000' + totalDecimal.toString(2)).slice(-12);
-    totalBinary = totalBinary.substring(0,4) + ' ' + totalBinary.substring(4,8) + ' ' + totalBinary.slice(8, 13);
+    console.log(totalDecimal);
+    
+    var totalBinary = totalDecimal.toString(2);
+    console.log(totalBinary);
+    
+    totalBinary = totalBinary.replace('.', '');
+    console.log(totalBinary);
+    
+    totalBinary = ('00000000' + totalBinary).slice(-8);
+    console.log(totalBinary);
         
     var elemTarget = page.body.getElementsByClassName('target-input')[0];
     var elemTotalBinary = page.body.getElementsByClassName('total-binary')[0];
