@@ -18,9 +18,10 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	function init () {
-    document.title = appInfo.appName;
     
     _checkQueryParams();
+    if (settings.proMode) appInfo.appName += ' (pro)';
+    document.title = appInfo.appName;
 
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('colorscheme');
@@ -66,7 +67,9 @@ const app = function () {
   function _renderTitle() {
     var container = CreateElement.createDiv(null, 'title');
     
-    container.appendChild(CreateElement.createDiv(null, 'title-text', 'Binary/decimal conversion'));
+    var title = 'Binary/decimal conversion';
+    if (settings.proMode) title += ' (pro)';
+    container.appendChild(CreateElement.createDiv(null, 'title-text', title));
     
     return container;
   }
