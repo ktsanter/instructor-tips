@@ -35,9 +35,6 @@ const app = function () {
 
     var urlParams = new URLSearchParams(window.location.search);
 		settings.proMode = urlParams.has('pro') ? urlParams.get('pro').toLowerCase() == 'true' : false;
-
-    console.log(urlParams);
-    console.log(settings);
     
     return result;
   }  
@@ -176,17 +173,21 @@ const app = function () {
   }
   
   function _updateTotal() {
-    var totalDecimal = _getSelectedValue();
-    console.log(totalDecimal);
-    
+    var totalDecimal = _getSelectedValue();    
     var totalBinary = totalDecimal.toString(2);
-    console.log(totalBinary);
-    
-    totalBinary = totalBinary.replace('.', '');
-    console.log(totalBinary);
-    
-    totalBinary = ('00000000' + totalBinary).slice(-8);
-    console.log(totalBinary);
+
+    if (settings.proMode) {
+      var totalSplit = totalBinary.split('.');
+      totalBinary = ('000000' + totalSplit[0]).slice(-6);
+      if (totalSplit.length == 1) {
+        totalBinary += '.00';
+      } else {
+        totalBinary += '.' + (totalSplit[1] + '00').slice(0,2);
+      }
+
+    } else {
+      totalBinary = ('00000000' + totalBinary).slice(-8);
+    }
         
     var elemTarget = page.body.getElementsByClassName('target-input')[0];
     var elemTotalBinary = page.body.getElementsByClassName('total-binary')[0];
