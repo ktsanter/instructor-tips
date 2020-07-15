@@ -1,0 +1,124 @@
+"use strict";
+//---------------------------------------------------------------
+// Pacing guide viewer DB interface
+//---------------------------------------------------------------
+// TODO: 
+//---------------------------------------------------------------
+const internal = {};
+
+module.exports = internal.PacingGuideViewer = class {
+  constructor(userManagement, dbManager) {
+    this._dbManager = dbManager;
+    this._userManagement = userManagement;
+  }
+  
+//---------------------------------------------------------------
+// dispatchers
+//---------------------------------------------------------------
+  async doQuery(params, postData, userInfo, funcCheckPrivilege) {
+    var dbResult = this._dbManager.queryFailureResult();
+
+    if (params.queryName == 'courselistings') {
+      dbResult = await this._getCourseListings(params, postData, userInfo);
+      
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    } 
+    
+    return dbResult;
+  }
+
+  async doInsert(params, postData, userInfo, funcCheckPrivilege) {
+    var dbResult = this._dbManager.queryFailureResult();
+    
+    if (params.queryName == 'dummy') {
+            
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    }
+    
+    return dbResult;
+  }
+  
+  async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
+    var dbResult = this._dbManager.queryFailureResult();
+    
+    if (params.queryName == 'dummy') {
+    
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    }
+    
+    return dbResult;
+  }  
+
+  async doDelete(params, postData, userInfo, funcCheckPrivilege) {
+    var dbResult = this._dbManager.queryFailureResult();
+    
+    if (params.queryName == 'dummy') {
+            
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    }
+    
+    return dbResult;
+  }
+
+//---------------------------------------------------------------
+// specific query methods
+//---------------------------------------------------------------
+  async _getCourseListings(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select courselistingid, textkey, description ' +
+      'from courselisting ' +
+      'order by description';
+      
+    console.log(query);
+    queryResults = await this._dbManager.dbQuery(query);
+    console.log(queryResults);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+//---------------------------------------------------------------
+// specific insert methods
+//---------------------------------------------------------------
+
+//---------------------------------------------------------------
+// specific update methods
+//---------------------------------------------------------------
+  
+//---------------------------------------------------------------
+// specific delete methods
+//---------------------------------------------------------------
+
+//---------------------------------------------------------------
+// other support methods
+//---------------------------------------------------------------
+  _getDateStamp() {
+    var now = new Date();
+;
+    var yr = now.getFullYear();
+    var mo = ('00' + (now.getMonth() + 1)).slice(-2);
+    var da = ('00' + now.getDate()).slice(-2);
+    var hr = ('00' + now.getHours()).slice(-2);
+    var mi = ('00' + now.getMinutes()).slice(-2);
+    var se = ('00' + now.getSeconds()).slice(-2);
+    
+    var dateStamp = yr + '-' + mo + '-' + da + ' ' + hr + ':' + mi + ':' + se;
+    
+    return dateStamp;
+  }
+}

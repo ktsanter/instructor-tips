@@ -11,6 +11,7 @@ const MARIA_USER = getEnv('MARIA_USER', true);
 const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
 const MARIA_DBNAME_INSTRUCTORTIPS = getEnv('MARIA_DBNAME_INSTRUCTORTIPS', true);
 const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
+const MARIA_DBNAME_PGVIEWER = getEnv('MARIA_DBNAME_PGVIEWER', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -83,9 +84,19 @@ const mariadbParams_TreasureHunt = {
     connectionLimit: 5 */
 };
     
+const mariadbParams_PGViewer = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_PGVIEWER /*, 
+    connectionLimit: 5 */
+};
+    
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
+const mariaDBManager_PGViewer = new mariaDBManagerClass(mariadbParams_PGViewer);
     
 //------------------------------------------
 // session management
@@ -229,13 +240,20 @@ const dbTreasureHuntLanding = new dbTreasureHuntLandingClass({
 });
 
 //------------------------------------------
+// Pacing guide viewer general query objects
+//------------------------------------------
+const dbPGViewerClass = require('./classes/pacingguide-viewer')
+const dbPGViewer = new dbPGViewerClass(userManagement, mariaDBManager_PGViewer);
+
+//------------------------------------------
 // DB manager lookup, app info lookup
 //------------------------------------------
 var dbManagerLookup = {
   "instructortips": dbTipManager,
   "usermanagement": dbTipManager,
   "tipmanager": dbTipManager,
-  "treasurehunt": dbTreasureHunt
+  "treasurehunt": dbTreasureHunt,
+  "pacingguide-viewer": dbPGViewer
 };
 
 var appLookup = {
@@ -244,11 +262,18 @@ var appLookup = {
     appName: 'InstructorTips',
     routeRedirect: '/instructortips-app'
   },
+  
   "treasurehunt" : {
     appDescriptor: 'treasurehunt',
     appName: 'Treasure Hunt',
     routeRedirect: '/treasurehunt-configuration'
-  }
+  },
+  
+  "pacingguide" : {
+    appDescriptor: 'pacingguide',
+    appName: 'Pacing Guide Viewer',
+    routeRedirect: '/pacingguide-viewer'
+  }  
 };
 
 //------------------------------------------------------
@@ -270,6 +295,7 @@ function routeIfLoggedIn(req, res, appDescriptor) {
 
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
 app.get('/treasurehunt', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
+app.get('/pacingguide', function (req, res) { routeIfLoggedIn(req, res, 'pacingguide'); })
 
 app.get('/treasurehunt-landing/:projectid', async function (req, res) {
   var fileName = path.join(__dirname, 'private', 'treasurehunt-landing/pug/treasurehunt-landing.pug');

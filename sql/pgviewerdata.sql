@@ -1,0 +1,16 @@
+delete from courselisting;
+insert into courselisting(textkey, description) values ('C-JAVASC-MSTR-18',     'Advanced Web Design: JavaScript');
+insert into courselisting(textkey, description) values ('C-WBDN-MSTR-20',       'Basic Web Design: HTML & CSS');
+insert into courselisting(textkey, description) values ('C-BIOB-MSTR-19',       'Biology B');
+insert into courselisting(textkey, description) values ('BUSETH-MSTR-18',       'Business Ethics');
+insert into courselisting(textkey, description) values ('CarPl-MSTR-17a',       'Career Planning');
+insert into courselisting(textkey, description) values ('C-CBGGSTM-MSTR-20',    'Computer Basics (Google Suite)');
+insert into courselisting(textkey, description) values ('F-DGITA-MSTR-19',      'Digital Information Technology A');
+insert into courselisting(textkey, description) values ('F-DGITB-MSTR-19',      'Digital Information Technology B');
+insert into courselisting(textkey, description) values ('EMSK-MSTR-17',         'Employability Skills');
+insert into courselisting(textkey, description) values ('Entre-MSTR-17',        'Entrepreneurship');
+insert into courselisting(textkey, description) values ('HEDM-MSTR-20',         'Health Education');
+insert into courselisting(textkey, description) values ('HEDMA-MSTR-20',        'Health Education (abstinence only)');
+insert into courselisting(textkey, description) values ('F-HT-MSTR-20',         'Hospitality and Tourism');
+insert into courselisting(textkey, description) values ('CL-JAVAPGMA-MSTR-20',  'Java Programming A');
+insert into courselisting(textkey, description) values ('PFIT-MSTR-19',         'Personal Fitness');
