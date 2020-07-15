@@ -21,6 +21,9 @@ module.exports = internal.PacingGuideViewer = class {
     if (params.queryName == 'courselistings') {
       dbResult = await this._getCourseListings(params, postData, userInfo);
       
+    } else if (params.queryName == 'startend') {
+      dbResult = await this._getStartEndDates(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -77,9 +80,30 @@ module.exports = internal.PacingGuideViewer = class {
       'from courselisting ' +
       'order by description';
       
-    console.log(query);
     queryResults = await this._dbManager.dbQuery(query);
-    console.log(queryResults);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+  async _getStartEndDates(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select description, startdate, enddate ' +
+      'from startend ' +
+      'order by description';
+      
+    queryResults = await this._dbManager.dbQuery(query);
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
