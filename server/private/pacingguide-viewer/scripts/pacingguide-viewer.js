@@ -24,7 +24,7 @@ const app = function () {
   
     pgStem: 'https://integrations.michiganvirtual.org:9092/api/guide/',  // move to DB
     scaleWidth: 0.95,
-    scaleHeight: 0.8,
+    scaleHeight: 1.0,
   };
 
   //---------------------------------------
@@ -174,6 +174,7 @@ const app = function () {
     var elem = _getViewerElement();
     elem.style.height = (document.documentElement.scrollHeight * settings.scaleHeight) +'px';
     elem.style.width = (document.documentElement.scrollWidth * settings.scaleWidth) + 'px';
+    console.log(elem);
   } 
   
   //---------------------------------------
