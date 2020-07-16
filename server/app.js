@@ -665,6 +665,7 @@ function _failedRequest(requestType) {
   return {success: false, details: requestType + ' failed'};
 }
 
+
 //------------------------------------------
 // boilerplate responses for failed requests
 //------------------------------------------

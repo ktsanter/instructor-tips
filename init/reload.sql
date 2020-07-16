@@ -7,3 +7,4 @@ SOURCE /sql/schema_instructortips.sql;
 SOURCE /sql/loadadmindata.sql;
 SOURCE /sql/schema_treasurehunt.sql;
 SOURCE /sql/schema_pacingguide.sql;
+SOURCE /sql/pgviewerdata.sql;
