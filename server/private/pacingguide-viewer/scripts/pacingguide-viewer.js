@@ -34,95 +34,36 @@ const app = function () {
     document.title = appInfo.appName;
     
     page.body = document.getElementsByTagName('body')[0];
-    page.body.classList.add('pgviewer-colorscheme');
-    
-    if (await _getCourseListings() && await _getStartEndDates()) {
-      page.body.appendChild(_renderPage());
-      window.addEventListener('resize', _windowResize);
-      
-    } else {
-      page.body.appendChild(_renderError());
-    }
+    window.addEventListener('resize', _windowResize);
+    _tweakControls();
   }
 
   //-----------------------------------------------------------------------------
   // page rendering
   //-----------------------------------------------------------------------------  
-  function _renderPage() {
-    var container = CreateElement.createDiv(null, 'pgviewer-contents');
-    
-    container.appendChild(_renderTitle());    
-    container.appendChild(_renderControls());
-    container.appendChild(_renderTestSection());
-    container.appendChild(_renderViewer());
-    
-    return container;
-  }
-  
-  function _renderError() {
-    return CreateElement.createDiv(null, 'pgviewer-error', 'error in retrieving data');
-  }
-
-  function _renderTitle() {
-    var container = CreateElement.createDiv(null, 'pgviewer-title');
-    
-    container.appendChild(CreateElement.createDiv(null, 'pgviewer-titletext', appInfo.appName));
-    
-    return container;
-  }
-
-  function _renderControls() {
-    var container = CreateElement.createDiv(null, 'pgviewer-controls');
-    
+  function _tweakControls() {
     var handler = (e) => {_handleParameterChange(e);};
 
-    // schedule selection
-    var info = settings.courseKeyInfo;
-    var elemSelect = CreateElement.createSelect(null, 'pgviewer-courseselect select-css', handler, settings.courseKeyInfo);
-    container.appendChild(elemSelect);
+    var elemSelect = page.body.getElementsByClassName('pgviewer-courseselect')[0];    
+    elemSelect.addEventListener('change', handler);
     
     var elem = elemSelect.firstChild;
     elem.hidden = true;
     elem.disabled = true;
     elem.selected = true;
     
-    // start/end date selection
-    var elemSelect = CreateElement.createSelect(null, 'pgviewer-dateselect select-css', handler, settings.startEndInfo);
-    container.appendChild(elemSelect);
-
-    // custom start/end date
-    var subcontainer = CreateElement.createDiv(null, 'pgviewer-customdate hide-me');
-    container.appendChild(subcontainer);
-
-    var elemScheduleStart = CreateElement.createDatePicker(null, 'pgviewer-date pgviewer-startdate', settings.defaultStartDate, '2020-06-01', '2030-12-31');
-    elemScheduleStart.title = 'start date';
-    elemScheduleStart.addEventListener('change', handler);
-    subcontainer.appendChild(elemScheduleStart);      
-
-    // end date
-    var elemScheduleEnd = CreateElement.createDatePicker(null, 'pgviewer-date pgviewer-enddate', settings.defaultEndDate, '2020-06-01', '2030-12-31');
-    elemScheduleEnd.title = 'end date';
-    elemScheduleEnd.addEventListener('change', handler);
-    subcontainer.appendChild(elemScheduleEnd);    
-
-    return container;
-  }
-  
-  function _renderViewer() {
-    var container = CreateElement.createDiv(null, 'pgviewer-viewer');
-
-    var elem = CreateElement.createIframe(null, 'pgviewer-viewercontents hide-me', 'about:blank', null, null, false);
-    container.appendChild(elem);
-    elem.loadingViewer = false;
-    elem.addEventListener('load', (e) => {_handleViewerLoad(e);});
+    var elemSelect = page.body.getElementsByClassName('pgviewer-dateselect')[0];    
+    elemSelect.addEventListener('change', handler);
     
-    return container;
-  }
-  
-  function _renderTestSection() {
-    var container = CreateElement.createDiv(null, 'pgviewer-test');
+    var elemCustomStart = page.body.getElementsByClassName('pgviewer-startdate')[0];
+    elemCustomStart.addEventListener('change', handler);
     
-    return container;
+    var elemCustomStart = page.body.getElementsByClassName('pgviewer-enddate')[0];
+    elemCustomStart.addEventListener('change', handler);
+    
+    var elemViewer = _getViewerElement();
+    elemViewer.loadingViewer = false;
+    elemViewer.addEventListener('load', (e) => {_handleViewerLoad(e);});
   }
   
   //---------------------------------------
@@ -140,15 +81,16 @@ const app = function () {
     UtilityKTS.setClass(elemCustomDate, 'hide-me', startEndValue != 'custom');
 
     var startDate, endDate;    
+    console.log(startEndValue);
     if (startEndValue == 'custom') {    
       startDate = page.body.getElementsByClassName('pgviewer-startdate')[0].value.replace(/-/g, '/');
       endDate = page.body.getElementsByClassName('pgviewer-enddate')[0].value.replace(/-/g, '/');
+      
     } else {
       var splitDates = startEndValue.split(' ');
       startDate = splitDates[0];
       endDate = splitDates[1];
     }
-
     
     if (settings.testing) {
       var elemTesting = page.body.getElementsByClassName('pgviewer-test')[0];
@@ -174,53 +116,7 @@ const app = function () {
     var elem = _getViewerElement();
     elem.style.height = (document.documentElement.scrollHeight * settings.scaleHeight) +'px';
     elem.style.width = (document.documentElement.scrollWidth * settings.scaleWidth) + 'px';
-    console.log(elem);
   } 
-  
-  //---------------------------------------
-	// DB queries
-	//----------------------------------------
-  async function _getCourseListings() {
-    settings.courseKeyInfo = [{value: -1, textval: 'select a course'}];
-    
-    var dbResult = await SQLDBInterface.doGetQuery('pacingguide-viewer/query', 'courselistings');
-    if (!dbResult.success) return false;
-    
-    var courseData = dbResult.data;
-    for (var i = 0; i < courseData.length; i++) {
-      settings.courseKeyInfo.push({
-        value: courseData[i].textkey,
-        textval: courseData[i].description
-      });
-    }
-
-    return true;
-  }
-  
-  async function _getStartEndDates() {
-    settings.defaultStartDate = '2020-09-05',
-    settings.defaultEndDate = '2021-01-22',
-    
-    settings.startEndInfo = [];
-    
-    var dbResult = await SQLDBInterface.doGetQuery('pacingguide-viewer/query', 'startend');
-    if (!dbResult.success) return false;
-    
-    var startEndData = dbResult.data;
-    for (var i = 0; i < startEndData.length; i++) {
-      settings.startEndInfo.push({
-        value: startEndData[i].startdate + ' ' + startEndData[i].enddate,
-        textval: startEndData[i].description
-      });
-    }
-    
-    settings.startEndInfo.push({
-      value: 'custom',
-      textval: 'custom'
-    });
-    
-    return true;
-  }
 
   //---------------------------------------
 	// handlers
@@ -239,17 +135,6 @@ const app = function () {
 
   function _handleParameterChange(e) {
     _update();
-  }
-
-  //--------------------------------------------------------------
-  // utility
-  //--------------------------------------------------------------      
-  function _formatDate(d) {
-    var y = d.getFullYear();
-    var m = ('00' + (d.getMonth() + 1)).slice(-2);
-    var d = ('00' + d.getDate()).slice(-2);
-    
-    return y + '-' + m + '-' + d;    
   }
   
   //---------------------------------------

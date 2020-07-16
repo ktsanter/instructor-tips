@@ -1,0 +1,63 @@
+mixin anchorLink(name="anchorDefault")
+  a(class="anchor", id=name) anchor #{name}
+  
+mixin inpageLinkItem(href="anchorDefault", label="defaultLabel")
+  li
+    a(href=href) #{label}
+  
+mixin sectionHead(name="defaultName", title="defaultTitle")
+  +anchorLink(name)
+  div(class="section-head")
+    div(class="section-title") #{title}
+      a(class="anchor-top", href="#top") top
+      
+mixin about
+  - var title='InstructorTips'
+  - var version = '0.57';
+  - var author = "Kevin Santer"
+  - var email = 'ktsanter@gmail.com'
+  - var emailHref = 'mailto:' + email
+  
+  link(
+    rel="stylesheet", 
+    href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay",
+    crossorigin="anonymous")
+    
+  div(class="about-container")
+    div(class="about-logosplash")
+      i(class="about-logo far fa-lightbulb")
+      span(class="about-logotitle") #{title}
+
+    div(class="about-version")
+      span(class="about-label") version
+      span(class="about-infoitem") #{version}
+
+    div(class="about-author")
+      div(class="about-infoitem") #{author}
+      a(class="about-infoitem", href=emailHref, target="_blank") #{email}
+      
+
+mixin snapshot(imageSrc, imageWidth="400", label="", hotspots=[])
+  - var fullImageSrc = '/images/instructortips-help/' + imageSrc
+  
+  link(
+    rel="stylesheet", 
+    href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay",
+    crossorigin="anonymous")
+    
+  div(class="snapshot")
+    div(class="snapshot-label") #{label}
+    div(class="snapshot-imagecontainer")
+      img(src=fullImageSrc, width=imageWidth)
+      each hotspot in hotspots
+        if hotspot.debug
+          i(class="hotspot debug-hotspot", title=hotspot.text, style=hotspot.location)
+        else
+          i(class="hotspot", title=hotspot.text, style=hotspot.location)
+
+mixin hotspotIcon()
+  i(class="fas fa-plus-circle hotspoticon")
+  
+mixin pageName(name)
+  em
+    strong #{name} 

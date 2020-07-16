@@ -253,7 +253,8 @@ var dbManagerLookup = {
   "usermanagement": dbTipManager,
   "tipmanager": dbTipManager,
   "treasurehunt": dbTreasureHunt,
-  "pacingguide-viewer": dbPGViewer
+  "pacingguide-viewer": dbPGViewer,
+  "pgviewer": dbPGViewer
 };
 
 var appLookup = {
@@ -273,6 +274,13 @@ var appLookup = {
     appDescriptor: 'pacingguide',
     appName: 'Pacing Guide Viewer',
     routeRedirect: '/pacingguide-viewer'
+  },
+  
+  "pgviewer" : {
+    appDescriptor: 'pgviewer',
+    appName: 'Pacing Guide Viewer',
+    routeFunction: dbPGViewer.renderViewerPage,
+    routeData: 'pacingguide-viewer'
   }  
 };
 
@@ -296,6 +304,7 @@ function routeIfLoggedIn(req, res, appDescriptor) {
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
 app.get('/treasurehunt', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
 app.get('/pacingguide', function (req, res) { routeIfLoggedIn(req, res, 'pacingguide'); })
+app.get('/pgviewer', function (req, res) { routeIfLoggedIn(req, res, 'pgviewer'); })
 
 app.get('/treasurehunt-landing/:projectid', async function (req, res) {
   var fileName = path.join(__dirname, 'private', 'treasurehunt-landing/pug/treasurehunt-landing.pug');
@@ -322,15 +331,20 @@ app.post('/treasurehunt/landing/check-answer', async function (req, res) {
 //------------------------------------------------------
 // user management, login, logout, etc.
 //------------------------------------------------------
-app.get('/usermanagement/routeToApp/:app', function (req, res) {
+app.get('/usermanagement/routeToApp/:app', async function (req, res) {
   var appDescriptor = req.params.app;
   
   var appInfo = appLookup[appDescriptor];
 
   if (appInfo && appInfo.routeRedirect) {
     res.redirect(appInfo.routeRedirect);
+
+  } else if (appInfo && appInfo.routeFunction) {
+    var pugFileName = path.join(__dirname, 'private', appInfo.routeData + '/pug/' + appInfo.routeData + '.pug');
+    await appInfo.routeFunction(res, dbManagerLookup[appDescriptor], pugFileName, renderAndSendPugIfExists);
+    
   } else {
-    sendFailedAccess(res, 'routeToApp/' + app);
+    sendFailedAccess(res, 'routeToApp/' + appDescriptor);
   }
 });
 
@@ -649,9 +663,9 @@ function sendFileIfExists(res, fileName) {
   }
 }
 
-function renderAndSendPugIfExists(res, app, pugFileName) {
+function renderAndSendPugIfExists(res, app, pugFileName, pugOptions) {
   if (fileservices.existsSync(pugFileName)) {
-    res.send(pug.renderFile(pugFileName));
+    res.send(pug.renderFile(pugFileName, pugOptions));
   } else {
     sendFailedAccess(res, pugFileName); 
   }

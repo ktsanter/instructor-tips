@@ -1,7 +1,5 @@
 define(function (require) {
-  require('/scripts/create_element');
-  require('/scripts/utilitykts');
-  require('/scripts/sqldbinterface');    
+  require('/scripts/utilitykts'); 
   
   require('pacingguide-viewer');
 

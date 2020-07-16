@@ -13,6 +13,42 @@ module.exports = internal.PacingGuideViewer = class {
   }
   
 //---------------------------------------------------------------
+// pug rendering
+//---------------------------------------------------------------
+  async renderViewerPage(res, me, pugFileName, renderAndSendPug) {
+    var queryList, queryResults;
+
+    queryList = {
+      courses: 
+        'select courselistingid, textkey, description ' +
+        'from courselisting ' +
+        'order by description',
+        
+      startend:
+        'select description, startdate, enddate ' +
+        'from startend ' +
+        'order by description'
+    }
+    
+    queryResults = await me._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      me._renderFail();
+      return;
+    }
+    
+    var pugOptions = {
+      courses: queryResults.data.courses,
+      startend: queryResults.data.startend
+    };
+    
+    renderAndSendPug(res, 'pacingguide-viewer', pugFileName, {params: pugOptions});
+  }
+  
+  _renderFail() {
+    res.send('cannot access page: pgviewer')    
+  }
+  
+//---------------------------------------------------------------
 // dispatchers
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
