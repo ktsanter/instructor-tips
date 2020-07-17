@@ -480,6 +480,11 @@ app.get('/scripts/:scriptfile', function (req, res) {
 //------------------------------------------------------
 // app specific scripts, CSS, and pug
 //------------------------------------------------------
+app.get('/binary-conversion/:mode', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'binary-conversion/pug/binary-conversion.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});
+})
+
 app.get('/:app', function (req, res) {
   res.sendFile(path.join(__dirname, 'private', req.params.app + '/html/' + req.params.app + '.html'))
 })

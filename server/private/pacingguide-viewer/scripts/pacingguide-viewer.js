@@ -22,7 +22,7 @@ const app = function () {
 // Biology B
 // https://integrations.michiganvirtual.org:9092/api/guide/C-BIOB-MSTR-19/pace/2020/09/05/2021/01/22#w1
   
-    pgStem: 'https://integrations.michiganvirtual.org:9092/api/guide/',  // move to DB
+    pgStem: 'https://integrations.michiganvirtual.org:9092/api/guide/',
     scaleWidth: 0.95,
     scaleHeight: 1.0,
   };
@@ -81,7 +81,6 @@ const app = function () {
     UtilityKTS.setClass(elemCustomDate, 'hide-me', startEndValue != 'custom');
 
     var startDate, endDate;    
-    console.log(startEndValue);
     if (startEndValue == 'custom') {    
       startDate = page.body.getElementsByClassName('pgviewer-startdate')[0].value.replace(/-/g, '/');
       endDate = page.body.getElementsByClassName('pgviewer-enddate')[0].value.replace(/-/g, '/');
