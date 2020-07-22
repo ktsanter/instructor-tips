@@ -328,6 +328,10 @@ app.post('/treasurehunt/landing/check-answer', async function (req, res) {
   }
 })
 
+app.get('/webdesign-formative/:app', function(req, res) { 
+  res.sendFile(path.join(__dirname, 'private', 'webdesign-formative/html/' + req.params.app + '.html')); 
+})
+
 //------------------------------------------------------
 // user management, login, logout, etc.
 //------------------------------------------------------

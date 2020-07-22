@@ -1,0 +1,37 @@
+#effects-container {
+  border-radius: 6px;
+  padding-right: 8px;
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
+
+#effects-div {
+  font-size: 14px;
+  background-color: var(--MV-light-teal);
+  color: var(--MV-white);
+  opacity: 1.0;
+  padding: 20px 10px;
+  margin: 20px 10px;
+  width: 200px;
+  height: 120px;
+}
+
+#effects-div.font-size-transition:hover {
+  font-size: 18px;
+}
+
+#effects-div.width-transition:hover {
+  width: 300px;
+}
+
+#effects-div.height-transition:hover {
+  height: 200px;
+}
+
+#effects-div.background-color-transition:hover {
+  background-color: var(--blue);
+}
+
+#effects-div.opacity-transition:hover {
+  opacity: 0.4;
+}
