@@ -5,13 +5,13 @@
 //------------------------------------------
 const THIS_PORT =getEnv('THIS_PORT', true);
 
-
 const MARIA_HOST = getEnv('MARIA_HOST', true);
 const MARIA_USER = getEnv('MARIA_USER', true);
 const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
 const MARIA_DBNAME_INSTRUCTORTIPS = getEnv('MARIA_DBNAME_INSTRUCTORTIPS', true);
 const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
 const MARIA_DBNAME_PGVIEWER = getEnv('MARIA_DBNAME_PGVIEWER', true);
+const MARIA_DBNAME_WELCOME = getEnv('MARIA_DBNAME_WELCOME', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -92,11 +92,21 @@ const mariadbParams_PGViewer = {
     dbName: MARIA_DBNAME_PGVIEWER /*, 
     connectionLimit: 5 */
 };
-    
+        
+const mariadbParams_WelcomeLetter = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_WELCOME /*, 
+    connectionLimit: 5 */
+};
+
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
 const mariaDBManager_PGViewer = new mariaDBManagerClass(mariadbParams_PGViewer);
+const mariaDBManager_WelcomeLetter = new mariaDBManagerClass(mariadbParams_WelcomeLetter);
     
 //------------------------------------------
 // session management
@@ -246,6 +256,17 @@ const dbPGViewerClass = require('./classes/pacingguide-viewer')
 const dbPGViewer = new dbPGViewerClass(userManagement, mariaDBManager_PGViewer);
 
 //------------------------------------------
+// Welcome letter general query objects
+//------------------------------------------
+const dbWelcomeLetterClass = require('./classes/welcomeletter')
+const dbWelcomeLetter = new dbWelcomeLetterClass({
+  "dbManager": mariaDBManager_WelcomeLetter,
+  "userManagement": userManagement,
+  "pug": pug,
+  "fileServices": fileservices  
+});
+
+//------------------------------------------
 // DB manager lookup, app info lookup
 //------------------------------------------
 var dbManagerLookup = {
@@ -281,7 +302,7 @@ var appLookup = {
     appName: 'Pacing Guide Viewer',
     routeFunction: dbPGViewer.renderViewerPage,
     routeData: 'pacingguide-viewer'
-  }  
+  } 
 };
 
 //------------------------------------------------------
@@ -330,6 +351,22 @@ app.post('/treasurehunt/landing/check-answer', async function (req, res) {
 
 app.get('/webdesign-formative/:app', function(req, res) { 
   res.sendFile(path.join(__dirname, 'private', 'webdesign-formative/html/' + req.params.app + '.html')); 
+})
+
+app.get('/welcomeletter/:coursekey/:audience', async function(req, res) { 
+  if (req.params.audience == 'student' || req.params.audience == 'mentor') {
+    var fileNameMentor = path.join(__dirname, 'private', 'welcomeletter/pug/welcomeletter-mentor.pug');
+    var fileNameStudent = path.join(__dirname, 'private', 'welcomeletter/pug/welcomeletter-student.pug');
+    var result = await dbWelcomeLetter.renderWelcomeLetter(req.params, {mentor: fileNameMentor, student: fileNameStudent});
+    if (result.success) {
+      res.send(result.data);
+    } else {
+      sendFailedAccess(res, 'welcomeletter');
+    }
+      
+  } else {
+    sendFailedAccess(res, 'welcomeletter');
+  }
 })
 
 //------------------------------------------------------

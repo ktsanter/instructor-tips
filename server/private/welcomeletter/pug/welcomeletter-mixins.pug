@@ -1,0 +1,57 @@
+- var instructorname = 'Kevin Santer'
+- var phone = '734.999.0587'
+- var instructoremail = 'ksanter@michiganvirtual.org'
+- var instructoremaillink = 'mailto:' + instructoremail
+- var slplink = 'https://slp.michiganvirtual.org/PublicWelcome.aspx'
+- var specpopname = 'Lisa Rohde'
+- var specpopemail = 'lrohde@michiganvirtual.org'
+- var specpopemaillink = 'mailto:' + specpopemail
+
+mixin title(audience)
+  div(class="section")
+    div(class="section-label section-label-big")
+      if audience == "student"
+        |Welcome to 
+      else      
+        |Welcome to your role as a mentor in 
+      em= coursename
+        
+mixin linktoslp
+  a(href=slplink, target="_blank") Student Learning Portal (SLP) 
+  
+mixin specpopcontact
+  span #{specpopname}
+  
+mixin linktospecpop
+  a(href=specpopemaillink, target="_blank") #{specpopemail}
+
+mixin idcard
+  div(class="card")
+    div(class="card-logo")
+      img(src="/images/welcomeletter/MVlogo_small2.png")
+      
+    div(class="card-content")
+      div(class="card-image")
+        img(src="/images/welcomeletter/instructor.jpg")
+
+      div(class="card-items")
+        div(class="card-item")
+          b= instructorname
+          
+        div(class="card-item")
+          |phone: #{phone}
+          
+        div(class="card-item")
+          |email: 
+          +linktoslp 
+          |or 
+          div(class="card-subitem")
+            a(href="instructoremaillink", target="_blank") #{instructoremail}
+
+mixin keypoints(audience, keypointlist)
+  div(class="keypoints")
+    div(class="keypoints-label")
+      |Key points for #{audience}
+    ul
+      each point in keypointlist
+        li= point
