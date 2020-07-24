@@ -65,17 +65,32 @@ module.exports = internal.WelcomeLetter = class {
   
   async renderConfigurationPage(res, me, pugFileName, renderAndSendPug) {
     var queryList, queryResults;
-/*
+
     queryList = {
       courses: 
-        'select courselistingid, textkey, description ' +
-        'from courselisting ' +
-        'order by description',
+        'select courseid, coursekey, coursename, ap ' +
+        'from course ' +
+        'order by coursename',
         
-      startend:
-        'select description, startdate, enddate ' +
-        'from startend ' +
-        'order by description'
+      exam:
+        'select examid, examdescription ' +
+        'from exam ' +
+        'order by examdescription',
+        
+      proctoring:
+        'select proctoringid, proctoringdescription ' +
+        'from proctoring ' +
+        'order by proctoringdescription',
+        
+      retake:
+        'select retakeid, retakedescription ' +
+        'from retake ' +
+        'order by retakedescription',
+        
+      resubmission:
+        'select resubmissionid, resubmissiondescription ' +
+        'from resubmission ' +
+        'order by resubmissiondescription'        
     }
     
     queryResults = await me._dbManager.dbQueries(queryList);
@@ -86,14 +101,10 @@ module.exports = internal.WelcomeLetter = class {
     
     var pugOptions = {
       courses: queryResults.data.courses,
-      startend: queryResults.data.startend
-    };
-    
-    */
-
-    var pugOptions = {
-      coursekey: 'fpa',
-      coursename: 'Foundations of Programming A'
+      exam: queryResults.data.exam,
+      proctoring: queryResults.data.proctoring,
+      retake: queryResults.data.retake,
+      resubmission: queryResults.data.resubmission
     };
     
     renderAndSendPug(res, 'welcome', pugFileName, {params: pugOptions});

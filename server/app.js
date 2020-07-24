@@ -275,7 +275,8 @@ var dbManagerLookup = {
   "tipmanager": dbTipManager,
   "treasurehunt": dbTreasureHunt,
   "pacingguide-viewer": dbPGViewer,
-  "pgviewer": dbPGViewer
+  "pgviewer": dbPGViewer,
+  "welcome": dbWelcomeLetter
 };
 
 var appLookup = {

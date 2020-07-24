@@ -1,11 +1,11 @@
 include configuration-mixins.pug
 
-- var allparams = JSON.stringify(params);
+- var courseparams = JSON.stringify(params.courses);
 - var courselist = [{id:1, name:'Foundations of Programming A'}, {id:2, name:'Foundations of Programming B'}, {id:3, name:'Java Programming A'}, {id:4, name:'Basic Web Design: HTML & CSS'}]
-- var examlist = ['There is no midterm or final.', 'There is a password-protected final exam.', 'There is a midterm and a final.  Both are password-protected.']
-- var proctoringlist = ['Exam proctoring is at the discretion of the school but strongly encouraged.', 'Proctoring is required for all exams.']
-- var retakelist = []
-- var resubmissionlist = []
+- var examlist = params.exam
+- var proctoringlist = params.proctoring
+- var retakelist = params.retake
+- var resubmissionlist = params.resubmission
 
 doctype html
 html
@@ -23,7 +23,7 @@ html
     script(data-main="/scripts/welcomeletter/require_welcomeletter", src="/scripts/require.js")    
       
   body(class="colorscheme")    
-    div #{allparams}
+    div #{courseparams}
 
     div(class="titlecontainer")
       div(class="titletext") Welcome letter configuration
@@ -33,8 +33,8 @@ html
         +icon("trashicon far fa-trash-alt disabled", "delete course")
       
       div(class="controlcontainer rightside")
-        +icon("linkicon fa fa-link", "get link to welcome letter")
-        +icon("noteicon fa fa-comment", "get formatted note for letter")
+        +icon("linkicon fa fa-link disabled", "get link to welcome letter")
+        +icon("noteicon fa fa-comment disabled", "get formatted note for letter")
         
     div(class="configcontainer")
       div(class="configitem")
@@ -48,7 +48,7 @@ html
       div(class="configitem")
         div(class="itemlabel") key
         div(class="itemcontent")
-          input(type="text", maxlength="20", placeholder="course key")
+          input(class="coursekey" type="text", maxlength="20", placeholder="course key", disabled=true)
 
       div(class="configitem")
         div(class="itemlabel") AP course
@@ -58,27 +58,27 @@ html
       div(class="configitem")
         div(class="itemlabel") exams
         div(class="itemcontent")
-          select(class="exams select-css")
+          select(class="exams select-css wideselect", disabled=true)
             each val in examlist
-              option= val
+              option(value=val.examid)= val.examdescription
 
       div(class="configitem")
         div(class="itemlabel") proctoring
         div(class="itemcontent")
-          select(class="proctoring select-css")
+          select(class="proctoring select-css wideselect", disabled=true)
             each val in proctoringlist
-              option= val
+              option(value=val.proctoringid)= val.proctoringdescription
 
       div(class="configitem")
         div(class="itemlabel") retakes
         div(class="itemcontent")
-          select(class="retakes select-css")
+          select(class="retakes select-css wideselect", disabled=true)
             each val in retakelist
-              option= val
+              option(value=val.retakeid)= val.retakedescription
 
       div(class="configitem")
         div(class="itemlabel") resubmission 
         div(class="itemcontent")
-          select(class="resubmission select-css")
+          select(class="resubmission select-css wideselect", disabled=true)
             each val in resubmissionlist
-              option= val
+              option(value=val.resubmissionid)= val.resubmissiondescription

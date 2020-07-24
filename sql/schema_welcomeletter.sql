@@ -1,0 +1,94 @@
+#-----------------------------------------------------------------
+#-- create DB for welcome letter configuration
+#-----------------------------------------------------------------
+select "creating welcome letter configuration db" as comment;
+
+DROP DATABASE IF EXISTS welcomeletter;
+CREATE DATABASE welcomeletter;
+USE welcomeletter;
+
+#-----------------------------------------------------------------
+#-- tables
+#-----------------------------------------------------------------
+select "creating tables" as comment;
+
+create table course
+(
+  courseid              int unsigned not null AUTO_INCREMENT,
+  coursekey             varchar(30) null,
+  coursename            varchar(200) not null,
+  ap                    boolean not null,
+  
+  primary key (courseid),
+  constraint unique(coursename)
+);
+
+create table exam
+(
+  examid                int unsigned not null AUTO_INCREMENT,
+  examdescription       varchar(500) not null,
+  
+  primary key (examid),
+  constraint unique(examdescription)
+);
+
+create table proctoring
+(
+  proctoringid          int unsigned not null AUTO_INCREMENT,
+  proctoringdescription varchar(500) not null,
+  
+  primary key (proctoringid),
+  constraint unique(proctoringdescription)
+);
+
+create table retake
+(
+  retakeid              int unsigned not null AUTO_INCREMENT,
+  retakedescription     varchar(500) not null,
+  
+  primary key (retakeid),
+  constraint unique(retakedescription)
+);
+
+create table resubmission
+(
+  resubmissionid              int unsigned not null AUTO_INCREMENT,
+  resubmissiondescription     varchar(500) not null,
+  
+  primary key (resubmissionid),
+  constraint unique(resubmissiondescription)
+);
+
+create table configuration
+(
+  configurationid             int unsigned not null AUTO_INCREMENT,
+  courseid                    int unsigned not null,
+  examid                      int unsigned null,
+  proctoringid                int unsigned null,
+  retakeid                    int unsigned null,
+  resubmissionid              int unsigned null,
+  
+  primary key (configurationid),
+  constraint unique(courseid),
+  constraint foreign key (courseid) references course (courseid) on delete cascade,
+  constraint foreign key (examid) references exam (examid) on delete cascade,
+  constraint foreign key (proctoringid) references proctoring (proctoringid) on delete cascade,
+  constraint foreign key (retakeid) references retake (retakeid) on delete cascade,
+  constraint foreign key (resubmissionid) references resubmission (resubmissionid) on delete cascade  
+);
+
+#--------------------------------------------------------------------------
+#-- triggers
+#--------------------------------------------------------------------------
+select "creating triggers" as comment;
+        
+#--------------------------------------------------------------------------
+#-- views
+#--------------------------------------------------------------------------
+select "creating views" as comment;
+    
+#--------------------------------------------------------------------------
+#-- stored procedures
+#--------------------------------------------------------------------------
+select "creating stored procedures" as comment;
+    

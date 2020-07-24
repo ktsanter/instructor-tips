@@ -4,35 +4,12 @@
 // TODO: 
 //-------------------------------------------------------------------
 const app = function () {
-  const appInfo = {
-    appName: 'Welcome letter configuration'
-  };
-
   const page = {};
-
-  const settings = {
-    testing: false,  // true => iframe won't be loaded and message will be displayed
-    
-
-// looks like [site]:[port]/api/guide/[coursekey]/pace/[start yyyy/mm/dd]/[end yyy/mm/dd]#w[weeknumber]
-
-// Basic Web Design
-// https://integrations.michiganvirtual.org:9092/api/guide/C-WBDN-MSTR-20/pace/2020/09/05/2021/01/22#w1
-
-// Biology B
-// https://integrations.michiganvirtual.org:9092/api/guide/C-BIOB-MSTR-19/pace/2020/09/05/2021/01/22#w1
-  
-    pgStem: 'https://integrations.michiganvirtual.org:9092/api/guide/',
-    scaleWidth: 0.95,
-    scaleHeight: 1.0,
-  };
 
   //---------------------------------------
   // get things going
   //----------------------------------------
   async function init () {
-    document.title = appInfo.appName;
-    
     page.body = document.getElementsByTagName('body')[0];
     _tweakControls();
   }
@@ -58,6 +35,8 @@ const app = function () {
     
     _initializeIcon('addicon', false);
     _initializeIcon('trashicon', true);
+    _initializeIcon('linkicon', true);
+    _initializeIcon('noteicon', true);
   }
   
   function _initializeSelect(selectClass) {
@@ -86,10 +65,31 @@ const app = function () {
     var courseInfo = _getSelectedCourse();
     if (!courseInfo) return;
     
-    console.log(courseInfo);
     UtilityKTS.setClass(page.body.getElementsByClassName('trashicon')[0], 'disabled', false);
+    UtilityKTS.setClass(page.body.getElementsByClassName('linkicon')[0], 'disabled', false);
+    UtilityKTS.setClass(page.body.getElementsByClassName('noteicon')[0], 'disabled', false);
+
+    _enableElement('coursekey');
+    _enableElement('exams');
+    _enableElement('proctoring');
+    _enableElement('retakes');
+    _enableElement('resubmission')    
   }
   
+  function _getSelectedCourse() {    
+    var elem = page.body.getElementsByClassName('course')[0];
+    if (elem.selectedIndex < 0) return null;
+    
+    var courseId = elem.options[elem.selectedIndex].value;
+    var courseName = elem.options[elem.selectedIndex].text;
+    return {id: courseId, name: courseName};
+  }
+    
+  function _enableElement(className) {
+    var elem = page.body.getElementsByClassName(className)[0];
+    elem.disabled = false;
+  }
+
   async function _addCourse(e) {  
     var msg = 'Enter the name of the new course';
     var courseName = prompt(msg);
@@ -110,16 +110,15 @@ const app = function () {
       console.log('delete: ' + courseInfo.id + ' ' + courseInfo.name);
     }
   }
-
-  function _getSelectedCourse() {    
-    var elem = page.body.getElementsByClassName('course')[0];
-    if (elem.selectedIndex < 0) return null;
-    
-    var courseId = elem.options[elem.selectedIndex].value;
-    var courseName = elem.options[elem.selectedIndex].text;
-    return {id: courseId, name: courseName};
+  
+  function _createAndShareLink() {
+    console.log('_createAndShareLink');
   }
-    
+  
+  function _createAndShareNote() {
+    console.log('_createAndShareNote');
+  }
+
   //---------------------------------------
 	// handlers
 	//----------------------------------------
@@ -137,8 +136,15 @@ const app = function () {
     
     if (e.target.classList.contains('addicon')) {
       await _addCourse();
-    } else {
+      
+    } else if (e.target.classList.contains('trashicon')) {
       await _deleteCourse();
+      
+    } else if (e.target.classList.contains('linkicon')) {
+      await _createAndShareLink();
+      
+    } else if (e.target.classList.contains('noteicon')) {
+      await _createAndShareNote();
     }
   }
   

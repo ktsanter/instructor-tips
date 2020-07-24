@@ -99,8 +99,13 @@ body {
 
 .configcontainer .configitem .itemcontent .select-css {
   font-size: 1.0em;
-  width: 36.0em;
+  width: 56.0em;
   text-overflow: ellipsis;
   margin-left: 0;
   margin-top: 0.2em;
+}
+
+.configcontainer .configitem .itemcontent .select-css.wideselect {
+  max-width: none;
+  width: 70.0em; 
 }
