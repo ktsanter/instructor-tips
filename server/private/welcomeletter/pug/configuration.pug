@@ -1,0 +1,84 @@
+include configuration-mixins.pug
+
+- var allparams = JSON.stringify(params);
+- var courselist = [{id:1, name:'Foundations of Programming A'}, {id:2, name:'Foundations of Programming B'}, {id:3, name:'Java Programming A'}, {id:4, name:'Basic Web Design: HTML & CSS'}]
+- var examlist = ['There is no midterm or final.', 'There is a password-protected final exam.', 'There is a midterm and a final.  Both are password-protected.']
+- var proctoringlist = ['Exam proctoring is at the discretion of the school but strongly encouraged.', 'Proctoring is required for all exams.']
+- var retakelist = []
+- var resubmissionlist = []
+
+doctype html
+html
+  head
+    title welcome letter configuration
+    meta(charset="utf-8")
+    
+    link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
+
+    style
+      include ../../common/styles/sliderswitch.css
+      include ../../common/styles/select.css
+      include ../styles/configuration.css
+    
+    script(data-main="/scripts/welcomeletter/require_welcomeletter", src="/scripts/require.js")    
+      
+  body(class="colorscheme")    
+    div #{allparams}
+
+    div(class="titlecontainer")
+      div(class="titletext") Welcome letter configuration
+      
+      div(class="controlcontainer")
+        +icon("addicon far fa-plus-square", "add new course")
+        +icon("trashicon far fa-trash-alt disabled", "delete course")
+      
+      div(class="controlcontainer rightside")
+        +icon("linkicon fa fa-link", "get link to welcome letter")
+        +icon("noteicon fa fa-comment", "get formatted note for letter")
+        
+    div(class="configcontainer")
+      div(class="configitem")
+        div(class="itemlabel") course
+        div(class="itemcontent")
+          select(class="course select-css")
+            option(value="-1") select a course
+            each course in courselist
+              option(value=course.id)= course.name
+
+      div(class="configitem")
+        div(class="itemlabel") key
+        div(class="itemcontent")
+          input(type="text", maxlength="20", placeholder="course key")
+
+      div(class="configitem")
+        div(class="itemlabel") AP course
+        div(class="itemcontent")
+          +sliderswitch("apcourse", "yes", "no")
+
+      div(class="configitem")
+        div(class="itemlabel") exams
+        div(class="itemcontent")
+          select(class="exams select-css")
+            each val in examlist
+              option= val
+
+      div(class="configitem")
+        div(class="itemlabel") proctoring
+        div(class="itemcontent")
+          select(class="proctoring select-css")
+            each val in proctoringlist
+              option= val
+
+      div(class="configitem")
+        div(class="itemlabel") retakes
+        div(class="itemcontent")
+          select(class="retakes select-css")
+            each val in retakelist
+              option= val
+
+      div(class="configitem")
+        div(class="itemlabel") resubmission 
+        div(class="itemcontent")
+          select(class="resubmission select-css")
+            each val in resubmissionlist
+              option= val

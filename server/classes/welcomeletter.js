@@ -62,6 +62,46 @@ module.exports = internal.WelcomeLetter = class {
     
     return result;
   }
+  
+  async renderConfigurationPage(res, me, pugFileName, renderAndSendPug) {
+    var queryList, queryResults;
+/*
+    queryList = {
+      courses: 
+        'select courselistingid, textkey, description ' +
+        'from courselisting ' +
+        'order by description',
+        
+      startend:
+        'select description, startdate, enddate ' +
+        'from startend ' +
+        'order by description'
+    }
+    
+    queryResults = await me._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      me._renderFail();
+      return;
+    }
+    
+    var pugOptions = {
+      courses: queryResults.data.courses,
+      startend: queryResults.data.startend
+    };
+    
+    */
+
+    var pugOptions = {
+      coursekey: 'fpa',
+      coursename: 'Foundations of Programming A'
+    };
+    
+    renderAndSendPug(res, 'welcome', pugFileName, {params: pugOptions});
+  }
+  
+  _renderFail() {
+    res.send('cannot access page: pgviewer')    
+  }  
 
 //---------------------------------------------------------------
 // other support methods

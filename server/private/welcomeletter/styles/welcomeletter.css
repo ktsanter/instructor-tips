@@ -11,6 +11,15 @@
   --MVlightgray: #6d6e71;
   --MVwhite: #ffffff;
 }
+
+body {
+	color: var(--MVblack);
+	background-color: #eee;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+  margin-right: 2.0em;
+}
+
 a {
   color: #007bff;
   background-color: transparent;
@@ -20,14 +29,6 @@ a {
 a:hover {
   color: #0056b3;
   text-decoration: underline;
-}
-  
-body {
-	color: var(--MVblack);
-	background-color: #eee;
-	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-	font-size: 13px;
-  margin-right: 2.0em;
 }
 
 /*------------------------------------------------------------

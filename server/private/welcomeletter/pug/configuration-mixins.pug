@@ -1,0 +1,11 @@
+mixin icon(classlist, titletext)
+  - var iconclasslist = 'icon ' + classlist
+  i(class=iconclasslist, title=titletext)
+  
+mixin sliderswitch(classlist, onlabel, offlabel)
+  - var sliderclasslist = "switch switch-yes-no " + classlist
+  label(class=sliderclasslist)
+    input(class="switch-input", type="checkbox")
+    span(class="switch-label", data-on=onlabel, data-off=offlabel)
+    span(class="switch-handle")
+

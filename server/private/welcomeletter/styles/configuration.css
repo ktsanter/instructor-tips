@@ -1,0 +1,106 @@
+/*-------------------------------------------------------------------
+ * styling for welcome letter course parameters editor
+ *------------------------------------------------------------------*/
+.colorscheme {
+  --MVdeepteal: #093c44;
+  --MVdarkteal: #115e6e;
+  --MVlightteal: #2f8d98;
+  --MVgreen: #b5cd34;
+  --MVorange: #f7941e;
+  --MVdarkgray: #414042;
+  --MVlightgray: #6d6e71;
+  --MVwhite: #ffffff;
+}
+
+body {
+	color: var(--MVblack);
+	background-color: #eee;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+  margin-right: 2.0em;
+}
+
+/*-------------------------------------------------------------------
+ * title bar
+ *------------------------------------------------------------------*/
+.titlecontainer {
+  color: var(--MVwhite);
+  background-color: var(--MVdeepteal);
+  border-radius: 3px;
+  padding: 0.2em 0;
+}
+
+.titlecontainer .titletext {
+  display: inline-block;
+  font-size: 1.2em;
+  padding-left: 0.2em;
+  padding-right: 0.4em;
+}
+
+.titlecontainer .controlcontainer {
+  display: inline-block;
+}
+
+.titlecontainer .controlcontainer.rightside {
+  float: right;
+}
+
+.titlecontainer .controlcontainer .icon {
+  font-size: 1.2em;
+  margin: 0 0.3em;
+}
+
+.titlecontainer .controlcontainer .icon.disabled {
+  color: var(--MVlightgray);
+}
+
+/*-------------------------------------------------------------------
+ * input controls
+ *------------------------------------------------------------------*/
+.configcontainer {
+  display: inline-block;
+}
+
+.configcontainer .configitem {
+  margin: 0.2em 0;
+}
+
+.configcontainer .configitem .itemlabel {
+  display: inline-block;
+  width: 8.0em;
+}
+
+.configcontainer .configitem .itemcontent {
+  display: inline-block;
+}
+
+.configcontainer .configitem .itemcontent .switch {
+  vertical-align: middle;
+}
+
+.configcontainer .configitem .itemcontent .switch-yes-no .switch-label:after {
+	background: var(--MVdeepteal);
+}
+
+.configcontainer .configitem .itemcontent input {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 1.0em;
+	display: inline-block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 0.4em .5em .8em;
+  width: 15.0em;
+	box-sizing: border-box;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	background-color: #fff;
+  margin-top: 0.2em;
+ }
+
+.configcontainer .configitem .itemcontent .select-css {
+  font-size: 1.0em;
+  width: 36.0em;
+  text-overflow: ellipsis;
+  margin-left: 0;
+  margin-top: 0.2em;
+}
