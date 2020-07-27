@@ -11,23 +11,21 @@ const app = function () {
   //----------------------------------------
   async function init () {
     page.body = document.getElementsByTagName('body')[0];
-    _tweakControls();
+    await _initControls(true);
   }
 
   //-----------------------------------------------------------------------------
   // page rendering
   //-----------------------------------------------------------------------------  
-  function _tweakControls() {
-    var handler = (e) => {_handleCourseSelect(e);};
+  async function _initControls(attachHandlers) {
+    await _loadCourseList()
+    
+    page.body.getElementsByClassName('coursekey')[0].value = '';
+    
+    _initializeTextInput('coursekey');
+    
+    _initializeSwitch('apcourse');
 
-    var elemCourseSelect = page.body.getElementsByClassName('course')[0];    
-    elemCourseSelect.addEventListener('change', handler);
-    
-    var elem = elemCourseSelect.firstChild;
-    elem.hidden = true;
-    elem.disabled = true;
-    elem.selected = true;
-    
     _initializeSelect('exams');
     _initializeSelect('proctoring');
     _initializeSelect('retakes');
@@ -35,24 +33,49 @@ const app = function () {
     
     _initializeIcon('addicon', false);
     _initializeIcon('trashicon', true);
-    _initializeIcon('linkicon', true);
+    _initializeIcon('linkstudent', true);
+    _initializeIcon('linkmentor', true);
     _initializeIcon('noteicon', true);
+    
+    if (attachHandlers) {
+      var handler = (e) => {_handleCourseSelect(e);};
+      page.body.getElementsByClassName('course')[0].addEventListener('change', handler); 
+
+      handler = (e) => {_handleParameterChange(e);};
+      page.body.getElementsByClassName('coursekey')[0].addEventListener('input', handler);
+      page.body.getElementsByClassName('apcourse')[0].addEventListener('click', handler);
+      page.body.getElementsByClassName('exams')[0].addEventListener('change', handler);
+      page.body.getElementsByClassName('proctoring')[0].addEventListener('change', handler);
+      page.body.getElementsByClassName('retakes')[0].addEventListener('change', handler);
+      page.body.getElementsByClassName('resubmission')[0].addEventListener('change', handler);
+      
+      handler = (e) => {_handleConfigControl(e);};
+      page.body.getElementsByClassName('addicon')[0].addEventListener('click', handler);
+      page.body.getElementsByClassName('trashicon')[0].addEventListener('click', handler);
+      page.body.getElementsByClassName('linkstudent')[0].addEventListener('click', handler);
+      page.body.getElementsByClassName('linkmentor')[0].addEventListener('click', handler);
+      page.body.getElementsByClassName('noteicon')[0].addEventListener('click', handler);
+    }
+  }
+  
+  function _initializeTextInput(selectClass) {
+    var elem = page.body.getElementsByClassName(selectClass)[0];
+    elem.disabled = true;
+  }
+  
+  function _initializeSwitch(selectClass) {
+    var elem = page.body.getElementsByClassName(selectClass)[0];
+    UtilityKTS.setClass(elem, 'disabled', true);
   }
   
   function _initializeSelect(selectClass) {
-    var handler = (e) => {_handleParameterChange(e);};
-    
     var elem = page.body.getElementsByClassName(selectClass)[0];
-    elem.addEventListener('change', handler);
     elem.selectedIndex = -1;
     elem.disabled = true;
   }
   
   function _initializeIcon(iconClass, disable) {
-    var handler = (e) => {_handleConfigControl(e);};
-    
     var elem = page.body.getElementsByClassName(iconClass)[0];
-    elem.addEventListener('click', handler);
     elem.disabled = disable;
     UtilityKTS.setClass(elem, 'disabled', disable);
   }
@@ -60,34 +83,109 @@ const app = function () {
   //---------------------------------------
 	// update
 	//----------------------------------------
+  async function _loadCourseList() {
+    _displayMessage('');
+
+    var elemCourseSelect = page.body.getElementsByClassName('course')[0];
+    UtilityKTS.removeChildren(elemCourseSelect);
+    
+    var elem = document.createElement('option');
+    elem.value = -1;
+    elem.text = 'select a course';
+    elem.hidden = true;
+    elem.disabled = true;
+    elem.selected = true;
+    elemCourseSelect.appendChild(elem);
+    
+    var queryResult = await queryCourseList();
+    
+    if (queryResult.success) {
+      var courseList = queryResult.data;
+      for (var i = 0; i < courseList.length; i++) {
+        var course = courseList[i];
+        elem = document.createElement('option');
+        elem.value = course.courseid;
+        elem.text = course.coursename;
+        elem.courseInfo = course;
+        elemCourseSelect.appendChild(elem);
+      }    
+    }
+  }
+  
   async function _loadCourseInfo() {
-    console.log('_loadCourseInfo');
     var courseInfo = _getSelectedCourse();
     if (!courseInfo) return;
     
-    UtilityKTS.setClass(page.body.getElementsByClassName('trashicon')[0], 'disabled', false);
-    UtilityKTS.setClass(page.body.getElementsByClassName('linkicon')[0], 'disabled', false);
-    UtilityKTS.setClass(page.body.getElementsByClassName('noteicon')[0], 'disabled', false);
+    _displayMessage('');
+    
+    var dbResult = await queryCourse(courseInfo);
+    if (dbResult.success) {
+      UtilityKTS.setClass(page.body.getElementsByClassName('trashicon')[0], 'disabled', false);
+      UtilityKTS.setClass(page.body.getElementsByClassName('linkstudent')[0], 'disabled', false);
+      UtilityKTS.setClass(page.body.getElementsByClassName('linkmentor')[0], 'disabled', false);
+      UtilityKTS.setClass(page.body.getElementsByClassName('noteicon')[0], 'disabled', false);
 
-    _enableElement('coursekey');
-    _enableElement('exams');
-    _enableElement('proctoring');
-    _enableElement('retakes');
-    _enableElement('resubmission')    
+      var course = dbResult.data.course[0];
+      _enableElement('coursekey');
+      page.body.getElementsByClassName('coursekey')[0].value = course.coursekey;
+      _setSwitch('apcourse', course.ap);
+      
+      var configuration = dbResult.data.configuration[0];   
+      _setSelectValue('exams', configuration.examid);
+      _setSelectValue('proctoring', configuration.proctoringid);
+      _setSelectValue('retakes', configuration.retakeid);
+      _setSelectValue('resubmission', configuration.resubmissionid);
+    }
+  }
+  
+  async function _saveCourseInfo() {
+    var courseInfo = _getSelectedCourse();
+    if (!courseInfo) return;
+    
+    var configurationInfo = {
+      courseid: courseInfo.courseid,
+      coursekey: page.body.getElementsByClassName('coursekey')[0].value,
+      ap: _getSwitch('apcourse'),
+      examid: page.body.getElementsByClassName('exams')[0].value,
+      proctoringid: page.body.getElementsByClassName('proctoring')[0].value,
+      retakeid: page.body.getElementsByClassName('retakes')[0].value,
+      resubmissionid: page.body.getElementsByClassName('resubmission')[0].value,
+    };
+    
+    await queryUpdateCourse(configurationInfo);
   }
   
   function _getSelectedCourse() {    
     var elem = page.body.getElementsByClassName('course')[0];
     if (elem.selectedIndex < 0) return null;
     
-    var courseId = elem.options[elem.selectedIndex].value;
-    var courseName = elem.options[elem.selectedIndex].text;
-    return {id: courseId, name: courseName};
+    return elem.options[elem.selectedIndex].courseInfo;
+  }
+  
+  function _setSelectValue(className, selectValue) {
+    var elem = page.body.getElementsByClassName(className)[0];
+    elem.disabled = false;
+    if (selectValue) {
+      elem.value = selectValue;
+    } else {
+      elem.selectedIndex = -1;
+    }      
   }
     
   function _enableElement(className) {
     var elem = page.body.getElementsByClassName(className)[0];
     elem.disabled = false;
+  }
+  
+  function _setSwitch(className, switchValue) {
+    var elemSwitch = page.body.getElementsByClassName(className)[0];
+    UtilityKTS.setClass(elemSwitch, 'disabled', false);
+    elemSwitch.getElementsByClassName('switch-input')[0].checked = switchValue;
+  }
+  
+  function _getSwitch(className) {
+    var elemSwitch = page.body.getElementsByClassName(className)[0];
+    return elemSwitch.getElementsByClassName('switch-input')[0].checked;
   }
 
   async function _addCourse(e) {  
@@ -95,7 +193,18 @@ const app = function () {
     var courseName = prompt(msg);
     if (!courseName) return;
     
-    console.log('add course: ' + courseName);
+    var result = await queryInsertCourse({coursename: courseName});
+    if (result.success) { 
+      await _initControls(false);
+      var elemSelect = page.body.getElementsByClassName('course')[0];
+      for (var i = 0; i < elemSelect.options.length; i++) {
+        var elem = elemSelect.options[i];
+        if (elem.text == courseName) {
+          elemSelect.selectedIndex = i;
+        }
+      }
+      await _loadCourseInfo();
+    }
   }
 
   async function _deleteCourse() {
@@ -103,33 +212,51 @@ const app = function () {
     if (!courseInfo) return;
 
     var msg = 'This course will be deleted:';
-    msg += '\n' + courseInfo.name;
+    msg += '\n' + courseInfo.coursename;
     msg += '\n\nThis action cannot be undone.  Continue with deletion?';
     
     if (confirm(msg)) {
-      console.log('delete: ' + courseInfo.id + ' ' + courseInfo.name);
+      var result = await queryDeleteCourse(courseInfo);
+      if (result.success) {
+        await _initControls(false);
+      }
     }
   }
   
-  function _createAndShareLink() {
-    console.log('_createAndShareLink');
+  function _createAndShareLink(audience) {
+    var courseInfo = _getSelectedCourse();
+    if (!courseInfo) return;
+
+    var basePath = window.location.origin + '/welcomeletter/' + courseInfo.coursekey ;
+    var linkText = basePath + '/' + audience;
+    
+    _copyToClipboard(linkText);
+    _displayMessage(audience + ' link copied to clipboard');
   }
   
   function _createAndShareNote() {
-    console.log('_createAndShareNote');
-  }
+    var courseInfo = _getSelectedCourse();
+    if (!courseInfo) return;
 
+    console.log('_createAndShareNote');
+    alert('not implemented yet');
+  }
+  
+  function _displayMessage(msg) {
+    page.body.getElementsByClassName('message')[0].innerHTML = msg;
+  }
+  
   //---------------------------------------
 	// handlers
 	//----------------------------------------
-  function _handleCourseSelect(e) {
-    _loadCourseInfo();
+  async function _handleCourseSelect(e) {
+    await _loadCourseInfo();
   }
   
-  function _handleParameterChange(e) {
-    console.log('_handleParameterChange');
+  async function _handleParameterChange(e) {
+    if (e.target.classList.contains('switch-label')) return;
+    await _saveCourseInfo();
   }
-  
   
   async function _handleConfigControl(e) {
     if (e.target.classList.contains('disabled')) return;
@@ -140,14 +267,55 @@ const app = function () {
     } else if (e.target.classList.contains('trashicon')) {
       await _deleteCourse();
       
-    } else if (e.target.classList.contains('linkicon')) {
-      await _createAndShareLink();
+    } else if (e.target.classList.contains('linkstudent')) {
+      await _createAndShareLink('student');
+      
+    } else if (e.target.classList.contains('linkmentor')) {
+      await _createAndShareLink('mentor');
       
     } else if (e.target.classList.contains('noteicon')) {
       await _createAndShareNote();
     }
   }
   
+  //---------------------------------------
+	// DB interface
+	//----------------------------------------
+  async function queryCourseList() {
+    return await SQLDBInterface.doGetQuery('welcome/query', 'courselist');
+  }
+  
+  async function queryCourse(courseInfo) {
+    return await SQLDBInterface.doPostQuery('welcome/query', 'course', courseInfo);
+  }
+  
+  async function queryInsertCourse(courseInfo) {
+    return await SQLDBInterface.doPostQuery('welcome/insert', 'course', courseInfo);
+  }
+  
+  async function queryUpdateCourse(configurationInfo) {
+    return await SQLDBInterface.doPostQuery('welcome/update', 'course', configurationInfo);
+  }
+
+  async function queryDeleteCourse(courseInfo) {
+    return await SQLDBInterface.doPostQuery('welcome/delete', 'course', courseInfo);
+  }
+  
+  //---------------------------------------
+  // clipboard functions
+  //----------------------------------------
+  function _copyToClipboard(txt) {
+    if (!page._clipboard) page._clipboard = new ClipboardCopy(page.body, 'plain');
+
+    page._clipboard.copyToClipboard(txt);
+	}	
+
+  function _copyRenderedToClipboard(txt) {
+    if (!page._renderedclipboard) page._renderedclipboard = new ClipboardCopy(page.body, 'rendered');
+
+    page._renderedclipboard.copyRenderedToClipboard(txt);
+	}	  
+
   //---------------------------------------
 	// return from wrapper function
 	//----------------------------------------

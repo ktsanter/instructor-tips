@@ -81,7 +81,13 @@ create table configuration
 #-- triggers
 #--------------------------------------------------------------------------
 select "creating triggers" as comment;
-        
+
+#-- add default privilege level for new users
+CREATE TRIGGER trigger_newcourse
+  AFTER INSERT ON course FOR EACH ROW
+    INSERT configuration (courseid, examid, proctoringid, retakeid, resubmissionid)
+    SELECT new.courseid, NULL, NULL, NULL, NULL;
+    
 #--------------------------------------------------------------------------
 #-- views
 #--------------------------------------------------------------------------

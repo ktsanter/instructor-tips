@@ -54,6 +54,10 @@ body {
   color: var(--MVlightgray);
 }
 
+.titlecontainer .controlcontainer .message {
+  font-style: italic;
+}
+
 /*-------------------------------------------------------------------
  * input controls
  *------------------------------------------------------------------*/
@@ -76,6 +80,10 @@ body {
 
 .configcontainer .configitem .itemcontent .switch {
   vertical-align: middle;
+}
+
+.configcontainer .configitem .itemcontent .switch.disabled {
+  visibility: hidden;
 }
 
 .configcontainer .configitem .itemcontent .switch-yes-no .switch-label:after {

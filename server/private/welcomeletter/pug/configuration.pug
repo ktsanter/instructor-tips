@@ -1,7 +1,5 @@
 include configuration-mixins.pug
 
-- var courseparams = JSON.stringify(params.courses);
-- var courselist = [{id:1, name:'Foundations of Programming A'}, {id:2, name:'Foundations of Programming B'}, {id:3, name:'Java Programming A'}, {id:4, name:'Basic Web Design: HTML & CSS'}]
 - var examlist = params.exam
 - var proctoringlist = params.proctoring
 - var retakelist = params.retake
@@ -23,8 +21,6 @@ html
     script(data-main="/scripts/welcomeletter/require_welcomeletter", src="/scripts/require.js")    
       
   body(class="colorscheme")    
-    div #{courseparams}
-
     div(class="titlecontainer")
       div(class="titletext") Welcome letter configuration
       
@@ -33,7 +29,9 @@ html
         +icon("trashicon far fa-trash-alt disabled", "delete course")
       
       div(class="controlcontainer rightside")
-        +icon("linkicon fa fa-link disabled", "get link to welcome letter")
+        span(class="message")
+        +icon("linkstudent fa fa-link disabled", "get link to student welcome letter")
+        +icon("linkmentor fa fa-link disabled", "get link to mentor welcome letter")
         +icon("noteicon fa fa-comment disabled", "get formatted note for letter")
         
     div(class="configcontainer")
@@ -41,9 +39,6 @@ html
         div(class="itemlabel") course
         div(class="itemcontent")
           select(class="course select-css")
-            option(value="-1") select a course
-            each course in courselist
-              option(value=course.id)= course.name
 
       div(class="configitem")
         div(class="itemlabel") key
