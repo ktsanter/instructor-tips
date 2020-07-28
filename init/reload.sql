@@ -9,4 +9,5 @@ SOURCE /sql/loadadmindata.sql;
 SOURCE /sql/schema_treasurehunt.sql;
 SOURCE /sql/schema_pacingguide.sql;
 SOURCE /sql/pgviewerdata.sql;
+SOURCE /sql/schema_welcomeletter.sql;
 SOURCE /sql/welcomeletterdata.sql;
