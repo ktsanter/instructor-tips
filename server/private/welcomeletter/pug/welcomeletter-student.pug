@@ -2,7 +2,8 @@ include welcomeletter-mixins.pug
 
 - var coursekey = params.coursekey
 - var coursename = params.coursename
-- var keypointlist = ['There are no due dates other than the end of the semester, however students should strive to follow the pacing guide.', 'There is a final exam. A password is required for the final', 'Proctoring is at the discretion of the school but strongly encouraged', 'There are no retakes for assessments except in the case of technical difficulties (at the instructor\'s discretion)', 'All programming assignments can be resubmitted. Resubmission requirements or limits may be applied.', 'Details for grading polices can be found on the Michigan Virtual Grading Policy and Expectations page', 'Course specific policies can be found in the Course Info section.']
+- var apcourse = params.ap
+- var keypointlist = params.keypoints
 
 doctype html
 html
@@ -14,12 +15,13 @@ html
 
     link(rel="stylesheet", type="text/css" href="/styles/welcomeletter/welcomeletter.css")
       
-  body(class="colorscheme")    
+  body(class="colorscheme")
+    div !{test}  
     +title("student")
         
     div(class="header")
       +idcard
-      +keypoints("students", keypointlist)
+      +keypoints("students", keypointlist, apcourse)
       
     div(class="section")
       |I'm eager to work with you this term and I hope you find online learning enjoyable and interesting. 

@@ -20,39 +20,83 @@ module.exports = internal.WelcomeLetter = class {
   async renderWelcomeLetter(params, pugFileNames) {
     var result = this._dbManager.queryFailureResult(); 
     
-    /*
     var queryList, queryResults;
     
     queryList = { 
-      project:
+      courseinfo:
         'select ' +
-        '  projectid, projectname, imagename, imagefullpage, message, positiveresponse, negativeresponse ' +
-        'from project ' +
-        'where projectid = ' + params.projectid
+        '  courseid, coursename, ap ' +
+        'from course ' +
+        'where coursekey = "' + params.coursekey + '"'
     };
     
     queryResults = await this._dbManager.dbQueries(queryList);
-    
-    if (!queryResults.success) {
+    if (!queryResults.success || queryResults.data.courseinfo.length == 0) {
       result.details = queryResults.details;
       return result;
     }
-    if (queryResults.data.project.length == 0) {
-      result.details = 'cannot retrieve project info';
-      return result;
-    }
+   
+    var courseInfo = queryResults.data.courseinfo[0];
     
-    var projectInfo = queryResults.data.project[0];
-    projectInfo.message = this._convertToHTML(projectInfo.message);
-    projectInfo.positiveresponse = this._convertToHTML(projectInfo.positiveresponse);
-    projectInfo.negativeresponse = this._convertToHTML(projectInfo.negativeresponse);
-    */
+    queryList = {
+      exams:
+        'select e.examdescription ' +
+        'from configuration as c, exam as e ' +
+        'where c.courseid = ' + courseInfo.courseid + ' ' +
+          'and c.examid = e.examid',
+
+      proctoring:
+        'select p.proctoringdescription ' +
+        'from configuration as c, proctoring as p ' +
+        'where c.courseid = ' + courseInfo.courseid + ' ' +
+          'and c.proctoringid = p.proctoringid',
+
+      retake:
+        'select r.retakedescription ' +
+        'from configuration as c, retake as r ' +
+        'where c.courseid = ' + courseInfo.courseid + ' ' +
+          'and c.retakeid = r.retakeid',
+
+      resubmission:
+        'select r.resubmissiondescription ' +
+        'from configuration as c, resubmission as r ' +
+        'where c.courseid = ' + courseInfo.courseid + ' ' +
+          'and c.resubmissionid = r.resubmissionid',
+          
+      general:
+        'select ap, student, mentor, keypoint ' +
+        'from generalkeypoint ' +
+        'where ap = ' + courseInfo.ap
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }    
+    
+    var keyPoints = [];
+    if (queryResults.data.exams.length > 0) keyPoints.push(queryResults.data.exams[0].examdescription);
+    if (queryResults.data.proctoring.length > 0) keyPoints.push(queryResults.data.proctoring[0].proctoringdescription);
+    if (queryResults.data.retake.length > 0) keyPoints.push(queryResults.data.retake[0].retakedescription);
+    if (queryResults.data.resubmission.length > 0) keyPoints.push(queryResults.data.resubmission[0].resubmissiondescription);
+     
+    var generalKeypoints = queryResults.data.general;
+    for (var i = 0; i < generalKeypoints.length; i++) {
+      if (params.audience == 'student' && generalKeypoints[i].student) {
+        keyPoints.push(generalKeypoints[i].keypoint);
+      } else if (params.audience == 'mentor' && generalKeypoints[i].mentor) {
+        keyPoints.push(generalKeypoints[i].keypoint);
+      }
+    }
    
     var pugFile = pugFileNames.student;
     if (params.audience == 'mentor') pugFile = pugFileNames.mentor;
     var letterParams = {
       coursekey: params.coursekey,
-      coursename: 'DummyCourseName'
+      coursename: courseInfo.coursename,
+      ap: courseInfo.ap,
+      keypoints: keyPoints
     }
     
     if (this._fileServices.existsSync(pugFile)) {

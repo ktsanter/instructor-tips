@@ -48,10 +48,11 @@ mixin idcard
           div(class="card-subitem")
             a(href="instructoremaillink", target="_blank") #{instructoremail}
 
-mixin keypoints(audience, keypointlist)
+mixin keypoints(audience, keypoints, ap)
   div(class="keypoints")
     div(class="keypoints-label")
       |Key points for #{audience}
+
     ul
-      each point in keypointlist
-        li= point
+      each point in keypoints
+        li !{point}  

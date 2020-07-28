@@ -77,6 +77,19 @@ create table configuration
   constraint foreign key (resubmissionid) references resubmission (resubmissionid) on delete cascade  
 );
 
+create table generalkeypoint
+(
+  generalkeypointid           int unsigned not null AUTO_INCREMENT,
+  keypoint                    varchar(500) not null,
+  ap                          boolean not null,
+  student                     boolean not null,
+  mentor                      boolean not null,
+
+  primary key (generalkeypointid),
+  constraint unique(keypoint)
+);
+
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------

@@ -227,7 +227,7 @@ const app = function () {
     var courseInfo = _getSelectedCourse();
     if (!courseInfo) return;
 
-    var basePath = window.location.origin + '/welcomeletter/' + courseInfo.coursekey ;
+    var basePath = window.location.origin + '/welcomeletter/' + page.body.getElementsByClassName('coursekey')[0].value ;
     var linkText = basePath + '/' + audience;
     
     _copyToClipboard(linkText);

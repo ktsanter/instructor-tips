@@ -2,9 +2,10 @@ include welcomeletter-mixins.pug
 
 - var coursekey = params.coursekey
 - var coursename = params.coursename
-- var ap = true
-- var keypointlist = ['There are no due dates other than the end of the semester, however students should strive to follow the pacing guide.', 'There is a final exam. A password is required for the final', 'Proctoring is at the discretion of the school but strongly encouraged', 'There are no retakes for assessments except in the case of technical difficulties (at the instructor\'s discretion)', 'All programming assignments can be resubmitted. Resubmission requirements or limits may be applied.', 'Details for grading polices can be found on the Michigan Virtual Grading Policy and Expectations page', 'Course specific policies can be found in the Course Info section.']
-
+- var coursekey = params.coursekey
+- var coursename = params.coursename
+- var apcourse = params.ap
+- var keypointlist = params.keypoints
 
 doctype html
 html
@@ -21,7 +22,7 @@ html
         
     div(class="header")
       +idcard
-      +keypoints("mentors", keypointlist)
+      +keypoints("mentors", keypointlist, apcourse)
       
     div(class="section")
       div(class="section-note")
@@ -55,7 +56,7 @@ html
           a(href="https://michiganvirtual.org/students/calendar/" target="_blank") Michigan Virtual Enrollment Calendar 
           |is the official source of enrollment, start, end, and withdrawal dates.
           
-        if ap
+        if apcourse
           li
             strong Pacing: 
             |In order to make sure everyone completes the course material in time for the AP exam I need to push 
