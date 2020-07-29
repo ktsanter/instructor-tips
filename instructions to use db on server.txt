@@ -7,4 +7,4 @@ docker run -it --rm --network NETWORKID mariadb mysql -hCONTAINERID -uroot -pPAS
 
 
 // force db creation
-sudo rm -rf db-datadock
+sudo rm -rf db-data

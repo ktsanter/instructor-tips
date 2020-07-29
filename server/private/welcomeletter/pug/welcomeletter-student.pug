@@ -4,6 +4,7 @@ include welcomeletter-mixins.pug
 - var coursename = params.coursename
 - var apcourse = params.ap
 - var keypointlist = params.keypoints
+- var apcourse = params.ap;
 
 doctype html
 html
@@ -16,7 +17,6 @@ html
     link(rel="stylesheet", type="text/css" href="/styles/welcomeletter/welcomeletter.css")
       
   body(class="colorscheme")
-    div !{test}  
     +title("student")
         
     div(class="header")
@@ -32,12 +32,17 @@ html
           strong Contacting me: 
           |I encourage you to use the Student Learning Portal messaging system to contact me. 
           |You can also get in touch using a number of other methods described on the Instructor Info page. 
-          |I hold office hours (scheduled and by appointment) - see the LiveChat section in Blackboard for details.
+          |I hold office hours (scheduled and by appointment) - see the LiveChat section in the 
+          em Additional Resources 
+          |section for details.
           
         li 
           strong Technical Support: 
-          |You will find a link in the course titled Getting Help which gives information 
-          |for the Customer Care Center and other resources
+          |You will find a link in the 
+          em: strong Course Quick Access 
+          |section titled 
+          em Getting Help 
+          |which gives information about the Customer Care Center and other resources
           
         li 
           strong Term Dates: 
@@ -51,7 +56,12 @@ html
       div(class="section-label") what I expect of you in this course
       ul(class="section-list")
         li I expect you to log in every weekday. Come to your online course at least as often as you come to your face-to-face classes.
-        li I expect you to effectively manage your time. While the course is self-paced, I strongly suggest you follow the pacing guide very closely.
+        if (apcourse == 1)
+          li I expect you to be familiar with Michigan Virtual's 
+            a(href="https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy/", target="_blank") AP Course Policy.
+          li I expect you to effectively manage your time.  There are firm due dates for assignments and late work will be penalized.
+        else
+          li I expect you to effectively manage your time. While the course is self-paced, I strongly suggest you follow the pacing guide very closely.
         li I expect you to complete your own work and to contribute to the class discussions. 
           |You should be familiar with Michigan Virtual’s policies on 
           a(href="https://michiganvirtual.org/policies/academic-integrity-policy/", target="blank") academic integrity 
