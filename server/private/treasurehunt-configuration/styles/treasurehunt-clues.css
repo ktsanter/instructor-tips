@@ -40,7 +40,7 @@
 }
 
 .treasurehuntclues .clues-contents .clue:not(.header) {
-  cursor: pointer;
+  /*cursor: pointer;*/
 }
 
 .treasurehuntclues .clues-contents .clue.editing {
@@ -59,10 +59,12 @@
   text-overflow: ellipsis;  
   padding: 0.2em 0.4em;
   min-height: 1.0em;
+  border: 1px solid transparent;
 }
 
 .treasurehuntclues .clues-contents .clue:not(.header) .clueval:hover:not(.editing):not(.clue-handle) {
-  font-weight: bold;
+  border: 1px solid var(--bgPrimaryEmphasis);
+  cursor: pointer;
 }
 
 .treasurehuntclues .clues-contents .clue .clueval.clue-reorder {
