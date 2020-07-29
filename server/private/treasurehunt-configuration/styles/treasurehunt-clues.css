@@ -58,6 +58,7 @@
   overflow: hidden;
   text-overflow: ellipsis;  
   padding: 0.2em 0.4em;
+  min-height: 1.0em;
 }
 
 .treasurehuntclues .clues-contents .clue:not(.header) .clueval:hover:not(.editing):not(.clue-handle) {
