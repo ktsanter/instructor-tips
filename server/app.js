@@ -246,7 +246,7 @@ const dbTreasureHuntLanding = new dbTreasureHuntLandingClass({
   "userManagement": userManagement,
   "commonmark": commonmark, 
   "pug": pug,
-  "fileServices": fileservices  
+  "fileServices": fileservices
 });
 
 //------------------------------------------
@@ -263,7 +263,8 @@ const dbWelcomeLetter = new dbWelcomeLetterClass({
   "dbManager": mariaDBManager_WelcomeLetter,
   "userManagement": userManagement,
   "pug": pug,
-  "fileServices": fileservices  
+  "fileServices": fileservices,
+  "pugPath": path.join(__dirname + '/private/welcomeletter/pug')
 });
 
 //------------------------------------------

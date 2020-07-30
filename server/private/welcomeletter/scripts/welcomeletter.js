@@ -1,5 +1,5 @@
 //-------------------------------------------------------------------
-// pacing guide viewer
+// welcome letter configuration
 //-------------------------------------------------------------------
 // TODO: 
 //-------------------------------------------------------------------
@@ -35,7 +35,8 @@ const app = function () {
     _initializeIcon('trashicon', true);
     _initializeIcon('linkstudent', true);
     _initializeIcon('linkmentor', true);
-    _initializeIcon('noteicon', true);
+    _initializeIcon('notestudent', true);
+    _initializeIcon('notementor', true);
     
     if (attachHandlers) {
       var handler = (e) => {_handleCourseSelect(e);};
@@ -54,7 +55,8 @@ const app = function () {
       page.body.getElementsByClassName('trashicon')[0].addEventListener('click', handler);
       page.body.getElementsByClassName('linkstudent')[0].addEventListener('click', handler);
       page.body.getElementsByClassName('linkmentor')[0].addEventListener('click', handler);
-      page.body.getElementsByClassName('noteicon')[0].addEventListener('click', handler);
+      page.body.getElementsByClassName('notestudent')[0].addEventListener('click', handler);
+      page.body.getElementsByClassName('notementor')[0].addEventListener('click', handler);
     }
   }
   
@@ -123,7 +125,8 @@ const app = function () {
       UtilityKTS.setClass(page.body.getElementsByClassName('trashicon')[0], 'disabled', false);
       UtilityKTS.setClass(page.body.getElementsByClassName('linkstudent')[0], 'disabled', false);
       UtilityKTS.setClass(page.body.getElementsByClassName('linkmentor')[0], 'disabled', false);
-      UtilityKTS.setClass(page.body.getElementsByClassName('noteicon')[0], 'disabled', false);
+      UtilityKTS.setClass(page.body.getElementsByClassName('notestudent')[0], 'disabled', false);
+      UtilityKTS.setClass(page.body.getElementsByClassName('notementor')[0], 'disabled', false);
 
       var course = dbResult.data.course[0];
       _enableElement('coursekey');
@@ -224,22 +227,42 @@ const app = function () {
   }
   
   function _createAndShareLink(audience) {
-    var courseInfo = _getSelectedCourse();
-    if (!courseInfo) return;
-
-    var basePath = window.location.origin + '/welcomeletter/' + page.body.getElementsByClassName('coursekey')[0].value ;
-    var linkText = basePath + '/' + audience;
+    var linkText = _makeWelcomeLetterLink(audience);
+    if (!linkText) return;
     
     _copyToClipboard(linkText);
     _displayMessage(audience + ' link copied to clipboard');
   }
   
-  function _createAndShareNote() {
+  function _makeWelcomeLetterLink(audience) {
     var courseInfo = _getSelectedCourse();
-    if (!courseInfo) return;
+    if (!courseInfo) return null;
 
-    console.log('_createAndShareNote');
-    alert('not implemented yet');
+    var basePath = window.location.origin + '/welcomeletter/' + page.body.getElementsByClassName('coursekey')[0].value ;
+    var linkText = basePath + '/' + audience;
+    return linkText;
+  }
+  
+  async function _createAndShareNote(audience) {
+    var courseInfo = _getSelectedCourse();
+    if (!courseInfo) return null;
+
+    var linkText = _makeWelcomeLetterLink(audience);
+    if (!linkText) return;
+    
+    courseInfo.audience = audience;
+    courseInfo.linktext = linkText;
+    
+    var elem = page.body.getElementsByClassName('exams')[0];
+    var elemText = elem.options[elem.selectedIndex].text;
+    courseInfo.haspasswords = (elemText != 'There is no midterm or final.');
+    
+    var result = await queryMailMessage(courseInfo);
+    if (result.success) {
+      var renderedMessage = result.data;
+      _copyRenderedToClipboard(renderedMessage);
+      _displayMessage(audience + ' message copied to clipboard');
+    }
   }
   
   function _displayMessage(msg) {
@@ -273,8 +296,11 @@ const app = function () {
     } else if (e.target.classList.contains('linkmentor')) {
       await _createAndShareLink('mentor');
       
-    } else if (e.target.classList.contains('noteicon')) {
-      await _createAndShareNote();
+    } else if (e.target.classList.contains('notestudent')) {
+      await _createAndShareNote('student');
+      
+    } else if (e.target.classList.contains('notementor')) {
+      await _createAndShareNote('mentor');
     }
   }
   
@@ -299,6 +325,10 @@ const app = function () {
 
   async function queryDeleteCourse(courseInfo) {
     return await SQLDBInterface.doPostQuery('welcome/delete', 'course', courseInfo);
+  }
+  
+  async function queryMailMessage(courseInfo) {
+    return await SQLDBInterface.doPostQuery('welcome/query', 'mailmessage', courseInfo);
   }
   
   //---------------------------------------

@@ -12,6 +12,7 @@ module.exports = internal.WelcomeLetter = class {
     this._userManagement = params.userManagement;
     this._pug = params.pug;
     this._fileServices = params.fileServices;
+    this._pugPath = params.pugPath;
   }
   
 //---------------------------------------------------------------
@@ -162,6 +163,9 @@ module.exports = internal.WelcomeLetter = class {
 
     } else if (params.queryName == 'course') {
       dbResult = await this._getCourse(params, postData, userInfo);
+            
+    } else if (params.queryName == 'mailmessage') {
+      dbResult = await this._getMailMessage(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -355,6 +359,38 @@ module.exports = internal.WelcomeLetter = class {
 
     return result;
   }
+  
+  async _getMailMessage(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var pugFileName = '';
+    if (postData.audience == 'student') {
+      pugFileName = this._pugPath + '/mailmessage-student.pug';
+    } else if (postData.audience == 'mentor') {
+      pugFileName = this._pugPath + '/mailmessage-mentor.pug';
+    } else {
+      result.details = 'invalid audience';
+      return result;
+    }
+    
+    if (!this._fileServices.existsSync(pugFileName)) {
+      result.details = 'cannot read message file';
+      return result;
+    }
+    
+    var messageParams = {
+      coursename: postData.coursename,
+      coursekey: postData.coursekey,
+      ap: postData.ap,
+      audience: postData.audience,
+      linktext: postData.linktext,
+      haspasswords: postData.haspasswords
+    };
+    result.data = this._pug.renderFile(pugFileName, {params: messageParams});
+    result.success = true;
+
+    return result;
+  }  
 
 //---------------------------------------------------------------
 // other support methods

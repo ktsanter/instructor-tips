@@ -1,0 +1,29 @@
+- var coursename = params.coursename
+- var linkurl = params.linktext
+
+include mailmessage-mixins.pug
+
+doctype html
+html
+  head
+    title welcome letter mail message
+    meta(charset="utf-8")
+          
+  body
+    div Hello [[FIRST_NAME]], and welcome to your online course - 
+      em: strong= coursename
+      
+    br
+    
+    div
+      |My name is Kevin Santer and I'm the instructor for the class. 
+      |I've prepared this 
+      +makelink(linkurl, "welcome letter")
+      |&nbsp;explaining what you need to get started in the course. 
+      |I will also be sending a similar welcome email to your mentor.
+    
+    div I look forward to working with you and encourage you to contact me whenever you have questions.
+   
+    br
+    
+    +signature
