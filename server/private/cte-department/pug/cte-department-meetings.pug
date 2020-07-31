@@ -1,0 +1,72 @@
+mixin deptmeeting(label, meeting, slides, recording, resourcelist)
+  tr
+    td= label
+      if (meeting.label == "tbd")
+        em &nbsp;(tbd)
+      else if (meeting.label != "")
+        a(href=meeting.url, target="_blank")= meeting.label
+        
+    td
+      if (label == "Byte-sized PD")
+        a(href=slides, target="_blank") full schedule
+      else if (slides != "")
+        a(href=slides, target="_blank") slides
+        
+    td
+      if (recording != "")
+        a(href=recording, target="_blank") recording
+      
+    td
+      each resource in resourcelist
+        a(href=resource.url, target="_blank")= resource.label
+    
+table(class="table table-hover table-condensed")
+  thead
+    tr
+      th Date/time and meeting link
+      th Link/slides
+      th Recording
+      th Other resources
+  
+  tbody
+    +deptmeeting("Byte-sized PD", 
+      {label: "", url: ""},
+      "https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing",
+      "",
+      []
+    )
+
+    +deptmeeting("September", 
+      {label: "tbd", url: ""},
+      "",
+      "",
+      []
+    )
+
+    +deptmeeting("November", 
+      {label: "tbd", url: ""},
+      "",
+      "",
+      []
+    )
+
+    +deptmeeting("January", 
+      {label: "tbd", url: ""},
+      "",
+      "",
+      []
+    )
+
+    +deptmeeting("March", 
+      {label: "tbd", url: ""},
+      "",
+      "",
+      []
+    )
+
+    +deptmeeting("May", 
+      {label: "tbd", url: ""},
+      "",
+      "",
+      []
+    )

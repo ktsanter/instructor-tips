@@ -1,0 +1,146 @@
+.MV-colorscheme {
+  --MV-white: #ffffff;
+  --MV-black: #000000;
+  --MV-light-teal: #2f8d98;
+  --MV-dark-teal: #115e63;
+  --MV-deep-teal: #093c44;
+  --MV-green: #b5cd34;
+  --MV-orange: #f7941e;
+  --MV-light-gray: #6d6e71;
+  --MV-dark-gray: #414042;
+  --menu-gray: #9d9d9d;
+}
+
+body {
+	color: var(--MV-black);
+	background-color: var(--MV-white);
+	font-family: Gotham, Montserrat, "Noto Sans", Helvetica, Calibri, Arial, "Noto Serif", Garamond, "Times New Roman";
+	font-size: 12px;
+	margin-left: 2px;
+	margin-right: 2px;
+  background-image: url("/images/cte-department/imageedit_6_3376073498.png");
+}
+
+.logo {
+  width: 50px;
+  margin-top: -10px;
+}
+
+iframe {
+  border: none;
+}
+
+.btn-primary {
+  background-color: var(--MV-light-teal);
+  color: var(--MV-white);
+}
+
+.title {
+  color: white;
+  background-color: black;
+}
+
+.cte-page {
+  display: none;
+  margin-top: 60px;
+}
+
+a.inactive {
+  text-decoration: none;
+  color: var(--MV-light-gray);
+}
+
+.cte-item {
+  background-color: var(--MV-white);
+  border: 1px solid var(--MV-black);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.home-item {
+  margin-bottom: 20px;
+  border: 1px solid black;
+  border-radius: 6px; 
+  max-width: 80%;
+  background-color: var(--MV-white);
+  padding: 10px 0px 10px 8px;
+}
+
+.home-item .home-item-label {
+  display: inline-block;
+  margin-left: 0.4em;
+}
+
+.home-title {
+  font-size: 1.8em;
+  font-weight: bold;
+}
+
+.home-disclaimer {
+  font-size: 1.0em;
+  font-style: italic;
+  padding-bottom: 16px;
+}
+
+.standards {
+  width: 100%;
+  height: 600px;
+}
+
+.remind {
+  width: 100%;
+  height: 500px;
+}
+
+.countdown-snapshot {
+  width: 80%;
+  height:auto;
+}
+
+.cb-logo {
+  width: 40px;
+  height: auto;
+  float:left;
+  margin-right: 8px;
+}
+
+.cb-list {
+  clear:left;
+  margin-left: -16px;
+}
+
+.infodeck-logo {
+  width: 250px;
+  height: auto;
+  float:left;
+  margin-right: 8px;
+}
+
+.miscellaneous {
+  margin: 6px 6px 6px 6px;
+  margin-right: 10px;
+  border: 1px solid var(--MV-dark-teal);
+  border-radius: 6px;
+}
+
+/* Flaired edges, by Tomas Theunissen */
+
+hr.style-seven {
+    margin-top: 30px;
+    overflow: visible; /* For IE */
+    height: 30px;
+    border-style: solid;
+    border-color: black;
+    border-width: 1px 0 0 0;
+    border-radius: 20px;
+}
+hr.style-seven:before { /* Not really supposed to work, but does */
+    display: block;
+    content: "";
+    height: 30px;
+    margin-top: -31px;
+    border-style: solid;
+    border-color: black;
+    border-width: 0 0 1px 0;
+    border-radius: 20px;
+}

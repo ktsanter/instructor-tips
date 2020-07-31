@@ -1,0 +1,4 @@
+mixin homeitem(id, label, linkto, description)
+  div(class="home-item")
+    button(id=id type="button" class="btn btn-primary btn-sm" linkto=linkto)= label
+    div(class="home-item-label")= description

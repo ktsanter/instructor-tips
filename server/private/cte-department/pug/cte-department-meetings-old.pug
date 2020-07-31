@@ -1,0 +1,109 @@
+mixin deptmeeting_old(label, resourcelist)
+  tr
+    td= label
+    td
+      each resource in resourcelist
+        a(href=resource.url, target="_blank")= resource.label
+        br
+    
+table(class="table table-hover table-condensed")
+  thead
+    tr
+      th Date/time
+      th slides / resources
+      
+  tbody
+    +deptmeeting_old("Byte-sized PD 2019-2020", [
+      {label: "full schedule", url: "https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing"}
+    ])
+
+    +deptmeeting_old("May 2020", [
+      {label: "slides", url: "https://michiganvirtual.zoom.us/my/ksanter"},
+      {label: "recording (pwd: 6I&9*hYB)", url: "https://michiganvirtual.zoom.us/rec/share/_-NkKrX_q3tOZoXw6GTyU_UcA6H0T6a81yEW_qIPmU7n0KaNJj8Fora-OakZIrYP"}
+    ])
+
+    +deptmeeting_old("March 2020", [
+      {label: "slides", url: "http://bit.ly/cte2020_03"},
+      {label: "recording", url: "https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing"}
+    ])
+
+    +deptmeeting_old("January 2020", [
+      {label: "slides", url: "https://drive.google.com/open?id=1ZES9ILA9NuJfS8Ekx4ctoNxnzOJhcg-7o41OP6d5GDc"},
+      {label: "recording", url: "https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing"}
+    ])
+
+    +deptmeeting_old("November 2019", [
+      {label: "slides", url: "https://drive.google.com/open?id=1VcanLqi66Bz4QDKmNGtJDXnSIhcWmsLmaNHREQ5FHvU"},
+      {label: "recording", url: "https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing"}
+    ])
+
+    +deptmeeting_old("September 2019", [
+      {label: "slides", url: "ttps://drive.google.com/open?id=1zFguP5mO3zUnOoeNPWtlLPvbaYnlB3KCjVsyC6j_5NU"},
+      {label: "recording", url: "https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing"}
+    ])
+
+    +deptmeeting_old("Byte-sized PD 2018-2019", [
+      {label: "full schedule", url: "https://drive.google.com/open?id=1KwY0uQojXZ80k_7Ex0IpKZsYYiVdjkw4C8gqlaooomU"}
+    ])
+        
+    +deptmeeting_old("May 2019", [
+      {label: "slides", url: "http://bit.ly/2KEmIsE"},
+      {label: "recording", url: "https://michiganvirtual.zoom.us/recording/share/HIWM5oVksNmwKqUMBmYoaShcZrpBIO7mKNiWGW1VVr6wIumekTziMw?startTime=1557878452000"},
+      {label: "ESR tutorial video", url: "https://www.youtube.com/watch?v=LV1tU6BHb6Y"},
+      {label: "Michigan Virtual Extension Policy", url: "https://michiganvirtual.org/about/support/knowledge-base/extension-policy-and-form/"},
+      {label: "email regarding dual-enrollment teaching opportunity", url: "https://drive.google.com/open?id=18LL6WiP-00zzuuIibvb55-GeBnViNKdo"}
+    ])
+
+    +deptmeeting_old("Mar 2019", [
+      {label: "slides", url: "http://bit.ly/2nmQhGb"},
+      {label: "recording", url: "https://michiganvirtual.zoom.us/recording/share/fn0z1SAIt6Jb1TUqgH-a_u8R_Dmduf596Z-Ojvqz4pKwIumekTziMw?startTime=1552593685000"},
+      {label: "what are you currently doing?", url: "https://drive.google.com/open?id=1JFEb0RULB6O0_HLsfy0AdW_ELALlmeh00Dx9-GA5xMc"},
+      {label: "what would you like to do?", url: "https://drive.google.com/open?id=1IENMjQU9Qjhxj3XOLBSW9cd6hCxPv66MhBLdzmxXi5g"},
+      {label: "2 degree change", url: "https://drive.google.com/open?id=1TM_K16PkqyNYv9YI-vXlmi33vsA_mtYfPhG-tUoZngs"},
+      {label: "Google Slides announcements and a Table of Contents", url: "https://drive.google.com/open?id=1meT0v3wP7Y3O-GHXaEEg5tg0G1swhGQtnotZY-SY978"},
+    ])
+
+    +deptmeeting_old("Jan 2019", [
+      {label: "slides", url: "http://bit.ly/2MtbHw7"},
+      {label: "recording", url: "ttps://michiganvirtual.zoom.us/recording/play/iFFTW0W7uFaWxTMAIDeQ_aWJKbdJ26CJVTCkRJZVlQTz5Qi8osDKWfDVNIkv9qML?continueMode=true"},
+      {label: "sending student welcome letters", url: "https://www.youtube.com/watch?v=16VmezdEpjw"},
+      {label: "sending mentor welcome letters", url: "https://www.youtube.com/watch?v=-1RIve3C8W0"}
+    ])
+
+    +deptmeeting_old("Nov 2018", [
+      {label: "slides", url: "http://bit.ly/2MxNrcr"},
+      {label: "recording", url: "https://michiganvirtual.zoom.us/recording/share/wm6KmD0Akfd2-SHYoeWKypnB0O0ccBEGXO5zZtu02G6wIumekTziMw"},
+    ])
+
+    +deptmeeting_old("Sep 2018", [
+      {label: "slides", url: "http://bit.ly/2vTmdWv"},
+      {label: "recording", url: "https://michiganvirtual.zoom.us/recording/share/8l4pqOegSuV0ZTANnfdN7Q9pFsg2cyeFeZCbOVs_WVY?startTime=1536710562000"}
+    ])
+
+    +deptmeeting_old("May 2018", [
+      {label: "slides", url: "https://drive.google.com/open?id=1Nol4aR-0AXUJu-AZHnmz9q1I0pQgwJ43-nH5fp30b7E"}
+    ])
+
+    +deptmeeting_old("Apr 2018", [
+      {label: "slides", url: "https://drive.google.com/open?id=1QaqbPFw-QmCIgntoMCxzkjbYSsnMAjYy0Ykt5vRpn6Y"}
+    ])
+
+    +deptmeeting_old("Feb 2018", [
+      {label: "slides", url: "https://drive.google.com/open?id=1r37i2FCfjm45u6s9eaikznb5qzdDUE3OYiMDPAkRd64"}
+    ])
+
+    +deptmeeting_old("Jan 2018", [
+      {label: "slides", url: "https://drive.google.com/open?id=14mo9Kz9pcikCjuZcremxAKtT40Mmd9ZDPUu9ckFHnAw"}
+    ])
+
+    +deptmeeting_old("Nov 2017", [
+      {label: "slides", url: "https://drive.google.com/open?id=1gAcVEf17Bmggyaa3MfWmzpLsjrXYY0Mkh3ZoLG0w0JI"}
+    ])
+
+    +deptmeeting_old("Oct 2017", [
+      {label: "slides", url: "https://drive.google.com/open?id=1d6NPNP4YqBTgwRasu0RHqxXvik0ZzBSutr7J_Q5qjDg"}
+    ])
+
+    +deptmeeting_old("Sep 2017", [
+      {label: "slides", url: "https://drive.google.com/open?id=16yfRr5IY_ejUzeiZyvlegIaGSYlrihQACAAQ9BT8Op4"}
+    ])

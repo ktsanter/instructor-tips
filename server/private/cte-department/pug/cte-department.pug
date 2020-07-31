@@ -1,0 +1,163 @@
+include cte-department-mixins
+    
+doctype html
+html
+  head
+    title CTE department
+    meta(charset="utf-8")
+    
+    link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css")
+    style
+      include ../styles/cte-department.css
+          
+    script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js")          
+    script(data-main="/scripts/cte-department/require_cte-department", src="/scripts/require.js")      \
+    
+  body(class="MV-colorscheme")
+    //- -- nav bar  --------------------------
+    nav(class="navbar navbar-inverse navbar-fixed-top", role="navigation")
+      div(class="navbar-header")
+        button(type="button" class="navbar-toggle" data-toggle="collapse" data-target="#example-navbar-collapse")
+          span(class="sr-only") Toggle navigation
+          span(class="icon-bar")
+          span(class="icon-bar")
+          span(class="icon-bar")
+        a(class="navbar-brand") CTE Department
+
+      div(class="collapse navbar-collapse" id="example-navbar-collapse")
+        ul(class="nav navbar-nav")
+          li: a(class="anchor anchor-home" linkto="containerHome" href="#") home
+          li: a(class="anchor" linkto="containerMeetings" href="#") meetings
+          li: a(class="anchor" linkto="containerCOM" href="#") COM
+          li: a(class="anchor" linkto="containerRemind" href="#") Remind
+          li: a(class="anchor" linkto="containerMiscellaneous" href="#") miscellaneous
+
+    //- -- home  --------------------------
+    div(id="containerHome" class="container cte-page")
+      div(class="home-title") Welcome to the site of Michigan Virtual's CTE department
+      div(class="home-disclaimer") Please note this site is not owned or operated by, nor representative of, Michigan Virtual
+      
+      +homeitem("btnMeeting", "department meeting schedule", "containerMeetings", "the full schedule of 2018-2019 department meetings and Byte-sized PD session")
+      +homeitem("btnCOM", "Collaboration of the Minds", "containerCOM", "information for yearly COM events, both current and past")
+      +homeitem("btnRemind", "Remind for notifications", "containerRemind", "how to sign up for Remind to get departmental messaging and a list of recent messages")
+      +homeitem("btnMiscellaneous", "other resources", "containerMiscellaneous", "links and tips for helpful resources")
+      
+    //- -- meetings  --------------------------
+    div(id="containerMeetings" class="container cte-page")
+      h4 2019-2020 department meetings 
+      div(class="cte-item")
+        include cte-department-meetings
+      
+      h4 Byte-sized PD
+      div(class="cte-item")
+        div
+          |This year we're offering "Byte-sized PD" sessions again, alternating monthly with meetings just for our department.
+          br
+          |Here's the 
+          a(href="https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing" target="_blank") full schedule
+          |&nbsp;of Byte-sized PD presentations and department meetings. 
+        br
+        div
+          strong: em Remember: 
+          |instructors are required to attend at least two meetings (department and/or PD) during the school year.
+
+      h4 Suggestions?  Ideas to share?
+      div(class="cte-item")
+        div
+          |Do you have an idea to share with the rest of the team?  How about a suggestion for a department meeting topic?
+          br
+          |I'd love to hear about it!  You can contact me at 
+          a(href="mailto:ksanter@michiganvirtual.org" target="_blank") ksanter@michiganvirtual.org
+          |&nbsp; or 734.999.0587, or you can use this 
+          a(href="https://docs.google.com/forms/d/e/1FAIpQLSevkvKfAshi4he0ZG0UFrNRzzSfcmrcL7mBdOFQCR09QHEusw/viewform?usp=sf_link" target="_blank") Google Form.
+
+      hr(class="style-seven")
+      
+      h4 older department meetings         
+      div(class="cte-item")
+        include cte-department-meetings-old
+
+
+    //- -- COM  --------------------------
+    div(id="containerCOM" class="container cte-page")
+      div(class="cte-item")
+        h4 Collaboration of the Minds 2020
+        ul
+          li: a(href="" target="_blank") main COM site
+          li: a(href="" target="_blank") CTE meeting - day 1 and 2 slides
+      br
+
+      div(class="cte-item")
+        h4 Collaboration of the Minds 2019
+        ul
+          li: a(href="https://sites.google.com/mivu.org/com2019/home?authuser=0" target="_blank") main COM site
+          li: a(href="https://drive.google.com/open?id=1ULXnw3ztB9JidwFmUWqyiQ0HbgyVvahXcb7oRniDJjU" target="_blank") CTE meeting - day 1 slides
+          li: a(href="https://drive.google.com/open?id=1vhB0SQM28SEEay0W438L47k2k6C4XZqNpGklBWqMVVk" target="_blank") CTE meeting - day 2 slides
+      br
+      
+      div(class="cte-item")
+        h4 Collaboration of the Minds 2018
+        ul
+          li: a(href="https://drive.google.com/open?id=1qcBwfRMpBldtKl0v6dSG8RI8DAZT_Eq4CfyyOqOSAkE" target="_blank") Day 1
+          li: a(href="https://drive.google.com/open?id=1JDmaVegQa6zT9hD2y7BsiJdpOfkUoZ-Z5ZnIw_MeRe8" target="_blank") Day 2
+      br
+      
+      div(class="cte-item")
+        h4 Collaboration of the Minds 2017
+        ul
+          li: a(href="https://goo.gl/3So91B" target="_blank") Parking lot responses
+          li: a(href="https://goo.gl/r2YmLx" target="_blank") “What do you know” answers and resources
+          li: a(href="https://youtu.be/tfA0Uq6LGAo" target="_blank") Photo montage
+          li: a(href="https://padlet.com/dfisher12/xxn82j90e0yj" target="_blank") Effective feedback Padlet
+          li: a(href="https://goo.gl/1vejJL" target="_blank") Early start info
+          li: a(href="https://goo.gl/iCrx1K" target="_blank") Common course challenges (Day 1)
+          li Using the Discussion Board effectively: follow up on your plan with your partner and let me know how I can help
+          li: a(href="https://goo.gl/KbwZBV" target="_blank")  Tackling Common Concerns
+          li: a(href="https://padlet.com/ksanter/COMEFF" target="_blank") Efficiency ideas
+          li: a(href="https://goo.gl/XLU5oA" target="_blank") Slide deck for departmental meetings at COM
+      
+    //- -- Remind  --------------------------
+    div(id="containerRemind" class="container cte-page")
+      h4 Sign up for 
+        strong: em Remind 
+        |if you're interested in getting notices, meeting reminders, etc.
+      |You can do that here or by using the mobile app.  The class code is 
+      em @bg3ff7
+      
+      br
+      br
+      
+      div(class="cte-item")
+        iframe(class="remind" src="https://ktsanter.github.io/CTE-department-remind/")
+
+    //- -- miscellaneous  --------------------------
+    div(id="containerMiscellaneous" class="container cte-page")
+      h4 Miscellaneous resources
+      div(class="row")
+        div(class="col-sm-6 miscellaneous cte-item")
+          h5 Interested in embedding a countdown time into your course, handling up to three deadlines?
+          |Click on the example image to create your own
+          a(href="https://ktsanter.github.io/countdown-generator/" target="_blank")
+            img(class="countdown-snapshot" src="/images/cte-department/countdown_snapshot.png" alt="snapshot of countdown timer")
+        br
+        
+        div(class="col-sm-6 miscellaneous cte-item")
+          h5 Would you like a tool for organizing and saving your feedback?
+          div
+            div
+              img(class="cb-logo" src="/images/cte-department/cb_128_rounded.png" alt="CommentBuddy logo")
+              a(href="https://chrome.google.com/webstore/detail/commentbuddy/fgbppdbigoekjfgnocicaekcphlkhgof?authuser=2" target="_blank") CommentBuddy
+              |is a Chrome extension. It works off a spreadsheet where you’ve saved your favorite bits of feedback along with categories
+            ul(class="cb-list")
+              li It pops up directly in your browser
+              li You can quickly search for and select a comment which is copied to the clipboard
+              li You can immediately paste the comment in Blackboard, Gmail, etc.
+
+        div(class="col-sm-6 miscellaneous cte-item")
+          h5 Would you like a tool for managing student information?
+          div
+            div
+              img(class="infodeck-logo" src="/images/cte-department/infodeck.jpg" alt="InfoDeck snapshot")
+              a(href="https://chrome.google.com/webstore/detail/student-infodeck/boeopbggbaddapmhdeoggjlakphocokf" target="_blank") Student infoDeck 
+              |is a Chrome extension. It works off a spreadsheet where you’ve saved student information

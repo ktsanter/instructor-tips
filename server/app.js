@@ -529,6 +529,11 @@ app.get('/binary-conversion/:mode', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});
 })
 
+app.get('/cte-department/home', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'cte-department/pug/cte-department.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {});
+})
+
 app.get('/:app', function (req, res) {
   res.sendFile(path.join(__dirname, 'private', req.params.app + '/html/' + req.params.app + '.html'))
 })
