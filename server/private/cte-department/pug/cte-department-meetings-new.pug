@@ -1,0 +1,72 @@
+mixin deptmeeting(label, meeting, slides, recording, resourcelist)
+  tr
+    td= label
+      if (meeting.label == "tbd")
+        em &nbsp;(tbd)
+      else if (meeting.label != "")
+        a(href=meeting.url, target="_blank")= meeting.label
+        
+    td
+      if (label == "Byte-sized PD")
+        a(href=slides, target="_blank") full schedule
+      else if (slides != "")
+        a(href=slides, target="_blank") slides
+        
+    td
+      if (recording != "")
+        a(href=recording, target="_blank") recording
+      
+    td
+      each resource in resourcelist
+        a(href=resource.url, target="_blank")= resource.label
+    
+table(class="table table-hover table-condensed")
+  thead
+    tr
+      th Date/time and meeting link
+      th Link/slides
+      th Recording
+      th Other resources
+  
+  tbody
+    +deptmeeting("Byte-sized PD", 
+      {label: "", url: ""},
+      "https://docs.google.com/document/d/1vnaFT9yNCRFXIYI2YFl36YACxILQ2OmkBg61liVLYw4/edit?usp=sharing",
+      "",
+      []
+    )
+
+    +deptmeeting("September", 
+      {label: " (Thu Sep 10, 8:00pm)", url: "https://michiganvirtual.zoom.us/j/92518243303?pwd=VndrL1ExUlVIMVVkM014c3dNd1Erdz09"},
+      "https://bit.ly/cte-2020-09",
+      "",
+      []
+    )
+
+    +deptmeeting("November", 
+      {label: " (Tue Nov 10, 4:00pm)", url: "https://michiganvirtual.zoom.us/j/93132022914?pwd=Q1BKT1R1aUV0bTgzb0w2aGdNV01DUT09"},
+      "https://bit.ly/cte-2020-11",
+      "",
+      []
+    )
+
+    +deptmeeting("January", 
+      {label: " (Thu Jan 7, 8:00pm)", url: "https://michiganvirtual.zoom.us/j/96677340593?pwd=bWNHZ0c3TXZ5bTJidlVwY2x0WmJ2UT09"},
+      "https://bit.ly/cte-2021-01",
+      "",
+      []
+    )
+
+    +deptmeeting("March", 
+      {label: " (Tue Mar 9, 4:00pm)", url: "https://michiganvirtual.zoom.us/j/97841429434?pwd=dFFTSVBsOSt2Q3FuWjBjNk45KzFSZz09"},
+      "https://bit.ly/cte-2021-03",
+      "",
+      []
+    )
+
+    +deptmeeting("May", 
+      {label: " (Thu May 6, 8:00pm)", url: "https://michiganvirtual.zoom.us/j/97983895550?pwd=cjNvYUN6dDh1SG5WcTFWRkZSQ21hZz09"},
+      "https://bit.ly/cte-2021-05",
+      "",
+      []
+    )
