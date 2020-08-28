@@ -14,13 +14,13 @@ const app = function () {
     testing: false,  // true => iframe won't be loaded and message will be displayed
     
 
-// looks like [site]:[port]/api/guide/[coursekey]/pace/[start yyyy/mm/dd]/[end yyy/mm/dd]#w[weeknumber]
+// looks like [site]:[port]/api/guide/[coursekey]/pace/[start yyyy/mm/dd]/[end yyy/mm/dd]iv#w[weeknumber]
 
 // Basic Web Design
-// https://integrations.michiganvirtual.org:9092/api/guide/C-WBDN-MSTR-20/pace/2020/09/05/2021/01/22#w1
+// https://integrations.michiganvirtual.org:9092/api/guide/C-WbDn-MSTR-20/pace/2020/08/07/2020/12/11/iv#w16
 
 // Biology B
-// https://integrations.michiganvirtual.org:9092/api/guide/C-BIOB-MSTR-19/pace/2020/09/05/2021/01/22#w1
+// https://integrations.michiganvirtual.org:9092/api/guide/C-BIOB-MSTR-19/pace/2020/09/05/2021/01/22iv#w1
   
     pgStem: 'https://integrations.michiganvirtual.org:9092/api/guide/',
     scaleWidth: 0.95,
@@ -100,11 +100,12 @@ const app = function () {
       var elem = _getViewerElement();
       elem.loadingViewer = true;
       elem.src = src;
+      console.log(src);
     }
   }
 
   function _makePacingGuideURL(coursekey, startDate, endDate) {
-    return settings.pgStem + coursekey + '/pace/' + startDate + '/' + endDate;
+    return settings.pgStem + coursekey + '/pace/' + startDate + '/' + endDate + '/iv';
   }
   
   function _getViewerElement() {
