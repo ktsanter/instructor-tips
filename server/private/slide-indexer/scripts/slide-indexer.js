@@ -43,9 +43,26 @@ const app = function () {
   // page rendering
   //-----------------------------------------  
   function _renderPage() {
+    _renderNavigation();
     _renderIndex();
     _renderTableOfContents();
     _renderPresentation();
+  }
+  
+  function _renderNavigation() {
+    var container = page.body.getElementsByClassName('navigation')[0];
+
+    var elemButton = CreateElement.createButton(null, null, 'test0', null, _handleButton0);
+    container.appendChild(elemButton);
+
+    var elemButton = CreateElement.createButton(null, null, 'test1', null, _handleButton1);
+    container.appendChild(elemButton);
+
+    var elemButton = CreateElement.createButton(null, null, 'test2', null, _handleButton2);
+    container.appendChild(elemButton);
+
+    var elemButton = CreateElement.createButton(null, null, 'test3', null, _handleButton3);
+    container.appendChild(elemButton);
   }
   
   function _renderIndex() {
@@ -64,22 +81,46 @@ const app = function () {
   }  
   
   function _renderPresentation() {
-    var slideSource = 'https://docs.google.com/presentation/d/' + settings.presentationId + '/embed?rm=minimal';
+    settings.slideSource = 'https://docs.google.com/presentation/d/' + settings.presentationId + '/embed?rm=minimal';
     var presentationPageWidth = settings.presentationInfo.pageWidth;
     var presentationPageHeight = settings.presentationInfo.pageHeight;
     
     var iframeWidth = presentationPageWidth + 'pt';
     var iframeHeight = presentationPageHeight + 'pt';
     console.log(presentationPageWidth + ' ' + presentationPageHeight);
-    var presentation = CreateElement.createIframe('presentation', null, slideSource, iframeWidth, iframeHeight, true);
+    var presentation = CreateElement.createIframe(null, 'presentation', settings.slideSource, iframeWidth, iframeHeight, true);
     
     var container = page.body.getElementsByClassName('presentation-container')[0];
     container.appendChild(presentation);
   }
   
   //----------------------------------------
+	// refresh / update
+	//----------------------------------------
+  function _moveToSlideNumber(number) {
+    var slideLink = settings.slideSource + '#' + (number + 1);
+    console.log(slideLink);
+    page.body.getElementsByClassName('presentation')[0].src = slideLink;
+  }
+  
+  //----------------------------------------
 	// handlers
 	//----------------------------------------
+  function _handleButton0() {
+    _moveToSlideNumber(0);
+  }
+  
+  function _handleButton1() {
+    _moveToSlideNumber(1);
+  }
+  
+  function _handleButton2() {
+    _moveToSlideNumber(2);
+  }
+  
+  function _handleButton3() {
+    _moveToSlideNumber(3);
+  }
   
   //----------------------------------------
 	// return from wrapper function
