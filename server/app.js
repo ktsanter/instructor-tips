@@ -529,6 +529,11 @@ app.get('/binary-conversion/:mode', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});
 })
 
+app.get('/slide-indexer/:presentationid', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {presentationid: req.params.presentationid}});
+})
+
 app.get('/cte-department/home', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'cte-department/pug/cte-department.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {});

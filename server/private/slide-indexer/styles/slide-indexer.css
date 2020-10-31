@@ -1,0 +1,44 @@
+/*------------------------------------------------------------
+ * style settings for Slide Indexer
+ *------------------------------------------------------------*/
+.slide-indexer-colorscheme {
+  --bgOverall: #eee; /*-- very light gray --*/
+  --bgPrimaryEmphasis: rgba(66, 98, 150, 1.0);   /*-- medium-dark blue --*/
+  --bgPrimaryEmphasis_trans: rgba(66, 98, 150, 0.6);
+  --bgSecondaryEmphasis: #daad86;  /*-- medium sand --*/
+  --bgTertiaryEmphasis: #c9c9c9;  /*-- medium gray --*/
+  --bgQuaternaryEmphasis: #f2f2f2; /*-- light gray --*/
+  --bgPrimaryChoice:  #111111; /* #bc986a;*/  /*-- dark sand --*/
+  --bgSecondaryChoice: var(--bgPrimaryEmphasis);
+  --bgTertiaryChoice: #6093e5;  /*-- light blue --*/
+}
+
+body {
+  color: black;
+  background-color: var(--bgOverall);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 13px;
+}
+
+.slide-indexer {}
+
+.slide-indexer .hide-me {
+  display: none;
+}
+
+.slide-indexer .navigation {
+  border: 1px solid red;
+}
+
+.slide-indexer .presentation-container #presentation {
+  border: none;
+}
+
+.slide-indexer .index-container {
+  border: 1px solid blue;
+}
+
+.slide-indexer .toc-container {
+  border: 1px solid purple;
+}
+

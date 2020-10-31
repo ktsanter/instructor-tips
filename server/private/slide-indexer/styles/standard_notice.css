@@ -1,0 +1,25 @@
+/*-------------------------------------------------------------------*/
+ /* styling for standard_notice library                              */
+ /*------------------------------------------------------------------*/
+
+/*-- standard error and notice tools --*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice {
+  font-size: 0.9em;
+  font-style: italic;
+  margin-left: 0.4em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/
