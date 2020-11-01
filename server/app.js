@@ -534,10 +534,6 @@ app.get('/slide-indexer/:presentationid', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {presentationid: req.params.presentationid}});
 })
 
-app.get('/test', function (req, res) {
-  res.redirect('https://docs.google.com/presentation/d/14X6SpTLlIZ_273f14e-thhYefJXGDvw4gP3VODnvA3w/embed?rm=minimal');
-})
-
 app.get('/cte-department/home', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'cte-department/pug/cte-department.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {});
