@@ -82,7 +82,8 @@ const app = function () {
   
   function _renderPresentation() {
     //settings.slideSource = 'https://docs.google.com/presentation/d/' + settings.presentationId + '/embed?rm=minimal';
-    settings.slideSource = 'http://localhost:8000/test';
+    console.log(document.location.origin);
+    settings.slideSource = document.location.origin + '/test';
     console.log(settings.slideSource);
     var presentationPageWidth = settings.presentationInfo.pageWidth;
     var presentationPageHeight = settings.presentationInfo.pageHeight;
