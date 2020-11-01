@@ -81,7 +81,9 @@ const app = function () {
   }  
   
   function _renderPresentation() {
-    settings.slideSource = 'https://docs.google.com/presentation/d/' + settings.presentationId + '/embed?rm=minimal';
+    //settings.slideSource = 'https://docs.google.com/presentation/d/' + settings.presentationId + '/embed?rm=minimal';
+    settings.slideSource = 'http://localhost:8000/test';
+    console.log(settings.slideSource);
     var presentationPageWidth = settings.presentationInfo.pageWidth;
     var presentationPageHeight = settings.presentationInfo.pageHeight;
     
@@ -89,6 +91,7 @@ const app = function () {
     var iframeHeight = presentationPageHeight + 'pt';
     console.log(presentationPageWidth + ' ' + presentationPageHeight);
     var presentation = CreateElement.createIframe(null, 'presentation', settings.slideSource, iframeWidth, iframeHeight, true);
+    page.presentation = presentation;
     
     var container = page.body.getElementsByClassName('presentation-container')[0];
     container.appendChild(presentation);
@@ -99,7 +102,6 @@ const app = function () {
 	//----------------------------------------
   function _moveToSlideNumber(number) {
     var slideLink = settings.slideSource + '#' + (number + 1);
-    console.log(slideLink);
     page.body.getElementsByClassName('presentation')[0].src = slideLink;
   }
   
@@ -108,6 +110,11 @@ const app = function () {
 	//----------------------------------------
   function _handleButton0() {
     _moveToSlideNumber(0);
+    console.log(page.presentation);
+    var doc = page.presentation.contentDocument;
+    console.log(doc);
+    console.log(page.presentation.contentWindow);
+    console.log(page.presentation.contentWindow.document);
   }
   
   function _handleButton1() {
