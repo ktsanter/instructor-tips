@@ -26,22 +26,49 @@ body {
   display: none;
 }
 
-.slide-indexer .navigation {
-  border: 1px solid red;
+/*-- navigation --*/
+.slide-indexer .navigation {}
+
+/*-- display container (for presentation, index and TOC --*/
+.slide-indexer .display-container {
+  position: relative;
+  width: 100%;    
 }
 
-.slide-indexer .presentation-container .slide {
+/*-- slide presentation --*/
+.slide-indexer .display-container .presentation-container {
+  position: absolute;
+  top: 0;
+  left: 0;  
+}
+  
+.slide-indexer .display-container .presentation-container .slide {
   border: none;
 }
 
-.slide-indexer .index-container {
-  border: 1px solid blue;
+/*-- index --*/
+.slide-indexer .display-container .index-container {
+  position: absolute;
+  top: 0;
+  left: 0;    
 }
 
-.slide-indexer .toc-container {
-  border: 1px solid purple;
+/*-- table of contents --*/
+.slide-indexer .display-container .toc-container {
+  position: absolute;
+  top: 0;
+  left: 0;    
 }
 
+.slide-indexer .display-container .toc-container .toc-item {}
+
+.slide-indexer .display-container .toc-container .toc-item.toc-mainitem {}
+
+.slide-indexer .display-container .toc-container .toc-item.toc-subitem {
+  margin-left: 2em;
+}
+
+/*-- other stuff --*/
 /*
 .google-slides-container{
     position: relative;

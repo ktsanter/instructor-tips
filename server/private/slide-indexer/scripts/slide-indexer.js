@@ -47,6 +47,9 @@ const app = function () {
     _renderIndex();
     _renderTableOfContents();
     _renderPresentation();
+    
+    settings.currentSlideNumber = -1;
+    _moveToSlideNumber(0);    
   }
   
   function _renderNavigation() {
@@ -63,12 +66,12 @@ const app = function () {
   }
   
   function _renderIndex() {
-    var container = page.body.getElementsByClassName('index-container')[0];
+    page.indexContainer = page.body.getElementsByClassName('index-container')[0];
     var arrIndexInfo = settings.presentationInfo.indexInfo.asArray;
     
     for (var i = 0; i < arrIndexInfo.length; i++) {
       var indexItem = arrIndexInfo[i];
-      _renderIndexItem(indexItem, container);
+      _renderIndexItem(indexItem, page.indexContainer);
     }
   }
   
@@ -82,22 +85,29 @@ const app = function () {
   }
   
   function _renderTableOfContents() {
-    var container = page.body.getElementsByClassName('toc-container')[0];
+    page.tocContainer = page.body.getElementsByClassName('toc-container')[0];
     var tocInfo = settings.presentationInfo.tocInfo;
     
     for (var i = 0; i < tocInfo.length; i++) {
       var tocItem = tocInfo[i];
-      _renderTableOfContentsItem(tocItem, container);
+      _renderTableOfContentsItem(tocItem, page.tocContainer, true);
     }
   }
 
-  function _renderTableOfContentsItem(tocItem, appendToElem) {
+  function _renderTableOfContentsItem(tocItem, appendToElem, mainItem) {
     var container = CreateElement.createDiv(null, null);
     appendToElem.appendChild(container);
     
-    var elem = CreateElement.createDiv(null, null, tocItem.slideNumber + ': ' + tocItem.tocValue + ' - ' + tocItem.slideTitle);
+    var classes = 'toc-item toc-mainitem';
+    if (!mainItem) classes = 'toc-item toc-subitem';
+    var elem = CreateElement.createDiv(null, classes, tocItem.slideTitle);
     container.appendChild(elem);
     elem.addEventListener('click', (e) => {_handleTOCLink(tocItem.slideNumber);});
+    
+    for (var i = 0; i < tocItem.children.length; i++) {
+      var subItem = tocItem.children[i];
+      _renderTableOfContentsItem(subItem, container, false);
+    }
   }
   
   function _renderPresentation() {
@@ -110,18 +120,15 @@ const app = function () {
     var iframeHeight = presentationPageHeight + 'pt';
 
     page.slide = [];
-    var container = page.body.getElementsByClassName('presentation-container')[0];
+    page.presentationContainer = page.body.getElementsByClassName('presentation-container')[0];
 
     for (var i = 0; i < numSlides; i++) {
       var sourceURL = settings.slideSource + '#' + (i + 1);
       page.slide.push(
         CreateElement.createIframe(null, 'slide hide-me', sourceURL, iframeWidth, iframeHeight, true)
       );
-      container.appendChild(page.slide[i]);
+      page.presentationContainer.appendChild(page.slide[i]);
     }
-    
-    settings.currentSlideNumber = -1;
-    _moveToSlideNumber(0);
   }
   
   //----------------------------------------
@@ -129,12 +136,14 @@ const app = function () {
 	//----------------------------------------
   function _moveToSlideNumber(slideNumber) {
     if (settings.currentSlideNumber >= 0) {
+      console.log('leaving slide #' + settings.currentSlideNumber + ' for slide #' + slideNumber);
       var slide = page.slide[settings.currentSlideNumber];
       UtilityKTS.setClass(slide, 'hide-me', true);
       slide.src = slide.src;
     }
     
     settings.currentSlideNumber = slideNumber;
+    UtilityKTS.setClass(page.presentationContainer, 'hide-me', false);        
     UtilityKTS.setClass(page.slide[settings.currentSlideNumber], 'hide-me', false);
   }
   
@@ -142,20 +151,33 @@ const app = function () {
 	// handlers
 	//----------------------------------------
   function _handleButton(action) {
+    UtilityKTS.setClass(page.presentationContainer, 'hide-me', true);
+    UtilityKTS.setClass(page.indexContainer, 'hide-me', true);
+    UtilityKTS.setClass(page.tocContainer, 'hide-me', true);
+
+    console.log(page.presentationContainer.classList);
+    console.log(page.indexContainer.classList);
+    console.log(page.tocContainer.classList);
+
     if (action == 'home') {
+      UtilityKTS.setClass(page.presentationContainer, 'hide-me', false);
       _moveToSlideNumber(0);
+      
     } else if (action == 'index') {
-      console.log('index');
+      UtilityKTS.setClass(page.indexContainer, 'hide-me', false);
+      
     } else if (action == 'toc') {
-      console.log('toc');
+      UtilityKTS.setClass(page.tocContainer, 'hide-me', false);
     }
   }
   
   function _handleIndexLink(slideNumber) {
+    UtilityKTS.setClass(page.indexContainer, 'hide-me', true);
     _moveToSlideNumber(slideNumber);
   }
   
   function _handleTOCLink(slideNumber) {
+    UtilityKTS.setClass(page.tocContainer, 'hide-me', true);
     _moveToSlideNumber(slideNumber);
   }
   
