@@ -11,6 +11,8 @@
   --bgPrimaryChoice:  #111111; /* #bc986a;*/  /*-- dark sand --*/
   --bgSecondaryChoice: var(--bgPrimaryEmphasis);
   --bgTertiaryChoice: #6093e5;  /*-- light blue --*/
+  
+  --navBackground: #426296;
 }
 
 body {
@@ -27,7 +29,23 @@ body {
 }
 
 /*-- navigation --*/
-.slide-indexer .navigation {}
+.slide-indexer .navigation {
+  background-color: var(--navBackground);
+  border: 1px solid var(--navBackground);
+  border-radius: 6px 6px 0 0;
+  padding: 0.2em;
+}
+
+.slide-indexer .navigation .navicon {
+  color: white;
+  font-size: 1.1em;
+  padding-right: 0.4em;
+}
+
+.slide-indexer .navigation .navicon.right{
+  float: right;
+  padding-right: 0;
+}
 
 /*-- display container (for presentation, index and TOC --*/
 .slide-indexer .display-container {
@@ -51,21 +69,50 @@ body {
   position: absolute;
   top: 0;
   left: 0;    
+  margin: 0.4em 0 0 0.4em;
+}
+
+.slide-indexer .display-container .index-container .index-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 0.2em;
 }
 
 /*-- table of contents --*/
 .slide-indexer .display-container .toc-container {
   position: absolute;
   top: 0;
-  left: 0;    
+  left: 0;
+  margin: 0.4em 0 0 0.4em;
 }
 
-.slide-indexer .display-container .toc-container .toc-item {}
+.slide-indexer .display-container .toc-container .toc-title {
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-bottom: 0.2em;
+}
 
-.slide-indexer .display-container .toc-container .toc-item.toc-mainitem {}
+.slide-indexer .display-container .toc-container .toc-item {
+  width: 30em;
+}
 
-.slide-indexer .display-container .toc-container .toc-item.toc-subitem {
+.slide-indexer .display-container .toc-container .toc-item:nth-of-type(even) {
+  background-color: white;
+}
+
+.slide-indexer .display-container .toc-container .toc-item .toc-mainitem {}
+
+.slide-indexer .display-container .toc-container .toc-item .toc-mainitem:hover {
+  text-decoration: underline;
+}
+  
+
+.slide-indexer .display-container .toc-container .toc-item .toc-subitem {
   margin-left: 2em;
+}
+
+.slide-indexer .display-container .toc-container .toc-item .toc-subitem:hover {
+  text-decoration: underline;
 }
 
 /*-- other stuff --*/

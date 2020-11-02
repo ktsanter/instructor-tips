@@ -4,9 +4,7 @@
 //-------------------------------------------------------------------
 // TODO: add scaling for presentation iframe and other containers to suit
 // TODO: handle multiple pages for same hash tag in index
-// TODO: styling for navigate
 // TODO: styling for index
-// TODO: styling for TOC
 //-------------------------------------------------------------------
 
 const app = function () {
@@ -57,16 +55,14 @@ const app = function () {
   }
   
   function _renderNavigation() {
-    var container = page.body.getElementsByClassName('navigation')[0];
+    page.navigationContainer = page.body.getElementsByClassName('navigation')[0];
+    page.navigationContainer.style.width = (settings.presentationInfo.pageWidth - 7) + 'px';
+    _showElement(page.navigationContainer);
 
-    var elemButton = CreateElement.createButton(null, null, 'home', null, (e) => {_handleButton('home');});
-    container.appendChild(elemButton);
-
-    var elemButton = CreateElement.createButton(null, null, 'index', null, (e) => {_handleButton('index');});
-    container.appendChild(elemButton);
-
-    var elemButton = CreateElement.createButton(null, null, 'toc', null, (e) => {_handleButton('toc');});
-    container.appendChild(elemButton);
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-home', 'home', (e) => {_handleButton('home');}));
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-list-ul', 'index', (e) => {_handleButton('index');}));
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-book', 'table of contents', (e) => {_handleButton('toc');}));
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right fas fa-external-link-alt', 'open in new tab', (e) => {_handleButton('newtab');}));
   }
   
   function _renderIndex() {
@@ -99,11 +95,11 @@ const app = function () {
   }
 
   function _renderTableOfContentsItem(tocItem, appendToElem, mainItem) {
-    var container = CreateElement.createDiv(null, null);
+    var container = CreateElement.createDiv(null, 'toc-item');
     appendToElem.appendChild(container);
     
-    var classes = 'toc-item toc-mainitem';
-    if (!mainItem) classes = 'toc-item toc-subitem';
+    var classes = 'toc-mainitem';
+    if (!mainItem) classes = 'toc-subitem';
     var elem = CreateElement.createDiv(null, classes, tocItem.slideTitle);
     container.appendChild(elem);
     elem.addEventListener('click', (e) => {_handleTOCLink(tocItem.slideNumber);});
@@ -154,19 +150,24 @@ const app = function () {
 	// handlers
 	//----------------------------------------
   function _handleButton(action) {
-    _hideElement(page.presentationContainer);
-    _hideElement(page.indexContainer);
-    _hideElement(page.tocContainer);
-    
-    if (action == 'home') {
-      _showElement(page.presentationContainer);
-      _moveToSlideNumber(0);
+    if (action == 'newtab') {
+      console.log('open in new tab');
       
-    } else if (action == 'index') {
-      _showElement(page.indexContainer);
+    } else {
+      _hideElement(page.presentationContainer);
+      _hideElement(page.indexContainer);
+      _hideElement(page.tocContainer);
       
-    } else if (action == 'toc') {
-      _showElement(page.tocContainer);
+      if (action == 'home') {
+        _showElement(page.presentationContainer);
+        _moveToSlideNumber(0);
+        
+      } else if (action == 'index') {
+        _showElement(page.indexContainer);
+        
+      } else if (action == 'toc') {
+        _showElement(page.tocContainer);
+      }
     }
   }
   
