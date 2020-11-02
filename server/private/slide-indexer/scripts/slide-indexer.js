@@ -1,8 +1,12 @@
 //-------------------------------------------------------------------
-// Slide Indexer
+// Slide indexer
 // present Google Slide deck along with indexing interface
 //-------------------------------------------------------------------
 // TODO: add scaling for presentation iframe and other containers to suit
+// TODO: handle multiple pages for same hash tag in index
+// TODO: styling for navigate
+// TODO: styling for index
+// TODO: styling for TOC
 //-------------------------------------------------------------------
 
 const app = function () {
@@ -136,49 +140,55 @@ const app = function () {
 	//----------------------------------------
   function _moveToSlideNumber(slideNumber) {
     if (settings.currentSlideNumber >= 0) {
-      console.log('leaving slide #' + settings.currentSlideNumber + ' for slide #' + slideNumber);
       var slide = page.slide[settings.currentSlideNumber];
-      UtilityKTS.setClass(slide, 'hide-me', true);
+      _hideElement(slide);
       slide.src = slide.src;
     }
     
     settings.currentSlideNumber = slideNumber;
-    UtilityKTS.setClass(page.presentationContainer, 'hide-me', false);        
-    UtilityKTS.setClass(page.slide[settings.currentSlideNumber], 'hide-me', false);
+    _showElement(page.presentationContainer);
+    _showElement(page.slide[settings.currentSlideNumber]);
   }
   
   //----------------------------------------
 	// handlers
 	//----------------------------------------
   function _handleButton(action) {
-    UtilityKTS.setClass(page.presentationContainer, 'hide-me', true);
-    UtilityKTS.setClass(page.indexContainer, 'hide-me', true);
-    UtilityKTS.setClass(page.tocContainer, 'hide-me', true);
-
-    console.log(page.presentationContainer.classList);
-    console.log(page.indexContainer.classList);
-    console.log(page.tocContainer.classList);
-
+    _hideElement(page.presentationContainer);
+    _hideElement(page.indexContainer);
+    _hideElement(page.tocContainer);
+    
     if (action == 'home') {
-      UtilityKTS.setClass(page.presentationContainer, 'hide-me', false);
+      _showElement(page.presentationContainer);
       _moveToSlideNumber(0);
       
     } else if (action == 'index') {
-      UtilityKTS.setClass(page.indexContainer, 'hide-me', false);
+      _showElement(page.indexContainer);
       
     } else if (action == 'toc') {
-      UtilityKTS.setClass(page.tocContainer, 'hide-me', false);
+      _showElement(page.tocContainer);
     }
   }
   
   function _handleIndexLink(slideNumber) {
-    UtilityKTS.setClass(page.indexContainer, 'hide-me', true);
+    _hideElement(page.indexContainer);
     _moveToSlideNumber(slideNumber);
   }
   
   function _handleTOCLink(slideNumber) {
-    UtilityKTS.setClass(page.tocContainer, 'hide-me', true);
+    _hideElement(page.tocContainer);
     _moveToSlideNumber(slideNumber);
+  }
+    
+  //----------------------------------------
+	// utility
+	//----------------------------------------
+  function _hideElement(elem) {
+    UtilityKTS.setClass(elem, 'hide-me', true);
+  }
+  
+  function _showElement(elem) {
+    UtilityKTS.setClass(elem, 'hide-me', false);
   }
   
   //----------------------------------------
