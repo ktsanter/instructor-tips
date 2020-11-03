@@ -86,6 +86,34 @@ body {
   margin-bottom: 0.2em;
 }
 
+.slide-indexer .display-container .index-container .index-items {}
+
+.slide-indexer .display-container .index-container .index-items .index-item-row {}
+
+.slide-indexer .display-container .index-container .index-items .index-item-row:nth-of-type(odd) {
+  background-color: white;
+}
+
+.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell{}
+
+.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-value {
+  padding-right: 1.4em;
+}
+
+.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-link {
+  padding-left: 0.4em;
+  padding-right: 0.4em;
+}
+
+.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-link .single-index-link {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-link .index-link-separator {
+  padding-right: 0.4em;
+}
+
 /*-- table of contents --*/
 .slide-indexer .display-container .toc-container {
   position: absolute;

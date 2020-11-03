@@ -73,21 +73,67 @@ const app = function () {
   
   function _renderIndex() {
     page.indexContainer = page.body.getElementsByClassName('index-container')[0];
+    page.indexItems = page.body.getElementsByClassName('index-items')[0];
     var arrIndexInfo = settings.presentationInfo.indexInfo.asArray;
     
     for (var i = 0; i < arrIndexInfo.length; i++) {
       var indexItem = arrIndexInfo[i];
-      _renderIndexItem(indexItem, page.indexContainer);
+      _renderIndexItem(indexItem, page.indexItems);
     }
   }
   
   function _renderIndexItem(indexItem, appendToElem) {
-    var container = CreateElement.createDiv(null, null);
+    var tr = CreateElement._createElement('tr', null, 'index-item-row');
+    appendToElem.appendChild(tr);
+    
+    var td = CreateElement._createElement('td', null, 'index-item-cell index-value');
+    tr.appendChild(td);
+    td.innerHTML = indexItem.indexValue;
+    
+    td = CreateElement._createElement('td', null, 'index-item-cell index-link');
+    tr.appendChild(td);
+    
+    for (var i = 0; i < indexItem.slideArray.length; i++) {
+      var slideNumber = indexItem.slideArray[i];
+      var elem = CreateElement.createSpan(null, 'single-index-link', slideNumber);
+      td.appendChild(elem);
+
+      (function(slideNumber) {
+        elem.addEventListener('click', function(e) { 
+          _handleIndexLink(slideNumber);
+        });
+      })(slideNumber);
+      
+      if (i < indexItem.slideArray.length - 1) {
+        td.appendChild(CreateElement.createSpan(null, 'index-link-separator', ','));
+      }
+    }
+    /*
+    var container = CreateElement.createDiv(null, 'index-item');
     appendToElem.appendChild(container);
     
-    var elem = CreateElement.createDiv(null, null, indexItem.indexValue);
+    var elem = CreateElement.createSpan(null, 'index-value', indexItem.indexValue);
     container.appendChild(elem);
-    elem.addEventListener('click',  (e) => {_handleIndexLink(indexItem.slideNumber);});
+    
+    var elemLinkContainer = CreateElement.createSpan(null, 'index-link-container');
+    container.appendChild(elemLinkContainer);
+    
+    for (var i = 0; i < indexItem.slideArray.length; i++) {
+      var slideNumber = indexItem.slideArray[i];
+      var elem = CreateElement.createSpan(null, 'index-link', slideNumber);
+      elemLinkContainer.appendChild(elem);
+
+      (function(slideNumber) {
+        elem.addEventListener('click', function(e) { 
+          _handleIndexLink(slideNumber);
+        });
+      })(slideNumber);
+      
+      if (i < indexItem.slideArray.length - 1) {
+        elemLinkContainer.appendChild(CreateElement.createSpan(null, 'index-link-separator', ','));
+      }
+    }
+    */
   }
   
   function _renderTableOfContents() {
@@ -159,7 +205,6 @@ const app = function () {
     settings.currentSlideNumber = slideNumber;
     _showElement(page.presentationContainer);
     _showElement(page.slide[settings.currentSlideNumber]);
-    _showElement(page.sharelinkIcon);
   }
   
   function _makeSlideURL(slideNumber) {
