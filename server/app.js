@@ -531,7 +531,22 @@ app.get('/binary-conversion/:mode', function (req, res) {
 
 app.get('/slide-indexer/:presentationid', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {presentationid: req.params.presentationid}});
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {
+    params: {
+      presentationid: req.params.presentationid,
+      slidenumber: 0
+    }
+  });
+})
+
+app.get('/slide-indexer/:presentationid/:slidenumber', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {
+    params: {
+      presentationid: req.params.presentationid,
+      slidenumber: req.params.slidenumber
+    },
+  });
 })
 
 app.get('/cte-department/home', function (req, res) {

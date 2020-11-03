@@ -31,6 +31,8 @@ const app = function () {
     page.notice.setNotice('', false);
     
     settings.presentationId = page.body.getElementsByClassName('presentationId')[0].innerHTML;
+    settings.initialSlideNumber = page.body.getElementsByClassName('initialSlideNumber')[0].innerHTML;
+    
     page.notice.setNotice('loading configuration data...', true);
       
     var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'slideindexinfo', {presentationid: settings.presentationId}, page.notice);
@@ -51,7 +53,7 @@ const app = function () {
     _renderPresentation();
     
     settings.currentSlideNumber = -1;
-    _moveToSlideNumber(0);    
+    _moveToSlideNumber(settings.initialSlideNumber);    
   }
   
   function _renderNavigation() {
@@ -60,8 +62,12 @@ const app = function () {
     _showElement(page.navigationContainer);
 
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-home', 'home', (e) => {_handleButton('home');}));
-    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-list-ul', 'index', (e) => {_handleButton('index');}));
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-book', 'table of contents', (e) => {_handleButton('toc');}));
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-list-ul', 'index', (e) => {_handleButton('index');}));
+
+    page.message = CreateElement.createSpan(null, 'message', '')
+    page.navigationContainer.appendChild(page.message);
+    
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right fas fa-external-link-alt', 'open in new tab', (e) => {_handleButton('newtab');}));
   }
   
@@ -100,9 +106,13 @@ const app = function () {
     
     var classes = 'toc-mainitem';
     if (!mainItem) classes = 'toc-subitem';
-    var elem = CreateElement.createDiv(null, classes, tocItem.slideTitle);
+    var elem = CreateElement.createDiv(null, classes, '');
     container.appendChild(elem);
-    elem.addEventListener('click', (e) => {_handleTOCLink(tocItem.slideNumber);});
+    
+    var elemLink = CreateElement.createSpan(null, 'toc-itemlink', tocItem.slideTitle);
+    elem.appendChild(elemLink);
+    elemLink.addEventListener('click', (e) => {_handleTOCLink(tocItem.slideNumber);});
+    elem.appendChild(CreateElement.createIcon(null, 'toc-itemshare fas fa-share', 'copy item link', (e) => {_handleTOCShare(tocItem.slideNumber);}));
     
     for (var i = 0; i < tocItem.children.length; i++) {
       var subItem = tocItem.children[i];
@@ -135,6 +145,11 @@ const app = function () {
 	// refresh / update
 	//----------------------------------------
   function _moveToSlideNumber(slideNumber) {
+    if (slideNumber < 0 || slideNumber >= settings.presentationInfo.numSlides) {
+      console.log('invalid slide number: ' + slideNumber);
+      return;
+    }
+    
     if (settings.currentSlideNumber >= 0) {
       var slide = page.slide[settings.currentSlideNumber];
       _hideElement(slide);
@@ -146,12 +161,26 @@ const app = function () {
     _showElement(page.slide[settings.currentSlideNumber]);
   }
   
+  function _copySlideURLToClipboard(slideNumber) {
+    var protocol = window.location.protocol;
+    var hostname = window.location.hostname;
+    if (hostname == 'localhost') {
+      hostname = 'localhost:8000';
+    }
+    var path = 'slide-indexer';
+    
+    var url = protocol + '//' + hostname + '/' + path + '/' + settings.presentationId + '/' + slideNumber;
+    _copyToClipboard(url);
+  }
+  
   //----------------------------------------
 	// handlers
 	//----------------------------------------
   function _handleButton(action) {
+    _showMessage('');
+
     if (action == 'newtab') {
-      console.log('open in new tab');
+      window.open(window.location.href, '_blank');
       
     } else {
       _hideElement(page.presentationContainer);
@@ -174,11 +203,18 @@ const app = function () {
   function _handleIndexLink(slideNumber) {
     _hideElement(page.indexContainer);
     _moveToSlideNumber(slideNumber);
+    _showMessage('');
   }
   
   function _handleTOCLink(slideNumber) {
     _hideElement(page.tocContainer);
     _moveToSlideNumber(slideNumber);
+    _showMessage('');
+  }
+  
+  function _handleTOCShare(slideNumber) {
+    _copySlideURLToClipboard(slideNumber);
+    _showMessage('link copied to clipboard');
   }
     
   //----------------------------------------
@@ -191,6 +227,25 @@ const app = function () {
   function _showElement(elem) {
     UtilityKTS.setClass(elem, 'hide-me', false);
   }
+  
+  function _showMessage(txt) {
+    page.message.innerHTML = txt;
+  }  
+  
+  //---------------------------------------
+  // clipboard functions
+  //----------------------------------------
+  function _copyToClipboard(txt) {
+    if (!page._clipboard) page._clipboard = new ClipboardCopy(page.body, 'plain');
+
+    page._clipboard.copyToClipboard(txt);
+	}	
+
+  function _copyRenderedToClipboard(txt) {
+    if (!page._renderedclipboard) page._renderedclipboard = new ClipboardCopy(page.body, 'rendered');
+
+    page._renderedclipboard.copyRenderedToClipboard(txt);
+	}
   
   //----------------------------------------
 	// return from wrapper function

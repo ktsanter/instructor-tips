@@ -12,13 +12,16 @@ html(lang="en")
       
     link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")      
       
+    script(src="/scripts/clipboard.min.js")      
     script(data-main="/scripts/slide-indexer/require_slide-indexer", src="/scripts/require.js")      
       
   body(class="slide-indexer-colorscheme")
     - var presentationId = params.presentationid
+    - var slideNumber = params.slidenumber
     
     div(class="slide-indexer")
       div(class="presentationId hide-me")= presentationId
+      div(class="initialSlideNumber hide-me")= slideNumber
       
       div(class="navigation hide-me")
         
