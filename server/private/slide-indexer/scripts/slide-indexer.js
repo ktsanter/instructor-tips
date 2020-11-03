@@ -159,18 +159,20 @@ const app = function () {
     settings.currentSlideNumber = slideNumber;
     _showElement(page.presentationContainer);
     _showElement(page.slide[settings.currentSlideNumber]);
+    _showElement(page.sharelinkIcon);
+  }
+  
+  function _makeSlideURL(slideNumber) {
+    var protocol = window.location.protocol;
+    var hostname = window.location.hostname;
+    if (hostname == 'localhost') hostname = 'localhost:8000';
+    var path = 'slide-indexer';
+    
+    return protocol + '//' + hostname + '/' + path + '/' + settings.presentationId + '/' + slideNumber;
   }
   
   function _copySlideURLToClipboard(slideNumber) {
-    var protocol = window.location.protocol;
-    var hostname = window.location.hostname;
-    if (hostname == 'localhost') {
-      hostname = 'localhost:8000';
-    }
-    var path = 'slide-indexer';
-    
-    var url = protocol + '//' + hostname + '/' + path + '/' + settings.presentationId + '/' + slideNumber;
-    _copyToClipboard(url);
+    _copyToClipboard(_makeSlideURL(slideNumber));
   }
   
   //----------------------------------------
@@ -180,8 +182,8 @@ const app = function () {
     _showMessage('');
 
     if (action == 'newtab') {
-      window.open(window.location.href, '_blank');
-      
+      window.open(_makeSlideURL(settings.currentSlideNumber), '_blank');
+          
     } else {
       _hideElement(page.presentationContainer);
       _hideElement(page.indexContainer);
@@ -195,7 +197,7 @@ const app = function () {
         _showElement(page.indexContainer);
         
       } else if (action == 'toc') {
-        _showElement(page.tocContainer);
+        _showElement(page.tocContainer);  
       }
     }
   }

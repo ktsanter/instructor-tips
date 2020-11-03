@@ -46,6 +46,7 @@ body {
 .slide-indexer .navigation .navicon.right{
   float: right;
   padding-right: 0;
+  padding-left: 0.6em;
 }
 
 .slide-indexer .navigation .message {
