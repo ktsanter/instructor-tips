@@ -3,7 +3,6 @@
 // present Google Slide deck along with indexing interface
 //-------------------------------------------------------------------
 // TODO: add scaling for presentation iframe and other containers to suit
-// TODO: query params for enabling TOC and index
 // TODO: add subsub item to TOC
 //-------------------------------------------------------------------
 
@@ -33,16 +32,63 @@ const app = function () {
     settings.presentationId = page.body.getElementsByClassName('presentationId')[0].innerHTML;
     settings.initialSlideNumber = page.body.getElementsByClassName('initialSlideNumber')[0].innerHTML;
     
-    page.notice.setNotice('loading configuration data...', true);
+    var expectedQueryParams = [
+      {key: 'toc', required: false},
+      {key: 'index', required: false}
+    ];
+    
+    if (_initializeSettings(expectedQueryParams)) {
+      if (settings.toc == null) {
+        settings.toc = true; 
+      } else {
+        settings.toc = ( settings.toc.toLowerCase() == 'true' || settings.toc == '1');
+      }
       
-    var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'slideindexinfo', {presentationid: settings.presentationId}, page.notice);
-    page.notice.setNotice('', false);
-    if (requestResult.success) {
-      settings.presentationInfo = requestResult.data;
-      _renderPage();
-    } 
+      if (settings.index == null) {
+        settings.index = true; 
+      } else {
+        settings.index = ( settings.index.toLowerCase() == 'true' || settings.index == '1');
+      }
+    
+      page.notice.setNotice('loading configuration data...', true);
+        
+      var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'slideindexinfo', {presentationid: settings.presentationId}, page.notice);
+      page.notice.setNotice('', false);
+      if (requestResult.success) {
+        settings.presentationInfo = requestResult.data;
+        _renderPage();
+      } 
+    }
   }
 
+	//-------------------------------------------------------------------------------------
+	// process query params
+	//-------------------------------------------------------------------------------------
+	function _initializeSettings(expectedParams) {
+    var result = false;
+
+    var urlParams = new URLSearchParams(window.location.search);
+    for (var i = 0; i < expectedParams.length; i++) {
+      var key = expectedParams[i].key;
+      settings[key] = urlParams.has(key) ? urlParams.get(key) : null;
+    }
+
+    var receivedRequiredParams = true;
+    for (var i = 0; i < expectedParams.length && receivedRequiredParams; i++) {
+      var key = expectedParams[i].key;
+      if (expectedParams[i].required) receivedRequiredParams = (settings[key] != null);
+    }
+    
+    if (receivedRequiredParams) {
+			result = true;
+
+    } else {   
+      page.notice.setNotice('failed to initialize: invalid parameters');
+    }
+    
+    return result;
+  }  
+  
   //-----------------------------------------
   // page rendering
   //-----------------------------------------  
@@ -64,20 +110,25 @@ const app = function () {
     _showElement(page.navigationContainer);
 
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-home', 'home', (e) => {_handleButton('home');}));
-    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-book', 'table of contents', (e) => {_handleButton('toc');}));
-    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-list-ul', 'index', (e) => {_handleButton('index');}));
+    if (settings.toc) {
+      page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-book', 'table of contents', (e) => {_handleButton('toc');}));
+    }
+    if (settings.index) {
+      page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-list-ul', 'index', (e) => {_handleButton('index');}));
+    }
 
     page.message = CreateElement.createSpan(null, 'message', '')
     page.navigationContainer.appendChild(page.message);
     
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right fas fa-external-link-alt', 'open in new tab', (e) => {_handleButton('newtab');}));
 
-    page.navigationContainer.appendChild(CreateElement.createSpan(null, 'toggle-container-label', 'share links'));
-    
-    var elemToggleContainer = CreateElement.createDiv(null, 'toggle-container');
-    page.navigationContainer.appendChild(elemToggleContainer);
-    elemToggleContainer.appendChild(_createToggleSliderSwitch(null, null, 'on', 'off', (e) => {_handleShareToggle(e);}));
-    
+    if (settings.index || settings.toc) {
+      page.navigationContainer.appendChild(CreateElement.createSpan(null, 'toggle-container-label', 'share links'));
+      
+      var elemToggleContainer = CreateElement.createDiv(null, 'toggle-container');
+      page.navigationContainer.appendChild(elemToggleContainer);
+      elemToggleContainer.appendChild(_createToggleSliderSwitch(null, null, 'on', 'off', (e) => {_handleShareToggle(e);}));
+    }    
   }
   
   function _renderIndex() {
