@@ -3,8 +3,9 @@
 // present Google Slide deck along with indexing interface
 //-------------------------------------------------------------------
 // TODO: add scaling for presentation iframe and other containers to suit
-// TODO: handle multiple pages for same hash tag in index
-// TODO: styling for index
+// TODO: query params for enabling TOC and index
+// TODO: slider button to show/hide share links?
+// TODO: add subsub item to TOC
 //-------------------------------------------------------------------
 
 const app = function () {
@@ -52,6 +53,8 @@ const app = function () {
     _renderTableOfContents();
     _renderPresentation();
     
+    _setShareLinksView(false);
+    
     settings.currentSlideNumber = -1;
     _moveToSlideNumber(settings.initialSlideNumber);    
   }
@@ -69,11 +72,27 @@ const app = function () {
     page.navigationContainer.appendChild(page.message);
     
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right fas fa-external-link-alt', 'open in new tab', (e) => {_handleButton('newtab');}));
+
+    page.navigationContainer.appendChild(CreateElement.createSpan(null, 'toggle-container-label', 'share links'));
+    
+    var elemToggleContainer = CreateElement.createDiv(null, 'toggle-container');
+    page.navigationContainer.appendChild(elemToggleContainer);
+    elemToggleContainer.appendChild(_createToggleSliderSwitch(null, null, 'on', 'off', (e) => {_handleShareToggle(e);}));
+    
   }
   
   function _renderIndex() {
     page.indexContainer = page.body.getElementsByClassName('index-container')[0];
     page.indexItems = page.body.getElementsByClassName('index-items')[0];
+
+/*    
+    var elemTitle = page.indexContainer.getElementsByClassName('index-title')[0];
+    elemTitle.appendChild(CreateElement.createSpan(null, 'toggle-container-label', 'share links'));
+    
+    var elemToggleContainer = CreateElement.createDiv(null, 'toggle-container');
+    elemTitle.appendChild(elemToggleContainer);
+    elemToggleContainer.appendChild(_createToggleSliderSwitch(null, null, 'on', 'off', (e) => {_handleShareToggle(e);}));
+*/  
     var arrIndexInfo = settings.presentationInfo.indexInfo.asArray;
     
     for (var i = 0; i < arrIndexInfo.length; i++) {
@@ -108,38 +127,20 @@ const app = function () {
         td.appendChild(CreateElement.createSpan(null, 'index-link-separator', ','));
       }
     }
-    /*
-    var container = CreateElement.createDiv(null, 'index-item');
-    appendToElem.appendChild(container);
-    
-    var elem = CreateElement.createSpan(null, 'index-value', indexItem.indexValue);
-    container.appendChild(elem);
-    
-    var elemLinkContainer = CreateElement.createSpan(null, 'index-link-container');
-    container.appendChild(elemLinkContainer);
-    
-    for (var i = 0; i < indexItem.slideArray.length; i++) {
-      var slideNumber = indexItem.slideArray[i];
-      var elem = CreateElement.createSpan(null, 'index-link', slideNumber);
-      elemLinkContainer.appendChild(elem);
-
-      (function(slideNumber) {
-        elem.addEventListener('click', function(e) { 
-          _handleIndexLink(slideNumber);
-        });
-      })(slideNumber);
-      
-      if (i < indexItem.slideArray.length - 1) {
-        elemLinkContainer.appendChild(CreateElement.createSpan(null, 'index-link-separator', ','));
-      }
-    }
-    */
   }
   
   function _renderTableOfContents() {
     page.tocContainer = page.body.getElementsByClassName('toc-container')[0];
     var tocInfo = settings.presentationInfo.tocInfo;
     
+/*    
+    var elemTitle = page.tocContainer.getElementsByClassName('toc-title')[0];
+    elemTitle.appendChild(CreateElement.createSpan(null, 'toggle-container-label', 'share links'));
+    
+    var elemToggleContainer = CreateElement.createDiv(null, 'toggle-container');
+    elemTitle.appendChild(elemToggleContainer);
+    elemToggleContainer.appendChild(_createToggleSliderSwitch(null, null, 'on', 'off', (e) => {_handleShareToggle(e);}));
+*/        
     for (var i = 0; i < tocInfo.length; i++) {
       var tocItem = tocInfo[i];
       _renderTableOfContentsItem(tocItem, page.tocContainer, true);
@@ -158,7 +159,7 @@ const app = function () {
     var elemLink = CreateElement.createSpan(null, 'toc-itemlink', tocItem.slideTitle);
     elem.appendChild(elemLink);
     elemLink.addEventListener('click', (e) => {_handleTOCLink(tocItem.slideNumber);});
-    elem.appendChild(CreateElement.createIcon(null, 'toc-itemshare fas fa-share', 'copy item link', (e) => {_handleTOCShare(tocItem.slideNumber);}));
+    elem.appendChild(CreateElement.createIcon(null, 'itemshare toc-itemshare fas fa-share', 'copy item link', (e) => {_handleTOCShare(tocItem.slideNumber);}));
     
     for (var i = 0; i < tocItem.children.length; i++) {
       var subItem = tocItem.children[i];
@@ -220,6 +221,18 @@ const app = function () {
     _copyToClipboard(_makeSlideURL(slideNumber));
   }
   
+  function _setShareLinksView(share) {
+    var arrElemShare = page.body.getElementsByClassName('itemshare');
+    for (var i = 0; i < arrElemShare.length; i++) {
+      var elem = arrElemShare[i];
+      if (share) {
+        _showElement(elem);
+      } else {
+        _hideElement(elem);
+      }
+    }
+  }
+  
   //----------------------------------------
 	// handlers
 	//----------------------------------------
@@ -263,6 +276,10 @@ const app = function () {
     _copySlideURLToClipboard(slideNumber);
     _showMessage('link copied to clipboard');
   }
+  
+  function _handleShareToggle(e) {
+    _setShareLinksView(_getToggleSliderValue(e.target));
+  }
     
   //----------------------------------------
 	// utility
@@ -277,6 +294,35 @@ const app = function () {
   
   function _showMessage(txt) {
     page.message.innerHTML = txt;
+  }  
+
+  function _createToggleSliderSwitch(id, classes, onText, offText, handler) {
+    var fullClassList = 'switch';
+    if (classes && classes != '') fullClassList += ' ' + classes;
+    
+    var container = CreateElement._createElement('label', id, fullClassList);
+    
+    var elemCheckbox = CreateElement._createElement('input', null, 'switch-input');
+    container.appendChild(elemCheckbox);
+    elemCheckbox.type = 'checkbox';
+    if (handler) elemCheckbox.addEventListener('click', e => handler(e));
+    
+    var elemSpanLabel = CreateElement.createSpan(null, 'switch-label');
+    container.appendChild(elemSpanLabel);
+    elemSpanLabel.setAttribute('data-on', onText);
+    elemSpanLabel.setAttribute('data-off', offText);
+    
+    container.appendChild(CreateElement.createSpan(null, 'switch-handle'));
+
+    return container;
+  }
+  
+   function _getToggleSliderValue(elem) {
+    return elem.checked;
+  }
+
+  function _setToggleSliderValue(elem, checked) {
+    elem.checked = checked;
   }  
   
   //---------------------------------------

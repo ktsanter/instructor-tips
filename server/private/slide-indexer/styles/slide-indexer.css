@@ -55,6 +55,19 @@ body {
   margin-left: 0.8em;
 }
 
+.slide-indexer .navigation .toggle-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.slide-indexer .navigation .toggle-container-label {
+  color: white;
+  font-size: 0.9em;
+  font-weight: normal;
+  margin-left: 4.0em;
+  margin-right: 0.2em;
+}
+
 /*-- display container (for presentation, index and TOC --*/
 .slide-indexer .display-container {
   position: relative;
