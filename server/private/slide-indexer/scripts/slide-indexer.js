@@ -3,7 +3,6 @@
 // present Google Slide deck along with indexing interface
 //-------------------------------------------------------------------
 // TODO: add scaling for presentation iframe and other containers to suit
-// TODO: add subsub item to TOC
 //-------------------------------------------------------------------
 
 const app = function () {
@@ -93,6 +92,8 @@ const app = function () {
   // page rendering
   //-----------------------------------------  
   function _renderPage() {
+    settings.scale = 1.5;  // calculate this from slide width and height;
+    
     _renderNavigation();
     _renderIndex();
     _renderTableOfContents();
@@ -106,7 +107,7 @@ const app = function () {
   
   function _renderNavigation() {
     page.navigationContainer = page.body.getElementsByClassName('navigation')[0];
-    page.navigationContainer.style.width = (settings.presentationInfo.pageWidth - 7) + 'px';
+    page.navigationContainer.style.width = ((settings.presentationInfo.pageWidth * settings.scale)- 7) + 'px';
     _showElement(page.navigationContainer);
 
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-home', 'home', (e) => {_handleButton('home');}));
@@ -117,11 +118,6 @@ const app = function () {
       page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-list-ul', 'index', (e) => {_handleButton('index');}));
     }
 
-    page.message = CreateElement.createSpan(null, 'message', '')
-    page.navigationContainer.appendChild(page.message);
-    
-    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right fas fa-external-link-alt', 'open in new tab', (e) => {_handleButton('newtab');}));
-
     if (settings.index || settings.toc) {
       page.navigationContainer.appendChild(CreateElement.createSpan(null, 'toggle-container-label', 'share links'));
       
@@ -129,6 +125,11 @@ const app = function () {
       page.navigationContainer.appendChild(elemToggleContainer);
       elemToggleContainer.appendChild(_createToggleSliderSwitch(null, null, 'on', 'off', (e) => {_handleShareToggle(e);}));
     }    
+
+    page.message = CreateElement.createSpan(null, 'message', '')
+    page.navigationContainer.appendChild(page.message);
+    
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right fas fa-external-link-alt', 'open in new tab', (e) => {_handleButton('newtab');}));
   }
   
   function _renderIndex() {
@@ -214,8 +215,8 @@ const app = function () {
     var presentationPageWidth = settings.presentationInfo.pageWidth;
     var presentationPageHeight = settings.presentationInfo.pageHeight;
     
-    var iframeWidth = presentationPageWidth + 'pt';
-    var iframeHeight = presentationPageHeight + 'pt';
+    var iframeWidth = (presentationPageWidth * settings.scale) + 'pt';
+    var iframeHeight = (presentationPageHeight * settings.scale) + 'pt';
 
     page.slide = [];
     page.presentationContainer = page.body.getElementsByClassName('presentation-container')[0];
@@ -254,8 +255,9 @@ const app = function () {
     var hostname = window.location.hostname;
     if (hostname == 'localhost') hostname = 'localhost:8000';
     var path = 'slide-indexer';
+    var queryParams = window.location.search;
     
-    return protocol + '//' + hostname + '/' + path + '/' + settings.presentationId + '/' + slideNumber;
+    return protocol + '//' + hostname + '/' + path + '/' + settings.presentationId + '/' + slideNumber + queryParams;
   }
   
   function _copySlideURLToClipboard(slideNumber) {
