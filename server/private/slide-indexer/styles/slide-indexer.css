@@ -47,6 +47,7 @@ body {
   float: right;
   padding-right: 0;
   padding-left: 0.6em;
+  padding-top: 0.2em;
 }
 
 .slide-indexer .navigation .message {
@@ -65,7 +66,7 @@ body {
   font-size: 0.9em;
   font-weight: normal;
   margin-left: 4.0em;
-  margin-right: 0.2em;
+  margin-right: 0.4em;
 }
 
 /*-- display container (for presentation, index and TOC --*/
@@ -121,6 +122,14 @@ body {
 .slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-link .single-index-link {
   text-decoration: underline;
   cursor: pointer;
+}
+
+.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell .itemshare.index-itemshare {
+  color: var(--navBackground);
+  font-size: 0.8em;
+  cursor: pointer;
+  vertical-align: top;
+  padding-left: 0.4em;
 }
 
 .slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-link .index-link-separator {

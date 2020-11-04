@@ -4,7 +4,6 @@
 //-------------------------------------------------------------------
 // TODO: add scaling for presentation iframe and other containers to suit
 // TODO: query params for enabling TOC and index
-// TODO: slider button to show/hide share links?
 // TODO: add subsub item to TOC
 //-------------------------------------------------------------------
 
@@ -85,14 +84,6 @@ const app = function () {
     page.indexContainer = page.body.getElementsByClassName('index-container')[0];
     page.indexItems = page.body.getElementsByClassName('index-items')[0];
 
-/*    
-    var elemTitle = page.indexContainer.getElementsByClassName('index-title')[0];
-    elemTitle.appendChild(CreateElement.createSpan(null, 'toggle-container-label', 'share links'));
-    
-    var elemToggleContainer = CreateElement.createDiv(null, 'toggle-container');
-    elemTitle.appendChild(elemToggleContainer);
-    elemToggleContainer.appendChild(_createToggleSliderSwitch(null, null, 'on', 'off', (e) => {_handleShareToggle(e);}));
-*/  
     var arrIndexInfo = settings.presentationInfo.indexInfo.asArray;
     
     for (var i = 0; i < arrIndexInfo.length; i++) {
@@ -114,15 +105,22 @@ const app = function () {
     
     for (var i = 0; i < indexItem.slideArray.length; i++) {
       var slideNumber = indexItem.slideArray[i];
-      var elem = CreateElement.createSpan(null, 'single-index-link', slideNumber);
-      td.appendChild(elem);
+      
+      var elemLink = CreateElement.createSpan(null, 'single-index-link', slideNumber);
+      var elemShare = CreateElement.createIcon(null, 'itemshare index-itemshare fas fa-share', 'copy item link');
+      td.appendChild(elemLink);
+      td.appendChild(elemShare);
 
       (function(slideNumber) {
-        elem.addEventListener('click', function(e) { 
+        elemLink.addEventListener('click', function(e) { 
           _handleIndexLink(slideNumber);
+        });
+        elemShare.addEventListener('click', function(e) { 
+          _handleIndexShare(slideNumber);
         });
       })(slideNumber);
       
+
       if (i < indexItem.slideArray.length - 1) {
         td.appendChild(CreateElement.createSpan(null, 'index-link-separator', ','));
       }
@@ -133,14 +131,6 @@ const app = function () {
     page.tocContainer = page.body.getElementsByClassName('toc-container')[0];
     var tocInfo = settings.presentationInfo.tocInfo;
     
-/*    
-    var elemTitle = page.tocContainer.getElementsByClassName('toc-title')[0];
-    elemTitle.appendChild(CreateElement.createSpan(null, 'toggle-container-label', 'share links'));
-    
-    var elemToggleContainer = CreateElement.createDiv(null, 'toggle-container');
-    elemTitle.appendChild(elemToggleContainer);
-    elemToggleContainer.appendChild(_createToggleSliderSwitch(null, null, 'on', 'off', (e) => {_handleShareToggle(e);}));
-*/        
     for (var i = 0; i < tocInfo.length; i++) {
       var tocItem = tocInfo[i];
       _renderTableOfContentsItem(tocItem, page.tocContainer, true);
@@ -275,6 +265,10 @@ const app = function () {
   function _handleTOCShare(slideNumber) {
     _copySlideURLToClipboard(slideNumber);
     _showMessage('link copied to clipboard');
+  }
+  
+  function _handleIndexShare(slideNumber) {
+    _handleTOCShare(slideNumber);
   }
   
   function _handleShareToggle(e) {
