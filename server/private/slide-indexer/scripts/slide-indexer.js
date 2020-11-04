@@ -92,7 +92,7 @@ const app = function () {
   // page rendering
   //-----------------------------------------  
   function _renderPage() {
-    settings.scale = 1.5;  // calculate this from slide width and height;
+    settings.scale = 1.2;  // calculate this from slide width and height;
     
     _renderNavigation();
     _renderIndex();
