@@ -529,14 +529,24 @@ app.get('/binary-conversion/:mode', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});
 })
 
-app.get('/slide-indexer/:presentationid', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {
-    params: {
-      presentationid: req.params.presentationid,
-      slidenumber: 0
-    }
-  });
+app.get('/slide-indexer/:subpage', function (req, res) {
+  if (req.params.subpage == 'help') {
+    var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer-help.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {} );
+    
+  } else if (req.params.subpage == 'config') {
+    var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer-config.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {} );
+    
+  } else {
+    var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {
+      params: {
+        presentationid: req.params.subpage,
+        slidenumber: 0
+      }
+    });
+  }
 })
 
 app.get('/slide-indexer/:presentationid/:slidenumber', function (req, res) {

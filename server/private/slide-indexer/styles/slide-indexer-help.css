@@ -1,0 +1,20 @@
+/*------------------------------------------------------------
+ * style settings for Slide Indexer help
+ *------------------------------------------------------------*/
+.colorscheme {
+  --bgOverall: #eee; /*-- very light gray --*/
+  --navBackground: #426296;
+}
+
+body {
+  color: black;
+  background-color: var(--bgOverall);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 13px;
+}
+
+.slide-indexer-help {}
+
+.slide-indexer-help .hide-me {
+  display: none;
+}

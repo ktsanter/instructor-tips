@@ -1,0 +1,36 @@
+//-------------------------------------------------------------
+//- Slide indexer config
+//-------------------------------------------------------------
+doctype html
+html(lang="en")
+  head
+    title Slide indexer configuration
+    meta(charset="utf-8")
+    style
+      include ../styles/slide-indexer-config.css
+      
+    link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")      
+       
+    script(data-main="/scripts/slide-indexer/require_slide-indexer-config", src="/scripts/require.js")      
+      
+  body(class="colorscheme")
+    div(class="slide-indexer-config")
+      div(class="config-title") 
+        span(class="title-text") Slide indexer configuration
+      
+      div(class="config-controls")
+        div(class="config-id")
+          span slide deck URL
+          input(type="text" class="id-input")
+          
+        div(class="config-embed") 
+          button(class="embed-control" title="copy embed code to clipboard") embed
+          
+        div(class="config-option")
+          label(for="includeTOC") include table of contents
+            input(type="checkbox" id="includeTOC" class="config-option-control" checked)
+        div(class="config-option")
+          label(for="includeIndex") include index
+            input(type="checkbox" id="includeIndex" class="config-option-control" checked)
+      
+      div(class="config-preview hide-me") preview
