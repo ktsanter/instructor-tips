@@ -30,43 +30,76 @@ const app = function () {
   // page rendering
   //-----------------------------------------  
   function _renderPage() {
-    var elem = page.body.getElementsByClassName('config-title')[0];
-    elem.appendChild(CreateElement.createIcon(null, 'config-help far fa-question-circle', 'help for S', (e) => {_handleHelp();}));
+    var elem = page.body.getElementsByClassName('config-help-control')[0];
+    elem.addEventListener('click', (e) => {_handleHelp()});
     
     elem = page.body.getElementsByClassName('id-input')[0];
-    elem.addEventListener('input', (e) => {_handleIdInput(e)});
+    elem.addEventListener('input', (e) => {_handleIdInput()});
     
-    elem = page.body.getElementsByClassName('embed-control')[0];
+    elem = page.body.getElementsByClassName('config-link-control')[0];
+    elem.addEventListener('click', (e) => {_handleLink();});    
+
+    elem = page.body.getElementsByClassName('config-embed-control')[0];
     elem.addEventListener('click', (e) => {_handleEmbed();});    
   }
   
   //----------------------------------------
 	// refresh / update
 	//----------------------------------------
-  function _updatePreview(urlText) {
+  function _updatePreview() {
     var previewContainer = page.body.getElementsByClassName('config-preview')[0];
-    var id = _getIdFromUrl(urlText);
+    var url = _makeURL({type: 'indexer'});
    
-    console.log(id);
-    if (!id) {
-      _hideElement(previewContainer);
-      
+    if (url) {
+      previewContainer.innerHTML = _makeURL({type: 'indexer'});
     } else {
-      _showElement(previewContainer);
+      previewContainer.innerHTML = 'invalid slide link';
     }
+
+    _showElement(previewContainer);
+  }
+  
+  function _makeURL(params) {
+    var protocol = window.location.protocol;
+    var hostname = window.location.hostname;
+    if (hostname == 'localhost') hostname = 'localhost:8000';
+    var path = 'slide-indexer';
+    var queryParams = window.location.search;
+
+    var url = null;
+    if (params.type == 'help') {
+      url = protocol + '//' + hostname + '/' + path + '/' + 'help';
+      
+    } else if (params.type == 'indexer') {
+      var id = _getPresentationId();
+      if (id) {
+        url = protocol + '//' + hostname + '/' + path + '/' + _getPresentationId();
+      }
+    }
+    
+    return url;
+  }
+  
+  function _getPresentationId() {
+    var elem = page.body.getElementsByClassName('id-input')[0];
+    return _getIdFromUrl(elem.value);
   }
   
   //----------------------------------------
 	// handlers
 	//----------------------------------------
   function _handleHelp() {
-    _openHelp();
+    window.open(_makeURL({type: 'help'}), '_blank');
   }
   
-  function _handleIdInput(e) {
-    _updatePreview(e.target.value);
+  function _handleIdInput() {
+    _updatePreview();
   }
   
+  function _handleLink() {
+    console.log('handle link');
+  }
+    
   function _handleEmbed() {
     console.log('handle embed');
   }
@@ -80,17 +113,6 @@ const app = function () {
   
   function _showElement(elem) {
     UtilityKTS.setClass(elem, 'hide-me', false);
-  }
-  
-  function _openHelp() {
-    var protocol = window.location.protocol;
-    var hostname = window.location.hostname;
-    if (hostname == 'localhost') hostname = 'localhost:8000';
-    var path = 'slide-indexer';
-    var queryParams = window.location.search;
-    
-    var url = protocol + '//' + hostname + '/' + path + '/' + 'help';
-    window.open(url, '_blank');
   }
   
   function _getIdFromUrl(url) { 

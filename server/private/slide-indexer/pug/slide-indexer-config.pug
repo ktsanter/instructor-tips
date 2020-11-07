@@ -17,14 +17,16 @@ html(lang="en")
     div(class="slide-indexer-config")
       div(class="config-title") 
         span(class="title-text") Slide indexer configuration
+        i(class="title-control config-help-control far fa-question-circle" title="help")
+        span(class="title-control config-embed-control" title="copy embed code")
+          i(class="fas fa-angle-left")
+          i(class="fas fa-angle-right")
+        i(class="title-control config-link-control fas fa-link" title="copy link")
       
       div(class="config-controls")
         div(class="config-id")
           span slide deck URL
           input(type="text" class="id-input")
-          
-        div(class="config-embed") 
-          button(class="embed-control" title="copy embed code to clipboard") embed
           
         div(class="config-option")
           label(for="includeTOC") include table of contents
