@@ -17,22 +17,31 @@ html(lang="en")
     div(class="slide-indexer-config")
       div(class="config-title") 
         span(class="title-text") Slide indexer configuration
+        
         i(class="title-control config-help-control far fa-question-circle" title="help")
+        
         span(class="title-control config-embed-control" title="copy embed code")
           i(class="fas fa-angle-left")
           i(class="fas fa-angle-right")
+          
         i(class="title-control config-link-control fas fa-link" title="copy link")
-      
+
+        span(class="title-message")
+              
       div(class="config-controls")
-        div(class="config-id")
-          span slide deck URL
+        div(class="config-option config-id")
+          span(class="option-text") slide deck URL
           input(type="text" class="id-input")
+      
+        div(class="config-option")
+          div(class="option-text") table of contents
+          input(type="checkbox" class="config-option-control toc-control" title="include table of contents" checked)
           
         div(class="config-option")
-          label(for="includeTOC") include table of contents
-            input(type="checkbox" id="includeTOC" class="config-option-control" checked)
-        div(class="config-option")
-          label(for="includeIndex") include index
-            input(type="checkbox" id="includeIndex" class="config-option-control" checked)
-      
-      div(class="config-preview hide-me") preview
+          div(class="option-text") index
+          input(type="checkbox" class="config-option-control index-control" title="include index" checked)
+
+      div(class="config-preview hide-me")
+        div(class="preview-error hide-me") invalid slide link
+        div(class="preview-container hide-me")
+          iframe(class="preview-iframe" width="100%" height="100%")

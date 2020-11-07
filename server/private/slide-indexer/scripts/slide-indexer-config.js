@@ -2,7 +2,7 @@
 // Slide indexer config
 // configure and generate embed code for Slide indexer
 //-------------------------------------------------------------------
-// TODO: 
+// TODO: scaling tied to that of slide indexer
 //-------------------------------------------------------------------
 
 const app = function () {
@@ -20,6 +20,13 @@ const app = function () {
 	//----------------------------------------
 	async function init () {
     page.body = document.getElementsByTagName('body')[0];
+    
+    page.message = page.body.getElementsByClassName('title-message')[0];
+    
+    page.preview = page.body.getElementsByClassName('config-preview')[0];
+    page.previewError = page.body.getElementsByClassName('preview-error')[0];
+    page.previewContainer = page.body.getElementsByClassName('preview-container')[0];
+    page.previewIframe = page.body.getElementsByClassName('preview-iframe')[0];
     
     var expectedQueryParams = [];
     
@@ -41,22 +48,34 @@ const app = function () {
 
     elem = page.body.getElementsByClassName('config-embed-control')[0];
     elem.addEventListener('click', (e) => {_handleEmbed();});    
+
+    elem = page.body.getElementsByClassName('toc-control')[0];
+    elem.addEventListener('click', (e) => {_handleOptionChange();});    
+
+    elem = page.body.getElementsByClassName('index-control')[0];
+    elem.addEventListener('click', (e) => {_handleOptionChange();});    
   }
   
   //----------------------------------------
 	// refresh / update
 	//----------------------------------------
   function _updatePreview() {
-    var previewContainer = page.body.getElementsByClassName('config-preview')[0];
+    _showMessage('');
     var url = _makeURL({type: 'indexer'});
    
     if (url) {
-      previewContainer.innerHTML = _makeURL({type: 'indexer'});
+      page.previewIframe.src = _makeURL({type: 'indexer'});
+      _hideElement(page.previewError);
+      _showElement(page.previewContainer);
+      _showElement(page.previewIframe);
+      
     } else {
-      previewContainer.innerHTML = 'invalid slide link';
+      _showElement(page.previewError);
+      _hideElement(page.previewContainer);
+      _hideElement(page.previewIframe);
     }
 
-    _showElement(previewContainer);
+    _showElement(page.preview);
   }
   
   function _makeURL(params) {
@@ -71,9 +90,16 @@ const app = function () {
       url = protocol + '//' + hostname + '/' + path + '/' + 'help';
       
     } else if (params.type == 'indexer') {
-      var id = _getPresentationId();
+      var id = _getPresentationId();      
       if (id) {
-        url = protocol + '//' + hostname + '/' + path + '/' + _getPresentationId();
+        var toc = 'toc=false';
+        if (_isChecked('toc-control')) toc = 'toc=true';
+        
+        var index = 'index=false';
+        if (_isChecked('index-control')) index = 'index=true';
+        
+        var queryParams = '?' + toc + '&' + index;
+        url = protocol + '//' + hostname + '/' + path + '/' + id + queryParams;
       }
     }
     
@@ -85,10 +111,32 @@ const app = function () {
     return _getIdFromUrl(elem.value);
   }
   
+  function _isChecked(elemClass) {
+    var elem = page.body.getElementsByClassName(elemClass)[0];
+    return elem.checked;
+  }
+  
+  function _makeAndCopyLink() {
+    var linkCode = _makeURL({type: 'indexer'});
+   _copyToClipboard(linkCode);
+   _showMessage('link copied to clipboard');
+  }
+  
+  function _makeAndCopyEmbed() {
+    var embedCode = 'some embed code';
+   _copyToClipboard(embedCode);
+   _showMessage('embed code copied to clipboard');
+  }
+  
+  function _showMessage(msg) {
+    page.message.innerHTML = msg;
+  }
+  
   //----------------------------------------
 	// handlers
 	//----------------------------------------
   function _handleHelp() {
+    _showMessage('');
     window.open(_makeURL({type: 'help'}), '_blank');
   }
   
@@ -97,11 +145,15 @@ const app = function () {
   }
   
   function _handleLink() {
-    console.log('handle link');
+    _makeAndCopyLink();
   }
     
   function _handleEmbed() {
-    console.log('handle embed');
+    _makeAndCopyEmbed();
+  }
+  
+  function _handleOptionChange() {
+    _updatePreview();
   }
     
   //----------------------------------------

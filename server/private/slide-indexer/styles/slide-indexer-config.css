@@ -33,6 +33,13 @@ body {
   margin-left: 0.4em;
 }
 
+.slide-indexer-config .config-title .title-message {
+  font-size: 0.8em;
+  font-style: italic;
+  float: right;
+  margin-right: 0.6em;
+}
+
 .slide-indexer-config .config-title .title-control {
   cursor: pointer;
   float: right;
@@ -49,12 +56,18 @@ body {
 /*-- controls --*/
 .slide-indexer-config .config-controls {}
 
-.slide-indexer-config .config-controls .config-id {
-  display: inline-block;
-  padding-left: 0.2em;
+.slide-indexer-config .config-controls .config-option {
+  margin-bottom: 0.2em;
 }
 
-.slide-indexer-config .config-controls .config-id .id-input {
+.slide-indexer-config .config-controls .config-option .option-text {
+  display: inline-block;
+  width: 8em;
+}
+
+.slide-indexer-config .config-controls .config-option.config-id {}
+
+.slide-indexer-config .config-controls .config-option.config-id .id-input {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	display: inline-block;
 	color: #444;
@@ -62,7 +75,7 @@ body {
 	padding: 0.2em 0.4em 0.2em 0.4em;
   width: 32.2em;
 	box-sizing: border-box;
-	margin: 0.3em 0 0.3em 0.2em;
+	margin: 0.3em 0 0.3em 0;
 	border: 1px solid #aaa;
 	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
 	border-radius: .3em;
@@ -72,17 +85,8 @@ body {
 	background-color: #fff;
 }
 
-.slide-indexer-config .config-controls .config-option {
-  padding: 0.2em;
-}
-
 .slide-indexer-config .config-controls .config-option label {
   cursor: pointer;
-  padding-left: 0.4em;
-}
-
-.slide-indexer-config .config-controls .config-option .config-option-control {
-  float: left;
 }
 
 .slide-indexer-config .config-controls .config-option input.config-option-control {
@@ -92,6 +96,24 @@ body {
 
 /*-- preview --*/
 .slide-indexer-config .config-preview {
-  border: 1px solid red;
   margin-top: 0.4em;
 }
+
+.slide-indexer-config .config-preview .preview-error {
+  font-style: italic;
+}
+
+.slide-indexer-config .config-preview .preview-container {
+  position: relative; 
+  display: block; 
+  width: 100%;
+  padding-bottom: 60%;  
+}
+  
+.slide-indexer-config .config-preview .preview-container .preview-iframe {
+  position: absolute; 
+  top: 0; 
+  left: 0;  
+  border: 1px solid #ccc;
+}
+
