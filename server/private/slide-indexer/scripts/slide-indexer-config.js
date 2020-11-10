@@ -2,6 +2,7 @@
 // Slide indexer config
 // configure and generate embed code for Slide indexer
 //-------------------------------------------------------------------
+// TODO: finish embed code
 // TODO: scaling tied to that of slide indexer
 //-------------------------------------------------------------------
 
