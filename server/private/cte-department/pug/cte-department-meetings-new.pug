@@ -14,7 +14,9 @@ mixin deptmeeting(label, meeting, slides, recording, resourcelist)
         
     td
       if (recording != "")
-        a(href=recording, target="_blank") recording
+        span
+          a(href=recording.link, target="_blank") recording 
+          |passcode: #{recording.passcode}
       
     td
       each resource in resourcelist
@@ -39,14 +41,20 @@ table(class="table table-hover table-condensed")
     +deptmeeting("September", 
       {label: " (Thu Sep 10, 8:00pm)", url: "https://michiganvirtual.zoom.us/j/92518243303?pwd=VndrL1ExUlVIMVVkM014c3dNd1Erdz09"},
       "https://bit.ly/cte-2020-09",
-      "",
+      { 
+        link:"https://michiganvirtual.zoom.us/rec/share/FGc7QDdiDJfPzrcqHyQb02j9ECeC2i3q0K7GedRYNGDYzKqqArLm3bnGAK0uwJLJ.vtDKRu4pCaNTJplr",
+        passcode: " c#Vz5vmL"
+      },
       []
     )
 
     +deptmeeting("November", 
       {label: " (Tue Nov 10, 7:00pm)", url: "https://michiganvirtual.zoom.us/j/93132022914?pwd=Q1BKT1R1aUV0bTgzb0w2aGdNV01DUT09"},
       "https://bit.ly/cte-nov-2020",
-      "",
+      {
+        recording: "https://michiganvirtual.zoom.us/rec/share/Mqc3J_UDiggpNm5WnFWiuR1tOla2ilYSJmr_GtH6GyR3VF8AI0Haimvh8VFELmnM.8VTgb2mHOGDfMqYw",
+        passcode: "@C1y21y="
+      },
       []
     )
 
