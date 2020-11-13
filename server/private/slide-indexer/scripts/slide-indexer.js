@@ -92,7 +92,11 @@ const app = function () {
   // page rendering
   //-----------------------------------------  
   function _renderPage() {
-    settings.scale = 1.2;  // calculate this from slide width and height;
+    settings.clientDimensions = {
+      width: document.documentElement.clientWidth,
+      height: document.documentElement.clientHeight
+    };
+    window.addEventListener('resize', (e) => {_handleResize(e);});
     
     _renderNavigation();
     _renderIndex();
@@ -107,7 +111,6 @@ const app = function () {
   
   function _renderNavigation() {
     page.navigationContainer = page.body.getElementsByClassName('navigation')[0];
-    page.navigationContainer.style.width = ((settings.presentationInfo.pageWidth * settings.scale)- 7) + 'px';
     _showElement(page.navigationContainer);
 
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-home', 'home', (e) => {_handleButton('home');}));
@@ -212,22 +215,23 @@ const app = function () {
   function _renderPresentation() {
     settings.slideSource = 'https://docs.google.com/presentation/d/' + settings.presentationId + '/embed?rm=minimal';
     var numSlides = settings.presentationInfo.numSlides;
-    var presentationPageWidth = settings.presentationInfo.pageWidth;
-    var presentationPageHeight = settings.presentationInfo.pageHeight;
-    
-    var iframeWidth = (presentationPageWidth * settings.scale) + 'pt';
-    var iframeHeight = (presentationPageHeight * settings.scale) + 'pt';
+    var defaultWidth = '10pt';
+    var defaultHeight = '10pt';
 
+    settings.horizontalSlideRatio = 0.95;  // proportion of width used by slide
+    
     page.slide = [];
     page.presentationContainer = page.body.getElementsByClassName('presentation-container')[0];
 
     for (var i = 0; i < numSlides; i++) {
       var sourceURL = settings.slideSource + '#' + (i + 1);
-      page.slide.push(
-        CreateElement.createIframe(null, 'slide hide-me', sourceURL, iframeWidth, iframeHeight, true)
-      );
+      var iframeContainer = CreateElement.createDiv(null, 'slide-container hide-me');
+      iframeContainer.appendChild(CreateElement.createIframe(null, 'slide', sourceURL, defaultWidth, defaultHeight, true));
+      page.slide.push(iframeContainer);
       page.presentationContainer.appendChild(page.slide[i]);
     }
+    
+    _sizeSlides();    
   }
   
   //----------------------------------------
@@ -242,12 +246,14 @@ const app = function () {
     if (settings.currentSlideNumber >= 0) {
       var slide = page.slide[settings.currentSlideNumber];
       _hideElement(slide);
-      slide.src = slide.src;
+      var elemIframe = slide.getElementsByClassName('slide')[0];
+      elemIframe.src = elemIframe.src;
     }
     
     settings.currentSlideNumber = slideNumber;
     _showElement(page.presentationContainer);
     _showElement(page.slide[settings.currentSlideNumber]);
+    _sizeNavbar();    
   }
   
   function _makeSlideURL(slideNumber) {
@@ -274,6 +280,41 @@ const app = function () {
         _hideElement(elem);
       }
     }
+  }
+  
+  function _sizeSlides() {
+    var currentClientWidth = document.documentElement.clientWidth;
+    var currentClientHeight = document.documentElement.clientHeight;
+    
+    var origSlideWidth = settings.presentationInfo.pageWidth;
+    var origSlideHeight = settings.presentationInfo.pageHeight;
+    
+    var targetSlideWidth = settings.horizontalSlideRatio * currentClientWidth;
+    var widthScale = targetSlideWidth / origSlideWidth;
+    var heightScale = widthScale;
+    
+    var newSlideWidth = origSlideWidth * widthScale;
+    var newSlideHeight = origSlideHeight * heightScale;
+    
+    var numSlides = settings.presentationInfo.numSlides;
+    for (var i = 0; i < numSlides; i++) {
+      var slide = page.slide[i].getElementsByClassName('slide')[0];
+      slide.width = newSlideWidth + 'pt';
+      slide.height = newSlideHeight + 'pt';
+    }
+  }
+  
+  function _sizeNavbar() {
+    var navbar = page.navigationContainer;
+    var slide = page.slide[settings.currentSlideNumber];
+    var slideWidth = window.getComputedStyle(slide, null).getPropertyValue('width');
+
+    var slideWidthValue = parseFloat(slideWidth.slice(0, -2));
+    var slideWidthUnit = slideWidth.slice(-2);
+    
+    var fudgeFactor = 10;
+    var navbarWidth = (slideWidthValue + fudgeFactor) + slideWidthUnit;
+    navbar.style.width = navbarWidth;
   }
   
   //----------------------------------------
@@ -326,6 +367,11 @@ const app = function () {
   
   function _handleShareToggle(e) {
     _setShareLinksView(_getToggleSliderValue(e.target));
+  }
+  
+  function _handleResize(e) {
+    _sizeSlides();
+    _sizeNavbar();
   }
     
   //----------------------------------------

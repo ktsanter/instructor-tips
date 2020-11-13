@@ -80,10 +80,19 @@ body {
   position: absolute;
   top: 0;
   left: 0;  
+  width: 95%;
+}
+
+.slide-indexer .display-container .presentation-container .slide-container {
+  position: relative;
+  /*width: 100%;*/
 }
   
-.slide-indexer .display-container .presentation-container .slide {
-  border: none;
+.slide-indexer .display-container .presentation-container .slide-container .slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /*width: 100%;*/
 }
 
 /*-- index --*/
