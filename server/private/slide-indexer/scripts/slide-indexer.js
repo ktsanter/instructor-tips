@@ -218,7 +218,7 @@ const app = function () {
     var defaultWidth = '10pt';
     var defaultHeight = '10pt';
 
-    settings.horizontalSlideRatio = 0.95;  // proportion of width used by slide
+    settings.horizontalSlideRatio = 0.70;  // proportion of width used by slide
     
     page.slide = [];
     page.presentationContainer = page.body.getElementsByClassName('presentation-container')[0];
@@ -308,12 +308,13 @@ const app = function () {
     var navbar = page.navigationContainer;
     var slide = page.slide[settings.currentSlideNumber];
     var slideWidth = window.getComputedStyle(slide, null).getPropertyValue('width');
-
-    var slideWidthValue = parseFloat(slideWidth.slice(0, -2));
+    console.log('slideWidth= ' + slideWidth);
+    var slideWidthValue = parseFloat(slideWidth.slice(0, -2)) * settings.horizontalSlideRatio;
     var slideWidthUnit = slideWidth.slice(-2);
     
-    var fudgeFactor = 10;
+    var fudgeFactor = 60;
     var navbarWidth = (slideWidthValue + fudgeFactor) + slideWidthUnit;
+    console.log('navbarWidth= ' + navbarWidth);
     navbar.style.width = navbarWidth;
   }
   

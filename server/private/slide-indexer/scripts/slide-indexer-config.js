@@ -10,6 +10,11 @@ const app = function () {
   const appversion = '1.01';
   const appname = 'Slide indexer configuration';
   
+  const apiInfo = {
+    apibase: 'https://script.google.com/macros/s/AKfycbzG66LIoo5DOs040Wqh9mD0RR4YqJfxVmGLFXyNRui2MVv0MqM/exec',
+    apikey: 'MVslideindexing'
+  };  
+  
   const page = {};
   const settings = {};
   
@@ -118,19 +123,52 @@ const app = function () {
   }
   
   function _makeAndCopyLink() {
+    if (!_getPresentationId()) return;
     var linkCode = _makeURL({type: 'indexer'});
+    
    _copyToClipboard(linkCode);
    _showMessage('link copied to clipboard');
   }
   
-  function _makeAndCopyEmbed() {
-    var embedCode = 'some embed code';
+  async function _makeAndCopyEmbed() {
+    if (!_getPresentationId()) return;
+    var url = _makeURL({type: 'indexer'});
+    
+    var result = await _getSlideInfo();
+    if (!result) return;
+    
+    var height = (result.pageHeight + 40).toString();
+    
+    var elem = CreateElement.createIframe(null, null, url, "90%", height, true);
+    var embedCode = elem.outerHTML;
+    console.log(embedCode);
+    
    _copyToClipboard(embedCode);
    _showMessage('embed code copied to clipboard');
   }
   
   function _showMessage(msg) {
     page.message.innerHTML = msg;
+  }
+  
+  async function _getSlideInfo() {
+    var result = null;
+    var id = _getPresentationId();
+    if (id) {
+      _showMessage('retrieving slide deck info...');
+      var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'slideindexinfo', {presentationid: id}, null);
+      if (!requestResult.success) {
+        _showMessage('slide deck info retrieval failed');
+        
+      } else {
+        _showMessage('');
+        if (requestResult.success) {
+          result = requestResult.data;
+        }
+      }
+      
+      return result;
+    }
   }
   
   //----------------------------------------
