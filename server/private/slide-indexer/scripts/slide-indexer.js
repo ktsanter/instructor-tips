@@ -320,6 +320,7 @@ const app = function () {
   }
   
   function _sizeNavbar() {
+    // now set to fixed size in CSS
     /*
     // set navbar's width to that of current slide + fudge factor
     var navbar = page.navigationContainer;

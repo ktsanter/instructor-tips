@@ -106,7 +106,7 @@ body {
 .slide-indexer-config .config-preview .preview-container {
   position: relative; 
   display: block; 
-  width: 100%;
+  width: 60%;
   padding-bottom: 60%;  
 }
   

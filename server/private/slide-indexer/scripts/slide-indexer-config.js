@@ -1,9 +1,8 @@
 //-------------------------------------------------------------------
 // Slide indexer config
-// configure and generate embed code for Slide indexer
+// configure and generate links and embed code for Slide indexer
 //-------------------------------------------------------------------
-// TODO: finish embed code
-// TODO: scaling tied to that of slide indexer
+// TODO: 
 //-------------------------------------------------------------------
 
 const app = function () {
@@ -131,13 +130,15 @@ const app = function () {
   }
   
   async function _makeAndCopyEmbed() {
+    var heightPadding = 95;
     if (!_getPresentationId()) return;
     var url = _makeURL({type: 'indexer'});
     
     var result = await _getSlideInfo();
     if (!result) return;
     
-    var height = (result.pageHeight + 40).toString();
+    var height = (result.pageHeight + heightPadding).toString();
+    console.log(result.pageHeight + ' ' + height);
     
     var elem = CreateElement.createIframe(null, null, url, "90%", height, true);
     var embedCode = elem.outerHTML;
