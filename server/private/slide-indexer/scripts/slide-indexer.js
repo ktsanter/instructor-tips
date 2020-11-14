@@ -217,8 +217,6 @@ const app = function () {
     var numSlides = settings.presentationInfo.numSlides;
     var defaultWidth = '10pt';
     var defaultHeight = '10pt';
-
-    settings.horizontalSlideRatio = 0.70;  // proportion of width used by slide
     
     page.slide = [];
     page.presentationContainer = page.body.getElementsByClassName('presentation-container')[0];
@@ -283,38 +281,53 @@ const app = function () {
   }
   
   function _sizeSlides() {
+    // height is scaled to fit verticalSlideRatio percentage of client
+    // width is scaled to same factor, preserving aspect ratio of orig slide dimensions
+    var verticalSlideRatio = 0.92;  // proportion of client height used by slide
+    var horizontalSlideRatio = 0.95;  // proportion of client width used by slide (when not scaling by height)
+    var horizontalThresholdRatio = 0.98;  // cutoff for scaling by width rather than height
+        
     var currentClientWidth = document.documentElement.clientWidth;
     var currentClientHeight = document.documentElement.clientHeight;
     
     var origSlideWidth = settings.presentationInfo.pageWidth;
     var origSlideHeight = settings.presentationInfo.pageHeight;
     
-    var targetSlideWidth = settings.horizontalSlideRatio * currentClientWidth;
-    var widthScale = targetSlideWidth / origSlideWidth;
-    var heightScale = widthScale;
+    var targetSlideHeight = verticalSlideRatio * currentClientHeight;
+    var heightScale = targetSlideHeight / origSlideHeight;
+    var widthScale = heightScale;
     
     var newSlideWidth = origSlideWidth * widthScale;
     var newSlideHeight = origSlideHeight * heightScale;
     
+    if (newSlideWidth > currentClientWidth * horizontalThresholdRatio) {
+      var targetSlideWidth = horizontalSlideRatio * currentClientWidth;
+      widthScale = targetSlideWidth / origSlideWidth;
+      heightScale = widthScale;
+      newSlideWidth = origSlideWidth * widthScale;
+      newSlideHeight = origSlideHeight * heightScale;
+    }
+
+    settings.currentSlideWidth = newSlideWidth;
+    settings.currentSlideHeight = newSlideHeight;
+    
     var numSlides = settings.presentationInfo.numSlides;
     for (var i = 0; i < numSlides; i++) {
       var slide = page.slide[i].getElementsByClassName('slide')[0];
-      slide.width = newSlideWidth + 'pt';
-      slide.height = newSlideHeight + 'pt';
+      slide.width = settings.currentSlideWidth + 'pt';
+      slide.height = settings.currentSlideHeight + 'pt';
     }
   }
   
   function _sizeNavbar() {
+    // set navbar's width to that of current slide + fudge factor
     var navbar = page.navigationContainer;
-    var slide = page.slide[settings.currentSlideNumber];
-    var slideWidth = window.getComputedStyle(slide, null).getPropertyValue('width');
-    console.log('slideWidth= ' + slideWidth);
-    var slideWidthValue = parseFloat(slideWidth.slice(0, -2)) * settings.horizontalSlideRatio;
-    var slideWidthUnit = slideWidth.slice(-2);
+
+    var slideWidthValue = settings.currentSlideWidth.toString();
+    var slideWidthUnit = 'px';
     
-    var fudgeFactor = 60;
+    var fudgeFactor = 0;
     var navbarWidth = (slideWidthValue + fudgeFactor) + slideWidthUnit;
-    console.log('navbarWidth= ' + navbarWidth);
     navbar.style.width = navbarWidth;
   }
   
