@@ -1,0 +1,57 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title Slide indexer config help - controls
+    meta(charset="utf-8")
+    style
+      include ../../common/styles/colorscheme.css
+      include ../styles/help-subpage.css
+      
+  body(class="instructortips-colorscheme")
+    - var linkAndEmbedText = "getting a link to the presentation or embed code"
+    - var configText = "configuring the presentation"
+    
+    div(class="slide-indexer-help notification")
+      +anchorLink("top")      
+      div(class='section-contents') 
+        div(class="subsection-contents")
+          |There are two sets of controls
+          +snapshot("controls001.png", 570)
+      
+      ul
+        +inpageLinkItem("#linkAndEmbed", linkAndEmbedText)
+        +inpageLinkItem("#configPresentation", configText)
+        
+      +sectionHead("linkAndEmbed", linkAndEmbedText)
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          |Once a slide deck has been specified you can get a link to the presentation
+          |or embed code to use in other apps like Brightspace
+        div(class='subsection-contents')
+          i(class="control-icon fas fa-link")
+          |instructions for link
+        div(class='subsection-contents')
+          i(class="control-icon fas fa-angle-left no-rightmargin")
+          i(class="control-icon fas fa-angle-right")
+          |instructions for embed
+        
+      +sectionHead("configPresentation", configText)
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          |Choose what day(s) you'd like to receive reminder emails for each schedule.
+          |You can choose more than one day, and you can also select no days if you'd rather not receive reminders.
+          br
+          br
+          |In this example the instructor will receive informaton about one schedule each Sunday and about the other two each Monday.
+        div(class='subsection-contents')
+          +snapshot("notification_reminder_001.png", 500)
+        br
+        |You'll receive a single email for each day selected, providing a list of the tips you've scheduled 
+        |to be checked off by the current date, but haven't yet marked as complete.
+        |based on the current date and the scheduled date.
+        br
+        |Here's a portion of what that message might look like
+        div(class="subsection-contents")
+          +snapshot("notification_reminder_002.png", 400)

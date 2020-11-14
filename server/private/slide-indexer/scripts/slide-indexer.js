@@ -7,7 +7,7 @@
 
 const app = function () {
   const appversion = '1.01';
-  const appname = 'Slide indexer';
+  const appname = 'Slide Indexer';
   
   const apiInfo = {
     apibase: 'https://script.google.com/macros/s/AKfycbzG66LIoo5DOs040Wqh9mD0RR4YqJfxVmGLFXyNRui2MVv0MqM/exec',

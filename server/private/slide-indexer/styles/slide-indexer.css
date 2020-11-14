@@ -34,7 +34,7 @@ body {
   background-color: var(--navBackground);
   border: 1px solid var(--navBackground);
   border-radius: 6px 6px 0 0;
-  width: 24em;
+  width: 32em;
   padding: 0.2em;
 }
 

@@ -531,8 +531,8 @@ app.get('/binary-conversion/:mode', function (req, res) {
 
 app.get('/slide-indexer/:subpage', function (req, res) {
   if (req.params.subpage == 'help') {
-    var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer-help.pug');
-    renderAndSendPugIfExists(res, req.params.app, pugFileName, {} );
+    var htmlFileName = path.join(__dirname, 'private', 'slide-indexer/html/help.html');
+    res.sendFile(htmlFileName);
     
   } else if (req.params.subpage == 'config') {
     var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer-config.pug');

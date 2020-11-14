@@ -1,0 +1,66 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title Slide indexer config help - profile
+    meta(charset="utf-8")
+    style
+      include ../../common/styles/colorscheme.css
+      include ../styles/help-subpage.css
+      
+  body(class="instructortips-colorscheme")
+    - var displaynameText = "display name"
+    - var emailText = "email for notification"
+    - var passwordText = "change password"
+    
+    div(class="slide-indexer-help profile")
+      +anchorLink("top")  
+      div(class='section-contents') 
+        div(class="subsection-contents")
+          |Your profile settings let you specify a display name, an email address for notifications, and change your password.
+          br
+          |You can access it by clicking on your current display name at the right end of the navigation bar.
+        div(class='subsection-contents')
+          +snapshot("navbar_profile_001.png", 500)
+
+      ul
+        +inpageLinkItem("#displayname", displaynameText)
+        +inpageLinkItem("#email", emailText)
+        +inpageLinkItem("#password", passwordText)
+
+      +sectionHead("displayname", displaynameText)
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          |Your display name can be any text you'd like, up to 40 characters in length.
+          |It's used in sending email notifications when you share a schedule 
+          |and when you get a weekly reminder message 
+          |as well as displaying on the navigation bar.
+          |Note the 
+          em save 
+          |button won't be enabled until you enter a non-blank display name.
+        div(class='subsection-contents')
+          +snapshot("profile_displayname_001.png", 200)
+
+      +sectionHead("email", emailText)
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          |This is the email address used to notify you and for sending password reset messages.
+        div(class="subsection-contents important-note")
+          strong Note: 
+          |you cannot request an "I forgot my password" message if this isn't set.
+          br
+          |Also, you won't receive any schedule reminders or notes about shared schedules.
+        div(class="subsection-contents")
+          +snapshot("profile_email_001.png", 200)
+
+      +sectionHead("password", passwordText)
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          |Password length must be at least 8 and no more than 20 characters.
+          |You are asked to confirm your new password before changing.
+          |Note the 
+          em save 
+          |button won't be enabled until the two fields have valid and matching values.
+        div(class="subsection-contents")
+          +snapshot("profile_changepassword_001.png", 200)

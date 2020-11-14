@@ -1,0 +1,51 @@
+/*-------------------------------------------------------------------
+ * styling for Slide indexer config help page
+ *------------------------------------------------------------------*/
+
+body {
+	color: black;
+	background-color: var(--bgOverall);
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.slide-indexer-help {}
+
+.slide-indexer-help .help-contents {
+  width: 100%;
+  margin-top: 2.8em;
+}
+
+.slide-indexer-help .help-contents .help-subcontents {
+  border: none;
+  width: 100%;
+}
+
+.slide-indexer-help .help-contents .help-subcontents.help-hideme {
+  display: none;
+}
+
+/*-------------------------------------------------------------
+ * scrollbar
+ *------------------------------------------------------------*/
+body::-webkit-scrollbar {
+  width: 16px;
+}
+body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bgTertiaryEmphasis) var(--bgQuaternaryEmphasis);
+}
+body::-webkit-scrollbar-track {
+  background: var(--bgQuaternaryEmphasis);
+}
+body::-webkit-scrollbar-thumb {
+  background-color: var(--bgTertiaryEmphasis) ;
+  border-radius: 8px;
+  border: 3px solid var(--bgQuaternaryEmphasis);
+} 
+
+body::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bgPrimaryEmphasis_trans);
+} 
+
+
