@@ -33,6 +33,7 @@ body {
   background-color: var(--navBackground);
   border: 1px solid var(--navBackground);
   border-radius: 6px 6px 0 0;
+  width: 24em;
   padding: 0.2em;
 }
 
@@ -65,7 +66,7 @@ body {
   color: white;
   font-size: 0.9em;
   font-weight: normal;
-  margin-left: 4.0em;
+  margin-left: 3.0em;
   margin-right: 0.4em;
 }
 

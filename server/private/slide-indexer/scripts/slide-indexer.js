@@ -320,6 +320,7 @@ const app = function () {
   }
   
   function _sizeNavbar() {
+    /*
     // set navbar's width to that of current slide + fudge factor
     var navbar = page.navigationContainer;
 
@@ -329,6 +330,7 @@ const app = function () {
     var fudgeFactor = 0;
     var navbarWidth = (slideWidthValue + fudgeFactor) + slideWidthUnit;
     navbar.style.width = navbarWidth;
+    */
   }
   
   //----------------------------------------
