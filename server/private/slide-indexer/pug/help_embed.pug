@@ -3,118 +3,58 @@ include help_mixins.pug
 doctype html
 html
   head
-    title Slide indexer config help - scheduling
+    title Slide indexer config help - embedding
     meta(charset="utf-8")
     style
       include ../../common/styles/colorscheme.css
       include ../styles/help-subpage.css
-      
+      Add
   body(class="instructortips-colorscheme")
-    - var addScheduleText = "add, edit and delete schedule"
-    - var addTipText = "add new tips"
-    - var moveTipText = "move tips"
-    - var browseTipText = "browse for tips"
-    - var addWeekText = "add and remove weeks in schedule"
+    - var txtGettingEmbed = "getting the embed code"
+    - var txtBrightspace = "creating a Slide Indexer item in Brightspace"
     
-    div(class="slide-indexer-help scheduling")
-      +anchorLink("top")  
-      div(class="section-contents") 
+    div(class="slide-indexer-help embedding")
+      +anchorLink("top")      
+      div(class='section-contents') 
         div(class="subsection-contents")
-          |The 
-          +pageName("Scheduling") 
-          |page is where you'll spend most of your time.
-          |With it you can create new schedules, edit existing ones, and check off items as you complete them.
-
+          |You can use this tool to get embed code suitable
+          |for use in other applications.
+      
       ul
-        +inpageLinkItem("#addSchedule", addScheduleText)
-        +inpageLinkItem("#addTip", addTipText)
-        +inpageLinkItem("#moveTip", moveTipText)
-        +inpageLinkItem("#browseTip", browseTipText)
-        +inpageLinkItem("#addWeek", addWeekText)
-
-      +sectionHead("addSchedule", addScheduleText)
+        +inpageLinkItem("#gettingEmbed", txtGettingEmbed)
+        +inpageLinkItem("#brightspace", txtBrightspace)
+        
+      +sectionHead("gettingEmbed", txtGettingEmbed)
       div(class="section-contents") 
         div(class="subsection-contents")
-          |Hover over the gear icon next to the schedule selection dropdown to access
-          |the options for adding, editing, and deleting schedules.
-        div(class='subsection-contents')
-          +snapshot("scheduling_options_001.png", 400)
-        div(class='subsection-contents')
+          +snapshot("embed001.png", 570)
+          |Once your presentation is configured, click on the embed icon to copy the embed code to the clipboard.
+          |It's then available for pasting into other apps such as Brightspace.
+        
+      +sectionHead("brightspace", txtBrightspace)
+      div(class="section-contents") 
+        div(class="subsection-contents")
           ul
-            li when adding a schedule you can specify its name, the number of weeks, and the starting date
-            li when editing a schedule you can change its name and the starting date.  Note you can't change 
-              |the length directly but you can 
-              a(href="#addWeek") add and remove weeks 
-              | on the main scheduling page
-            li when deleting a schedule you'll get the chance to confirm your decision
-        
+            li create a new item in 
+              em Additional Resources
+              +snapshot("embed002.png", 570)
+            li choose 
+              em HTML document
+              +snapshot("embed003.png", 310)
+            li enter a title for your page and choose the HTML editor
+              +snapshot("embed004.png", 210)
+            li paste the embed code between 
+              strong 
+                +makeCode("<body...> ")
+              |and 
+              strong
+                +makeCode("</body>")
+              +snapshot("embed005.png", 500)
+            li click on  
+              strong: em OK 
+              |then on  
+              strong: em Save 
+              br
+              em: strong **Remember** 
+              |set the item to visible when you're ready to share it with students
 
-      +sectionHead("addTip", addTipText)
-      div(class="section-contents") 
-        div(class="subsection-contents")
-          |If you hover over the righthand end of the week label in a schedule
-          |one of the options is to create a new tip and add it to the week's schedule.
-        div(class='subsection-contents')
-          +snapshot("scheduling_addtip_001.png", 450)
-        br
-        br
-        div(class='subsection-contents')
-          |When creating a new tip you can enter its text and choose one or more categories for it.
-          |The categories are helpful when searching through existing tips.
-          |For more information about formatting tips see the 
-          +pageName('Tip editing') 
-          |page
-          br
-          br
-          |Hover over the image to learn what each feature is for:
-        div(class='subsection-contents')
-          +snapshot("scheduling_addtip_002.png", 550, "", [
-            {location: "left:  1.2em; top:  2.1em; width: 20.3em; height: 15.5em;", text: "original text for the tip"},
-            {location: "left: 22.0em; top:  2.1em; width: 19.7em; height: 15.6em;", text: "a preview of what the tip will look like when displayed"},
-            {location: "left:  1.3em; top: 18.4em; width: 18.0em; height:  2.0em;", text: "categories to which the text is assigned"}
-          ])
-
-      +sectionHead("moveTip", moveTipText)
-      div(class="section-contents") 
-        div(class='subsection-contents')
-          |If you hover over the lefthand edge of a tip a drag handle will appear.
-          |You can drag the tip to another week or location within a week.
-        div(class='subsection-contents')
-          +snapshot("scheduling_movetip_001.png", 400)
-        
-      +sectionHead("browseTip", browseTipText)
-      div(class="section-contents") 
-        div(class='subsection-contents')
-          |You can reuse existing tips with the 
-          em Browse Tips 
-          |feature 
-        div(class='subsection-contents')
-          +snapshot("scheduling_browsetip_001.png", 400)
-        br
-        div(class='subsection-contents')
-          |Any tip found while browsing can be dragged and dropped into the schedule.
-          |You can filter the result list by searching for specific contents, 
-          |restricting the categories, and by adding or excluding "Common" tips available to all users.
-          br
-          br
-          |Hover over the image to learn what each feature is for
-        div(class='subsection-contents')
-          +snapshot("scheduling_browsetip_002.png", 500, "", [
-            {location: "left:  1.4em; top:  2.2em; width: 22.0em; height:  2.1em;", text: "narrow the list of results by searching for specific content"},
-            {location: "left:  1.4em; top:  4.7em; width: 22.0em; height:  2.1em;", text: "narrow the list of results by specifying one or more categories"},
-            {location: "left: 23.5em; top:  4.6em; width:  6.7em; height:  2.2em;", text: "include/exclude common tips available to all users"},
-            {location: "left:  1.3em; top:  9.7em; width:  1.4em; height:  3.1em;", text: "drag tip and drop it on your schedule"}
-          ])
-        
-      +sectionHead("addWeek", addWeekText)
-      div(class="section-contents") 
-        div(class='subsection-contents')
-          |You can add or remove a week from the schedule.  Hover over the righthand end of 
-          |the label for the week to see these options. The dates for the following weeks will
-          |be automatically adjusted.
-        div(class="subsection-contents important-note")
-          strong Note: 
-          |you cannot recover a week that has been deleted.
-          
-        div(class='subsection-contents')
-          +snapshot("scheduling_addweek_001.png", 400)

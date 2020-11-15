@@ -13,7 +13,7 @@ html
     - var linkAndEmbedText = "getting a link to the presentation or embed code"
     - var configText = "configuring the presentation"
     
-    div(class="slide-indexer-help notification")
+    div(class="slide-indexer-help controls")
       +anchorLink("top")      
       div(class='section-contents') 
         div(class="subsection-contents")
@@ -21,37 +21,42 @@ html
           +snapshot("controls001.png", 570)
       
       ul
-        +inpageLinkItem("#linkAndEmbed", linkAndEmbedText)
         +inpageLinkItem("#configPresentation", configText)
+        +inpageLinkItem("#linkAndEmbed", linkAndEmbedText)
         
+      +sectionHead("configPresentation", configText)
+      div(class="section-contents") 
+        div(class="subsection-contents")
+          +snapshot("controls003.png", 500)
+
+        div(class="subsection-contents")
+          strong slide deck URL
+          | - enter the "share" link to the slide deck.  Note this is 
+          em
+            strong not&nbsp;
+          | the link to the published deck.  You do not have to publish the deck to the web 
+          |in order to use the Slide Indexer.
+
+        div(class="subsection-contents")
+          strong table of contents
+          | - choose whether or not to include a table of contents in the presentation
+
+        div(class="subsection-contents")
+          strong index
+          | - choose whether or not to include an index in the presentation
+
       +sectionHead("linkAndEmbed", linkAndEmbedText)
       div(class="section-contents") 
         div(class="subsection-contents")
           |Once a slide deck has been specified you can get a link to the presentation
           |or embed code to use in other apps like Brightspace
+          
         div(class='subsection-contents')
           i(class="control-icon fas fa-link")
-          |instructions for link
+          |generate the URL for a direct link to the presentation and copy it to the clipboard
+          
         div(class='subsection-contents')
           i(class="control-icon fas fa-angle-left no-rightmargin")
           i(class="control-icon fas fa-angle-right")
-          |instructions for embed
+          |generate embed code for the presentation and copy it to the clipboard
         
-      +sectionHead("configPresentation", configText)
-      div(class="section-contents") 
-        div(class="subsection-contents")
-          |Choose what day(s) you'd like to receive reminder emails for each schedule.
-          |You can choose more than one day, and you can also select no days if you'd rather not receive reminders.
-          br
-          br
-          |In this example the instructor will receive informaton about one schedule each Sunday and about the other two each Monday.
-        div(class='subsection-contents')
-          +snapshot("notification_reminder_001.png", 500)
-        br
-        |You'll receive a single email for each day selected, providing a list of the tips you've scheduled 
-        |to be checked off by the current date, but haven't yet marked as complete.
-        |based on the current date and the scheduled date.
-        br
-        |Here's a portion of what that message might look like
-        div(class="subsection-contents")
-          +snapshot("notification_reminder_002.png", 400)

@@ -3,64 +3,85 @@ include help_mixins.pug
 doctype html
 html
   head
-    title Slide indexer config help - profile
+    title Slide indexer config help
     meta(charset="utf-8")
     style
       include ../../common/styles/colorscheme.css
       include ../styles/help-subpage.css
       
+    +handlerForLinkToHelpSection  
+      
   body(class="instructortips-colorscheme")
-    - var displaynameText = "display name"
-    - var emailText = "email for notification"
-    - var passwordText = "change password"
+    - var txtIndex = "configuring index entries"
+    - var txtTOC = "configuring table of contents entries"
+    - var txtPermissions = "setting permissions and getting the slide deck link"
     
-    div(class="slide-indexer-help profile")
-      +anchorLink("top")  
+    div(class="slide-indexer-help slide-config")
+      +anchorLink("top")      
       div(class='section-contents') 
         div(class="subsection-contents")
-          |Your profile settings let you specify a display name, an email address for notifications, and change your password.
-          br
-          |You can access it by clicking on your current display name at the right end of the navigation bar.
-        div(class='subsection-contents')
-          +snapshot("navbar_profile_001.png", 500)
-
+          |If selected, an index and a table of contents will be made for the presentation.
+          |By using the speaker notes in the slide deck you can configure which slides
+          |will appear in each of them. 
+          |You can then set the permissions for your slide deck and get the appropriate 
+          |link to finish the configuration.
+      
       ul
-        +inpageLinkItem("#displayname", displaynameText)
-        +inpageLinkItem("#email", emailText)
-        +inpageLinkItem("#password", passwordText)
-
-      +sectionHead("displayname", displaynameText)
+        +inpageLinkItem("#configIndex", txtIndex)
+        +inpageLinkItem("#configTOC", txtTOC)
+        +inpageLinkItem("#permissions", txtPermissions)
+        
+      +sectionHead("configIndex", txtIndex)
       div(class="section-contents") 
         div(class="subsection-contents")
-          |Your display name can be any text you'd like, up to 40 characters in length.
-          |It's used in sending email notifications when you share a schedule 
-          |and when you get a weekly reminder message 
-          |as well as displaying on the navigation bar.
-          |Note the 
-          em save 
-          |button won't be enabled until you enter a non-blank display name.
-        div(class='subsection-contents')
-          +snapshot("profile_displayname_001.png", 200)
-
-      +sectionHead("email", emailText)
-      div(class="section-contents") 
-        div(class="subsection-contents")
-          |This is the email address used to notify you and for sending password reset messages.
-        div(class="subsection-contents important-note")
-          strong Note: 
-          |you cannot request an "I forgot my password" message if this isn't set.
+          |Use the speaker notes section of any slide to add it to the index.
+          |Any text starting with the hashtag symbol 
+          strong: em # 
+          |will be added to the index.
           br
-          |Also, you won't receive any schedule reminders or notes about shared schedules.
-        div(class="subsection-contents")
-          +snapshot("profile_email_001.png", 200)
-
-      +sectionHead("password", passwordText)
+          |The same hashtag may be used for multiple slides, and a slide may use 
+          |multiple hash tags.
+          +snapshot("slide-config001.png", 530)
+        
+      +sectionHead("configTOC", txtTOC)
       div(class="section-contents") 
         div(class="subsection-contents")
-          |Password length must be at least 8 and no more than 20 characters.
-          |You are asked to confirm your new password before changing.
-          |Note the 
-          em save 
-          |button won't be enabled until the two fields have valid and matching values.
+          |Use the speaker notes section of any slide to add it to the table of contents.
+          |You may specify either of two levels by using the note 
+          strong: em @main 
+          |or 
+          strong: em @sub
+          br
+          br
+          |In the example shown here the slide titled "Unit 2, lesson 3" will be included 
+          |in the table of contents at the secondary (@sub) level. The slide titled "Unit 2 overview" 
+          |has @main in its speaker notes.
+          +snapshot("slide-config002.png", 530)
+          strong: em **Note** 
+          |The text used in the table of contents is drawn from the title element for the slide.
+          |Be sure your slide includes a title element.
+          
+      +sectionHead("permissions", txtPermissions)
+      div(class="section-contents") 
         div(class="subsection-contents")
-          +snapshot("profile_changepassword_001.png", 200)
+          |To set the permissions for the slide deck. Choose 
+          em: strong File -> Open 
+          |from the Google Slides menu
+          +snapshot("slide-config003.png", 200)
+          
+        div(class="subsection-contents")
+          |Set the permissions to 
+          em "Anyone on the internet with this link can view"
+          |, then choose 
+          em: strong Copy link
+          +snapshot("slide-config004.png", 400)
+          
+        div(class="subsection-contents")
+          |You can now paste the link into the 
+          em Slide Indexer config tool 
+          |(see 
+          +linkToHelpSection("controls", "somesection", "configuring the presentation")
+          |)
+          br
+          strong: em **Note** 
+          |you do not have to publish the slide deck to the web.  The share link is sufficient.

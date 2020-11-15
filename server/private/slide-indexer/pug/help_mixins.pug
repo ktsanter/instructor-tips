@@ -35,3 +35,18 @@ mixin hotspotIcon()
 mixin pageName(name)
   em
     strong #{name} 
+
+mixin makeCode(codeText)
+  span(class="help-code") #{codeText}
+  
+mixin handlerForLinkToHelpSection
+  script
+    |function linkToHelpSection(helpPage, helpSection) {
+    |  var msg = helpPage + '|' + helpSection;
+    |  window.parent.postMessage(msg, '*');
+    |}
+    
+mixin linkToHelpSection(helpPage, helpSection, linkText)
+  - var funcCall = 'linkToHelpSection("' + helpPage + '", "' + helpSection + '")'
+  a(class="link-to-helpsection" href="#" onclick=funcCall) #{linkText}
+

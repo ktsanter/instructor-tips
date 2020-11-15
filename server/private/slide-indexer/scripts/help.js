@@ -13,7 +13,7 @@ const app = function () {
 	const page = {};
   
 	const settings = {
-    optionList: ['overview', 'controls', 'tags', 'slideconfig', 'embed', 'demo']
+    optionList: ['overview', 'controls', 'slideconfig', 'embed']
   };
   
 	//---------------------------------------
@@ -23,9 +23,12 @@ const app = function () {
 		page.body = document.getElementsByTagName('body')[0];
     page.body.classList.add('instructortips-colorscheme');
     
+    window.addEventListener('message', (e) => {_handleMessage(e);}, false);
+    
     page.body.appendChild(_renderPage());
 
     settings.navbar.selectOption('overview');
+    
 	}
 	
 	//-----------------------------------------------------------------------------
@@ -47,10 +50,8 @@ const app = function () {
       items: [
         {label: 'overview', callback: () => {return _navDispatch('overview');}, subitems: null, rightjustify: false},
         {label: 'controls', callback: () => {return _navDispatch('controls');}, subitems: null, rightjustify: false},
-        {label: 'using tags', callback: () => {return _navDispatch('tags');}, subitems: null, rightjustify: false},
         {label: 'slide configuration', callback: () => {return _navDispatch('slideconfig');}, subitems: null, rightjustify: false},
-        {label: 'link and embed code', callback: () => {return _navDispatch('embed');}, subitems: null, rightjustify: false},
-        {label: 'full demo', callback: () => {return _navDispatch('demo');}, subitems: null, rightjustify: false}
+        {label: 'embedding', callback: () => {return _navDispatch('embed');}, subitems: null, rightjustify: false}
       ],
       
       hamburgeritems: []
@@ -92,6 +93,15 @@ const app = function () {
     
     UtilityKTS.setClass(page[arg], 'help-hideme', false);
     _resizeIframe(page[arg]);
+  }
+  
+  //---------------------------------------
+	// calls from help content
+	//----------------------------------------
+  function _handleMessage(e) {
+    var message = e.data.split('|');
+    if (!message || message.length != 2) return;
+    settings.navbar.selectOption(message[0]);
   }
   
   //---------------------------------------

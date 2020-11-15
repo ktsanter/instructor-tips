@@ -184,3 +184,12 @@ body::-webkit-scrollbar-thumb:hover {
 
 
 
+/*-------------------------------------------------------------
+ * code styling
+ *------------------------------------------------------------*/
+.slide-indexer-help .help-code {
+  font-family: "Courier New", Courier, monospace;
+}
+
+
+
