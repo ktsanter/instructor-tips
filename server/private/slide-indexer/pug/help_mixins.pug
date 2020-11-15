@@ -42,9 +42,15 @@ mixin makeCode(codeText)
 mixin handlerForLinkToHelpSection
   script
     |function linkToHelpSection(helpPage, helpSection) {
-    |  var msg = helpPage + '|' + helpSection;
+    |  var msg = helpPage + '|' + helpSection;    
     |  window.parent.postMessage(msg, '*');
     |}
+    
+    |window.addEventListener("message", function(e) {
+    |    var msg = e.data; 
+    |    var elemTarget = document.getElementById(msg);
+    |    if (elemTarget) elemTarget.scrollIntoView();
+    |  }, false);
     
 mixin linkToHelpSection(helpPage, helpSection, linkText)
   - var funcCall = 'linkToHelpSection("' + helpPage + '", "' + helpSection + '")'

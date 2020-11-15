@@ -101,7 +101,23 @@ const app = function () {
   function _handleMessage(e) {
     var message = e.data.split('|');
     if (!message || message.length != 2) return;
+    
     settings.navbar.selectOption(message[0]);
+    var currentSubpage = _getCurrentSubpage();
+    if (currentSubpage) {
+      currentSubpage.contentWindow.postMessage(message[1], '*');
+    }
+  }
+  
+  function _getCurrentSubpage() {
+    var current = null;
+    
+    for (var i = 0; i < settings.optionList.length && !current; i++) {
+      var iframe = page[settings.optionList[i]];
+      if (!iframe.classList.contains('help-hideme')) current = iframe;
+    }
+    
+    return current;
   }
   
   //---------------------------------------

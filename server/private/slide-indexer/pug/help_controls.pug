@@ -9,6 +9,8 @@ html
       include ../../common/styles/colorscheme.css
       include ../styles/help-subpage.css
       
+    +handlerForLinkToHelpSection  
+      
   body(class="instructortips-colorscheme")
     - var linkAndEmbedText = "getting a link to the presentation or embed code"
     - var configText = "configuring the presentation"
@@ -35,7 +37,9 @@ html
           em
             strong not&nbsp;
           | the link to the published deck.  You do not have to publish the deck to the web 
-          |in order to use the Slide Indexer.
+          |in order to use the Slide Indexer.  The permissions should be set to viewable by anyone (see 
+          +linkToHelpSection("slide configuration", "permissions", "slide configuration -> setting permissions")
+          |)
 
         div(class="subsection-contents")
           strong table of contents
