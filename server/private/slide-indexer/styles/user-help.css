@@ -24,4 +24,42 @@ body {
   margin-bottom: 0.4em;  
 }
 
-.slide-indexer-user-help .contents {}
+.slide-indexer-user-help .contents {
+}
+
+
+/*-------------------------------------------------------------
+ * control section
+ *------------------------------------------------------------*/
+.slide-indexer-user-help .contents .control-section {
+  margin-bottom: 0.6em;
+}
+
+.slide-indexer-user-help .contents .control-section .note {
+  margin-left: 2.0em;
+}
+
+.slide-indexer-user-help .contents .control-section .note-leader {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.slide-indexer-user-help .contents .control-section .control-snapshot {
+  margin-right: 0.2em;
+}
+
+.slide-indexer-user-help .contents .control-section .control-snapshot-text {
+  vertical-align: top;
+}
+
+/*-------------------------------------------------------------
+ * icon
+ *------------------------------------------------------------*/
+.slide-indexer-user-help .contents .control-icon {
+  color: white;
+  background-color: #426296;
+  font-size: 1.2em;
+  padding: 0.2em;
+  margin-right: 0.4em;
+}
+
