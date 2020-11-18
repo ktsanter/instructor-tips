@@ -52,6 +52,14 @@ body {
   padding-top: 0.2em;
 }
 
+.slide-indexer .navigation .navicon.nextpage {
+  font-size: 1.2em;
+}
+
+.slide-indexer .navigation .navicon.prevpage {
+  font-size: 1.2em;
+}
+
 .slide-indexer .navigation .message {
   color: white;
   font-style: italic;

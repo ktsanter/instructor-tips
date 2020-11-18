@@ -133,6 +133,8 @@ const app = function () {
     page.navigationContainer.appendChild(page.message);
     
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right fas fa-external-link-alt', 'open in new tab', (e) => {_handleButton('newtab');}));
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon nextpage right fas fa-angle-right', 'next page', (e) => {_handleButton('nextpage');}));
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon prevpage right fas fa-angle-left', 'previous page', (e) => {_handleButton('prevpage');}));
   }
   
   function _renderIndex() {
@@ -240,7 +242,7 @@ const app = function () {
       console.log('invalid slide number: ' + slideNumber);
       return;
     }
-    
+        
     if (settings.currentSlideNumber >= 0) {
       var slide = page.slide[settings.currentSlideNumber];
       _hideElement(slide);
@@ -251,6 +253,15 @@ const app = function () {
     settings.currentSlideNumber = slideNumber;
     _showElement(page.presentationContainer);
     _showElement(page.slide[settings.currentSlideNumber]);
+    
+    var elem = page.body.getElementsByClassName('prevpage')[0];
+    _setVisibility(elem, true);
+    if (slideNumber == 0) _setVisibility(elem, false);
+    
+    elem = page.body.getElementsByClassName('nextpage')[0];
+    _setVisibility(elem, true);
+    if (slideNumber >= settings.presentationInfo.numSlides - 1) _setVisibility(elem, false);
+    
     _sizeNavbar();    
   }
   
@@ -339,9 +350,10 @@ const app = function () {
 	//----------------------------------------
   function _handleButton(action) {
     _showMessage('');
+    var currentSlide = parseInt(settings.currentSlideNumber);
 
     if (action == 'newtab') {
-      window.open(_makeSlideURL(settings.currentSlideNumber), '_blank');
+      window.open(_makeSlideURL(currentSlide), '_blank');
           
     } else {
       _hideElement(page.presentationContainer);
@@ -351,6 +363,18 @@ const app = function () {
       if (action == 'home') {
         _showElement(page.presentationContainer);
         _moveToSlideNumber(0);
+        
+      } else if (action == 'nextpage') {
+        _showElement(page.presentationContainer);
+        if (currentSlide < settings.presentationInfo.numSlides - 1) {
+          _moveToSlideNumber(currentSlide + 1);
+        }
+        
+      } else if (action == 'prevpage') {
+        _showElement(page.presentationContainer);
+        if (currentSlide > 0) {
+          _moveToSlideNumber(currentSlide - 1);
+        }
         
       } else if (action == 'index') {
         _showElement(page.indexContainer);
@@ -400,6 +424,13 @@ const app = function () {
   
   function _showElement(elem) {
     UtilityKTS.setClass(elem, 'hide-me', false);
+  }
+  
+  function _setVisibility(elem, visible) {
+    if (visible) 
+      elem.style.visibility = 'visible';
+    else
+      elem.style.visibility = 'hidden';
   }
   
   function _showMessage(txt) {
