@@ -133,6 +133,8 @@ const app = function () {
     page.navigationContainer.appendChild(page.message);
     
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right fas fa-external-link-alt', 'open in new tab', (e) => {_handleButton('newtab');}));
+    page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon right far fa-question-circle', 'help', (e) => {_handleButton('help');}));
+
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon nextpage right fas fa-angle-right', 'next page', (e) => {_handleButton('nextpage');}));
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon prevpage right fas fa-angle-left', 'previous page', (e) => {_handleButton('prevpage');}));
   }
@@ -275,6 +277,16 @@ const app = function () {
     return protocol + '//' + hostname + '/' + path + '/' + settings.presentationId + '/' + slideNumber + queryParams;
   }
   
+  function _makeHelpURL() {
+    var protocol = window.location.protocol;
+    var hostname = window.location.hostname;
+    if (hostname == 'localhost') hostname = 'localhost:8000';
+    var path = 'slide-indexer';
+    var filename = 'user-help';
+    
+    return protocol + '//' + hostname + '/' + path + '/' + filename;
+  }
+  
   function _copySlideURLToClipboard(slideNumber) {
     _copyToClipboard(_makeSlideURL(slideNumber));
   }
@@ -355,6 +367,9 @@ const app = function () {
     if (action == 'newtab') {
       window.open(_makeSlideURL(currentSlide), '_blank');
           
+    } else if (action == 'help') {
+      window.open(_makeHelpURL(), '_blank');
+      
     } else {
       _hideElement(page.presentationContainer);
       _hideElement(page.indexContainer);
