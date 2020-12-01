@@ -42,6 +42,7 @@ body {
 .slide-indexer-user-help .contents .control-section .note-leader {
   font-weight: bold;
   font-style: italic;
+  padding-right: 0.2em;
 }
 
 .slide-indexer-user-help .contents .control-section .control-snapshot {

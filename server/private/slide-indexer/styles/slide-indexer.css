@@ -80,7 +80,7 @@ body {
   margin-right: 0.4em;
 }
 
-/*-- display container (for presentation, index and TOC --*/
+/*-- display container for presentation, index and TOC --*/
 .slide-indexer .display-container {
   position: relative;
   width: 100%;    
@@ -115,6 +115,7 @@ body {
 }
 
 .slide-indexer .display-container .index-container .index-title {
+  display: inline-block;
   font-weight: bold;
   font-size: 1.2em;
   margin-bottom: 0.2em;
@@ -125,7 +126,7 @@ body {
 .slide-indexer .display-container .index-container .index-items .index-item-row {}
 
 .slide-indexer .display-container .index-container .index-items .index-item-row:nth-of-type(odd) {
-  background-color: white;
+  background-color: #ddd;
 }
 
 .slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell{}
@@ -165,6 +166,7 @@ body {
 }
 
 .slide-indexer .display-container .toc-container .toc-title {
+  display: inline-block;  
   font-weight: bold;
   font-size: 1.2em;
   margin-bottom: 0.2em;
@@ -174,10 +176,6 @@ body {
   width: 30em;
   padding-top: 0.2em;
   padding-bottom: 0.2em;
-}
-
-.slide-indexer .display-container .toc-container .toc-item:nth-of-type(even) {
-  background-color: white;
 }
 
 .slide-indexer .display-container .toc-container .toc-item .toc-mainitem {}

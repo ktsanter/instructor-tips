@@ -33,7 +33,8 @@ const app = function () {
     
     var expectedQueryParams = [
       {key: 'toc', required: false},
-      {key: 'index', required: false}
+      {key: 'index', required: false},
+      {key: 'altcontrol', required: false}
     ];
     
     if (_initializeSettings(expectedQueryParams)) {
@@ -48,6 +49,13 @@ const app = function () {
       } else {
         settings.index = ( settings.index.toLowerCase() == 'true' || settings.index == '1');
       }
+      
+      if (settings.altcontrol == null) {
+        settings.altcontrol = false;
+      } else {
+        settings.altcontrol = (settings.altcontrol.toLowerCase() == 'true' || settings.altcontrol == '1');
+      }
+      console.log(settings.altcontrol);
     
       page.notice.setNotice('loading configuration data...', true);
         
@@ -98,7 +106,10 @@ const app = function () {
     };
     window.addEventListener('resize', (e) => {_handleResize(e);});
     
+    settings.sharelinks = false;
+    
     _renderNavigation();
+    _configureDropdown();
     _renderIndex();
     _renderTableOfContents();
     _renderPresentation();
@@ -107,11 +118,13 @@ const app = function () {
     
     settings.currentSlideNumber = -1;
     _moveToSlideNumber(settings.initialSlideNumber);    
+        
+    _sizeDropdown();
   }
   
   function _renderNavigation() {
     page.navigationContainer = page.body.getElementsByClassName('navigation')[0];
-    _showElement(page.navigationContainer);
+    if (!settings.altcontrol) _showElement(page.navigationContainer);
 
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon fas fa-home', 'home', (e) => {_handleButton('home');}));
     if (settings.toc) {
@@ -137,6 +150,29 @@ const app = function () {
 
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon nextpage right fas fa-angle-right', 'next page', (e) => {_handleButton('nextpage');}));
     page.navigationContainer.appendChild(CreateElement.createIcon(null, 'navicon prevpage right fas fa-angle-left', 'previous page', (e) => {_handleButton('prevpage');}));
+  }
+  
+  function _configureDropdown() {
+    page.dropdown = page.body.getElementsByClassName('dropdown-container')[0];
+    
+    window.addEventListener('click', (e) => {_closeDropdown(e);});
+    page.body.getElementsByClassName('bwd-button')[0].addEventListener('click', (e) => {_handleButton('prevpage');});
+    page.body.getElementsByClassName('fwd-button')[0].addEventListener('click', (e) => {_handleButton('nextpage');});
+    
+    var dropdowns = page.body.getElementsByClassName('dropbtn');
+    for (var i = 0; i < dropdowns.length; i++) {
+      dropdowns[i].addEventListener('click', (e) => {_handleDropdown(e);});
+    }
+    
+    var items = page.body.getElementsByClassName('dropdown-item');
+    for (var i = 0; i < items.length; i++) {
+      items[i].addEventListener('click', (e) => {_handleDropdownItem(e)});
+    }
+    
+    var dropdown2 = page.body.getElementsByClassName('dropdown2');
+    for (var i = 0; i < dropdown2.length; i++) {
+      if (settings.altcontrol) _showElement(dropdown2[i]);
+    }
   }
   
   function _renderIndex() {
@@ -260,11 +296,20 @@ const app = function () {
     _setVisibility(elem, true);
     if (slideNumber == 0) _setVisibility(elem, false);
     
-    elem = page.body.getElementsByClassName('nextpage')[0];
+    elem = page.body.getElementsByClassName('fwd-button')[0];
     _setVisibility(elem, true);
     if (slideNumber >= settings.presentationInfo.numSlides - 1) _setVisibility(elem, false);
     
-    _sizeNavbar();    
+    var elem = page.body.getElementsByClassName('bwd-button')[0];
+    _setVisibility(elem, true);
+    if (slideNumber == 0) _setVisibility(elem, false);
+    
+    elem = page.body.getElementsByClassName('nextpage')[0];
+    _setVisibility(elem, true);
+    if (slideNumber >= settings.presentationInfo.numSlides - 1) _setVisibility(elem, false);
+
+    _sizeNavbar();   
+    _sizeDropdown();    
   }
   
   function _makeSlideURL(slideNumber) {
@@ -301,6 +346,15 @@ const app = function () {
         _hideElement(elem);
       }
     }
+    
+    var sharelinkIcons = page.body.getElementsByClassName('sharelinks-icon');
+    for (var i = 0; i < sharelinkIcons.length; i++) {
+      if (share) {
+        _showElement(sharelinkIcons[i]);
+      } else {
+        _hideElement(sharelinkIcons[i]);
+      }
+    }    
   }
   
   function _sizeSlides() {
@@ -344,17 +398,17 @@ const app = function () {
   
   function _sizeNavbar() {
     // now set to fixed size in CSS
-    /*
-    // set navbar's width to that of current slide + fudge factor
-    var navbar = page.navigationContainer;
+  }
 
-    var slideWidthValue = settings.currentSlideWidth.toString();
-    var slideWidthUnit = 'px';
-    
-    var fudgeFactor = 0;
-    var navbarWidth = (slideWidthValue + fudgeFactor) + slideWidthUnit;
-    navbar.style.width = navbarWidth;
-    */
+  function _sizeDropdown() {
+    var dropdown = page.body.getElementsByClassName('dropdown-container')[0];
+
+    var fudgeFactor = -55;
+    var widthValue = (settings.currentSlideWidth + fudgeFactor).toString();
+    var widthUnit = 'px';
+
+    page.dropdown.style.left = widthValue + widthUnit;
+    if (settings.altcontrol) _showElement(page.dropdown);
   }
   
   //----------------------------------------
@@ -428,6 +482,43 @@ const app = function () {
   function _handleResize(e) {
     _sizeSlides();
     _sizeNavbar();
+    _sizeDropdown();
+  }
+  
+  function _handleDropdown(e) {
+    var content = e.target.parentNode.getElementsByClassName('dropdown-content')[0];
+    
+    content.classList.toggle("show");
+  }
+
+  function _closeDropdown(e) {
+    if (!e.target.matches('.dropbtn')) {
+      var dropdowns = document.getElementsByClassName("dropdown-content");
+
+      for (var i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains('show')) {
+          openDropdown.classList.remove('show');
+        }
+      }
+    }
+  }    
+  
+  function _handleDropdownItem(e) {
+    if (e.target.classList.contains('dropdown-home')) {
+      _handleButton('home');
+    } else if (e.target.classList.contains('dropdown-contents')) {
+      _handleButton('toc');
+    } else if (e.target.classList.contains('dropdown-index')) {
+      _handleButton('index');
+    } else if (e.target.classList.contains('dropdown-share')) {
+      settings.sharelinks = !settings.sharelinks;
+      _setShareLinksView(settings.sharelinks);
+    } else if (e.target.classList.contains('dropdown-newtab')) {
+      _handleButton('newtab');
+    } else if (e.target.classList.contains('dropdown-help')) {
+      _handleButton('help');
+    }    
   }
     
   //----------------------------------------

@@ -9,6 +9,7 @@ html(lang="en")
     style
       include ../styles/standard_notice.css
       include ../styles/toggle-slider.css
+      include ../styles/dropdown.css
       include ../styles/slide-indexer.css
       
     link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")      
@@ -27,13 +28,47 @@ html(lang="en")
       div(class="navigation hide-me")
         
       div(class="display-container")
+        div(class="dropdown-container hide-me")
+          div(class="dropdown")
+            i(class="dd-button bwd-button fas fa-angle-left" title="previous page")
+            i(class="dd-button fwd-button fas fa-angle-right" title="next page")
+            i(class="dropbtn fas fa-bars" title="options")
+            div(class="dropdown-content")
+              div(class="dropdown-item dropdown-home") home
+              div(class="dropdown-item dropdown-contents") contents
+              div(class="dropdown-item dropdown-index") index
+              div(class="dropdown-item dropdown-share") share links
+                i(class="sharelinks-icon fas fa-check hide-me")
+              div(class="dropdown-item dropdown-newtab") open in new window
+              div(class="dropdown-item dropdown-help") help
+
         div(class="presentation-container hide-me")
         
         div(class="index-container hide-me")
+          div(class="dropdown2 hide-me")
+            i(class="dropbtn fas fa-bars" title="options")
+            div(id="myDropdown" class="dropdown-content")
+              div(class="dropdown-item dropdown-home") home
+              div(class="dropdown-item dropdown-contents") contents
+              div(class="dropdown-item dropdown-index") index
+              div(class="dropdown-item dropdown-share") share links
+                i(class="sharelinks-icon fas fa-check hide-me")
+              div(class="dropdown-item dropdown-newtab") open in new window
+              div(class="dropdown-item dropdown-help") help
           div(class="index-title") Index
           table(class="index-items")
         
         div(class="toc-container hide-me")
+          div(class="dropdown2 hide-me")
+            i(class="dropbtn fas fa-bars" title="options")
+            div(id="myDropdown" class="dropdown-content")
+              div(class="dropdown-item dropdown-home") home
+              div(class="dropdown-item dropdown-contents") contents
+              div(class="dropdown-item dropdown-index") index
+              div(class="dropdown-item dropdown-share") share links
+                i(class="sharelinks-icon fas fa-check hide-me")
+              div(class="dropdown-item dropdown-newtab") open in new window
+              div(class="dropdown-item dropdown-help") help
           div(class="toc-title") Table of Contents
 
 
