@@ -538,6 +538,10 @@ app.get('/slide-indexer/:subpage', function (req, res) {
     var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/user-help.pug');
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {} );
     
+  } else if (req.params.subpage == 'user-help2') {
+    var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/user-help2.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {} );
+    
   } else if (req.params.subpage == 'config') {
     var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer-config.pug');
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {} );

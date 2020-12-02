@@ -27,7 +27,6 @@ body {
 .slide-indexer-user-help .contents {
 }
 
-
 /*-------------------------------------------------------------
  * control section
  *------------------------------------------------------------*/
@@ -51,6 +50,15 @@ body {
 
 .slide-indexer-user-help .contents .control-section .control-snapshot-text {
   vertical-align: top;
+}
+
+.slide-indexer-user-help .contents .control-section.sub-section {
+  margin-left: 2.0em;
+}
+
+.slide-indexer-user-help .contents .control-section.sub-section .menu-label {
+  font-weight: bold;
+  padding-right: 0.8em;
 }
 
 /*-------------------------------------------------------------

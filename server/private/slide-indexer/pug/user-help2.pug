@@ -1,0 +1,69 @@
+include help_mixins.pug
+
+doctype html
+html
+  head
+    title Slide Indexer user help
+    meta(charset="utf-8")
+    
+    link(rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous")
+
+    style
+      include ../styles/user-help.css
+      
+  body(class="colorscheme")    
+    div(class="slide-indexer-user-help")
+      
+      div(class="title")
+        |Slide Indexer help
+        
+      div(class="contents")
+        div(class="control-section")
+          i(class="control-icon fas fa-angle-left")
+          i(class="control-icon fas fa-angle-right")
+          |Use these to move forward or backward one page in the presentation.
+
+        br
+
+        div(class="control-section")
+          img(class="control-snapshot" src="/images/slide-indexer/altcontrol002.png" width=26)
+          span(class="control-snapshot-text")
+            |The options menu lets you access additional features of the presentation
+            
+        div(class="control-section sub-section")
+          span(class="menu-label") home
+          span(class="menu-content") displays the first page in the presentation
+
+        div(class="control-section sub-section")
+          span(class="menu-label") contents
+          span(class="menu-content")
+            |brings up a list of the major sections and subsections in the presentation.
+            |You can use it to jump directly to a particular section. 
+            em Note: 
+            |this feature may not be available in your presentation
+
+        div(class="control-section sub-section")
+          span(class="menu-label") index
+          span(class="menu-content")
+            |brings up a list of words and phrases from the presentation. 
+            |You can use it to jump directly to a particular topic 
+            em Note: 
+            |this feature may not be available in your presentation
+
+        div(class="control-section sub-section")
+          span(class="menu-label") share links
+          span(class="menu-content")
+            |When this is turned on you can get a direct link to a specific page in the presentation 
+            |from the table of contents or index. 
+            em Note: 
+            |this feature is only displayed for the index and table of contents and may not be available in your presentation
+
+        div(class="control-section sub-section")
+          span(class="menu-label") open in new window
+          span(class="menu-content")
+            |use this to open the presentation in its own browser tab
+
+        div(class="control-section sub-section")
+          span(class="menu-label") help
+          span(class="menu-content")
+            |brings up this help page.

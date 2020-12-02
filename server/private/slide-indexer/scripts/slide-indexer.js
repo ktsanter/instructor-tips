@@ -2,7 +2,8 @@
 // Slide indexer
 // present Google Slide deck along with indexing interface
 //-------------------------------------------------------------------
-// TODO: add scaling for presentation iframe and other containers to suit
+// TODO: color specification for dropdown menus
+// TODO: alternative help for altcontrol
 //-------------------------------------------------------------------
 
 const app = function () {
@@ -55,7 +56,6 @@ const app = function () {
       } else {
         settings.altcontrol = (settings.altcontrol.toLowerCase() == 'true' || settings.altcontrol == '1');
       }
-      console.log(settings.altcontrol);
     
       page.notice.setNotice('loading configuration data...', true);
         
@@ -172,6 +172,33 @@ const app = function () {
     var dropdown2 = page.body.getElementsByClassName('dropdown2');
     for (var i = 0; i < dropdown2.length; i++) {
       if (settings.altcontrol) _showElement(dropdown2[i]);
+    }
+    
+    var menuEntries = page.body.getElementsByClassName('dropdown-contents');
+    for (var i = 0; i < menuEntries.length; i++) {
+      if (settings.toc) {
+        _showElement(menuEntries[i]);
+      } else {
+        _hideElement(menuEntries[i]);
+      }
+    }
+
+    var menuEntries = page.body.getElementsByClassName('dropdown-index');
+    for (var i = 0; i < menuEntries.length; i++) {
+      if (settings.index) {
+        _showElement(menuEntries[i]);
+      } else {
+        _hideElement(menuEntries[i]);
+      }
+    }
+
+    var menuEntries = page.body.getElementsByClassName('dropdown-share');
+    for (var i = 0; i < menuEntries.length; i++) {
+      if (settings.toc || settings.index) {
+        _showElement(menuEntries[i]);
+      } else {
+        _hideElement(menuEntries[i]);
+      }
     }
   }
   
@@ -328,6 +355,7 @@ const app = function () {
     if (hostname == 'localhost') hostname = 'localhost:8000';
     var path = 'slide-indexer';
     var filename = 'user-help';
+    if (settings.altcontrol) filename = 'user-help2';
     
     return protocol + '//' + hostname + '/' + path + '/' + filename;
   }
