@@ -2,8 +2,8 @@
 // Slide indexer
 // present Google Slide deck along with indexing interface
 //-------------------------------------------------------------------
-// TODO: color specification for dropdown menus
-// TODO: alternative help for altcontrol
+// TODO: color specification for dropdown menus (?)
+// TODO: size altcontrol icons based on slide size (for presentation only)
 //-------------------------------------------------------------------
 
 const app = function () {

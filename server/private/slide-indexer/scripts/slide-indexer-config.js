@@ -59,6 +59,9 @@ const app = function () {
 
     elem = page.body.getElementsByClassName('index-control')[0];
     elem.addEventListener('click', (e) => {_handleOptionChange();});    
+
+    elem = page.body.getElementsByClassName('altcontrol-control')[0];
+    elem.addEventListener('click', (e) => {_handleOptionChange();});    
   }
   
   //----------------------------------------
@@ -103,7 +106,10 @@ const app = function () {
         var index = 'index=false';
         if (_isChecked('index-control')) index = 'index=true';
         
-        var queryParams = '?' + toc + '&' + index;
+        var altcontrol = 'altcontrol=false';
+        if (_isChecked('altcontrol-control')) altcontrol = 'altcontrol=true';
+        
+        var queryParams = '?' + toc + '&' + index + '&' + altcontrol;
         url = protocol + '//' + hostname + '/' + path + '/' + id + queryParams;
       }
     }
