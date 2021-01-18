@@ -1,0 +1,38 @@
+/*-------------------------------------------------------------------
+ * styling for Roster Manager app
+ *------------------------------------------------------------------*/
+.colorscheme {
+  --MVdeepteal: #093c44;
+  --MVdarkteal: #115e6e;
+  --MVlightteal: #2f8d98;
+  --MVgreen: #b5cd34;
+  --MVorange: #f7941e;
+  --MVdarkgray: #414042;
+  --MVlightgray: #6d6e71;
+  --MVwhite: #ffffff;
+}
+
+body {
+	color: var(--MVblack);
+	background-color: #eee;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+	margin-right: 2.0em;
+}
+
+/*-------------------------------------------------------------------
+ * title bar
+ *------------------------------------------------------------------*/
+.titlecontainer {
+  color: var(--MVwhite);
+  background-color: var(--MVdeepteal);
+  border-radius: 3px;
+  padding: 0.2em 0;
+}
+
+.titlecontainer .titletext {
+  display: inline-block;
+  font-size: 1.2em;
+  padding-left: 0.2em;
+  padding-right: 0.4em;
+}

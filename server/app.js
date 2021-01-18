@@ -571,6 +571,16 @@ app.get('/slide-indexer/:presentationid/:slidenumber', function (req, res) {
   });
 })
 
+app.get('/roster-manager', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.post('/roster-manager/submitform', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/dummy.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
 app.get('/cte-department/home', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'cte-department/pug/cte-department.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {});
