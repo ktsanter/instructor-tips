@@ -18,7 +18,7 @@ const app = function () {
   // page rendering
   //-----------------------------------------------------------------------------  
   async function _initControls(attachHandlers) {
-	  page.body.appendChild(CreateElement.createDiv(null, null, 'test'));
+	  page.body.appendChild(CreateElement.createDiv(null, null, 'this was added by client-side script'));
 	  /*
     await _loadCourseList()
     

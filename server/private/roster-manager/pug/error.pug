@@ -1,0 +1,24 @@
+- var formname = params.formname
+- var description = params.description
+
+doctype html
+html(lang="en")
+  head
+    title Roster Manager error
+    meta(charset="utf-8")
+
+    style
+      include ../styles/roster-manager.css
+      
+  body(class="colorscheme") 
+    .titlecontainer
+        .titletext
+            |Roster manager - processing error
+            
+    .error-formname=formname
+    .error-description=description
+    br
+    .return-link
+      |return to 
+      a(href='/roster-manager')
+        |Roster Manager

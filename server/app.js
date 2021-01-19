@@ -217,6 +217,7 @@ const cronScheduler = new cronSchedulerClass({
 // RosterManager
 //------------------------------------------
 const formidable = require('formidable');
+const exceljs = require('exceljs');
 const rosterManagerClass = require('./classes/roster-manager')
 const rosterManager = new rosterManagerClass({tempFileManager: tmp, formManager: formidable});
 
@@ -583,14 +584,26 @@ app.get('/roster-manager', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.post('/roster-manager/submitform', function (req, res) {
-    console.log('app.post for submitform');
-    console.log(req.body);
-    
-  var success = rosterManager.processUploadedFile(req);
-  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/dummy.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+app.post('/roster-manager/:formname', function (req, res) {
+  rosterManager.processUploadedFile(req, res, processRosterManagerResult); 
 })
+
+async function processRosterManagerResult(req, res, result) {
+  if (result.success) {
+    var fileName = 'FileName.xlsx';
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+    await result.workbook.xlsx.write(res);
+
+    res.end();
+    
+  } else {
+    var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/error.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {formname: result.formname, description: result.description}});
+  }
+}
 
 app.get('/cte-department/home', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'cte-department/pug/cte-department.pug');
