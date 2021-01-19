@@ -580,16 +580,21 @@ app.get('/slide-indexer/:presentationid/:slidenumber', function (req, res) {
 })
 
 app.get('/roster-manager', function (req, res) {
+  console.log('\napp.post for /roster-manager');
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
 app.post('/roster-manager/:formname', function (req, res) {
+  console.log('\napp.post for /roster-manager/:formname');
   rosterManager.processUploadedFile(req, res, processRosterManagerResult); 
 })
 
 async function processRosterManagerResult(req, res, result) {
+  console.log('\nprocessRosterManagerResult: ');
+  
   if (result.success) {
+    console.log('success');
     var fileName = 'FileName.xlsx';
 
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
@@ -600,6 +605,7 @@ async function processRosterManagerResult(req, res, result) {
     res.end();
     
   } else {
+    console.log('failure');
     var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/error.pug');
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {formname: result.formname, description: result.description}});
   }

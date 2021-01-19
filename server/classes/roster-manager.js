@@ -63,15 +63,32 @@ module.exports = internal.RosterManager = class {
 //---------------------------------------------------------------    
   _processMentorForm(req, res, result, workbook, fields, callback) {
     var worksheet = workbook.getWorksheet(1);
+    var requiredColumns = new Set([
+      'Student_Name',
+      'Section_Name',
+      'Term_Name',
+      'Mentor/Guardian',
+      'Mentor Email'
+    ]);
+
+    var validate = this._verifyHeaderRow(worksheet.getRow(1), requiredColumns);
+    if (!validate.success) {
+      result.success = false;
+      result.description = 'one or more expected columns is missing';
+      callback(req, res, result);
+      return;
+    }
+    
+    var columnMapping = validate.columnInfo;
+    console.log(columnMapping);
+    
     var row = worksheet.getRow(14);
     var cell = row.getCell(6);
 
-    console.log('_processMentorForm:');
     result.success = true;
     result.description = cell.value;
     result.workbook = workbook;
     
-    console.log('fields');
     console.log(fields);
     
     callback(req, res, result);
@@ -83,5 +100,33 @@ module.exports = internal.RosterManager = class {
           row.commit();
           return workbook.xlsx.writeFile('new.xlsx');
           */        
+  }
+  
+  _verifyHeaderRow(headerRow, requiredColumns) {
+    var result = {
+      success: false,
+      columnInfo: {}
+    };
+    
+    var foundColumns = new Set();
+    var columnMapping = {};
+    
+    for (var i = 0; i < headerRow.values.length; i++) {
+      var columnName = headerRow.getCell(i + 1).value;
+      if (columnName) {
+        foundColumns.add(headerRow.getCell(i+1).value);
+        columnMapping[columnName] = i + 1;
+      }
+    }
+    
+    const difference = new Set(
+      [...requiredColumns].filter(x => !foundColumns.has(x)));
+
+    if (difference.size == 0) {
+      result.success = true;
+      result.columnInfo = columnMapping;
+    }
+    
+    return result;
   }
 }

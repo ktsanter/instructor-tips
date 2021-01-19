@@ -15,8 +15,11 @@ html(lang="en")
         .titletext
             |Roster manager - processing error
             
-    .error-formname=formname
+    .error-formname
+      |request type: #{formname}
+      
     .error-description=description
+    
     br
     .return-link
       |return to 
