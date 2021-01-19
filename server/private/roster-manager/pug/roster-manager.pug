@@ -25,8 +25,8 @@ html(lang="en")
         .titletext
             |Roster manager
             
-    form(class="userform filesubmitform" action="roster-manager/submitform" method="post")
-        input(type="file" class="file-select" name="roster-file" accept=".xls,.xlsx")
+    form(class="userform filesubmitform" action="roster-manager/submitform" enctype="multipart/form-data" method="post")
+        input(type="file" class="file-select" name="roster-file" accept=".xls,.xlsx" required)
         .submit-region
             input(class="form-submit" type="submit" value="upload")
         

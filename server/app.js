@@ -214,6 +214,13 @@ const cronScheduler = new cronSchedulerClass({
 });
 
 //------------------------------------------
+// RosterManager
+//------------------------------------------
+const formidable = require('formidable');
+const rosterManagerClass = require('./classes/roster-manager')
+const rosterManager = new rosterManagerClass({tempFileManager: tmp, formManager: formidable});
+
+//------------------------------------------
 // InstructorTips admin query objects
 //------------------------------------------
 const dbAdminQueryClass = require('./classes/dbadmin_query')
@@ -577,6 +584,10 @@ app.get('/roster-manager', function (req, res) {
 })
 
 app.post('/roster-manager/submitform', function (req, res) {
+    console.log('app.post for submitform');
+    console.log(req.body);
+    
+  var success = rosterManager.processUploadedFile(req);
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/dummy.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
