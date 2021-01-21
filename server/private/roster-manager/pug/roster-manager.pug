@@ -18,12 +18,35 @@ html(lang="en")
         .titletext
             |Roster manager
             
+    form(class="userform studentform" action="roster-manager/student" enctype="multipart/form-data" method="post")
+      .form-title student report
+      
+      .form-row
+        label(for="student-report-file" class="formfield-label") student report file
+        input(type="file" class="file-select" name="student-report-file" accept=".xlsx" required title="student report file to process")
+        
+      .form-row
+        label(for="chkStudentCompare" class="formfield-label") compare to...
+        input(type="checkbox" id="chkStudentCompare" class="check-student-compare" title="optionally compare to older file")
+        .suboption.student-compare(class="hide-me")
+          input(type="file" class="file-select student-report-file2" name="student-report-file2" accept=".xlsx" title="older student report file for comparison")
+        
+      .form-row.submit-region
+        input(class="form-submit" type="submit" value="process")
+        
     form(class="userform mentorform" action="roster-manager/mentor" enctype="multipart/form-data" method="post")
-      .form-name
-        input(type="file" class="file-select" name="mentor-report-file" accept=".xlsx" required)
-      .other-param
-        |other field
-        input(type="text" name="txtTest")
-      .submit-region
-        input(class="form-submit" type="submit" value="upload")
+      .form-title mentor report
+      
+      .form-row
+        label(for="mentor-report-file" class="formfield-label") mentor report file
+        input(type="file" class="file-select" name="mentor-report-file" accept=".xlsx" required title="mentor report file to process")
+        
+      .form-row
+        label(for="chkMentorCompare" class="formfield-label") compare to...
+        input(type="checkbox" id="chkMentorCompare" class="check-mentor-compare" title="optionally compare to older file")
+        .suboption.mentor-compare(class="hide-me")
+          input(type="file" class="file-select mentor-report-file2" name="mentor-report-file2" accept=".xlsx" title="older mentor report file for comparison")
+        
+      .form-row.submit-region
+        input(class="form-submit" type="submit" value="process")
         

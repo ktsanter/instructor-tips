@@ -10,6 +10,7 @@
   --MVdarkgray: #414042;
   --MVlightgray: #6d6e71;
   --MVwhite: #ffffff;
+  --verylightgray: #bbb;
 }
 
 body {
@@ -20,6 +21,10 @@ body {
 	margin-right: 2.0em;
 }
 
+.hide-me {
+  visibility: hidden;
+}
+
 /*-------------------------------------------------------------------
  * title bar
  *------------------------------------------------------------------*/
@@ -28,6 +33,7 @@ body {
   background-color: var(--MVdeepteal);
   border-radius: 3px;
   padding: 0.2em 0;
+  margin-bottom: 0.4em;
 }
 
 .titlecontainer .titletext {
@@ -35,4 +41,37 @@ body {
   font-size: 1.2em;
   padding-left: 0.2em;
   padding-right: 0.4em;
+}
+
+/*-------------------------------------------------------------------
+ * forms
+ *------------------------------------------------------------------*/
+.userform {
+  border: 1px solid var(--verylightgray);
+  padding-left: 0.2em;
+  margin-bottom: 0.6em;
+}
+
+.userform .form-title {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.userform .form-row {
+  margin-bottom: 0.2em;
+}
+
+.userform .formfield-label {
+  display: inline-block;
+  width: 9.0em;
+}
+
+.userform .file-select {
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;  
+}
+
+.userform .form-row .suboption {
+  display: inline-block;
+  margin-left: 0.4em;
 }

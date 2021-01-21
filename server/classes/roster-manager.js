@@ -3,6 +3,7 @@
 // server-side for roster manager 
 //---------------------------------------------------------------
 // TODO: optionally strip _MENTOR from emails?
+// TODO: consider sorting output sheet data
 //---------------------------------------------------------------
 const internal = {};
 
@@ -18,6 +19,12 @@ module.exports = internal.RosterManager = class {
     this.colMentor_Term = 'Term_Name';
     this.colMentor_Mentor = 'Mentor/Guardian';
     this.colMentor_Email = 'Mentor Email';    
+    
+    this.tabname = {
+      mentorsByStudent: 'mentors by student',
+      mentorsBySection: 'mentors by section',
+      comparison: 'new-old comparison'
+    };
   }
   
 //---------------------------------------------------------------
@@ -35,8 +42,19 @@ module.exports = internal.RosterManager = class {
       }
 
       var filePath;
+      var filePathCompare;
+      var fileName;
+      var fileNameCompare;
+      
       if (formName == 'mentor') {
-        filePath = files['mentor-report-file'].path;        
+        filePath = files['mentor-report-file'].path;
+        fileName = files['mentor-report-file'].name;
+        
+        var fileCompare = files['mentor-report-file2' ];
+        if (fileCompare.name != '') {
+          filePathCompare = fileCompare.path;
+          fileNameCompare = fileCompare.name;
+        }
       }
 
       if (!filePath) {
@@ -49,8 +67,14 @@ module.exports = internal.RosterManager = class {
       await workbook.xlsx.readFile(filePath);
       workbook.clearThemes();
       
+      var workbookCompare;
+      if (filePathCompare) {
+        workbookCompare = new exceljs.Workbook();
+        await workbookCompare.xlsx.readFile(filePathCompare);
+      }
+      
       if (formName == 'mentor') {
-        thisObj._processMentorForm(req, res, workbook, fields, callback);
+        thisObj._processMentorForm(req, res, workbook, workbookCompare, fileName, fileNameCompare, fields, callback);
       }
     });
   }
@@ -85,7 +109,7 @@ module.exports = internal.RosterManager = class {
 //------------------------------------------------------------------------------
 // mentor report processing
 //------------------------------------------------------------------------------
-  _processMentorForm(req, res, workbook, fields, callback) {
+  _processMentorForm(req, res, workbook, workbookCompare, filename, filenamecompare, fields, callback) {
     var thisObj = this;    
     var worksheet = workbook.getWorksheet(1);
 
@@ -103,8 +127,13 @@ module.exports = internal.RosterManager = class {
     
     mentorData = this._collateMentorInfoBySection(worksheet, columnMapping);
     this._addMentorsBySectionSheet(workbook, mentorData);
+    
+    if (workbookCompare) {
+      var worksheetCompare = workbookCompare.getWorksheet(1);
+      this._addMentorComparison(workbook, worksheet, worksheetCompare, filename, filenamecompare, columnMapping);
+    }
         
-    this._successCallback(req, res, 'success', workbook, 'mentor-info.xlsx', callback);
+    this._successCallback(req, res, 'success', workbook, 'collated-mentor-report.xlsx', callback);
   }
   
   _collateMentorInfoByStudent(worksheet, columnMapping) {
@@ -194,7 +223,8 @@ module.exports = internal.RosterManager = class {
   }
   
   _addMentorsByStudentSheet(workbook, mentorData) {
-    var sheet = workbook.addWorksheet('mentors by student');
+    var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorsByStudent);
+    
     sheet.columns = [ {width: 28}, {width: 35}, {width: 40}, {width: 18}, {width: 22}, {width: 35} ];
     sheet.addRow(['student', 'term', 'section', 'combined emails', 'mentor', 'email', 'additional...']);
     sheet.getRow(1).font = {bold: true};
@@ -224,7 +254,7 @@ module.exports = internal.RosterManager = class {
   }
   
   _addMentorsBySectionSheet(workbook, mentorData) {
-    var sheet = workbook.addWorksheet('mentors by section');
+    var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorsBySection);
     sheet.columns = [ {width: 50}, {width: 35} ];
     
     for (var term in mentorData) {
@@ -247,10 +277,104 @@ module.exports = internal.RosterManager = class {
       }
     }
   }
+  
+  _addMentorComparison(workbook, wsNew, wsOld, filenameNew, filenameOld, columnMapping) {
+    var newMentorData = new Set(this._stringifyMentorData(wsNew, columnMapping));
+    var oldMentorData = new Set(this._stringifyMentorData(wsOld, columnMapping));
+    
+    var difference1 = new Set(
+      [...newMentorData].filter(x => !oldMentorData.has(x)));
+
+    var difference2 = new Set(
+      [...oldMentorData].filter(x => !newMentorData.has(x)));
+      
+    var arr1 = this._unstringifyMentorData(difference1);
+    var arr2 = this._unstringifyMentorData(difference2);
+
+    var sheet = this._createOrReplaceSheet(workbook, this.tabname.comparison);
+    sheet.columns = [ {width: 45}, {width: 50}, {width: 25}, {width: 25} ];
+    
+    sheet.addRow(['records in ' + filenameNew + ' but not in ' + filenameOld]);
+    sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    sheet.addRow(['term', 'section', 'student', 'mentor']);
+    sheet.getRow(sheet.rowCount).font = {bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    for (var i = 0; i < arr1.length; i++) {
+      var item = arr1[i];
+      sheet.addRow([item.term, item.section, item.student, item.mentor]);
+    }
+
+    sheet.addRow(['']);
+
+    sheet.addRow(['records in ' + filenameOld + ' but not in ' + filenameNew]);
+    sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    sheet.addRow(['term', 'section', 'student', 'mentor']);
+    sheet.getRow(sheet.rowCount).font = {bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    for (var i = 0; i < arr2.length; i++) {
+      var item = arr2[i];
+      sheet.addRow([item.term, item.section, item.student, item.mentor]);
+    }
+  }
+  
+  _stringifyMentorData(worksheet, columnMapping) {
+    var thisObj = this;      
+    var mentorData = [];
+    
+    worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+      if (rowNumber != 1) {
+        var student = row.getCell(columnMapping[thisObj.colMentor_Student]).value;
+        var term = row.getCell(columnMapping[thisObj.colMentor_Term]).value;
+        var section = row.getCell(columnMapping[thisObj.colMentor_Section]).value;
+        var mentor = row.getCell(columnMapping[thisObj.colMentor_Mentor]).value;
+        
+        mentorData.push(student + '|' + term + '|' + section + '|' + mentor);
+        
+      }
+    });
+    
+    return mentorData;
+  }  
+  
+  _unstringifyMentorData(mentorData) {
+    var arrMentorData = [];
+    
+    mentorData.forEach(function(item, index) {
+      var splitData = item.split('|');
+      arrMentorData.push({
+        student: splitData[0],
+        term: splitData[1],
+        section: splitData[2],
+        mentor: splitData[3]
+      });
+    });
+    
+    arrMentorData = arrMentorData.sort(function(a, b) {
+      var compare = a.term.localeCompare(b.term);
+      if (compare != 0) return compare;
+
+      compare = a.section.localeCompare(b.section);
+      if (compare != 0) return compare;
+
+      compare = a.student.localeCompare(b.student);
+      if (compare != 0) return compare;
+      
+      return a.mentor.localeCompare(b.mentor);
+    });
+    
+    return arrMentorData;
+  }
+  
 
 //----------------------------------------------------------------------
 // utility
-//----------------------------------------------------------------------
+//----------------------------------------------------------------------  
   _verifyHeaderRow(headerRow, requiredColumns) {
     var result = {
       success: false,
@@ -294,5 +418,14 @@ module.exports = internal.RosterManager = class {
     }
     
     return student;
+  }
+  
+  _createOrReplaceSheet(workbook, sheetId) {
+    var sheet = workbook.getWorksheet(sheetId);
+  
+    if (sheet) workbook.removeWorksheet(sheetId);   
+    sheet = workbook.addWorksheet(sheetId);
+      
+    return sheet;
   }
 }
