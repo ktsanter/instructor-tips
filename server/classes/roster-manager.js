@@ -4,8 +4,7 @@
 //---------------------------------------------------------------
 // TODO: optionally strip _MENTOR from emails?
 // TODO: consider sorting output sheet data
-// TODO: escape | in mentor fields
-// TODO: validate headers in comparison files
+// TODO: escape | in mentor fields (comparison)
 //---------------------------------------------------------------
 const internal = {};
 
@@ -35,7 +34,8 @@ module.exports = internal.RosterManager = class {
       mentorsBySection: 'mentors by section',
       mentorcomparison: 'new-old comparison',
       
-      enrollment: 'enrollments'
+      enrollment: 'enrollments',
+      enrollmentcomparison: 'new-old comparison'
     };
   }
   
@@ -162,7 +162,13 @@ module.exports = internal.RosterManager = class {
     
     if (workbookCompare) {
       var worksheetCompare = workbookCompare.getWorksheet(1);
-      console.log('validate headers on comparison sheet');
+      
+      var validate = this._verifyHeaderRow(worksheetCompare.getRow(1), requiredColumns);
+      if (!validate.success) {
+        this._failureCallback(req, res, 'one or more expected columns is missing on comparison sheet', callback);
+        return;
+      }
+      
       this._addMentorComparison(workbook, worksheet, worksheetCompare, filename, filenamecompare, columnMapping);
     }
         
@@ -428,30 +434,22 @@ module.exports = internal.RosterManager = class {
     }
     
     var columnMapping = validate.columnInfo;
-    console.log('collate enrollment data, sort by section and student');
-    var enrollmentData = this._collateEnrollmentInfo(worksheet, columnMapping);
-    console.log(enrollmentData);
-    
-    console.log('add collated student sheet');
-    this._addEnrollmentSheet(workbook, enrollmentData);
-    
-    console.log('conditionally compare new to old roster');
-    console.log('be sure to validate headers on old roster');
-    console.log('add comparison sheet');
 
-    /*
-    
-    var mentorData = this._collateMentorInfoByStudent(worksheet, columnMapping);
-    this._addMentorsByStudentSheet(workbook, mentorData);
-    
-    mentorData = this._collateMentorInfoBySection(worksheet, columnMapping);
-    this._addMentorsBySectionSheet(workbook, mentorData);
-    
+    var enrollmentData = this._collateEnrollmentInfo(worksheet, columnMapping);
+    this._addEnrollmentSheet(workbook, enrollmentData);
+
     if (workbookCompare) {
       var worksheetCompare = workbookCompare.getWorksheet(1);
-      this._addMentorComparison(workbook, worksheet, worksheetCompare, filename, filenamecompare, columnMapping);
+
+      var validate = this._verifyHeaderRow(worksheetCompare.getRow(1), requiredColumns);
+      if (!validate.success) {
+        this._failureCallback(req, res, 'one or more expected columns is missing on comparison sheet', callback);
+        return;
+      }
+
+      this._addEnrollmentComparison(workbook, worksheet, worksheetCompare, filename, filenamecompare, columnMapping);
     }
-    */  
+
     this._successCallback(req, res, 'success', workbook, 'collated-enrollment-report.xlsx', callback);
   }
   
@@ -473,6 +471,16 @@ module.exports = internal.RosterManager = class {
       }
     });
     
+    enrollmentData = enrollmentData.sort(function(a, b) {
+      var compare = a.student.localeCompare(b.student);
+      if (compare != 0) return compare;
+      
+      compare = a.term.localeCompare(b.term);
+      if (compare != 0) return compare;
+      
+      return a.section.localeCompare(b.section);
+    });
+    
     return enrollmentData;
   }
   
@@ -490,13 +498,118 @@ module.exports = internal.RosterManager = class {
         enrollment.student,
         enrollment.term,
         enrollment.section,
-        enrollment.startdate,
-        enrollment.enddate,
+        this._formatDate(enrollment.startdate),
+        this._formatDate(enrollment.enddate),
         enrollment.affiliation,
         enrollment.email
       ]);
     }
   }
+  
+  _addEnrollmentComparison(workbook, wsNew, wsOld, filenameNew, filenameOld, columnMapping) {
+    var newEnrollmentData = new Set(this._stringifyEnrollmentData(wsNew, columnMapping));
+    var oldEnrollmentData = new Set(this._stringifyEnrollmentData(wsOld, columnMapping));
+        
+    var difference1 = new Set(
+      [...newEnrollmentData].filter(x => !oldEnrollmentData.has(x)));
+
+    var difference2 = new Set(
+      [...oldEnrollmentData].filter(x => !newEnrollmentData.has(x)));
+    
+    var arr1 = this._unstringifyEnrollmentData(difference1);
+    var arr2 = this._unstringifyEnrollmentData(difference2);
+
+    var sheet = this._createOrReplaceSheet(workbook, this.tabname.enrollmentcomparison);
+    sheet.columns = [ {width: 30}, {width: 30}, {width: 40}, {width: 15}, {width: 15}, {width: 35}, {width: 40} ]
+    
+    sheet.addRow(['records in ' + filenameNew + ' but not in ' + filenameOld]);
+    sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    sheet.addRow(['student', 'term', 'section', 'startdate', 'enddate', 'affiliation', 'email']);
+    sheet.getRow(sheet.rowCount).font = {bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    for (var i = 0; i < arr1.length; i++) {
+      var item = arr1[i];
+      var startDate = this._formatDate(item.startdate);
+      var endDate = this._formatDate(item.enddate);
+      
+      sheet.addRow([item.student, item.term, item.section, startDate, endDate, item.affiliation, item.email]);
+    }
+
+    sheet.addRow(['']);
+
+    sheet.addRow(['records in ' + filenameOld + ' but not in ' + filenameNew]);
+    sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    sheet.addRow(['student', 'term', 'section', 'startdate', 'enddate', 'affiliation', 'email']);
+    sheet.getRow(sheet.rowCount).font = {bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    for (var i = 0; i < arr2.length; i++) {
+      var item = arr2[i];
+      var startDate = this._formatDate(item.startdate);
+      var endDate = this._formatDate(item.enddate);
+      
+      sheet.addRow([item.student, item.term, item.section, startDate, endDate, item.affiliation, item.email]);
+    }
+  }
+  
+  _stringifyEnrollmentData(worksheet, columnMapping) {
+    var thisObj = this;      
+    var enrollmentData = [];
+    
+    worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+      if (rowNumber != 1) {
+        var student = row.getCell(columnMapping[thisObj.colEnrollment_Student]).value;
+        var term = row.getCell(columnMapping[thisObj.colEnrollment_Term]).value;
+        var section = row.getCell(columnMapping[thisObj.colEnrollment_Section]).value;
+        var startdate = row.getCell(columnMapping[thisObj.colEnrollment_StartDate]).value;
+        var enddate = row.getCell(columnMapping[thisObj.colEnrollment_EndDate]).value;
+        var affiliation = row.getCell(columnMapping[thisObj.colEnrollment_Affiliation]).value;
+        var email = row.getCell(columnMapping[thisObj.colEnrollment_Email]).value;
+        
+        enrollmentData.push(student + '|' + term + '|' + section + '|' + startdate + '|' + enddate + '|' + affiliation + '|' + email);
+      }
+    });
+    
+    return enrollmentData;
+  }
+  
+  _unstringifyEnrollmentData(enrollmentData) {
+    var arrEnrollmentData = [];
+    
+    enrollmentData.forEach(function(item, index) {
+      var splitData = item.split('|');
+      arrEnrollmentData.push({
+        student: splitData[0],
+        term: splitData[1],
+        section: splitData[2],
+        startdate: splitData[3],
+        enddate: splitData[4],
+        affiliation: splitData[5],
+        email: splitData[6]
+      });
+    });
+    
+    arrEnrollmentData = arrEnrollmentData.sort(function(a, b) {
+      var compare = a.term.localeCompare(b.term);
+      if (compare != 0) return compare;
+
+      compare = a.section.localeCompare(b.section);
+      if (compare != 0) return compare;
+
+      compare = a.student.localeCompare(b.student);
+      if (compare != 0) return compare;
+      
+      return a.mentor.localeCompare(b.enddate);
+    });
+    
+    return arrEnrollmentData;
+  }
+
 
 //----------------------------------------------------------------------
 // utility
@@ -544,6 +657,12 @@ module.exports = internal.RosterManager = class {
     }
     
     return student;
+  }
+  
+  _formatDate(d) {
+    var fDate = new Date(d);
+    
+    return fDate;
   }
   
   _createOrReplaceSheet(workbook, sheetId) {
