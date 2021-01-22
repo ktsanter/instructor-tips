@@ -3,8 +3,6 @@
 // server-side for roster manager 
 //---------------------------------------------------------------
 // TODO: optionally strip _MENTOR from emails?
-// TODO: consider sorting output sheet data
-// TODO: escape | in mentor fields (comparison)
 //---------------------------------------------------------------
 const internal = {};
 
@@ -63,7 +61,7 @@ module.exports = internal.RosterManager = class {
         fileName = files['mentor-report-file'].name;
         
         var fileCompare = files['mentor-report-file2' ];
-        if (fileCompare.name != '') {
+        if (fileCompare && fileCompare.name != '') {
           filePathCompare = fileCompare.path;
           fileNameCompare = fileCompare.name;
         }
@@ -73,7 +71,7 @@ module.exports = internal.RosterManager = class {
         fileName = files['enrollment-report-file'].name;
         
         var fileCompare = files['enrollment-report-file2' ];
-        if (fileCompare.name != '') {
+        if (fileCompare && fileCompare.name != '') {
           filePathCompare = fileCompare.path;
           fileNameCompare = fileCompare.name;
         }
@@ -264,11 +262,8 @@ module.exports = internal.RosterManager = class {
   _addMentorsByStudentSheet(workbook, mentorData) {
     var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorsByStudent);
     
-    sheet.columns = [ {width: 28}, {width: 35}, {width: 40}, {width: 18}, {width: 22}, {width: 35} ];
-    sheet.addRow(['student', 'term', 'section', 'combined emails', 'mentor', 'email', 'additional...']);
-    sheet.getRow(1).font = {bold: true};
-    sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
-    
+    // convert mentorData to array and sort by student, term, section
+    var arrMentorData = [];
     for (var student in mentorData) {
       var objStudent = mentorData[student];
       for (var term in objStudent) {
@@ -277,18 +272,33 @@ module.exports = internal.RosterManager = class {
 
           var mentors = objTerm[section];
           var mentorRowData = [];
-          var combinedEmails = '';
           for (var i = 0; i < mentors.length; i++) {
             mentorRowData.push(mentors[i].mentorname);
             mentorRowData.push(mentors[i].mentoremail);
-            combinedEmails += mentors[i].mentoremail + ';';
           }
           
-          var rowData = [student, term, section, combinedEmails];
-          rowData = rowData.concat(mentorRowData);
-          sheet.addRow(rowData);
+          arrMentorData.push([student, term, section].concat(mentorRowData));
         }
       }
+    }
+    
+    arrMentorData = arrMentorData.sort(function(a, b) {
+      var compare = a[0].localeCompare(b[0]);
+      if (compare != 0) return compare;
+
+      var compare = a[1].localeCompare(b[1]);
+      if (compare != 0) return compare;
+
+      return a[2].localeCompare(b[2]);
+    });
+    
+    sheet.columns = [ {width: 28}, {width: 35}, {width: 40}, {width: 18}, {width: 22}, {width: 35} ];
+    sheet.addRow(['student', 'term', 'section', 'combined emails', 'mentor', 'email', 'additional...']);
+    sheet.getRow(1).font = {bold: true};
+    sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    for (var i = 0; i < arrMentorData.length; i++) {
+      sheet.addRow(arrMentorData[i]);
     }
   }
   
@@ -307,10 +317,15 @@ module.exports = internal.RosterManager = class {
         sheet.addRow([section, objSection.combinedemail]); 
         sheet.getRow(sheet.rowCount).getCell(1).font = {bold: true};
         
+        objSection.mentorArray = objSection.mentorArray.sort(function(a, b) {
+          return a.name.localeCompare(b.name);
+        });
+
         for (var i = 0; i < objSection.mentorArray.length; i++) {
           var mentor = objSection.mentorArray[i];
           sheet.addRow([ mentor.name, mentor.email]);
         }
+
 
         sheet.addRow(['']);
       }
@@ -373,7 +388,7 @@ module.exports = internal.RosterManager = class {
         var section = row.getCell(columnMapping[thisObj.colMentor_Section]).value;
         var mentor = row.getCell(columnMapping[thisObj.colMentor_Mentor]).value;
         
-        mentorData.push(student + '|' + term + '|' + section + '|' + mentor);
+        mentorData.push(student + '~|~' + term + '~|~' + section + '~|~' + mentor);
         
       }
     });
@@ -385,7 +400,7 @@ module.exports = internal.RosterManager = class {
     var arrMentorData = [];
     
     mentorData.forEach(function(item, index) {
-      var splitData = item.split('|');
+      var splitData = item.split('~|~');
       arrMentorData.push({
         student: splitData[0],
         term: splitData[1],
@@ -571,7 +586,7 @@ module.exports = internal.RosterManager = class {
         var affiliation = row.getCell(columnMapping[thisObj.colEnrollment_Affiliation]).value;
         var email = row.getCell(columnMapping[thisObj.colEnrollment_Email]).value;
         
-        enrollmentData.push(student + '|' + term + '|' + section + '|' + startdate + '|' + enddate + '|' + affiliation + '|' + email);
+        enrollmentData.push(student + '~|~' + term + '~|~' + section + '~|~' + startdate + '~|~' + enddate + '~|~' + affiliation + '~|~' + email);
       }
     });
     
@@ -582,7 +597,7 @@ module.exports = internal.RosterManager = class {
     var arrEnrollmentData = [];
     
     enrollmentData.forEach(function(item, index) {
-      var splitData = item.split('|');
+      var splitData = item.split('~|~');
       arrEnrollmentData.push({
         student: splitData[0],
         term: splitData[1],

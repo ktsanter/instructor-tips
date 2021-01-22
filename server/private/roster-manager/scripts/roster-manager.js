@@ -29,29 +29,23 @@ const app = function () {
   //---------------------------------------
 	// update
 	//----------------------------------------
+  function _setFileControl(checkboxClass, filecontrolClass) {
+    var elemCheck = page.body.getElementsByClassName(checkboxClass)[0];
 
+    var elem = page.body.getElementsByClassName(filecontrolClass)[0];
+    elem.required = elemCheck.checked;
+    elem.disabled = !elemCheck.checked;
+  }
   
   //---------------------------------------
 	// handlers
 	//----------------------------------------
   function _handleMentorCompareClick(e) {
-    var elemCheck = page.body.getElementsByClassName('check-mentor-compare')[0];
-    
-    elem = page.body.getElementsByClassName('mentor-compare')[0];
-    UtilityKTS.setClass(elem, 'hide-me', !elemCheck.checked);
-
-    elem = page.body.getElementsByClassName('mentor-report-file2')[0];
-    elem.required = elemCheck.checked;
+    _setFileControl('check-mentor-compare', 'mentor-report-file2');
   }
 
   function _handleEnrollmentCompareClick(e) {
-    var elemCheck = page.body.getElementsByClassName('check-enrollment-compare')[0];
-    
-    elem = page.body.getElementsByClassName('enrollment-compare')[0];
-    UtilityKTS.setClass(elem, 'hide-me', !elemCheck.checked);
-
-    elem = page.body.getElementsByClassName('enrollment-report-file2')[0];
-    elem.required = elemCheck.checked;
+    _setFileControl('check-enrollment-compare', 'enrollment-report-file2');
   }
 
   //---------------------------------------

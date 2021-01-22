@@ -2,20 +2,17 @@
  * styling for Roster Manager app
  *------------------------------------------------------------------*/
 .colorscheme {
-  --MVdeepteal: #093c44;
-  --MVdarkteal: #115e6e;
-  --MVlightteal: #2f8d98;
-  --MVgreen: #b5cd34;
-  --MVorange: #f7941e;
-  --MVdarkgray: #414042;
-  --MVlightgray: #6d6e71;
-  --MVwhite: #ffffff;
-  --verylightgray: #bbb;
+  --fgPrimary: black;
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgSecondary: rgba(66, 98, 150, 0.2);
+  --bgTertiary: #eee;
+  --borderPrimary: #bbb;
+  --disabled: #aaa;
 }
 
 body {
-	color: var(--MVblack);
-	background-color: #eee;
+	color: var(--fgPrimary);
+	background-color: var(--bgTertiary);
 	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	font-size: 13px;
 	margin-right: 2.0em;
@@ -29,8 +26,8 @@ body {
  * title bar
  *------------------------------------------------------------------*/
 .titlecontainer {
-  color: var(--MVwhite);
-  background-color: var(--MVdeepteal);
+  color: white;
+  background-color: var(--bgPrimary);
   border-radius: 3px;
   padding: 0.2em 0;
   margin-bottom: 0.4em;
@@ -47,7 +44,8 @@ body {
  * forms
  *------------------------------------------------------------------*/
 .userform {
-  border: 1px solid var(--verylightgray);
+  background-color: var(--bgSecondary);
+  border: 1px solid var(--borderPrimary);
   padding-left: 0.2em;
   margin-bottom: 0.6em;
 }
@@ -63,7 +61,7 @@ body {
 
 .userform .formfield-label {
   display: inline-block;
-  width: 9.0em;
+  width: 11.0em;
 }
 
 .userform .file-select {
@@ -71,7 +69,15 @@ body {
 	font-size: 13px;  
 }
 
+.userform .file-select:disabled {
+	color: var(--disabled);
+}
+
 .userform .form-row .suboption {
   display: inline-block;
   margin-left: 0.4em;
+}
+
+.userform .form-row.submit-region {
+  margin-top: 0.4em;
 }

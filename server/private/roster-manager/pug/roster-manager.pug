@@ -28,8 +28,8 @@ html(lang="en")
       .form-row
         label(for="chkEnrollmentCompare" class="formfield-label") compare to...
         input(type="checkbox" id="chkEnrollmentCompare" class="check-enrollment-compare" title="optionally compare to older file")
-        .suboption.enrollment-compare(class="hide-me")
-          input(type="file" class="file-select enrollment-report-file2" name="enrollment-report-file2" accept=".xlsx" title="older enrollment report file for comparison")
+        .suboption.enrollment-compare()
+          input(type="file" class="file-select enrollment-report-file2" name="enrollment-report-file2" accept=".xlsx" disabled title="older enrollment report file for comparison")
         
       .form-row.submit-region
         input(class="form-submit" type="submit" value="process")
@@ -44,8 +44,8 @@ html(lang="en")
       .form-row
         label(for="chkMentorCompare" class="formfield-label") compare to...
         input(type="checkbox" id="chkMentorCompare" class="check-mentor-compare" title="optionally compare to older file")
-        .suboption.mentor-compare(class="hide-me")
-          input(type="file" class="file-select mentor-report-file2" name="mentor-report-file2" accept=".xlsx" title="older mentor report file for comparison")
+        .suboption.mentor-compare()
+          input(type="file" class="file-select mentor-report-file2" name="mentor-report-file2" accept=".xlsx" disabled title="older mentor report file for comparison")
         
       .form-row.submit-region
         input(class="form-submit" type="submit" value="process")
