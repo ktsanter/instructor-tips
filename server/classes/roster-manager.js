@@ -4,6 +4,8 @@
 //---------------------------------------------------------------
 // TODO: optionally strip _MENTOR from emails?
 // TODO: consider sorting output sheet data
+// TODO: escape | in mentor fields
+// TODO: validate headers in comparison files
 //---------------------------------------------------------------
 const internal = {};
 
@@ -18,12 +20,22 @@ module.exports = internal.RosterManager = class {
     this.colMentor_Section = 'Section_Name';
     this.colMentor_Term = 'Term_Name';
     this.colMentor_Mentor = 'Mentor/Guardian';
-    this.colMentor_Email = 'Mentor Email';    
+    this.colMentor_Email = 'Mentor Email';
+    
+    this.colEnrollment_Student = 'Student';
+    this.colEnrollment_Section = 'Section';
+    this.colEnrollment_Email = 'StudentEmail';
+    this.colEnrollment_StartDate = 'StartDate';
+    this.colEnrollment_EndDate = 'EndDate';
+    this.colEnrollment_Affiliation = 'Affiliation';
+    this.colEnrollment_Term = 'LMSTerm';
     
     this.tabname = {
       mentorsByStudent: 'mentors by student',
       mentorsBySection: 'mentors by section',
-      comparison: 'new-old comparison'
+      mentorcomparison: 'new-old comparison',
+      
+      enrollment: 'enrollments'
     };
   }
   
@@ -55,6 +67,16 @@ module.exports = internal.RosterManager = class {
           filePathCompare = fileCompare.path;
           fileNameCompare = fileCompare.name;
         }
+
+      } else if (formName == 'enrollment') {
+        filePath = files['enrollment-report-file'].path;
+        fileName = files['enrollment-report-file'].name;
+        
+        var fileCompare = files['enrollment-report-file2' ];
+        if (fileCompare.name != '') {
+          filePathCompare = fileCompare.path;
+          fileNameCompare = fileCompare.name;
+        }
       }
 
       if (!filePath) {
@@ -75,6 +97,9 @@ module.exports = internal.RosterManager = class {
       
       if (formName == 'mentor') {
         thisObj._processMentorForm(req, res, workbook, workbookCompare, fileName, fileNameCompare, fields, callback);
+        
+      } else if (formName == 'enrollment') {
+        thisObj._processEnrollmentForm(req, res, workbook, workbookCompare, fileName, fileNameCompare, fields, callback);
       }
     });
   }
@@ -113,7 +138,14 @@ module.exports = internal.RosterManager = class {
     var thisObj = this;    
     var worksheet = workbook.getWorksheet(1);
 
-    var requiredColumns = new Set([this.colMentor_Student, this.colMentor_Section, this.colMentor_Term, this.colMentor_Mentor, this.colMentor_Email]);
+    var requiredColumns = new Set([
+      this.colMentor_Student, 
+      this.colMentor_Section, 
+      this.colMentor_Term, 
+      this.colMentor_Mentor, 
+      this.colMentor_Email
+    ]);
+    
     var validate = this._verifyHeaderRow(worksheet.getRow(1), requiredColumns);
     if (!validate.success) {
       this._failureCallback(req, res, 'one or more expected columns is missing', callback);
@@ -130,6 +162,7 @@ module.exports = internal.RosterManager = class {
     
     if (workbookCompare) {
       var worksheetCompare = workbookCompare.getWorksheet(1);
+      console.log('validate headers on comparison sheet');
       this._addMentorComparison(workbook, worksheet, worksheetCompare, filename, filenamecompare, columnMapping);
     }
         
@@ -291,7 +324,7 @@ module.exports = internal.RosterManager = class {
     var arr1 = this._unstringifyMentorData(difference1);
     var arr2 = this._unstringifyMentorData(difference2);
 
-    var sheet = this._createOrReplaceSheet(workbook, this.tabname.comparison);
+    var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorcomparison);
     sheet.columns = [ {width: 45}, {width: 50}, {width: 25}, {width: 25} ];
     
     sheet.addRow(['records in ' + filenameNew + ' but not in ' + filenameOld]);
@@ -371,6 +404,99 @@ module.exports = internal.RosterManager = class {
     return arrMentorData;
   }
   
+//------------------------------------------------------------------------------
+// enrollment report processing
+//------------------------------------------------------------------------------
+  _processEnrollmentForm(req, res, workbook, workbookCompare, filename, filenamecompare, fields, callback) {
+    var thisObj = this;    
+    var worksheet = workbook.getWorksheet(1);
+
+    var requiredColumns = new Set([
+      this.colEnrollment_Student, 
+      this.colEnrollment_Section, 
+      this.colEnrollment_Email, 
+      this.colEnrollment_StartDate, 
+      this.colEnrollment_EndDate, 
+      this.colEnrollment_Affiliation,
+      this.colEnrollment_Term
+    ]);
+    
+    var validate = this._verifyHeaderRow(worksheet.getRow(1), requiredColumns);
+    if (!validate.success) {
+      this._failureCallback(req, res, 'one or more expected columns is missing', callback);
+      return;
+    }
+    
+    var columnMapping = validate.columnInfo;
+    console.log('collate enrollment data, sort by section and student');
+    var enrollmentData = this._collateEnrollmentInfo(worksheet, columnMapping);
+    console.log(enrollmentData);
+    
+    console.log('add collated student sheet');
+    this._addEnrollmentSheet(workbook, enrollmentData);
+    
+    console.log('conditionally compare new to old roster');
+    console.log('be sure to validate headers on old roster');
+    console.log('add comparison sheet');
+
+    /*
+    
+    var mentorData = this._collateMentorInfoByStudent(worksheet, columnMapping);
+    this._addMentorsByStudentSheet(workbook, mentorData);
+    
+    mentorData = this._collateMentorInfoBySection(worksheet, columnMapping);
+    this._addMentorsBySectionSheet(workbook, mentorData);
+    
+    if (workbookCompare) {
+      var worksheetCompare = workbookCompare.getWorksheet(1);
+      this._addMentorComparison(workbook, worksheet, worksheetCompare, filename, filenamecompare, columnMapping);
+    }
+    */  
+    this._successCallback(req, res, 'success', workbook, 'collated-enrollment-report.xlsx', callback);
+  }
+  
+  _collateEnrollmentInfo(worksheet, columnMapping) {
+    var thisObj = this;
+    var enrollmentData = [];
+    
+    worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
+      if (rowNumber != 1) {
+        enrollmentData.push({
+          student:     row.getCell( columnMapping[thisObj.colEnrollment_Student] ).value,
+          term:        row.getCell( columnMapping[thisObj.colEnrollment_Term] ).value,
+          section:     row.getCell( columnMapping[thisObj.colEnrollment_Section] ).value,
+          startdate:   row.getCell( columnMapping[thisObj.colEnrollment_StartDate] ).value,
+          enddate:     row.getCell( columnMapping[thisObj.colEnrollment_EndDate] ).value,
+          affiliation: row.getCell( columnMapping[thisObj.colEnrollment_Affiliation] ).value,
+          email:       row.getCell( columnMapping[thisObj.colEnrollment_Email] ).value
+        });
+      }
+    });
+    
+    return enrollmentData;
+  }
+  
+  _addEnrollmentSheet(workbook, enrollmentData) {
+    var sheet = this._createOrReplaceSheet(workbook, this.tabname.enrollment);
+    sheet.columns = [ {width: 30}, {width: 30}, {width: 40}, {width: 15}, {width: 15}, {width: 35}, {width: 40} ]
+    
+    sheet.addRow(['student', 'term', 'section', 'startdate', 'enddate', 'affiliation', 'email']);
+    sheet.getRow(sheet.rowCount).font = {bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+    
+    for (var i = 0; i < enrollmentData.length; i++) {
+      var enrollment = enrollmentData[i];
+      sheet.addRow([
+        enrollment.student,
+        enrollment.term,
+        enrollment.section,
+        enrollment.startdate,
+        enrollment.enddate,
+        enrollment.affiliation,
+        enrollment.email
+      ]);
+    }
+  }
 
 //----------------------------------------------------------------------
 // utility

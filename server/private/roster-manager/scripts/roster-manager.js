@@ -23,7 +23,7 @@ const app = function () {
   
   function _attachHandlers() {
     page.body.getElementsByClassName('check-mentor-compare')[0].addEventListener('click', (e)=>{_handleMentorCompareClick(e);});
-    page.body.getElementsByClassName('check-student-compare')[0].addEventListener('click', (e)=>{_handleStudentCompareClick(e);});
+    page.body.getElementsByClassName('check-enrollment-compare')[0].addEventListener('click', (e)=>{_handleEnrollmentCompareClick(e);});
   }
   
   //---------------------------------------
@@ -44,13 +44,13 @@ const app = function () {
     elem.required = elemCheck.checked;
   }
 
-  function _handleStudentCompareClick(e) {
-    var elemCheck = page.body.getElementsByClassName('check-student-compare')[0];
+  function _handleEnrollmentCompareClick(e) {
+    var elemCheck = page.body.getElementsByClassName('check-enrollment-compare')[0];
     
-    elem = page.body.getElementsByClassName('student-compare')[0];
+    elem = page.body.getElementsByClassName('enrollment-compare')[0];
     UtilityKTS.setClass(elem, 'hide-me', !elemCheck.checked);
 
-    elem = page.body.getElementsByClassName('student-report-file2')[0];
+    elem = page.body.getElementsByClassName('enrollment-report-file2')[0];
     elem.required = elemCheck.checked;
   }
 

@@ -18,18 +18,18 @@ html(lang="en")
         .titletext
             |Roster manager
             
-    form(class="userform studentform" action="roster-manager/student" enctype="multipart/form-data" method="post")
-      .form-title student report
+    form(class="userform enrollmentform" action="roster-manager/enrollment" enctype="multipart/form-data" method="post")
+      .form-title enrollment report
       
       .form-row
-        label(for="student-report-file" class="formfield-label") student report file
-        input(type="file" class="file-select" name="student-report-file" accept=".xlsx" required title="student report file to process")
+        label(for="enrollment-report-file" class="formfield-label") enrollment report file
+        input(type="file" class="file-select" name="enrollment-report-file" accept=".xlsx" required title="enrollment report file to process")
         
       .form-row
-        label(for="chkStudentCompare" class="formfield-label") compare to...
-        input(type="checkbox" id="chkStudentCompare" class="check-student-compare" title="optionally compare to older file")
-        .suboption.student-compare(class="hide-me")
-          input(type="file" class="file-select student-report-file2" name="student-report-file2" accept=".xlsx" title="older student report file for comparison")
+        label(for="chkEnrollmentCompare" class="formfield-label") compare to...
+        input(type="checkbox" id="chkEnrollmentCompare" class="check-enrollment-compare" title="optionally compare to older file")
+        .suboption.enrollment-compare(class="hide-me")
+          input(type="file" class="file-select enrollment-report-file2" name="enrollment-report-file2" accept=".xlsx" title="older enrollment report file for comparison")
         
       .form-row.submit-region
         input(class="form-submit" type="submit" value="process")
