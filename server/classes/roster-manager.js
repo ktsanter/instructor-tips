@@ -348,7 +348,7 @@ module.exports = internal.RosterManager = class {
     var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorcomparison);
     sheet.columns = [ {width: 45}, {width: 50}, {width: 25}, {width: 25} ];
     
-    sheet.addRow(['records in ' + filenameNew + ' but not in ' + filenameOld]);
+    sheet.addRow(['Additions', 'records in ' + filenameNew + ' but not in ' + filenameOld]);
     sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
     sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
@@ -363,7 +363,7 @@ module.exports = internal.RosterManager = class {
 
     sheet.addRow(['']);
 
-    sheet.addRow(['records in ' + filenameOld + ' but not in ' + filenameNew]);
+    sheet.addRow(['Removals', 'records in ' + filenameOld + ' but not in ' + filenameNew]);
     sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
     sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
@@ -537,7 +537,7 @@ module.exports = internal.RosterManager = class {
     var sheet = this._createOrReplaceSheet(workbook, this.tabname.enrollmentcomparison);
     sheet.columns = [ {width: 30}, {width: 30}, {width: 40}, {width: 15}, {width: 15}, {width: 35}, {width: 40} ]
     
-    sheet.addRow(['records in ' + filenameNew + ' but not in ' + filenameOld]);
+    sheet.addRow(['Additions', 'records in ' + filenameNew + ' but not in ' + filenameOld]);
     sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
     sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
@@ -555,7 +555,7 @@ module.exports = internal.RosterManager = class {
 
     sheet.addRow(['']);
 
-    sheet.addRow(['records in ' + filenameOld + ' but not in ' + filenameNew]);
+    sheet.addRow(['Removals', 'records in ' + filenameOld + ' but not in ' + filenameNew]);
     sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
     sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
