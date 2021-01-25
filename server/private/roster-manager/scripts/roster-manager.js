@@ -29,23 +29,27 @@ const app = function () {
   //---------------------------------------
 	// update
 	//----------------------------------------
-  function _setFileControl(checkboxClass, filecontrolClass) {
+  function _setFileControl(labelClass, checkboxClass, filecontrolClass) {
     var elemCheck = page.body.getElementsByClassName(checkboxClass)[0];
 
-    var elem = page.body.getElementsByClassName(filecontrolClass)[0];
+    var elem = page.body.getElementsByClassName(labelClass)[0];
+    UtilityKTS.setClass(elem, 'diminish-me', !elemCheck.checked);
+    
+    elem = page.body.getElementsByClassName(filecontrolClass)[0];
     elem.required = elemCheck.checked;
     elem.disabled = !elemCheck.checked;
+    UtilityKTS.setClass(elem, 'hide-me', !elemCheck.checked);
   }
   
   //---------------------------------------
 	// handlers
 	//----------------------------------------
   function _handleMentorCompareClick(e) {
-    _setFileControl('check-mentor-compare', 'mentor-report-file2');
+    _setFileControl('label-mentor-compare', 'check-mentor-compare', 'mentor-report-file2');
   }
 
   function _handleEnrollmentCompareClick(e) {
-    _setFileControl('check-enrollment-compare', 'enrollment-report-file2');
+    _setFileControl('label-enrollment-compare', 'check-enrollment-compare', 'enrollment-report-file2');
   }
 
   //---------------------------------------
