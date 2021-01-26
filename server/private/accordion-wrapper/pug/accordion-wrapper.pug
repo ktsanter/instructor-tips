@@ -1,0 +1,31 @@
+doctype html
+html(lang="en")
+  head
+    title accordion wrapper
+    meta(charset="utf-8")
+    
+    link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
+
+    style
+      include ../styles/accordion-wrapper.css
+    
+    script(data-main="/scripts/accordion-wrapper/require_accordion-wrapper", src="/scripts/require.js")    
+      
+  body(class="colorscheme")    
+    .titlecontainer
+      .titletext
+        |Accordion wrapper
+        i(class="icon embed-icon fas fa-code" title="generate embed code")
+        span(class="embed-complete") embed code copied to clipboard
+        
+    .section-label description
+    input(class="description" type="text" placeholder="description of contents - displayed whether or not contents are collapsed")
+    
+    .section-label contents
+    textarea(rows="16" cols="90" placeholder="code to be enclosed within the wrapper")
+    
+    .section-label preview
+    .preview-section
+
+     
+     

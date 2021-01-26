@@ -579,6 +579,11 @@ app.get('/slide-indexer/:presentationid/:slidenumber', function (req, res) {
   });
 })
 
+app.get('/accordion-wrapper', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'accordion-wrapper/pug/accordion-wrapper.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
 app.get('/roster-manager', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});

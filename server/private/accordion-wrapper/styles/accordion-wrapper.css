@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------
- * styling for Roster Manager app
+ * styling for Accordion Wrapper app
  *------------------------------------------------------------------*/
 .colorscheme {
   --fgPrimary: black;
@@ -38,51 +38,4 @@ body {
   font-size: 1.2em;
   padding-left: 0.2em;
   padding-right: 0.4em;
-}
-
-/*-------------------------------------------------------------------
- * forms
- *------------------------------------------------------------------*/
-.userform {
-  background-color: var(--bgSecondary);
-  border: 1px solid var(--borderPrimary);
-  padding-left: 0.2em;
-  margin-bottom: 0.6em;
-}
-
-.userform .form-title {
-  font-size: 1.1em;
-  font-weight: bold;
-}
-
-.userform .form-row {
-  margin-bottom: 0.2em;
-}
-
-.userform .form-row .form-col0 {
-  display: inline-block;
-  width: 11.0em;
-}
-
-.userform .form-row .form-col1 {
-  display: inline-block;
-}
-
-.userform .form-row .check-compare {
-  transform: scale(1.3); 
-  margin-right: 0.4em;  
-}
-
-.userform .form-row .diminish-me {
-  color: var(--diminished);
-}
-
-.userform .form-row .file-select {
-	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-	font-size: 13px;  
-  width: 34.0em;
-}
-
-.userform .form-row.submit-region {
-  margin-top: 0.4em;
 }
