@@ -39,3 +39,32 @@ body {
   padding-left: 0.2em;
   padding-right: 0.4em;
 }
+
+.titlecontainer .embed-icon {
+  font-size: 0.9em;
+  margin-left: 0.4em;
+  margin-right: 0.4em;
+}
+
+.titlecontainer .embed-complete {
+  font-size: 0.8em;
+  font-style: italic;
+}
+
+/*-------------------------------------------------------------------
+ * sections
+ *------------------------------------------------------------------*/
+.description {
+  width: 50.0em;
+}
+
+.preview-section {
+  border: 1px solid black;
+  width: 51em;
+	font-family: Verdana, Arial, sans-serif;  
+}
+
+input, textarea {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 13px;
+}

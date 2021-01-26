@@ -1,8 +1,9 @@
 define(function (require) {
   require('/scripts/utilitykts'); 
-  require('/scripts/clipboard.min.js');
+  //require('/scripts/clipboard.min.js');
   require('/scripts/clipboard_copy.js');
   require('/scripts/create_element.js');  
+  require('/scripts/markdowntohtml');
   
   require('accordion-wrapper');
 
