@@ -10,7 +10,6 @@ const MARIA_USER = getEnv('MARIA_USER', true);
 const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
 const MARIA_DBNAME_INSTRUCTORTIPS = getEnv('MARIA_DBNAME_INSTRUCTORTIPS', true);
 const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
-const MARIA_DBNAME_PGVIEWER = getEnv('MARIA_DBNAME_PGVIEWER', true);
 const MARIA_DBNAME_WELCOME = getEnv('MARIA_DBNAME_WELCOME', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
@@ -84,15 +83,6 @@ const mariadbParams_TreasureHunt = {
     connectionLimit: 5 */
 };
     
-const mariadbParams_PGViewer = {
-    reqd: mariadb,
-    host: MARIA_HOST,
-    user: MARIA_USER,
-    password: MARIA_PASSWORD,
-    dbName: MARIA_DBNAME_PGVIEWER /*, 
-    connectionLimit: 5 */
-};
-        
 const mariadbParams_WelcomeLetter = {
     reqd: mariadb,
     host: MARIA_HOST,
@@ -105,7 +95,6 @@ const mariadbParams_WelcomeLetter = {
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
-const mariaDBManager_PGViewer = new mariaDBManagerClass(mariadbParams_PGViewer);
 const mariaDBManager_WelcomeLetter = new mariaDBManagerClass(mariadbParams_WelcomeLetter);
     
 //------------------------------------------
@@ -258,12 +247,6 @@ const dbTreasureHuntLanding = new dbTreasureHuntLandingClass({
 });
 
 //------------------------------------------
-// Pacing guide viewer general query objects
-//------------------------------------------
-const dbPGViewerClass = require('./classes/pacingguide-viewer')
-const dbPGViewer = new dbPGViewerClass(userManagement, mariaDBManager_PGViewer);
-
-//------------------------------------------
 // Welcome letter general query objects
 //------------------------------------------
 const dbWelcomeLetterClass = require('./classes/welcomeletter')
@@ -283,8 +266,6 @@ var dbManagerLookup = {
   "usermanagement": dbTipManager,
   "tipmanager": dbTipManager,
   "treasurehunt": dbTreasureHunt,
-  "pacingguide-viewer": dbPGViewer,
-  "pgviewer": dbPGViewer,
   "welcome": dbWelcomeLetter
 };
 
@@ -299,19 +280,6 @@ var appLookup = {
     appDescriptor: 'treasurehunt',
     appName: 'Treasure Hunt',
     routeRedirect: '/treasurehunt-configuration'
-  },
-  
-  "pacingguide" : {
-    appDescriptor: 'pacingguide',
-    appName: 'Pacing Guide Viewer',
-    routeRedirect: '/pacingguide-viewer'
-  },
-  
-  "pgviewer" : {
-    appDescriptor: 'pgviewer',
-    appName: 'Pacing Guide Viewer',
-    routeFunction: dbPGViewer.renderViewerPage,
-    routeData: 'pacingguide-viewer/pug/pacingguide-viewer.pug'
   },
   
   "welcome" : {
@@ -341,8 +309,6 @@ function routeIfLoggedIn(req, res, appDescriptor) {
 
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
 app.get('/treasurehunt', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
-app.get('/pacingguide', function (req, res) { routeIfLoggedIn(req, res, 'pacingguide'); })
-app.get('/pgviewer', function (req, res) { routeIfLoggedIn(req, res, 'pgviewer'); })
 app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcome'); })
 
 app.get('/treasurehunt-landing/:projectid', async function (req, res) {
