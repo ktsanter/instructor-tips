@@ -76,7 +76,7 @@ const app = function () {
       '> ' + 
       iconSymbol + '</span>';
     embedCode += page.itemDescription.value;
-    embedCode += '<div style="display:none;">';
+    embedCode += '<div style="display:none; margin-left: 1.1em;">';
     embedCode +=   MarkdownToHTML.convert(page.itemContents.value);
     embedCode += '</div>';
     embedCode += '</div>';
