@@ -550,6 +550,11 @@ app.get('/accordion-wrapper', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.get('/support-tool-index', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'support-tool-index/pug/support-tool-index.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
 app.get('/roster-manager', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
