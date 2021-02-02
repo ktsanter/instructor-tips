@@ -38,20 +38,20 @@ html(lang="en")
         input(class="form-submit" type="submit" value="process")
         
     form(class="userform mentorform" action="roster-manager/mentor" enctype="multipart/form-data" method="post")
-      .form-title mentor report
+      .form-title mentor/guardian report
       
       .form-row
         .form-col0
-          |mentor report file
+          |mentor/guardian report file
         .form-col1
-          input(type="file" class="file-select" name="mentor-report-file" accept=".xlsx" required title="mentor report file to process")
+          input(type="file" class="file-select" name="mentor-report-file" accept=".xlsx" required title="mentor/guardian report file to process")
         
       .form-row
         .form-col0
           input(type="checkbox" id="chkMentorCompare" class="check-compare check-mentor-compare" title="optionally compare to older file")
           span(class="label-mentor-compare diminish-me") compare to...
         .form-col1
-          input(type="file" class="file-select mentor-report-file2 hide-me" name="mentor-report-file2" accept=".xlsx" disabled title="older mentor report file for comparison")
+          input(type="file" class="file-select mentor-report-file2 hide-me" name="mentor-report-file2" accept=".xlsx" disabled title="older mentor/guardian report file for comparison")
         
       .form-row.submit-region
         input(class="form-submit" type="submit" value="process")

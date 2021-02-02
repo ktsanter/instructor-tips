@@ -16,6 +16,7 @@ module.exports = internal.RosterManager = class {
     this.colMentor_Student = 'Student_Name';
     this.colMentor_Section = 'Section_Name';
     this.colMentor_Term = 'Term_Name';
+    this.colMentor_Role = 'Role';
     this.colMentor_Mentor = 'Mentor/Guardian';
     this.colMentor_Email = 'Mentor Email';
     
@@ -29,6 +30,7 @@ module.exports = internal.RosterManager = class {
     
     this.tabname = {
       mentorsByStudent: 'mentors by student',
+      guardiansByStudent: 'guardians by student',
       mentorsBySection: 'mentors by section',
       mentorcomparison: 'new-old comparison',
       
@@ -140,6 +142,7 @@ module.exports = internal.RosterManager = class {
       this.colMentor_Student, 
       this.colMentor_Section, 
       this.colMentor_Term, 
+      this.colMentor_Role,
       this.colMentor_Mentor, 
       this.colMentor_Email
     ]);
@@ -154,6 +157,7 @@ module.exports = internal.RosterManager = class {
     
     var mentorData = this._collateMentorInfoByStudent(worksheet, columnMapping);
     this._addMentorsByStudentSheet(workbook, mentorData);
+    this._addGuardiansByStudentSheet(workbook, mentorData);
     
     mentorData = this._collateMentorInfoBySection(worksheet, columnMapping);
     this._addMentorsBySectionSheet(workbook, mentorData);
@@ -167,10 +171,12 @@ module.exports = internal.RosterManager = class {
         return;
       }
       
-      this._addMentorComparison(workbook, worksheet, worksheetCompare, filename, filenamecompare, columnMapping);
+      var mentorDataToCompare = this._collateMentorInfoBySection(worksheetCompare, columnMapping);
+      var mentorBySectionDifferences = this._collateMentorBySectionDifferences(mentorData, mentorDataToCompare);
+      this._addMentorComparison(workbook, worksheet, worksheetCompare, filename, filenamecompare, columnMapping, mentorBySectionDifferences);
     }
         
-    this._successCallback(req, res, 'success', workbook, 'collated-mentor-report.xlsx', callback);
+    this._successCallback(req, res, 'success', workbook, 'collated-mentor-guardian-report.xlsx', callback);
   }
   
   _collateMentorInfoByStudent(worksheet, columnMapping) {
@@ -194,14 +200,25 @@ module.exports = internal.RosterManager = class {
         var objStudentTerm = objStudent[term];
         var section = row.getCell(columnMapping[thisObj.colMentor_Section]).value;
         if (!objStudentTerm.hasOwnProperty(section)) {
-          objStudentTerm[section] = [];
+          objStudentTerm[section] = {mentor: [], guardian: []};
         }
         
-        var arrStudentTermSection = objStudentTerm[section];
-        arrStudentTermSection.push({
-          mentorname: row.getCell(columnMapping[thisObj.colMentor_Mentor]).value,
-          mentoremail: row.getCell(columnMapping[thisObj.colMentor_Email]).value,
-        });        
+        var arrStudentTermSectionMentor = objStudentTerm[section].mentor;
+        var arrStudentTermSectionGuardian = objStudentTerm[section].guardian;
+
+        var role = row.getCell(columnMapping[thisObj.colMentor_Role]).value;
+        if (role == 'MENTOR') {
+          arrStudentTermSectionMentor.push({
+            mentorname: row.getCell(columnMapping[thisObj.colMentor_Mentor]).value,
+            mentoremail: row.getCell(columnMapping[thisObj.colMentor_Email]).value,
+          });        
+
+        } else if (role == 'GUARDIAN') {
+          arrStudentTermSectionGuardian.push({
+            guardianname: row.getCell(columnMapping[thisObj.colMentor_Mentor]).value,
+            guardianemail: row.getCell(columnMapping[thisObj.colMentor_Email]).value,
+          });        
+        }
       }
     });
     
@@ -213,7 +230,8 @@ module.exports = internal.RosterManager = class {
     var mentorData = {};
     
     worksheet.eachRow({ includeEmpty: true }, function(row, rowNumber) {
-      if (rowNumber != 1) {
+      var role = row.getCell(columnMapping[thisObj.colMentor_Role]).value;
+      if (rowNumber != 1 && role == 'MENTOR') {
         var term = row.getCell(columnMapping[thisObj.colMentor_Term]).value;
         if (!mentorData.hasOwnProperty(term)) mentorData[term] = {};
         
@@ -259,6 +277,45 @@ module.exports = internal.RosterManager = class {
     return mentorData;
   }
   
+  _collateMentorBySectionDifferences(mentorDataNew, mentorDataOld) {    
+    var result = { added: [], removed: [] };
+    
+    var mentorSetNew = new Set();
+    for (var term in mentorDataNew) {
+      for (var section in mentorDataNew[term]) {
+        for (var i = 0; i < mentorDataNew[term][section].mentorArray.length; i++) {
+          var mentorName = mentorDataNew[term][section].mentorArray[i].name;
+          mentorSetNew.add( [term, section, mentorName].join('~|~') );
+        }
+      }
+    }
+
+    var mentorSetOld = new Set();
+    for (var term in mentorDataOld) {
+      for (var section in mentorDataOld[term]) {
+        for (var i = 0; i < mentorDataOld[term][section].mentorArray.length; i++) {
+          var mentorName = mentorDataOld[term][section].mentorArray[i].name;
+          mentorSetOld.add( [term, section, mentorName].join('~|~') );
+        }
+      }
+    }
+    
+    var difference1 = new Set(
+      [...mentorSetNew].filter(x => !mentorSetOld.has(x)));
+
+    var difference2 = new Set(
+      [...mentorSetOld].filter(x => !mentorSetNew.has(x)));
+
+    difference1.forEach(function(item ,index) {
+      result.added.push(item.split('~|~'));
+    });
+    difference2.forEach(function(item, index) {
+      result.removed.push(item.split('~|~'));
+    });
+
+    return result;
+  }
+  
   _addMentorsByStudentSheet(workbook, mentorData) {
     var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorsByStudent);
     
@@ -266,12 +323,14 @@ module.exports = internal.RosterManager = class {
     var arrMentorData = [];
     for (var student in mentorData) {
       var objStudent = mentorData[student];
+
       for (var term in objStudent) {
         var objTerm = objStudent[term];
-        for (var section in objTerm) {
 
-          var mentors = objTerm[section];
+        for (var section in objTerm) {
+          var mentors = objTerm[section].mentor;
           var mentorRowData = [];
+
           for (var i = 0; i < mentors.length; i++) {
             mentorRowData.push(mentors[i].mentorname);
             mentorRowData.push(mentors[i].mentoremail);
@@ -292,8 +351,8 @@ module.exports = internal.RosterManager = class {
       return a[2].localeCompare(b[2]);
     });
     
-    sheet.columns = [ {width: 28}, {width: 35}, {width: 40}, {width: 18}, {width: 22}, {width: 35} ];
-    sheet.addRow(['student', 'term', 'section', 'combined emails', 'mentor', 'email', 'additional...']);
+    sheet.columns = [ {width: 28}, {width: 35}, {width: 40}, {width: 18}, {width: 33}, {width: 18} ];
+    sheet.addRow(['student', 'term', 'section', 'mentor', 'email', 'additional...']);
     sheet.getRow(1).font = {bold: true};
     sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
@@ -302,6 +361,51 @@ module.exports = internal.RosterManager = class {
     }
   }
   
+  _addGuardiansByStudentSheet(workbook, mentorData) {
+    var sheet = this._createOrReplaceSheet(workbook, this.tabname.guardiansByStudent);
+    
+    // convert mentorData to array and sort by student, term, section
+    var arrGuardianData = [];
+    for (var student in mentorData) {
+      var objStudent = mentorData[student];
+
+      for (var term in objStudent) {
+        var objTerm = objStudent[term];
+
+        for (var section in objTerm) {
+          var guardians = objTerm[section].guardian;
+          var guardianRowData = [];
+
+          for (var i = 0; i < guardians.length; i++) {
+            guardianRowData.push(guardians[i].guardianname);
+            guardianRowData.push(guardians[i].guardianemail);
+          }
+          
+          arrGuardianData.push([student, term, section].concat(guardianRowData));
+        }
+      }
+    }
+    
+    arrGuardianData = arrGuardianData.sort(function(a, b) {
+      var compare = a[0].localeCompare(b[0]);
+      if (compare != 0) return compare;
+
+      var compare = a[1].localeCompare(b[1]);
+      if (compare != 0) return compare;
+
+      return a[2].localeCompare(b[2]);
+    });
+    
+    sheet.columns = [ {width: 28}, {width: 35}, {width: 40}, {width: 18}, {width: 33}, {width: 18} ];
+    sheet.addRow(['student', 'term', 'section', 'guardian', 'email', 'additional...']);
+    sheet.getRow(1).font = {bold: true};
+    sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    for (var i = 0; i < arrGuardianData.length; i++) {
+      sheet.addRow(arrGuardianData[i]);
+    }
+  }
+
   _addMentorsBySectionSheet(workbook, mentorData) {
     var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorsBySection);
     sheet.columns = [ {width: 50}, {width: 35} ];
@@ -332,7 +436,7 @@ module.exports = internal.RosterManager = class {
     }
   }
   
-  _addMentorComparison(workbook, wsNew, wsOld, filenameNew, filenameOld, columnMapping) {
+  _addMentorComparison(workbook, wsNew, wsOld, filenameNew, filenameOld, columnMapping, mentorBySectionDifferences) {
     var newMentorData = new Set(this._stringifyMentorData(wsNew, columnMapping));
     var oldMentorData = new Set(this._stringifyMentorData(wsOld, columnMapping));
     
@@ -347,8 +451,9 @@ module.exports = internal.RosterManager = class {
 
     var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorcomparison);
     sheet.columns = [ {width: 45}, {width: 50}, {width: 25}, {width: 25} ];
-    
-    sheet.addRow(['Additions', 'records in ' + filenameNew + ' but not in ' + filenameOld]);
+
+    // additions (by student)    
+    sheet.addRow(['Additions (by student)', 'records in ' + filenameNew + ' but not in ' + filenameOld]);
     sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
     sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
@@ -363,7 +468,8 @@ module.exports = internal.RosterManager = class {
 
     sheet.addRow(['']);
 
-    sheet.addRow(['Removals', 'records in ' + filenameOld + ' but not in ' + filenameNew]);
+    // removals (by student)
+    sheet.addRow(['Removals (by student)', 'records in ' + filenameOld + ' but not in ' + filenameNew]);
     sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
     sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
@@ -374,6 +480,34 @@ module.exports = internal.RosterManager = class {
     for (var i = 0; i < arr2.length; i++) {
       var item = arr2[i];
       sheet.addRow([item.term, item.section, item.student, item.mentor]);
+    }
+
+    sheet.addRow(['']);
+
+    // additions (by mentor)
+    sheet.addRow(['Additions (by mentor)', 'records in ' + filenameNew + ' but not in ' + filenameOld]);
+    sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    sheet.addRow(['term', 'section', 'mentor']);
+    sheet.getRow(sheet.rowCount).font = {bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+    for (var i = 0; i < mentorBySectionDifferences.added.length; i++) {
+      sheet.addRow(mentorBySectionDifferences.added[i]);
+    }
+
+    sheet.addRow(['']);
+
+    // removals (by mentor)
+    sheet.addRow(['Removals (by mentor)', 'records in ' + filenameOld + ' but not in ' + filenameNew]);
+    sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+    sheet.addRow(['term', 'section', 'mentor']);
+    sheet.getRow(sheet.rowCount).font = {bold: true};
+    sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+    for (var i = 0; i < mentorBySectionDifferences.removed.length; i++) {
+      sheet.addRow(mentorBySectionDifferences.removed[i]);
     }
   }
   
