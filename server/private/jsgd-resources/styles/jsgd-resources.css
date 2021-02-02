@@ -1,0 +1,58 @@
+/* styles for JSGD resource picker */
+body {
+	color: black;
+	background-color: #eee;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.title {
+	color: white;
+	background-color: #426296;
+  border: 1px solid white;
+  border-radius: 6px 6px 0px 0px;
+  font-size: 1.2em;
+  padding: 0.4em 0.2em 0.2em 0.4em;
+  margin-top: 0em;
+}
+.controls-container {
+  margin-bottom: 1em;
+}
+
+.image-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.audio-container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.image-item {
+  border: 1px solid #ccc;
+  padding: 0.4em 0.5em 1.2em 0.5em;
+  margin-bottom: 2px;
+  text-align: center;
+  min-width: 11em;
+}
+
+.image-resource {
+  width: 80px;
+  height: 80px;
+}
+
+.audio-item {
+  border: 1px solid #ccc;
+  padding: 0.4em 0.5em 1.2em 0.5em;
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.resource-label {
+  text-align: center;
+}
