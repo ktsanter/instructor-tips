@@ -26,6 +26,9 @@
   font-size: 1.2em;
   border: none;
   cursor: pointer;
+  position: absolute;
+  transform-origin: right top; 
+  margin-left: 2.0em;
 }
 
 .dropbtn:hover, .dropbtn:focus {
@@ -44,14 +47,16 @@
 .dropdown .dd-button {
   color: white;
   font-size: 1.6em;
+  position: absolute;
+  transform-origin: right top;
 }
 
 .dropdown .dd-button.bwd-button {
-  margin-right: 0.4em;
+  margin-left: -1.0em;
 }
 
 .dropdown .dd-button.fwd-button {
-  margin-right: 0.2em;
+  margin-left: 0.0em;
 }
 
 .dropdown-content {

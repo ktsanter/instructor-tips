@@ -94,6 +94,34 @@ body {
   width: 95%;
 }
 
+.slide-indexer .display-container .homeslide-overlay {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  width: 100%;
+}
+
+.slide-indexer .display-container .homeslide-overlay .homeslide-navcontainer {
+  height: 28em;
+  width: 36em;
+  margin-left: 2%;
+  margin-top: 4%;
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.slide-indexer .display-container .homeslide-overlay .homeslide-navcontainer .homeslide-navitem {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  border: 1px solid var(--bgPrimaryEmphasis);
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 0.4em;
+  padding: 0.1em 0.4em 0.1em 0.2em;
+}
+
 .slide-indexer .display-container .presentation-container .slide-container {
   position: relative;
   /*width: 100%;*/

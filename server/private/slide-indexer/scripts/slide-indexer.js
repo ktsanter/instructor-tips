@@ -296,7 +296,39 @@ const app = function () {
       page.presentationContainer.appendChild(page.slide[i]);
     }
     
-    _sizeSlides();    
+    if (settings.altcontrol) {
+      page.homeSlideOverlay = _renderHomeSlideOverlay();
+      page.body.getElementsByClassName('display-container')[0].appendChild(page.homeSlideOverlay);
+    }
+    
+    _sizeSlides();
+  }
+  
+  function _renderHomeSlideOverlay() {
+    var container = CreateElement.createDiv(null, 'homeslide-overlay hide-me');
+    var toc = settings.presentationInfo.tocInfo;
+
+    var navContainer = CreateElement.createDiv(null, 'homeslide-navcontainer');
+    container.appendChild(navContainer);
+    
+    for (var i = 0; i < toc.length; i++) {
+      navContainer.appendChild(_renderHomeOverlayLink(toc[i]));
+    }
+    
+    return container;
+  }
+  
+  function _renderHomeOverlayLink(tocEntry) {
+    var container = CreateElement.createDiv(null, 'homeslide-navitem', tocEntry.slideTitle);
+    
+    container.slideNumber = tocEntry.slideNumber;
+    container.addEventListener('click', _makeHomeOverlayFunction(tocEntry.slideNumber));
+    
+    return container;
+  }
+  
+  function _makeHomeOverlayFunction(n) {
+    return function() {_moveToSlideNumber(n);}
   }
   
   //----------------------------------------
@@ -315,26 +347,24 @@ const app = function () {
       elemIframe.src = elemIframe.src;
     }
     
+    if (settings.altcontrol) {
+      if (slideNumber == 0) {
+        _showElement(page.homeSlideOverlay);
+      } else {
+        _hideElement(page.homeSlideOverlay);
+      }
+    }
+    
     settings.currentSlideNumber = slideNumber;
     _showElement(page.presentationContainer);
     _showElement(page.slide[settings.currentSlideNumber]);
     
-    var elem = page.body.getElementsByClassName('prevpage')[0];
-    _setVisibility(elem, true);
-    if (slideNumber == 0) _setVisibility(elem, false);
+    _setVisibility(page.body.getElementsByClassName('nextpage')[0], slideNumber < settings.presentationInfo.numSlides - 1);
+    _setVisibility(page.body.getElementsByClassName('fwd-button')[0], slideNumber < settings.presentationInfo.numSlides - 1);
+    _setVisibility(page.body.getElementsByClassName('prevpage')[0], slideNumber > 0);
+    _setVisibility(page.body.getElementsByClassName('bwd-button')[0], slideNumber > 0);
+    _setVisibility(page.body.getElementsByClassName('dropbtn')[0], true);
     
-    elem = page.body.getElementsByClassName('fwd-button')[0];
-    _setVisibility(elem, true);
-    if (slideNumber >= settings.presentationInfo.numSlides - 1) _setVisibility(elem, false);
-    
-    var elem = page.body.getElementsByClassName('bwd-button')[0];
-    _setVisibility(elem, true);
-    if (slideNumber == 0) _setVisibility(elem, false);
-    
-    elem = page.body.getElementsByClassName('nextpage')[0];
-    _setVisibility(elem, true);
-    if (slideNumber >= settings.presentationInfo.numSlides - 1) _setVisibility(elem, false);
-
     _sizeNavbar();   
     _sizeDropdown();    
   }
@@ -422,6 +452,12 @@ const app = function () {
       slide.width = settings.currentSlideWidth + 'pt';
       slide.height = settings.currentSlideHeight + 'pt';
     }
+    
+    var scale = 'scale(' + widthScale + ',' + heightScale + ')';
+    page.body.getElementsByClassName('fwd-button')[0].style.transform = scale;
+    page.body.getElementsByClassName('bwd-button')[0].style.transform = scale;    
+    page.body.getElementsByClassName('dropbtn')[0].style.transform = scale; 
+    if (page.homeSlideOverlay) page.homeSlideOverlay.style.transform = scale; 
   }
   
   function _sizeNavbar() {
@@ -456,7 +492,14 @@ const app = function () {
       _hideElement(page.presentationContainer);
       _hideElement(page.indexContainer);
       _hideElement(page.tocContainer);
+      _hideElement(page.homeSlideOverlay);
       
+      _setVisibility(page.body.getElementsByClassName('fwd-button')[0], false);
+      _setVisibility(page.body.getElementsByClassName('nextpage')[0], false);
+      _setVisibility(page.body.getElementsByClassName('bwd-button')[0], false);
+      _setVisibility(page.body.getElementsByClassName('prevpage')[0], false);
+      _setVisibility(page.body.getElementsByClassName('dropbtn')[0], false);
+
       if (action == 'home') {
         _showElement(page.presentationContainer);
         _moveToSlideNumber(0);
