@@ -450,20 +450,20 @@ module.exports = internal.RosterManager = class {
     var arr2 = this._unstringifyMentorData(difference2);
 
     var sheet = this._createOrReplaceSheet(workbook, this.tabname.mentorcomparison);
-    sheet.columns = [ {width: 45}, {width: 50}, {width: 25}, {width: 25} ];
+    sheet.columns = [ {width: 45}, {width: 50}, {width: 25}, {width: 12}, {width: 25} ];
 
     // additions (by student)    
     sheet.addRow(['Additions (by student)', 'records in ' + filenameNew + ' but not in ' + filenameOld]);
     sheet.getRow(sheet.rowCount).font = {size: 12, bold: true};
     sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
-    sheet.addRow(['term', 'section', 'student', 'mentor']);
+    sheet.addRow(['term', 'section', 'student', 'role', 'name']);
     sheet.getRow(sheet.rowCount).font = {bold: true};
     sheet.getRow(sheet.rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
     for (var i = 0; i < arr1.length; i++) {
       var item = arr1[i];
-      sheet.addRow([item.term, item.section, item.student, item.mentor]);
+      sheet.addRow([item.term, item.section, item.student, item.role, item.name]);
     }
 
     sheet.addRow(['']);
@@ -520,9 +520,10 @@ module.exports = internal.RosterManager = class {
         var student = row.getCell(columnMapping[thisObj.colMentor_Student]).value;
         var term = row.getCell(columnMapping[thisObj.colMentor_Term]).value;
         var section = row.getCell(columnMapping[thisObj.colMentor_Section]).value;
-        var mentor = row.getCell(columnMapping[thisObj.colMentor_Mentor]).value;
+        var role = row.getCell(columnMapping[thisObj.colMentor_Role]).value;
+        var name = row.getCell(columnMapping[thisObj.colMentor_Mentor]).value;
         
-        mentorData.push(student + '~|~' + term + '~|~' + section + '~|~' + mentor);
+        mentorData.push(student + '~|~' + term + '~|~' + section + '~|~' + role + '~|~' + name);
         
       }
     });
@@ -539,7 +540,8 @@ module.exports = internal.RosterManager = class {
         student: splitData[0],
         term: splitData[1],
         section: splitData[2],
-        mentor: splitData[3]
+        role: splitData[3],
+        name: splitData[4]
       });
     });
     
@@ -553,7 +555,10 @@ module.exports = internal.RosterManager = class {
       compare = a.student.localeCompare(b.student);
       if (compare != 0) return compare;
       
-      return a.mentor.localeCompare(b.mentor);
+      compare = a.role.localeCompare(b.role);
+      if (compare != 0) return compare;
+      
+      return a.name.localeCompare(b.name);
     });
     
     return arrMentorData;
