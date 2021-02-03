@@ -1,0 +1,48 @@
+/*-------------------------------------------------------------------*/
+ /* styling for Basic Web Design Box model interactive               */
+ /*------------------------------------------------------------------*/
+
+.colorscheme {
+  --fgPrimary: black;
+  --fgSecondary: rgb(46, 68, 105);
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgSecondary: rgba(66, 98, 150, 0.2);
+  --bgTertiary: #eee;
+  --borderPrimary: #bbb;
+  --diminished: #999;
+}
+
+body {
+	color: var(--fgPrimary);
+	background-color: var(--bgTertiary);
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	margin-right: 2.0em;
+}
+
+.hide-me {
+  visibility: hidden;
+}
+
+/*-------------------------------------------------------------------
+ * title bar
+ *------------------------------------------------------------------*/
+.titlecontainer {
+  color: white;
+  background-color: var(--bgPrimary);
+  border-radius: 3px;
+  padding: 0.2em 0;
+  margin-bottom: 0.4em;
+}
+
+.titlecontainer .titletext {
+  display: inline-block;
+  font-size: 1.2em;
+  padding-left: 0.2em;
+  padding-right: 0.4em;
+}
+
+/*-------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------*/
+.contents {}

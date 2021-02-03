@@ -1,0 +1,52 @@
+doctype html
+html(lang="en")
+  head
+    title Box Model
+    meta(charset="utf-8")
+    
+    link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
+
+    style
+      include ../styles/boxmodel.css
+    
+    script(data-main="/scripts/basic-web-design/require_boxmodel", src="/scripts/require.js")    
+      
+  body(class="colorscheme")
+    .titlecontainer
+      .titletext Basic Web Design: the Box model
+      
+    .contents
+      .controls
+        .controls-margin
+          input(type="checkbox" id="cbMargin" class="checkbox margin")
+          label(for="cbMargin") margin
+          input(type="range" class="slider margin-top"    min="1" max="10" value="1" ) 
+          input(type="range" class="slider margin-right"  min="1" max="10" value="1" ) 
+          input(type="range" class="slider margin-bottom" min="1" max="10" value="1" ) 
+          input(type="range" class="slider margin-left"   min="1" max="10" value="1" ) 
+      
+        .controls-border
+          input(type="checkbox" id="border" class="checkbox border")
+          label(for="border") border
+          input(type="range" class="slider border-top"    min="1" max="10" value="1" ) 
+          input(type="range" class="slider border-right"  min="1" max="10" value="1" ) 
+          input(type="range" class="slider border-bottom" min="1" max="10" value="1" ) 
+          input(type="range" class="slider border-left"   min="1" max="10" value="1" ) 
+      
+        .controls-padding
+          input(type="checkbox" id="cbPadding" class="checkbox padding")
+          label(for="cbPadding") padding
+          input(type="range" class="slider padding-top"    min="1" max="10" value="1" ) 
+          input(type="range" class="slider padding-right"  min="1" max="10" value="1" ) 
+          input(type="range" class="slider padding-bottom" min="1" max="10" value="1" ) 
+          input(type="range" class="slider padding-left"   min="1" max="10" value="1" ) 
+      
+      .element-text element text
+      
+      .element-above This element is above the demo element
+      
+      .element-demo
+        |these are the contents of this demonstration &lt;div&gt; element
+
+      .element-below This element is below the demo element
+            

@@ -560,6 +560,11 @@ app.get('/support-tool-index', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.get('/basic-web-design/:app', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'basic-web-design/pug/' + req.params.app + '.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
 app.get('/roster-manager', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
