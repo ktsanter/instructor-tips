@@ -62,6 +62,9 @@ const app = function () {
 
     elem = page.body.getElementsByClassName('altcontrol-control')[0];
     elem.addEventListener('click', (e) => {_handleOptionChange();});    
+
+    elem = page.body.getElementsByClassName('homeoverlay-control')[0];
+    elem.addEventListener('click', (e) => {_handleOptionChange();});    
   }
   
   //----------------------------------------
@@ -109,7 +112,10 @@ const app = function () {
         var altcontrol = 'altcontrol=false';
         if (_isChecked('altcontrol-control')) altcontrol = 'altcontrol=true';
         
-        var queryParams = '?' + toc + '&' + index + '&' + altcontrol;
+        var homeoverlay = 'homeoverlay=false';
+        if (_isChecked('homeoverlay-control')) homeoverlay = 'homeoverlay=true';
+        
+        var queryParams = '?' + toc + '&' + index + '&' + altcontrol + '&' + homeoverlay;
         url = protocol + '//' + hostname + '/' + path + '/' + id + queryParams;
       }
     }

@@ -114,6 +114,7 @@ body {
 }
 
 .slide-indexer .display-container .homeslide-overlay .homeslide-navcontainer .homeslide-navitem {
+  cursor: pointer;
   color: white;
   background-color: var(--bgPrimaryEmphasis);
   border: 1px solid var(--bgPrimaryEmphasis);

@@ -35,7 +35,8 @@ const app = function () {
     var expectedQueryParams = [
       {key: 'toc', required: false},
       {key: 'index', required: false},
-      {key: 'altcontrol', required: false}
+      {key: 'altcontrol', required: false},
+      {key: 'homeoverlay', required: false}
     ];
     
     if (_initializeSettings(expectedQueryParams)) {
@@ -55,6 +56,12 @@ const app = function () {
         settings.altcontrol = false;
       } else {
         settings.altcontrol = (settings.altcontrol.toLowerCase() == 'true' || settings.altcontrol == '1');
+      }
+      
+      if (settings.homeoverlay == null) {
+        settings.homeoverlay = false;
+      } else {
+        settings.homeoverlay = (settings.homeoverlay.toLowerCase() == 'true' || settings.homeoverlay == '1');
       }
     
       page.notice.setNotice('loading configuration data...', true);
@@ -296,7 +303,7 @@ const app = function () {
       page.presentationContainer.appendChild(page.slide[i]);
     }
     
-    if (settings.altcontrol) {
+    if (settings.homeoverlay) {
       page.homeSlideOverlay = _renderHomeSlideOverlay();
       page.body.getElementsByClassName('display-container')[0].appendChild(page.homeSlideOverlay);
     }
@@ -347,7 +354,7 @@ const app = function () {
       elemIframe.src = elemIframe.src;
     }
     
-    if (settings.altcontrol) {
+    if (settings.homeoverlay) {
       if (slideNumber == 0) {
         _showElement(page.homeSlideOverlay);
       } else {
@@ -492,7 +499,7 @@ const app = function () {
       _hideElement(page.presentationContainer);
       _hideElement(page.indexContainer);
       _hideElement(page.tocContainer);
-      _hideElement(page.homeSlideOverlay);
+      if (settings.homeoverlay) _hideElement(page.homeSlideOverlay);
       
       _setVisibility(page.body.getElementsByClassName('fwd-button')[0], false);
       _setVisibility(page.body.getElementsByClassName('nextpage')[0], false);
