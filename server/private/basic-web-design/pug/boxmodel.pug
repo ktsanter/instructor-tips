@@ -16,37 +16,74 @@ html(lang="en")
       .titletext Basic Web Design: the Box model
       
     .contents
-      .controls
-        .controls-margin
-          input(type="checkbox" id="cbMargin" class="checkbox margin")
-          label(for="cbMargin") margin
-          input(type="range" class="slider margin-top"    min="0" max="10" value="0" disabled) 
-          input(type="range" class="slider margin-right"  min="0" max="10" value="0" disabled) 
-          input(type="range" class="slider margin-bottom" min="0" max="10" value="0" disabled) 
-          input(type="range" class="slider margin-left"   min="0" max="10" value="0" disabled) 
-      
-        .controls-border
-          input(type="checkbox" id="border" class="checkbox border")
-          label(for="border") border
-          input(type="range" class="slider border-top"    min="1" max="10" value="1" disabled) 
-          input(type="range" class="slider border-right"  min="1" max="10" value="1" disabled) 
-          input(type="range" class="slider border-bottom" min="1" max="10" value="1" disabled) 
-          input(type="range" class="slider border-left"   min="1" max="10" value="1" disabled) 
-      
-        .controls-padding
-          input(type="checkbox" id="cbPadding" class="checkbox padding")
-          label(for="cbPadding") padding
-          input(type="range" class="slider padding-top"    min="0" max="10" value="0" disabled) 
-          input(type="range" class="slider padding-right"  min="0" max="10" value="0" disabled) 
-          input(type="range" class="slider padding-bottom" min="0" max="10" value="0" disabled) 
-          input(type="range" class="slider padding-left"   min="0" max="10" value="0" disabled) 
-      
-      .element-text element text
-      
-      .element-above This element is above the demo element
-      
-      .element-demo
-        |these are the contents of this demonstration &lt;div&gt; element
+      .overview(class="clearfix")
+        img.diagram(src="https://res.cloudinary.com/ktsanter/image/upload/v1612453753/BasicWebDesign_resources/boxmodel-diagram-transparent.png")
 
-      .element-below This element is below the demo element
+        .overview-text
+          |With the Box Model we visualize HTML elements as nested boxes.
+          |This applies to almost every element, although we typically use it for containers like &lt;div&gt; and &lt;p&gt;.
+          br
+          br
+          |Play around with the settings for margin, border, and padding to see how the CSS affects the demonstration results.
+          br
+          br
+          |For more info try this 
+          a(href="https://www.w3schools.com/css/css_boxmodel.asp" target="_blank") w3schools page
+                
+      .controls
+        table
+          tr
+            th
+            th top
+            th right
+            th bottom
+            th left
             
+          tr.controls-margin
+            td margin
+            td
+              input(type="range" class="slider margin-top"    min="0" max="50" step="5" value="0") 
+            td
+              input(type="range" class="slider margin-right"  min="0" max="50" step="5" value="0") 
+            td
+              input(type="range" class="slider margin-bottom" min="0" max="50" step="5" value="0") 
+            td
+              input(type="range" class="slider margin-left"   min="0" max="50" step="5" value="0") 
+                      
+          tr.controls-border
+            td border
+            td
+              input(type="range" class="slider border-top"    min="0" max="3" value="1") 
+            td
+              input(type="range" class="slider border-right"  min="0" max="3" value="1") 
+            td
+              input(type="range" class="slider border-bottom" min="0" max="3" value="1") 
+            td
+              input(type="range" class="slider border-left"   min="0" max="3" value="1") 
+      
+          tr.controls-padding
+            td padding
+            td
+              input(type="range" class="slider padding-top"    min="0" max="50" step="5" value="0") 
+            td
+              input(type="range" class="slider padding-right"  min="0" max="50" step="5" value="0") 
+            td
+              input(type="range" class="slider padding-bottom" min="0" max="50" step="5" value="0") 
+            td
+              input(type="range" class="slider padding-left"   min="0" max="50" step="5" value="0") 
+      
+      div
+      .element-text-label The CSS used for the demo element
+      .element-text
+      
+      .element-demo-label Demonsration
+      
+      .element-above above the demo element
+      
+      .element-before before the demo element
+      .element-demo
+        |this is the demonstration element
+      .element-after after the demo element
+
+      .element-below below the demo element
+

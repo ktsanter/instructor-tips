@@ -29,11 +29,6 @@ const app = function () {
 	//-----------------------------------------------------------------------------  
   function _addEventHandlers() {
     var handler = e => {_update(); };
-    
-    var checkboxes = page.body.getElementsByClassName('checkbox');
-    for (var i = 0; i < checkboxes.length; i++) {
-      checkboxes[i].addEventListener('click', handler);
-    }
 
     var sliders = page.body.getElementsByClassName('slider');
     for (var i = 0; i < sliders.length; i++) {
@@ -64,35 +59,24 @@ const app = function () {
       settings += ' ' + defaultVal + unit;
     }
     
-    var elemCheckbox = page.body.getElementsByClassName('checkbox ' + groupname)[0];
-    page.body.getElementsByClassName('slider ' + groupname + '-top')[0].disabled = !elemCheckbox.checked;
-    page.body.getElementsByClassName('slider ' + groupname + '-right')[0].disabled = !elemCheckbox.checked;
-    page.body.getElementsByClassName('slider ' + groupname + '-bottom')[0].disabled = !elemCheckbox.checked;
-    page.body.getElementsByClassName('slider ' + groupname + '-left')[0].disabled = !elemCheckbox.checked;
-
-    if (elemCheckbox.checked) {
-      settings = page.body.getElementsByClassName('slider ' + groupname + '-top')[0].value + unit;
-      settings += ' ' + page.body.getElementsByClassName('slider ' + groupname + '-right')[0].value + unit;
-      settings +=  ' ' + page.body.getElementsByClassName('slider ' + groupname + '-bottom')[0].value + unit;
-      settings +=  ' ' + page.body.getElementsByClassName('slider ' + groupname + '-left')[0].value + unit;
-      
-    } else if (groupname == 'border') {
-      settings = 'none';
-    }
+    settings = page.body.getElementsByClassName('slider ' + groupname + '-top')[0].value + unit;
+    settings += ' ' + page.body.getElementsByClassName('slider ' + groupname + '-right')[0].value + unit;
+    settings +=  ' ' + page.body.getElementsByClassName('slider ' + groupname + '-bottom')[0].value + unit;
+    settings +=  ' ' + page.body.getElementsByClassName('slider ' + groupname + '-left')[0].value + unit;
     
     return settings;
   }
   
   function _showElementCSS(elem, settings) {
-    console.log(settings);
-    var marginCSS = 'margin:' + settings.margin + ';';
+    var marginCSS = 'margin: ' + settings.margin + ';';
     
-    var borderCSS = 'border-width: ' + settings.border + '; border-style: solid;';
-    if (settings.border.includes('none')) {
+    var borderCSS = 'border-style: solid; border-width: ' + settings.border + ';';
+
+    if (settings.border == '0px 0px 0px 0px') {
       borderCSS = 'border-style: none;';
     }
     
-    var paddingCSS = 'padding:' + settings.padding + ';';
+    var paddingCSS = 'padding: ' + settings.padding + ';';
     
     var cssText = marginCSS + '<br>' + borderCSS + '<br>' + paddingCSS;
     
@@ -100,7 +84,6 @@ const app = function () {
   }
   
   function _setElementStyling(elem, styleName, styleSettings) {
-    console.log(styleName + ': ' + styleSettings);
     if (styleName == 'border-width') {
       if (styleSettings.includes('none')) {
         elem.style.borderStyle = 'none';

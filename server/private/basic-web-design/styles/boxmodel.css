@@ -24,6 +24,12 @@ body {
   visibility: hidden;
 }
 
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
 /*-------------------------------------------------------------------
  * title bar
  *------------------------------------------------------------------*/
@@ -47,11 +53,68 @@ body {
  *------------------------------------------------------------------*/
 .contents {}
 
+.contents .overview {
+  max-width: 45.0em;
+  margin-bottom: 1.0em;
+}
+
+.contents .overview .diagram {
+  float: left;
+  width: 17em;
+  height: auto;
+  padding-right: 0.4em
+}
+
+.contents .overview .overview-text {
+  padding-top: 2.0em;
+}
+
+.contents .controls {
+  display: inline-block;
+  background-color: white;
+  border: 1px solid #aaa;
+  padding: 0.4em;
+  margin-bottom: 1.0em;
+}
+
+.contents .controls th {
+  font-weight: normal;
+}
+
+.contents .controls .checkbox-label {
+  vertical-align: text-bottom;
+}
+
+.contents .element-text-label {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimary);
+  border-radius: 3px;
+  padding: 0.2em 0.3em;
+  margin-bottom: 0.3em;
+}
+
 .contents .element-text {
 	font-family: "Courier New", Courier, sans-serif;
+  margin-bottom: 1.0em;
+}
+
+.contents .element-demo-label {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimary);
+  border-radius: 3px;
+  padding: 0.2em 0.3em;
+  margin-bottom: 0.3em;
 }
 
 .contents .element-demo {
+  display: inline-block;
+  background-color: white;
   border-style: none;
   border-color: black;
+}
+
+.contents .element-before, .contents .element-after {
+  display: inline-block;
 }
