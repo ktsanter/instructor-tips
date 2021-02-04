@@ -1,0 +1,51 @@
+.display-elements {
+  width: 700px;
+  border: 1px solid var(--very-light-gray);
+  border-radius: 4px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.main-image {
+  width: 100px;
+  border: 1px solid var(--MV-black);
+}
+
+.paragraph {
+  margin-top: 0px;
+  margin-bottom: 0px;
+  font-size: 14px;
+}
+
+.control-table {
+  border: 1px solid var(--very-light-gray);
+  border-radius: 4px;
+}  
+
+.control-table-header {
+  padding-right: 10px;
+}
+
+.float-none {
+  float: none;
+}
+
+.float-left {
+  float: left;
+}
+
+.float-right {
+  float: right;
+}
+
+.clear-none {
+  clear: none;
+}
+
+.clear-left {
+  clear: left;
+}
+
+.clear-right {
+  clear: right;
+}

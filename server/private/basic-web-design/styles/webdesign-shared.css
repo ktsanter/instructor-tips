@@ -1,0 +1,128 @@
+/*-------------------------------------------------------------------*/
+ /* hared styling for Basic Web Design demos and interactive         */
+ /*------------------------------------------------------------------*/
+
+.colorscheme {
+  --fgPrimary: black;
+  --fgSecondary: rgb(46, 68, 105);
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgSecondary: rgba(66, 98, 150, 0.2);
+  --bgTertiary: #eee;
+  --borderPrimary: #bbb;
+  --diminished: #999;
+}
+
+body {
+	color: var(--fgPrimary);
+	background-color: var(--bgTertiary);
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 13px;
+	margin-right: 2.0em;
+}
+
+.hide-me {
+  visibility: hidden;
+}
+
+.clearfix::after {
+  content: "";
+  clear: both;
+  display: table;
+}
+
+/*-------------------------------------------------------------------
+ * title bar
+ *------------------------------------------------------------------*/
+.titlecontainer {
+  color: white;
+  background-color: var(--bgPrimary);
+  border-radius: 3px;
+  padding: 0.2em 0;
+  margin-bottom: 0.4em;
+}
+
+.titlecontainer .titletext {
+  display: inline-block;
+  font-size: 1.2em;
+  padding-left: 0.2em;
+  padding-right: 0.4em;
+}
+
+/*-------------------------------------------------------------------
+ * other common styles
+ *------------------------------------------------------------------*/
+.contents {}
+
+.contents #result-text-container {
+  padding-left: 10px;
+  padding-top: 10px;
+}
+
+.contents .text-container {
+  font-size: 14px;
+}
+
+.contents .filepicker {
+  margin-right: 8px;
+}
+
+.contents .text-container-title {
+  font-weight: bold;
+}
+
+.contents .effect-container-title {
+  font-weight: bold;
+}
+
+.contents .primary-button {
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 2px solid var(--bgPrimary);
+  border-radius: 4px;
+}
+
+.contents .primary-button:disabled, .primary-button:hover:disabled {
+  color: #ddd;
+  background-color: #6d6e71;
+  border: 2px solid var(--bgPrimary);
+}
+
+.contents .primary-button:hover {
+  border: 2px solid #0000FF;
+}
+
+.contents .secondary-button {
+  color: var(--bgPrimary);
+  background-color: white;
+  border: 2px solid var(--bgPrimary);
+  border-radius: 4px;
+}
+
+.contents .defaults-button {
+  font-size: 10px;
+  margin-left: 8px;
+  padding-left: 2px;
+  padding-right: 2px;
+  padding-bottom: 0;
+}
+
+.contents .flex-container {
+  display: flex;
+}
+
+.contents .inputfile {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+.contents select {
+  font-size: 11px;
+}
+
+.contents .formative-link {
+  color: white;
+}
