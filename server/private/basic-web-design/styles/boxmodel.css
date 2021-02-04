@@ -46,3 +46,12 @@ body {
  * contents
  *------------------------------------------------------------------*/
 .contents {}
+
+.contents .element-text {
+	font-family: "Courier New", Courier, sans-serif;
+}
+
+.contents .element-demo {
+  border-style: none;
+  border-color: black;
+}
