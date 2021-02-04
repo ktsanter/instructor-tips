@@ -48,6 +48,12 @@ body {
   padding-right: 0.4em;
 }
 
+.titlecontainer .home-link {
+  display: inline-block;
+  margin-left: 0.8em;
+  color: white;
+}
+
 /*-------------------------------------------------------------------
  * other common styles
  *------------------------------------------------------------------*/

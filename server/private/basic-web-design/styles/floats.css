@@ -49,3 +49,7 @@
 .clear-right {
   clear: right;
 }
+
+.contents .extra-note {
+  margin-top: 0.8em;
+}

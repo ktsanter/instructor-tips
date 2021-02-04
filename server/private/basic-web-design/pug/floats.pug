@@ -1,22 +1,27 @@
 doctype html
 html(lang="en")
   head
-    title Transforms
+    title Floats
     meta(charset="utf-8")
     
     link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
 
     style
       include ../styles/webdesign-shared.css
-      include ../styles/transforms.css
+      include ../styles/floats.css
     
-    script(data-main="/scripts/basic-web-design/require_transforms", src="/scripts/require.js")    
+    script(data-main="/scripts/basic-web-design/require_floats", src="/scripts/require.js")    
       
   body(class="colorscheme")
     .titlecontainer
-      .titletext Basic Web Design: using transforms
       .titletext Basic Web Design: practice and resources
       a.home-link(href="home" target="_self")      
         i(class="fas fa-home" title="Basic Web Design resources home")
-        
+      
     .contents
+    
+    .contents
+      .extra-note
+        |Check out 
+        a(href="https://www.w3schools.com/css/css_float.asp" target="_blank") this article
+        |&nbsp;for details and more examples

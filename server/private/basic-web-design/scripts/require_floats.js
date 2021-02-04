@@ -1,5 +1,5 @@
 define(function (require) {
-  require('floattester');
+  require('floats');
 
   document.addEventListener('DOMContentLoaded', app.init());
 });

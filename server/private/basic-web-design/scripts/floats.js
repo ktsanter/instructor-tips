@@ -35,7 +35,7 @@ const app = function () {
 	//----------------------------------------
 	function init () {
 		page.body = document.getElementsByTagName('body')[0];
-    page.contents = document.getElementById('contents');
+    page.contents = page.body.getElementsByClassName('contents')[0];
         
 		if (_initializeSettings()) {
       _renderPage();
