@@ -1,0 +1,39 @@
+doctype html
+html(lang="en")
+  head
+    title JSGD image manipulation
+    meta(charset="utf-8")
+    
+    style
+      include ../styles/imagemanipulation.css
+    
+    script(data-main="/scripts/jsgd/require_imagemanipulation", src="/scripts/require.js")    
+      
+  body
+    .title JavaScript Game Design: image size and position
+    div(id="target")
+
+    .current-container
+      .currentval current size: 
+        span(id="size")
+
+      .currentval current position: 
+        span(id="position")
+
+    .input-container
+      .param
+        |setSize(
+        input(id="inpWidth" type="text" size="4" maxlength="4")
+        |, 
+        input(id="inpHeight" type="text" size="4" maxlength="4")
+        |);
+
+      .param
+        |moveTo(
+        input(id="inpX" type="text" size="4" maxlength="4")
+        |, 
+        input(id="inpY" type="text" size="4" maxlength="4")
+        |);
+
+    div
+      button(id="btnSubmit") submit

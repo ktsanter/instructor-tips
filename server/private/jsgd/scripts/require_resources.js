@@ -3,7 +3,7 @@ define(function (require) {
   require('/scripts/create_element');
   require('/scripts/clipboard_copy');
   
-  require('jsgd-resources');
+  require('resources');
   
   document.addEventListener('DOMContentLoaded', app.init());
 });

@@ -1,0 +1,53 @@
+/*-----------------------------------------------------*/
+/* JavaScript Game Design - image manipulation demo    */
+/*-----------------------------------------------------*/
+
+body {
+	color: black;
+	background-color: #eee;
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.title {
+	color: white;
+	background-color: #426296;
+  border: 1px solid white;
+  border-radius: 6px 6px 0px 0px;
+  font-size: 1.2em;
+  padding: 0.4em 0.2em 0.2em 0.4em;
+  margin-top: 0em;
+}
+
+#target {
+  background-color: gray;
+  margin-bottom: 0.4em;
+}
+
+.current-container {
+  margin-bottom: 0.6em;
+}
+
+.current-container .currentval {}
+
+.input-container {
+  margin-bottom: 0.6em; 
+}
+
+.input-container .param {
+  font-family: "Courier New", Courier, sans-serif;
+  font-size: 1.1em;
+  margin-bottom: 0.2em;
+}
+
+.input-container .param input {
+  font-family: "Courier New", Courier, sans-serif;
+  font-size: 1.0em;
+}
+
+button {
+  color: white;
+  background-color: #426296;
+  border: 1px solid white;
+  border-radius: 3px;
+}

@@ -546,14 +546,18 @@ app.get('/accordion-wrapper', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.get('/jsgd-resources', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'jsgd-resources/pug/jsgd-resources.pug');
+app.get('/jsgd/:app', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'jsgd/pug/' + req.params.app + '.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
 app.get('/support-tool-index', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'support-tool-index/pug/support-tool-index.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/jsgd-resources', function (req, res) { // redirect from old name
+  res.redirect('/jsgd/resources');
 })
 
 app.get('/basic-web-design', function (req, res) {
@@ -591,8 +595,17 @@ async function processRosterManagerResult(req, res, result) {
   }
 }
 
+app.get('/cte-department', function (req, res) {
+  res.redirect('/cte-department/home');
+})
+
 app.get('/cte-department/home', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'cte-department/pug/cte-department.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {});
+})
+
+app.get('/cte-department/remind', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'cte-department/pug/remind-for-embed.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {});
 })
 
