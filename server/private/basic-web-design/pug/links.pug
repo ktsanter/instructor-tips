@@ -1,0 +1,75 @@
+doctype html
+html(lang="en")
+  head
+    title Links
+    meta(charset="utf-8")
+    
+    link(rel="stylesheet"
+      href="https://use.fontawesome.com/releases/v5.8.2/css/all.css"
+      integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay"
+      crossorigin="anonymous")    
+    
+    link(rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+      crossorigin="anonymous")
+
+    style
+      include ../styles/webdesign-shared.css
+      include ../styles/jqtree.css
+      include ../styles/links.css
+    
+    script(
+      src="https://code.jquery.com/jquery-3.3.1.min.js" 
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" 
+      crossorigin="anonymous")
+    
+    script(
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" 
+      integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" 
+      crossorigin="anonymous")
+    
+    script(data-main="/scripts/basic-web-design/require_links", src="/scripts/require.js")    
+      
+  body(class="colorscheme")
+    .titlecontainer
+      .titletext Basic Web Design: links and relative pathing
+
+      a.home-link(href="home" target="_self")      
+        i(class="fas fa-home" title="Basic Web Design resources home")
+
+    .container-fluid(id="contents")
+      .row
+        div(class="controls col col-md-3 controls-group")
+          button(id="btnExplore" class="control-button" title="explore relative pathing") explore
+          button(id="btnQuiz" class="control-button" title="take a practice quiz") quiz
+
+        div(id="instructions" class="col col-md-9")
+          span(id="instructions0")
+            span(class="emphasis") explore 
+            |: use the file and folder structure to explore relative pathing
+     
+          span(id="instructions1")
+            span(class="emphasis") practice quiz: 
+            |Use the file and folder structure to help answer the questions.
+
+      .row
+        div(id="hierarchyContainer" class="col col-md-3")
+          div(id="hierarchyLabel" class="hierarchy-label") Files and folders
+          div(id="hierarchy")
+          
+        div(class="col col-md-9")
+          div(id="titleExplore" class="explore-display explore-display-title")
+            |Explore the relative path between a folder and a file. 
+            span(id="containerRestartExplore")
+              button(id="btnRestartExplore" class="control-button") start over
+              
+          div(id="explore")
+          
+          div(id='quiz')
+            iframe(id="iframeH5P"
+              src="https://h5p.org/h5p/embed/432465" 
+              width="800" 
+              height="400" 
+              frameborder="0" 
+              allowfullscreen="allowfullscreen")

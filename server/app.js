@@ -326,10 +326,6 @@ app.post('/treasurehunt/landing/check-answer', async function (req, res) {
     res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
 })
 
-app.get('/webdesign-formative/:app', function(req, res) { 
-  res.sendFile(path.join(__dirname, 'private', 'webdesign-formative/html/' + req.params.app + '.html')); 
-})
-
 app.get('/welcomeletter/:coursekey/:audience', async function(req, res) { 
   if (req.params.audience == 'student' || req.params.audience == 'mentor') {
     var fileNameMentor = path.join(__dirname, 'private', 'welcomeletter/pug/welcomeletter-mentor.pug');
@@ -558,6 +554,10 @@ app.get('/jsgd-resources', function (req, res) {
 app.get('/support-tool-index', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'support-tool-index/pug/support-tool-index.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/basic-web-design', function (req, res) {
+  res.redirect('/basic-web-design/home');
 })
 
 app.get('/basic-web-design/:app', function (req, res) {
