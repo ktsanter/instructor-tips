@@ -2,13 +2,24 @@
 /* countdown generator styling          */
 /*--------------------------------------*/
 .kts-background {
-	background-color: #557A95;
+	background-color: rgba(66, 98, 150, 1.0);
 }
 
+.hide-me {
+  display: none;
+}
+
+.preview-container .preview-contents {
+  border: none;
+  width: 30.0em;
+  height: 2.8em;
+}
+
+/*---------------------------------*/
 .kts-style-title {
 	font-size: 16px;
 	font-weight: bold;
-	color: #557A95;
+	color: rgba(66, 98, 150, 1.0);
 }
 
 .kts-align-right {
@@ -17,7 +28,7 @@
 
 table.kts-full-border {
 	border: 1px solid black;
-	border-radius: 10px;
+	border-radius: 4px;
 	padding: 5px;
 }
 
@@ -27,7 +38,7 @@ table.kts-full-border {
 
 .kts-font-style1 {
 	font-size: 12px;
-	color: #c9cfd8;
+	color: white;
 }
 
 .kts-font-style2 {
@@ -44,10 +55,6 @@ table.kts-full-border {
 	color: gray;
 }
 
-.kts-dont-show {
-	display: none;
-}
-
 .kts-embed-code {
 	rows: 20;
 	cols: 60;
@@ -59,5 +66,5 @@ table.kts-full-border {
 	background-color: white;
 	color: #557A95;
 	border: 1px solid #557A95;
-	border-radius: 8px;
+	border-radius: 4px;
 }

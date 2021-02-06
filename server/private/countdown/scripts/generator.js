@@ -7,9 +7,7 @@ const app = function () {
   const page = {};
   
   const settings = {
-    ktsCountdownPreviewRunning: false,
-    //countdownscript: 'scripts/countdown.js'
-    countdownscript: 'https://raw.githubusercontent.com/ktsanter/countdown-generator/master/scripts/countdown.js'
+    countdownBaseURL: '/countdown/countdown'
   };
 
   //---------------------------------------
@@ -17,37 +15,30 @@ const app = function () {
   //----------------------------------------
   function init () {
     page.body = document.getElementsByTagName('body')[0];
+    
+    page.msgBefore = page.body.getElementsByClassName('msg-before')[0];
+    page.msgAfter = page.body.getElementsByClassName('msg-after')[0];
+    page.date = page.body.getElementsByClassName('date')[0];
 
-    var elemDeadlineDate1 = document.getElementById('ktsDeadlineDate1');
-    var elemTitleDuring1 = document.getElementById('ktsDeadlineTitleDuring1');
-    var elemTitleAfter1 = document.getElementById('ktsDeadlineTitleAfter1');
+    page.previewcontainer = page.body.getElementsByClassName('preview-container')[0];
+    page.previewcontents = page.body.getElementsByClassName('preview-contents')[0];
+    page.embedcontainer = page.body.getElementsByClassName('embed-container')[0];
+
     var elemPreviewButton = document.getElementById('ktsPreviewButton');
     var elemGenerateButton = document.getElementById('ktsGenerateButton');
     var elemCopyToClipboardButton = document.getElementById('ktsCopyToClipboardButton');
     
-    initializeDate(elemDeadlineDate1);
+    initializeDate(page.date);
         
-    elemPreviewButton.addEventListener('click', function() {
-      displayCountdownPreview();
-    });
-    
-    elemGenerateButton.addEventListener('click', function() {
-      displayCountdownEmbedCode();
-    });
-    
-    elemCopyToClipboardButton.addEventListener('click', function() {
-      copyEmbedCodeToClipboard();
-    });
+    elemPreviewButton.addEventListener('click', function() { displayCountdownPreview(); });
+    elemGenerateButton.addEventListener('click', function() { displayCountdownEmbedCode(); });
+    elemCopyToClipboardButton.addEventListener('click', function() { copyEmbedCodeToClipboard(); });
 
-    var elemToHide = [elemDeadlineDate1, elemTitleDuring1, elemTitleAfter1];
-    for (var i = 0; i < elemToHide.length; i++) {
-      elemToHide[i].addEventListener('click', function() {
-        hideArea('ktsEmbedCodeArea');
-        hideArea('ktsPreviewArea');
-        if (settings.ktsCountdownPreviewRunning) {
-          ktsCountdownCode.clearCountdown();
-          settings.ktsCountdownPreviewRunning = false;
-        }
+    var elemToHideFor = [page.date, page.msgBefore, page.msgAfter];
+    for (var i = 0; i < elemToHideFor.length; i++) {
+      elemToHideFor[i].addEventListener('click', function() {
+        UtilityKTS.setClass(page.previewcontainer, 'hide-me', true);
+        UtilityKTS.setClass(page.embedcontainer, 'hide-me', true);
       });
     }
   }
@@ -64,73 +55,54 @@ const app = function () {
   //---------------------------------------
 	// update
 	//----------------------------------------
-  function displayCountdownPreview() {
-    var ktsXHTTP = new XMLHttpRequest();
-    ktsXHTTP.onreadystatechange = function() {	
-      if (this.readyState == 4 && this.status == 200) {		
-        var scriptElement = document.createElement('script');		
-        scriptElement.innerHTML = ktsXHTTP.responseText;		
-        document.getElementById('ktsCountdownContent').parentElement.appendChild(scriptElement);	
-        var p2 = getCountdownParameters();
-        ktsCountdownCode.ktsCreateCountdownTimer(getCountdownParameters());	
-      }
-    };
-    ktsXHTTP.open('GET', settings.countdownscript, true);
-    ktsXHTTP.send();
-
-    settings.ktsCountdownPreviewRunning = true;
-    showArea('ktsPreviewArea');
-  }
-
-  function displayCountdownEmbedCode() {
-    var param = getCountdownParameters();
-    var embedCode = generateCountdownEmbedCode(param);
-    var embedElement = document.getElementById('ktsEmbedCodeText');
-    
-    embedElement.value = embedCode;
-    document.getElementById('ktsCopiedNotice').innerHTML = '';
-    showArea('ktsEmbedCodeArea');
-  }
-
   function getCountdownParameters() {
-    var nDates = 1;
-
-    var deadline1 = document.getElementById('ktsDeadlineDate1').value + ' 23:59:59';
-
     return {
-      'nDates': nDates,
-      'titleDuring': [ document.getElementById('ktsDeadlineTitleDuring1').value], 
-      'titleAfter': [document.getElementById('ktsDeadlineTitleAfter1').value], 
-      'date': [deadline1]
+      'before': page.body.getElementsByClassName('msg-before')[0].value, 
+      'after': page.body.getElementsByClassName('msg-after')[0].value, 
+      'date': page.body.getElementsByClassName('date')[0].value
     };
   }
 
   function generateCountdownEmbedCode(param) {
-    var sHTML = ""
-      + "<span>"
-      + "  <span id='ktsCountdownContent'> ... </span>"
-      + "</span>"
-      + "<script>"
-      + "var ktsXHTTP = new XMLHttpRequest();"
-      + "ktsXHTTP.onreadystatechange = function() {"
-      + "if (this.readyState == 4 && this.status == 200) {"
-      + "	   var scriptElement = document.createElement('script');"
-      + "    scriptElement.innerHTML = ktsXHTTP.responseText;"
-      + "	   document.getElementById('ktsCountdownContent').parentElement.appendChild(scriptElement);"
-      + "	   ktsCountdownCode.ktsCreateCountdownTimer(" + JSON.stringify(param) + ");"
-      + "	}"
-      + "};"
-//      + "ktsXHTTP.open('GET', 'https://raw.githubusercontent.com/ktsanter/countdown-generator/master/scripts/countdown.js', true);"
-      + "ktsXHTTP.open('GET', '" + settings.countdownscript + "', true);"
-      + "ktsXHTTP.send();"
-      + "</script>";
+    var url = window.location.origin + makeCountdownURL();
+
+    var embedCode = 
+        '<iframe'
+      +   ' style="border: none; width: 30.0em; height: 2.8em;"'
+      +   ' src=\'' + url + '\''
+      + '>'  
+      + '</iframe>';
       
-    return sHTML;
+    return embedCode;
   }
         
+  function makeCountdownURL() {
+    var params = getCountdownParameters();
+    var url = settings.countdownBaseURL
+      + '?date=' + '"' + params.date + '"' 
+      + '&before=' + params.before.replaceAll(' ', '%20')
+      + '&after=' + params.after.replaceAll(' ', '%20');
+      
+      return url;
+  }
+  
   //---------------------------------------
 	// handlers
 	//----------------------------------------
+  function displayCountdownPreview() {
+    page.previewcontents.src = makeCountdownURL();
+    UtilityKTS.setClass(page.previewcontainer, 'hide-me', false);    
+  }
+
+  function displayCountdownEmbedCode() {
+    var embedCode = generateCountdownEmbedCode(getCountdownParameters());
+    var embedElement = document.getElementById('ktsEmbedCodeText');
+    
+    embedElement.value = embedCode;
+    document.getElementById('ktsCopiedNotice').innerHTML = '';
+    UtilityKTS.setClass(page.embedcontainer, 'hide-me', false);
+  }
+
   function copyEmbedCodeToClipboard() {
     var embedElement = document.getElementById('ktsEmbedCodeText');
     embedElement.text = 'this should be embed code';
@@ -143,18 +115,6 @@ const app = function () {
   //---------------------------------------
 	// utility
 	//----------------------------------------
-  function showArea(elemId) {
-    var embedAreaClist = document.getElementById(elemId).classList;
-
-    if (embedAreaClist.contains('kts-dont-show')) {
-      embedAreaClist.remove('kts-dont-show');
-    }
-  }
-
-  function hideArea(elemId) {
-    document.getElementById(elemId).classList.add('kts-dont-show');
-  }
-
   String.prototype.replaceAll = function(search, replacement) {
       var target = this;
       return target.replace(new RegExp(search, 'g'), replacement);

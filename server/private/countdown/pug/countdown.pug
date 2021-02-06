@@ -1,0 +1,43 @@
+doctype html
+html(lang="en")
+  head
+    title countdown
+    meta(charset="utf-8")
+    
+    style
+      include ../styles/countdown.css
+    
+    script(data-main="/scripts/countdown/require_countdown", src="/scripts/require.js")    
+      
+  body
+    - var xparams = JSON.stringify(params)
+    - var msgBefore = params.before;
+    - var msgAfter = params.after;
+    - var endDate = params.date;
+    
+    .param(class="msg-before hide-me")= msgBefore
+    .param(class="msg-after hide-me")= msgAfter
+    .param(class="end-date hide-me")= endDate
+    
+    .badparams(class="hide-me")
+
+    div(class="contents")      
+      table(class="countdown-container")
+        tr
+          td(class="countdown-message")
+          
+          td(class="countdown-cell")
+            div(class="countdown-num days")
+            div(class="countdown-label") DAYS
+
+          td(class="countdown-cell")
+            div(class="countdown-num hours")
+            div(class="countdown-label") HOURS
+            
+          td(class="countdown-cell")
+            div(class="countdown-num minutes")
+            div(class="countdown-label") MINUTES
+            
+          td(class="countdown-cell")
+            div(class="countdown-num seconds")
+            div(class="countdown-label") SECONDS

@@ -19,17 +19,17 @@ html(lang="en")
       tr
         td deadline date
         td 
-          input(id='ktsDeadlineDate1' class='kts-font kts-font-style3' type='date' min='2018-01-01' max='2024-12-31')
+          input(class='date kts-font kts-font-style3' type='date' min='2018-01-01' max='2024-12-31')
           
       tr
         td message during
         td
-          input(id='ktsDeadlineTitleDuring1' class='kts-font kts-font-style3' type='text' value='Course ends' length=20 maxlength=20) 
+          input(class='msg-before kts-font kts-font-style3' type='text' value='Course ends' length=20 maxlength=20) 
           
       tr
         td message after
         td
-          input(id='ktsDeadlineTitleAfter1' class='kts-font kts-font-style3' type='text' value='Course ended' length=20 maxlength=20)
+          input(class='msg-after kts-font kts-font-style3' type='text' value='Course ended' length=20 maxlength=20)
           
       tr
         td
@@ -39,10 +39,10 @@ html(lang="en")
 
     br
     
-    div(id="ktsPreviewArea" class="kts-dont-show")
-      span(id="ktsCountdownContent") loading...
+    div(class="preview-container hide-me")
+      iframe(class="preview-contents")
       
-    div(id='ktsEmbedCodeArea' class='kts-dont-show')
+    div(class="embed-container hide-me")
       br
       button(id='ktsCopyToClipboardButton') copy to clipboard
       span(id='ktsCopiedNotice' class='kts-font kts-font-style2')

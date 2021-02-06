@@ -1,46 +1,53 @@
-.kts-countdown-container {
+body {
+  margin: 0;
+}
+
+.badparams {
+  font-style: italic;
+  color: blue;
+}
+
+.contents {
 	color: white;
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   font-size: 12px;
   max-width: 34em;
 	border-radius: 6px;
-	background: #25f791; 
-	background: -webkit-linear-gradient(#135e6f, #2f8d98);
-	background: -o-linear-gradient(#135e6f, #2f8d98);
-	background: -moz-linear-gradient(#135e6f, #2f8d98);
-	background: linear-gradient(#135e6f, #2f8d98);
+  
+  background: rgba(66, 98, 150, 1.0);
 }
 
-.kts-countdown .kts-countdown-table {
+.hide-me {
+  display: none;
+}
+
+.contents .countdown-container {
 	width: 100%; 
 	height: 100%;
 }
 
-.kts-countdown .kts-countdown-title {
+.contents .countdown-container.expired {
+	color: #ccc;
+}
+
+.contents .countdown-container .countdown-message {
 	font-size: 1.4em;
 	padding: 10px 0 0 0;
 	width: 50%;
 	vertical-align:-10%;
 }
 
-.kts-countdown .kts-countdown-cell {
+.contents .countdown-container .countdown-cell {
 	width: 12.5%;
 }
 
-.kts-countdown .kts-countdown-num {
+.contents .countdown-container .countdown-cell .countdown-num {
 	font-size: 1.6em;
 	text-align: center;
 }
 
-.kts-countdown .kts-countdown-label {
+.contents .countdown-container .countdown-cell .countdown-label {
 	font-size: 0.9em;
 	text-align: center;
 }
 
-.kts-countdown .kts-expired {
-	color: #989898;
-}
-
-.kts-countdown .kts-dont-show {
-	display: none;
-}
