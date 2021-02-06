@@ -1,0 +1,63 @@
+/*--------------------------------------*/
+/* countdown generator styling          */
+/*--------------------------------------*/
+.kts-background {
+	background-color: #557A95;
+}
+
+.kts-style-title {
+	font-size: 16px;
+	font-weight: bold;
+	color: #557A95;
+}
+
+.kts-align-right {
+	text-align: right;
+}
+
+table.kts-full-border {
+	border: 1px solid black;
+	border-radius: 10px;
+	padding: 5px;
+}
+
+.kts-font {
+	 font-family: Arial, Helvetica, sans-serif;
+}
+
+.kts-font-style1 {
+	font-size: 12px;
+	color: #c9cfd8;
+}
+
+.kts-font-style2 {
+	font-size: 12px;
+	color: blue;
+}
+
+.kts-font-style3 {
+	font-size: 12px;
+	color: #557A95;
+}
+
+.kts-disabled {
+	color: gray;
+}
+
+.kts-dont-show {
+	display: none;
+}
+
+.kts-embed-code {
+	rows: 20;
+	cols: 60;
+}
+
+.kts-control-button {
+	font-size: 12px;
+	font-weight: bold;
+	background-color: white;
+	color: #557A95;
+	border: 1px solid #557A95;
+	border-radius: 8px;
+}

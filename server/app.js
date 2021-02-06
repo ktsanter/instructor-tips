@@ -569,6 +569,21 @@ app.get('/basic-web-design/:app', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.get('/countdown/generator', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'countdown/pug/generator.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/countdown/scripts/:script', function (req, res) {
+  var scriptFileName = path.join(__dirname, 'private', 'countdown/scripts/' + req.params.script);
+  res.sendFile(scriptFileName);
+})
+
+app.get('/countdown/styles/:style', function (req, res) {
+  var styleFileName = path.join(__dirname, 'private', 'countdown/styles/' + req.params.style);
+  res.sendFile(styleFileName);
+})
+
 app.get('/roster-manager', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});

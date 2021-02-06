@@ -1,0 +1,50 @@
+doctype html
+html(lang="en")
+  head
+    title countdown generator
+    meta(charset="utf-8")
+    
+    link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
+
+    style
+      include ../styles/generator.css
+    
+    script(data-main="/scripts/countdown/require_generator", src="/scripts/require.js")    
+      
+  body(class="kts-font")
+    .kts-style-title Countdown generator
+    hr
+    
+    table(class="kts-background kts-full-border kts-font-style1")
+      tr
+        td deadline date
+        td 
+          input(id='ktsDeadlineDate1' class='kts-font kts-font-style3' type='date' min='2018-01-01' max='2024-12-31')
+          
+      tr
+        td message during
+        td
+          input(id='ktsDeadlineTitleDuring1' class='kts-font kts-font-style3' type='text' value='Course ends' length=20 maxlength=20) 
+          
+      tr
+        td message after
+        td
+          input(id='ktsDeadlineTitleAfter1' class='kts-font kts-font-style3' type='text' value='Course ended' length=20 maxlength=20)
+          
+      tr
+        td
+        td(class="kts-align-right")
+          button(id='ktsPreviewButton' class='kts-control-button' title='preview the countdown timer with the current settings') preview
+          button(id='ktsGenerateButton' class='kts-control-button' title='generate embed HTML code') embed
+
+    br
+    
+    div(id="ktsPreviewArea" class="kts-dont-show")
+      span(id="ktsCountdownContent") loading...
+      
+    div(id='ktsEmbedCodeArea' class='kts-dont-show')
+      br
+      button(id='ktsCopyToClipboardButton') copy to clipboard
+      span(id='ktsCopiedNotice' class='kts-font kts-font-style2')
+      br
+      textarea(id='ktsEmbedCodeText' class='kts-embed-code' rows=20 cols=60  readonly) loading...
