@@ -1,0 +1,231 @@
+/*-----------------------------------------------------*/
+/* styling for image flipper generator app             */
+/*-----------------------------------------------------*/
+.colorscheme {
+  --fgPrimary: black;
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgSecondary: rgba(66, 98, 150, 0.2);
+  --bgTertiary: #eee;
+  --borderPrimary: #bbb;
+  --diminished: #999;
+}
+
+body {
+	color: var(--fgPrimary);
+	background-color: var(--bgTertiary);
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+	margin-right: 2.0em;
+}
+
+.hide-me {
+  display: none;
+}
+
+/*-------------------------------------------------------------------
+ * title bar
+ *------------------------------------------------------------------*/
+.titlecontainer {
+  color: white;
+  background-color: var(--bgPrimary);
+  border-radius: 3px;
+  padding: 0.2em 0;
+  margin-bottom: 0.4em;
+}
+
+.titlecontainer .titletext {
+  display: inline-block;
+  font-size: 1.2em;
+  padding-left: 0.2em;
+  padding-right: 0.4em;
+}
+
+.titlecontainer .title-control {
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+
+.titlecontainer .title-control .control-icon {
+  font-size: 1.1em;
+}
+
+/*---------------------------------------------*/
+/* contents                                    */
+/*---------------------------------------------*/
+.contents {}
+
+/*-------------------------------------------------------------------
+ * controls
+ *------------------------------------------------------------------*/
+.contents .controls {}
+
+.contents .controls .control-label {
+  vertical-align: top;
+}
+
+.contents .controls input {
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.contents .controls select {
+  font-size: 1.0em;
+	width: 7.0em;
+  padding: 0.2em;
+}
+
+.contents .controls .control-color {
+  color: var(--flipper-color3);
+  background-color: var(--flipper-color2);
+  border: 1px solid var(--flipper-color1);
+  cursor: pointer;
+  width: 6.0em;
+  text-align: center;
+  padding: 0.2em;
+}
+
+.contents .controls .color-options {
+  margin-top: 0.2em;
+}
+
+.contents .controls .color-options .color-sample {
+  color: var(--flipper-color3);
+  background-color: var(--flipper-color2);
+  border: 1px solid var(--flipper-color1);
+  cursor: pointer;
+  width: 6.0em;
+  text-align: center;
+  padding: 0.2em;
+}
+
+/*-------------------------------------------------------------------
+ * layout
+ *------------------------------------------------------------------*/
+.contents .layout {}
+
+.contents .layout table { }
+
+.contents .layout .cardbutton {
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--borderPrimary);
+  border-radius: 3px;
+  width: 8.0em;
+  height: 8.0em;
+}
+
+.contents .layout .swaparea {}
+
+
+/*---- original -------------------------------------------------*/
+.kts-flipper-generator {
+	 font-family: Arial, Helvetica, sans-serif;
+	--kts-fpg-color1: #557A95;
+	--kts-fpg-color2: #c9cfd8;
+	--kts-fpg-color3: white;
+}
+
+.kts-flipper-generator .kts-background {
+	background-color: var(--kts-fpg-color1);
+}
+
+.kts-flipper-generator .kts-style-title {
+	font-size: 16px;
+	font-weight: bold;
+	color: var(--kts-fpg-color1);
+}
+
+.kts-flipper-generator .kts-preview-close-button {
+	font-size: 12px;
+	font-weight: bold;
+	background-color: var(--kts-fpg-color1);
+	color: var(--kts-fpg-color3); 
+	border: 1px solid var(--kts-fpg-color1);
+	border-radius: 8px;
+}
+
+.kts-flipper-generator .kts-control-button {
+	font-size: 12px;
+	font-weight: bold;
+	background-color: var(--kts-fpg-color3);
+	color: var(--kts-fpg-color1);
+	border: 1px solid var(--kts-fpg-color3);
+	border-radius: 8px;
+}
+
+.kts-flipper-generator .kts-align-right {
+	text-align: right;
+}
+
+.kts-flipper-generator table.kts-full-border {
+	border: 1px solid black;
+	border-radius: 10px;
+	padding: 5px;
+}
+
+.kts-flipper-generator .kts-font-style1 {
+	font-size: 12px;
+	color: var(--kts-fpg-color2);
+}
+
+.kts-flipper-generator .kts-font-style2 {
+	font-size: 12px;
+	color: blue;
+}
+
+.kts-flipper-generator .kts-font-style3 {
+	font-size: 12px;
+	color: var(--kts-fpg-color1);
+}
+
+.kts-flipper-generator .kts-disabled {
+	color: gray;
+}
+
+.kts-flipper-generator .kts-embed-code {
+	rows: 20;
+	cols: 60;
+}
+
+.kts-flipper-generator .kts-preview-layout-button {
+	width: 100px;
+	height: 100px;
+	color: var(--kts-fpg-color2);
+	background-color: var(--kts-fpg-color1);
+	border: 1px solid black;
+	border-radius:6px;
+	font-size: 20px;
+	font-weight: bold;
+}
+
+.kts-preview {
+    position: fixed; /* Sit on top of the page content */
+    width: 100%; /* Full width (cover the whole page) */
+    height: 100%; /* Full height (cover the whole page) */
+}
+
+.kts-flipper-generator-colorscheme {
+	color: var(--flipper-color3);
+	background-color: var(--flipper-color2);
+	border: 1px solid var(--flipper-color1);
+}
+
+.kts-flipper-color-sample {
+	padding: 8px 8px 8px 8px;
+}
+
+.kts-flipper-generator-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.kts-flipper-generator-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    padding: 8px 8px;
+    z-index: 1;
+	font-size: 16px;
+}

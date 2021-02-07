@@ -1,0 +1,37 @@
+doctype html
+html(lang="en")
+  head
+    title image flipper
+    meta(charset="utf-8")
+    
+    link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
+
+    style
+      include ../styles/colorschemes.css
+      include ../styles/flipper.css
+    
+    script(data-main="/scripts/image-flipper/require_flipper", src="/scripts/require.js")    
+      
+    body(class="flipper")
+      div(id="notice" class='notice notice')
+      .contents(class="hide-me")     
+        table(class="main-container")
+          tr
+            td
+              table(class="flipper-table-title")
+                tr
+                  td
+                    .flipper-title
+                  td(class="flipper-control-cell")
+                    button(class="flipper-button") reset
+                    
+              br
+              
+              .flipper-subtitle
+              
+              br
+              
+              .flipper-container
+                .flipper-card(id="flipperMainCard")
+
+

@@ -1,0 +1,38 @@
+/*--------------------------------------------------------*/
+/* image flipper color schemes                            */
+/*--------------------------------------------------------*/
+.flipper-colorscheme-000 {
+	--flipper-color1: black;  /* border and subtitle text */
+	--flipper-color2: #426296; /* nominal background */
+	--flipper-color3: white;  /* nominal foreground */
+}
+
+.flipper-colorscheme-001 {
+	--flipper-color1: black;  
+	--flipper-color2: white;  
+	--flipper-color3: #426296;
+}
+
+.flipper-colorscheme-002 {
+	--flipper-color1: black;
+	--flipper-color2: #3474db;
+	--flipper-color3: white;
+}
+
+.flipper-colorscheme-003 {
+	--flipper-color1: black;
+	--flipper-color2: white;
+	--flipper-color3: #3474db;
+}
+
+.flipper-colorscheme-004 {
+	--flipper-color1: black;
+	--flipper-color2: #135F6F;
+	--flipper-color3: white; 
+}
+
+.flipper-colorscheme-005 {
+	--flipper-color1: black;
+	--flipper-color2: white; 
+	--flipper-color3: #135F6F;
+}
