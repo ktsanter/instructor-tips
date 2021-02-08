@@ -20,14 +20,27 @@ html(lang="en")
         span(class="title-control control-embed" title="generate embed code")
           i(class="control-icon fas fa-angle-left")
           i(class="control-icon fas fa-angle-right")
-        
+          
+        span(class="title-control control-menu")
+          i(class="control-icon menu-icon fas fa-bars")
+          .dropdown-content(class="hide-me")
+            .dropdown-item(id="menuHelp") help
+            .dropdown-item(id="menuSignout") sign out
+            
+        span(class="username")
+      
       .contents
         .controls
           table
             tr
+              td(class="control-label") key value
+              td
+                input(class="control-keyvalue" type="text" value="" size="20" maxlength="20", placeholder='only letters and digits')
+            
+            tr
               td(class="control-label") title
               td
-                input(class="control-title" type="text" value="" size="30" maxlength="30")
+                input(class="control-title" type="text" value="" size="40" maxlength="40")
             
             tr
               td(class="control-label") subtitle
@@ -56,12 +69,21 @@ html(lang="en")
                   option(value="4x5" selected) 4 x 5
                   option(value="5x5") 5 x 5
                   option(value="6x5") 6 x 5
-        
+                
+        .embed(class="hide-me")
+          .embed-copy-container
+            button(class="embed-copy") copy to clipboard
+          textarea(class="embed-text" rows="8" cols="40")
+
         .layout
           table
+          .imageurl(class="hide-me")
+            span(class="prompt")
+            input(class="imageurl-input" type="text")
+            i(class="far fa-check-square")
+            i(class="far fa-window-close")
+            
           .swaparea(class="hide-me")
         
         .preview(class="hide-me") preview
-        
-        .embed(class="hide-me") embed
       

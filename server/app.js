@@ -278,20 +278,30 @@ var appLookup = {
   "instructortips" : {
     appDescriptor: 'instructortips',
     appName: 'InstructorTips',
-    routeRedirect: '/instructortips-app'
+    routeRedirect: '/instructortips-app',
+    loginReRoute: 'instructortips'
   },
   
   "treasurehunt" : {
     appDescriptor: 'treasurehunt',
     appName: 'Treasure Hunt',
-    routeRedirect: '/treasurehunt-configuration'
+    routeRedirect: '/treasurehunt-configuration',
+    loginReRoute: 'treasurehunt'
   },
   
   "welcome" : {
     appDescriptor: 'welcome',
     appName: 'Welcome letter configuration',
     routeFunction: dbWelcomeLetter.renderConfigurationPage,
-    routeData: 'welcomeletter/pug/configuration.pug'
+    routeData: 'welcomeletter/pug/configuration.pug',
+    loginReRoute: 'welcomeletter/configuration'
+  } 
+,
+  "image-flipper-generator" : {
+    appDescriptor: 'image-flipper-generator',
+    appName: 'Image flipper generator',
+    routePug: 'image-flipper/pug/generator.pug',
+    loginReRoute: 'image-flipper/generator'
   } 
 };
 
@@ -314,7 +324,15 @@ function routeIfLoggedIn(req, res, appDescriptor) {
 
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
 app.get('/treasurehunt', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
+app.get('/treasurehunt-configuration', function (req, res) { 
+  if (userManagement.isLoggedIn(req.session)) {
+    res.sendFile(path.join(__dirname, 'private', 'treasurehunt-configuration/html/treasurehunt-configuration.html'));
+  } else {
+    res.redirect('/login'); 
+  }
+})
 app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcome'); })
+app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 
 app.get('/treasurehunt-landing/:projectid', async function (req, res) {
   var fileName = path.join(__dirname, 'private', 'treasurehunt-landing/pug/treasurehunt-landing.pug');
@@ -352,12 +370,20 @@ app.get('/welcomeletter/:coursekey/:audience', async function(req, res) {
 //------------------------------------------------------
 app.get('/usermanagement/routeToApp/:app', async function (req, res) {
   var appDescriptor = req.params.app;
-  
   var appInfo = appLookup[appDescriptor];
 
-  if (appInfo && appInfo.routeRedirect) {
+  var loggedIn = userManagement.isLoggedIn(req.session);
+  if (!loggedIn) {
+    userManagement.setAppInfoForSession(req.session, appInfo);
+    res.redirect('/login');
+    
+  } else if (appInfo && appInfo.routeRedirect) {
     res.redirect(appInfo.routeRedirect);
 
+  } else if (appInfo && appInfo.routePug) {
+    var pugFileName = path.join(__dirname, 'private', appInfo.routePug);
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+    
   } else if (appInfo && appInfo.routeFunction) {
     var pugFileName = path.join(__dirname, 'private', appInfo.routeData);
     await appInfo.routeFunction(res, dbManagerLookup[appDescriptor], pugFileName, renderAndSendPugIfExists);
@@ -592,8 +618,8 @@ app.get('/countdown/:app', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, appParams);
 })
 
-app.get('/image-flipper/:app', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'image-flipper/pug/' + req.params.app + '.pug');
+app.get('/image-flipper/flipper', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'image-flipper/pug/flipper.pug');
   
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
@@ -639,6 +665,8 @@ app.get('/cte-department/remind', function (req, res) {
 })
 
 app.get('/:app', function (req, res) {
+  var appDescriptor = req.params.app;
+  
   res.sendFile(path.join(__dirname, 'private', req.params.app + '/html/' + req.params.app + '.html'))
 })
 

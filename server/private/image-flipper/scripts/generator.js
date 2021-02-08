@@ -5,17 +5,29 @@ const app = function () {
 	const page = {};
 	
 	const settings = {
-    maxCards: 36
+    logoutURL: '/usermanagement/logout',
+    maxCards: 36,
+    thumbnailErrorImg: 'https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png'
 	};
 	
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	function init () {
+	async function init () {
     page.body = document.getElementsByTagName('body')[0];
+    
+    await _getUserInfo();
     
     _renderPage();
   }
+  
+  async function _getUserInfo() {
+    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
+    settings.userInfo = null;
+    if (dbResult.success) {
+      settings.userInfo = dbResult.userInfo;
+    }     
+  }    
 	
 	//--------------------------------------------------------------
 	// page rendering
@@ -23,7 +35,10 @@ const app = function () {
   function _renderPage() {
     page.previewControl = page.body.getElementsByClassName('control-preview')[0];
     page.embedControl = page.body.getElementsByClassName('control-embed')[0];
+    page.userName = page.body.getElementsByClassName('username')[0];
+    page.menu = page.body.getElementsByClassName('control-menu')[0];
 
+    page.keyvalueControl = page.body.getElementsByClassName('control-keyvalue')[0];
     page.titleControl = page.body.getElementsByClassName('control-title')[0];
     page.subtitleControl = page.body.getElementsByClassName('control-subtitle')[0];
     page.colorControl = page.body.getElementsByClassName('control-color')[0];
@@ -34,6 +49,8 @@ const app = function () {
     page.previewContainer = page.body.getElementsByClassName('preview')[0];
     page.embedContainer = page.body.getElementsByClassName('embed')[0];
     
+    page.userName.innerHTML = settings.userInfo.userName;
+    
     _attachHandlers();
 
     _renderLayout();
@@ -41,11 +58,22 @@ const app = function () {
   }
   
   function _attachHandlers() {
-    page.previewControl.addEventListener('click', (e) => {_handlePreviewControl(e);} );
+    page.previewControl.addEventListener('click', (e) => {_hideEmbed(); _handlePreviewControl(e);} );
     page.embedControl.addEventListener('click', (e) => {_handleEmbedControl(e);} );
+    
+    page.menu.addEventListener('mouseenter', (e) => { _handleMenuHover(e, true)} );
+    page.menu.addEventListener('mouseleave', (e) => { _handleMenuHover(e, false)} );
+    var menuItems = page.menu.getElementsByClassName('dropdown-item');
+    for (var i = 0; i < menuItems.length; i++) {
+      menuItems[i].addEventListener('click', (e) => { _handleMenuItem(e); });
+    }
+    
+    page.keyvalueControl.addEventListener('input', (e) => { _hideEmbed(); _restrictInput(e); });
+    page.titleControl.addEventListener('input', (e) => {_hideEmbed();});
+    page.subtitleControl.addEventListener('input', (e) => {_hideEmbed();});
    
-    page.layoutControl.addEventListener('change', (e) => {_updateLayout();});
-    page.colorControl.addEventListener('click', (e) => {_handleColorControl(e);});
+    page.layoutControl.addEventListener('change', (e) => {_hideEmbed(); _updateLayout();});
+    page.colorControl.addEventListener('click', (e) => {_hideEmbed(); _handleColorControl(e);});
     
     page.colorOptions.addEventListener('mouseleave', (e) => { UtilityKTS.setClass(page.colorOptions, 'hide-me', true); });
     var samples = page.colorOptions.getElementsByClassName('color-sample');
@@ -64,10 +92,17 @@ const app = function () {
     tableRow.appendChild(tableCell);
     
     for (var i = 0; i < settings.maxCards; i++) {
-      var handler = (e) => { _handleCardButton(e);};
-      var elem = CreateElement.createButton('btnCard' + i, 'cardbutton cardbutton' + i, i, null, handler);
+      var handler = (e) => { _hideEmbed(); _handleCardButton(e);};
+      var elem = CreateElement.createButton('btnCard' + i, 'cardbutton cardbutton' + i, i + 1, null, handler);
+      elem.value = i;
+      elem.imageURL = '';
+      elem.title = 'specify image URL for card #' + (i + 1);
       tableCell.appendChild(elem);
     }
+    
+    var elemURLInput = page.layoutContainer.getElementsByClassName('imageurl')[0];
+    page.ImageInputRow = CreateElement._createElement('tr', null, null);
+    page.ImageInputRow.appendChild(elemURLInput);
   }
 	
 	//--------------------------------------------------------------
@@ -103,6 +138,32 @@ const app = function () {
     }
   }
 
+  function _promptForImageURL(elem) {
+    var cardNum = elem.value;
+    var currentURL = elem.imageURL;
+    
+    return prompt('Please enter the URL for image #' + (cardNum + 1), currentURL);
+  }
+  
+  function _setCardImage(elem, imageURL) {
+    var origWidth = elem.offsetWidth;
+    var origHeight = elem.offsetHeight;
+
+    if (imageURL == null || imageURL == "") {
+      elem.style.background = "";
+      elem.imageURL = "";
+
+    } else {
+      elem.style.background = "url(" + imageURL + "), url('" + settings.thumbnailErrorImg + "') no-repeat right top";
+      elem.style.backgroundSize = origWidth + "px " + origHeight + "px";
+      elem.imageURL = imageURL;
+    }
+  }
+  
+  function _hideEmbed() {
+    UtilityKTS.setClass(page.embedContainer, 'hide-me', true);
+  }
+
 	//--------------------------------------------------------------
 	// handlers
 	//--------------------------------------------------------------
@@ -114,6 +175,20 @@ const app = function () {
   function _handleEmbedControl(e) {
     console.log('embed control clicked');
     UtilityKTS.setClass(page.embedContainer, 'hide-me', false);
+  }
+  
+  function _handleMenuHover(e, showMenu) {
+    UtilityKTS.setClass(page.body.getElementsByClassName('dropdown-content')[0], 'hide-me', !showMenu);
+  }
+  
+  function _handleMenuItem(e) {
+    var itemId = e.target.id;
+    if (itemId == 'menuHelp') {
+      _showHelp();
+      
+    } else if (itemId == 'menuSignout') {
+      _doLogout();
+    }
   }
   
   function _handleColorControl(e) {
@@ -134,12 +209,24 @@ const app = function () {
   }
   
   function _handleCardButton(e) {
-    console.log(e.target);
+    var cardNum = e.target.value;
+    var currentURL = e.target.imageURL;
+    
+    var imageURL = _promptForImageURL(e.target);
+    if (imageURL) _setCardImage(e.target, imageURL);
   }
 	
 	//---------------------------------------
 	// utility functions
 	//---------------------------------------
+  function _restrictInput(e) {
+    if (!e.data) return;
+    
+    if (!e.data.match(/[0-9a-zA-Z_\-]/)) {
+      e.target.value = e.target.value.replace(/[^0-9a-zA-Z_\-]/g, '');
+    }
+  }
+  
   function _getColorScheme(elem) {
     var currentSchemeClass = '';
     elem.classList.forEach(function(value, key) {
@@ -156,6 +243,14 @@ const app = function () {
       rows: layoutValues[0],
       cols: layoutValues[1]
     };
+  }
+  
+  async function _doLogout() {
+    window.open(settings.logoutURL, '_self'); 
+  }
+
+  function _showHelp() {
+    console.log('help');
   }
 	
 	return {

@@ -49,6 +49,43 @@ body {
   font-size: 1.1em;
 }
 
+.titlecontainer .username {
+  float: right;
+}
+
+.titlecontainer .title-control.control-menu {
+  float: right;
+}
+
+.titlecontainer .title-control.control-menu .control-icon {
+  margin-right: 0.2em;
+  vertical-align: middle;
+  margin: 0;
+  padding: 0.4em;
+}
+
+.titlecontainer .title-control.control-menu:hover {
+  background-color: #6093e5;
+}
+
+.titlecontainer .dropdown-content {
+  position: absolute;
+  top: 2.7em;
+  right: 2.0em;
+  color: black;
+  background-color: white;
+  box-shadow: 0px 8px 16px 0px rgb(0 0 0 / 20%);
+}
+
+.titlecontainer .dropdown-content .dropdown-item {
+  padding: 1.0em 1.0em;
+}
+
+.titlecontainer .dropdown-content .dropdown-item:hover {
+  color: white;
+  background-color: #6093e5;
+}
+
 /*---------------------------------------------*/
 /* contents                                    */
 /*---------------------------------------------*/
@@ -99,6 +136,14 @@ body {
 }
 
 /*-------------------------------------------------------------------
+ * embed
+ *------------------------------------------------------------------*/
+.contents .embed {
+  margin-top: 0.8em;
+  margin-bottom: 0.2em;
+}
+
+/*-------------------------------------------------------------------
  * layout
  *------------------------------------------------------------------*/
 .contents .layout {}
@@ -110,8 +155,13 @@ body {
   background-color: var(--bgPrimary);
   border: 1px solid var(--borderPrimary);
   border-radius: 3px;
-  width: 8.0em;
-  height: 8.0em;
+  font-size: 1.5em;
+  width: 5.0em;
+  height: 5.0em;
+}
+
+.contents .layout .imageurl {
+  border: 1px solid red;
 }
 
 .contents .layout .swaparea {}
