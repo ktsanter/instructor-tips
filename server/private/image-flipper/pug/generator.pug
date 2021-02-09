@@ -7,29 +7,19 @@ html(lang="en")
     link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
 
     style
+      include ../../common/styles/colorscheme.css    
+      include ../../common/styles/navbar.css    
       include ../styles/colorschemes.css    
       include ../styles/generator.css
     
     script(data-main="/scripts/image-flipper/require_generator", src="/scripts/require.js")    
       
-    body(class='colorscheme')
-      .titlecontainer
-        .titletext Image flipper generator
-        span(class="title-control control-preview" title="preview")
-          i(class="control-icon fa fa-eye")
-        span(class="title-control control-embed" title="generate embed code")
-          i(class="control-icon fas fa-angle-left")
-          i(class="control-icon fas fa-angle-right")
-          
-        span(class="title-control control-menu")
-          i(class="control-icon menu-icon fas fa-bars")
-          .dropdown-content(class="hide-me")
-            .dropdown-item(id="menuHelp") help
-            .dropdown-item(id="menuSignout") sign out
-            
-        span(class="username")
+    body(class='flipper-colorscheme instructortips-colorscheme')
+      .navbarcontainer
       
-      .contents
+      .contents(class="contents-projects hide-me") projects
+      
+      .contents(class="contents-layout hide-me")
         .controls
           table
             tr
@@ -85,5 +75,8 @@ html(lang="en")
             
           .swaparea(class="hide-me")
         
-        .preview(class="hide-me") preview
+      .contents(class="contents-preview hide-me") preview
+      
+      .contents(class="contents-embed hide-me") embed
+
       

@@ -3,6 +3,10 @@
 //---------------------------------------------------
 const app = function () {
 	const page = {};
+  
+  const appInfo = {
+    appName: 'Image flipper generator'
+  };
 	
 	const settings = {
     logoutURL: '/usermanagement/logout',
@@ -33,11 +37,10 @@ const app = function () {
 	// page rendering
 	//--------------------------------------------------------------
   function _renderPage() {
-    page.previewControl = page.body.getElementsByClassName('control-preview')[0];
-    page.embedControl = page.body.getElementsByClassName('control-embed')[0];
-    page.userName = page.body.getElementsByClassName('username')[0];
-    page.menu = page.body.getElementsByClassName('control-menu')[0];
-
+    page.contentsProjects = page.body.getElementsByClassName('contents-projects')[0];
+    page.contentsLayout = page.body.getElementsByClassName('contents-layout')[0];
+    page.contentsPreview = page.body.getElementsByClassName('contents-preview')[0];
+    
     page.keyvalueControl = page.body.getElementsByClassName('control-keyvalue')[0];
     page.titleControl = page.body.getElementsByClassName('control-title')[0];
     page.subtitleControl = page.body.getElementsByClassName('control-subtitle')[0];
@@ -46,28 +49,39 @@ const app = function () {
     page.colorOptions = page.body.getElementsByClassName('color-options')[0];
     
     page.layoutContainer = page.body.getElementsByClassName('layout')[0];
-    page.previewContainer = page.body.getElementsByClassName('preview')[0];
-    page.embedContainer = page.body.getElementsByClassName('embed')[0];
     
-    page.userName.innerHTML = settings.userInfo.userName;
-    
+    page.body.getElementsByClassName('navbarcontainer')[0].appendChild(_renderNavbar());
     _attachHandlers();
-
     _renderLayout();
     _updateLayout();
+    
+    settings.navbar.selectOption('Projects');    
   }
   
+  function _renderNavbar() {
+    var navConfig = {
+      title: appInfo.appName,
+      
+      items: [
+        {label: 'Projects', callback: () => {return _navDispatch('projects');}, subitems: null, rightjustify: false},
+        {label: 'Layout', callback: () => {return _navDispatch('layout');}, subitems: null, rightjustify: false},
+        {label: settings.userInfo.userName, callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
+      ],
+      
+      hamburgeritems: [           
+        {label: 'preview', markselected: false, callback: () => {return _navDispatch('preview');}},
+        {label: 'embed', markselected: false, callback: () => {return _navDispatch('embed');}},
+        {label: 'help', markselected: false, callback: _showHelp},
+        {label: 'sign out', markselected: false, callback: _doLogout}
+      ]   
+    };
+
+    settings.navbar = new NavigationBar(navConfig);
+        
+    return settings.navbar.render();
+  } 
+  
   function _attachHandlers() {
-    page.previewControl.addEventListener('click', (e) => {_hideEmbed(); _handlePreviewControl(e);} );
-    page.embedControl.addEventListener('click', (e) => {_handleEmbedControl(e);} );
-    
-    page.menu.addEventListener('mouseenter', (e) => { _handleMenuHover(e, true)} );
-    page.menu.addEventListener('mouseleave', (e) => { _handleMenuHover(e, false)} );
-    var menuItems = page.menu.getElementsByClassName('dropdown-item');
-    for (var i = 0; i < menuItems.length; i++) {
-      menuItems[i].addEventListener('click', (e) => { _handleMenuItem(e); });
-    }
-    
     page.keyvalueControl.addEventListener('input', (e) => { _hideEmbed(); _restrictInput(e); });
     page.titleControl.addEventListener('input', (e) => {_hideEmbed();});
     page.subtitleControl.addEventListener('input', (e) => {_hideEmbed();});
@@ -83,7 +97,6 @@ const app = function () {
   }
   
   function _renderLayout() {
-    console.log('renderLayout');
     var layoutTable = page.layoutContainer.getElementsByTagName('table')[0];
     
     var tableRow = CreateElement._createElement('tr', null, null);
@@ -108,8 +121,28 @@ const app = function () {
 	//--------------------------------------------------------------
 	// updating
 	//--------------------------------------------------------------
+  function _navDispatch(dispatchOption) {
+    var dispatchMap = {
+      'projects': function() { _showContents('contents-projects'); },
+      'layout': function() { _showContents('contents-layout'); },
+      'preview': function() { _showContents('contents-preview'); },
+      'embed': function() { _showContents('contents-embed'); },
+      'profile': function() {}
+    };
+    
+    var route = dispatchMap[dispatchOption];
+    route();
+  }
+  
+  function _showContents(contentsClass) {
+    var contents = page.body.getElementsByClassName('contents');
+    for (var i = 0; i < contents.length; i++) {
+      UtilityKTS.setClass(contents[i], 'hide-me', true);
+    }
+    UtilityKTS.setClass(page.body.getElementsByClassName(contentsClass)[0], 'hide-me', false);
+  }
+  
   function _updateLayout() {
-    console.log('updateLayout');
     var layoutTable = page.layoutContainer.getElementsByTagName('table')[0];
     var swapArea = page.layoutContainer.getElementsByClassName('swaparea')[0];
 
@@ -159,38 +192,10 @@ const app = function () {
       elem.imageURL = imageURL;
     }
   }
-  
-  function _hideEmbed() {
-    UtilityKTS.setClass(page.embedContainer, 'hide-me', true);
-  }
 
 	//--------------------------------------------------------------
 	// handlers
-	//--------------------------------------------------------------
-  function _handlePreviewControl(e) {
-    console.log('preview control clicked');
-    UtilityKTS.setClass(page.previewContainer, 'hide-me', false);
-  }
-  
-  function _handleEmbedControl(e) {
-    console.log('embed control clicked');
-    UtilityKTS.setClass(page.embedContainer, 'hide-me', false);
-  }
-  
-  function _handleMenuHover(e, showMenu) {
-    UtilityKTS.setClass(page.body.getElementsByClassName('dropdown-content')[0], 'hide-me', !showMenu);
-  }
-  
-  function _handleMenuItem(e) {
-    var itemId = e.target.id;
-    if (itemId == 'menuHelp') {
-      _showHelp();
-      
-    } else if (itemId == 'menuSignout') {
-      _doLogout();
-    }
-  }
-  
+	//--------------------------------------------------------------    
   function _handleColorControl(e) {
     UtilityKTS.setClass(page.colorOptions, 'hide-me', false);
   }

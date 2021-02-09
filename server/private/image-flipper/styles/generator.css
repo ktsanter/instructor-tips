@@ -1,7 +1,7 @@
 /*-----------------------------------------------------*/
 /* styling for image flipper generator app             */
 /*-----------------------------------------------------*/
-.colorscheme {
+.flipper-colorscheme {
   --fgPrimary: black;
   --bgPrimary: rgba(66, 98, 150, 1.0);
   --bgSecondary: rgba(66, 98, 150, 0.2);
@@ -22,74 +22,12 @@ body {
   display: none;
 }
 
-/*-------------------------------------------------------------------
- * title bar
- *------------------------------------------------------------------*/
-.titlecontainer {
-  color: white;
-  background-color: var(--bgPrimary);
-  border-radius: 3px;
-  padding: 0.2em 0;
-  margin-bottom: 0.4em;
-}
-
-.titlecontainer .titletext {
-  display: inline-block;
-  font-size: 1.2em;
-  padding-left: 0.2em;
-  padding-right: 0.4em;
-}
-
-.titlecontainer .title-control {
-  margin-left: 0.2em;
-  margin-right: 0.2em;
-}
-
-.titlecontainer .title-control .control-icon {
-  font-size: 1.1em;
-}
-
-.titlecontainer .username {
-  float: right;
-}
-
-.titlecontainer .title-control.control-menu {
-  float: right;
-}
-
-.titlecontainer .title-control.control-menu .control-icon {
-  margin-right: 0.2em;
-  vertical-align: middle;
-  margin: 0;
-  padding: 0.4em;
-}
-
-.titlecontainer .title-control.control-menu:hover {
-  background-color: #6093e5;
-}
-
-.titlecontainer .dropdown-content {
-  position: absolute;
-  top: 2.7em;
-  right: 2.0em;
-  color: black;
-  background-color: white;
-  box-shadow: 0px 8px 16px 0px rgb(0 0 0 / 20%);
-}
-
-.titlecontainer .dropdown-content .dropdown-item {
-  padding: 1.0em 1.0em;
-}
-
-.titlecontainer .dropdown-content .dropdown-item:hover {
-  color: white;
-  background-color: #6093e5;
-}
-
 /*---------------------------------------------*/
 /* contents                                    */
 /*---------------------------------------------*/
-.contents {}
+.contents {
+  margin-top: 3.0em;
+}
 
 /*-------------------------------------------------------------------
  * controls
