@@ -303,12 +303,11 @@ const app = function () {
     var navbarItems = page.body.getElementsByClassName('navbar-main-item');
     for (var i = 0; i < navbarItems.length; i++) {
       var item = navbarItems[i];
-      console.log(item);
       if (item.innerHTML.includes('Preview')) {
-        UtilityKTS.setClass(item, 'disarm-me', !settings.currentProject);
+        _setDisarm(item, !settings.currentProject);
         
       } else if (item.innerHTML.includes('Embed')) {
-        UtilityKTS.setClass(item, 'disarm-me', !settings.currentProject || settings.dirtyBit);
+        _setDisarm(item, !settings.currentProject || settings.dirtyBit);
       }
     }
     
@@ -316,10 +315,22 @@ const app = function () {
     for (var i = 0; i < dropdownItems.length; i++) {
       var item = dropdownItems[i];
       if (item.innerHTML.includes('reload project')) {
-        UtilityKTS.setClass(item, 'disarm-me', !dirty);
+        _setDisarm(item, !dirty);
 
       } else if (item.innerHTML.includes('delete project')) {
-        UtilityKTS.setClass(item, 'disarm-me', !settings.currentProject);
+        _setDisarm(item, !settings.currentProject);
+      }
+    }
+  }
+  
+  function _selectProject(projectId) {
+    var projectOptions = page.projectSelection.children;
+    for (var i = 0; i < projectOptions.length; i++) {
+      var opt = projectOptions[i];
+      if (opt.value == projectId) {
+        opt.selected = true;
+        _updateProjectInfo(opt.projectInfo);
+        break;
       }
     }
   }
@@ -335,13 +346,12 @@ const app = function () {
   async function _handleAddProject() {
     if (settings.dirtyBit && !confirm('Current changes will be lost.\nContinue with adding project?')) return;
     
-    var newProject = await _addNewProjectToDB();
+    var newProjectId = await _addNewProjectToDB();
     
-    if (newProject) {
-      settings.currentProject = newProject;
+    if (newProjectId) {
       await _getProjectInfo();
       _updateProjectInfoSelection();
-      _updateProjectInfo(newProject);
+      _selectProject(newProjectId);
       
     } else {
         console.log('failed to add new project');
@@ -367,6 +377,8 @@ const app = function () {
   }
   
   function _handleProjectSelection(e) {
+    console.log('_handleProjectSelection');
+    console.log('check dirty bit (' + settings.dirtyBit + ') before using new selection');
     var projectInfo = e.target[e.target.selectedIndex].projectInfo;
     _updateProjectInfo(projectInfo);
   }
@@ -423,19 +435,20 @@ const app = function () {
   }
   
   async function _getProjectInfo() {    
-    console.log('_getProjectInfo() stub');
-
-    //-------- debug version until DB in place
-    //var dbResult = await SQLDBInterface.doGetQuery('image-flipper', 'getprojectinfo');
-    var dbResult = {
-      success: true,
-      projectInfo: dummyProjectData
-    }
-    //-------------------------------------
+    var dbResult = await SQLDBInterface.doGetQuery('imageflipper/query', 'projectinfo');
 
     settings.projectInfo = null;
     if (dbResult.success) {
-      settings.projectInfo = dbResult.projectInfo;
+      for (var i = 0; i < dbResult.projects.length; i++) {
+        var project = dbResult.projects[i];
+        project.layoutimages = [];
+        for (var j = 0; j < settings.maxCards; j++) {
+          project.layoutimages.push('');
+        }
+        dbResult.projects[i] = project;
+      }
+
+      settings.projectInfo = dbResult.projects;
     } 
   }  
 
@@ -464,23 +477,13 @@ const app = function () {
   }
   
   async function _addNewProjectToDB() {
-    console.log('_addNewProjectToDB() stub');
 
-    //-------- debug version until DB in place
-    //var dbResult = await SQLDBInterface.doGetQuery('image-flipper', 'addproject');
+    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/insert', 'defaultproject');
       
-    var newProject = _addDummyProject();
+    var newProjectId = null;
+    if (dbResult.success) newProjectId = dbResult.data.projectid;
     
-    var dbResult = { 
-      success: true,
-      projectinfo: newProject
-    }
-    //-------------------------------------
-
-    var newProject = null;
-    if (dbResult.success) newProject = dbResult.projectinfo;
-    
-    return newProject;
+    return newProjectId;
   }
   
   async function _deleteProjectFromDB() {
@@ -554,6 +557,10 @@ const app = function () {
       rows: layoutValues[0],
       cols: layoutValues[1]
     };
+  }
+  
+  function _setDisarm(elem, disarm) {
+    UtilityKTS.setClass(elem, 'disarm-me', disarm);
   }
 
   async function _doLogout() {

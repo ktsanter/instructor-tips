@@ -11,6 +11,7 @@ const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
 const MARIA_DBNAME_INSTRUCTORTIPS = getEnv('MARIA_DBNAME_INSTRUCTORTIPS', true);
 const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
 const MARIA_DBNAME_WELCOME = getEnv('MARIA_DBNAME_WELCOME', true);
+const MARIA_DBNAME_IMAGEFLIPPER = getEnv('MARIA_DBNAME_IMAGEFLIPPER', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -96,11 +97,21 @@ const mariadbParams_WelcomeLetter = {
     dbName: MARIA_DBNAME_WELCOME /*, 
     connectionLimit: 5 */
 };
+    
+const mariadbParams_ImageFlipper = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_IMAGEFLIPPER /*, 
+    connectionLimit: 5 */
+};
 
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
 const mariaDBManager_WelcomeLetter = new mariaDBManagerClass(mariadbParams_WelcomeLetter);
+const mariaDBManager_ImageFlipper = new mariaDBManagerClass(mariadbParams_ImageFlipper);
     
 //------------------------------------------
 // session management
@@ -264,6 +275,16 @@ const dbWelcomeLetter = new dbWelcomeLetterClass({
 });
 
 //------------------------------------------
+// Image flipper general query objects
+//------------------------------------------
+const dbImageFlipperClass = require('./classes/imageflipper')
+
+const dbImageFlipper = new dbImageFlipperClass({
+  "dbManager": mariaDBManager_ImageFlipper,
+  "userManagement": userManagement
+});
+
+//------------------------------------------
 // DB manager lookup, app info lookup
 //------------------------------------------
 var dbManagerLookup = {
@@ -271,7 +292,8 @@ var dbManagerLookup = {
   "usermanagement": dbTipManager,
   "tipmanager": dbTipManager,
   "treasurehunt": dbTreasureHunt,
-  "welcome": dbWelcomeLetter
+  "welcome": dbWelcomeLetter,
+  "imageflipper": dbImageFlipper
 };
 
 var appLookup = {
