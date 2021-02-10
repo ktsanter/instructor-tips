@@ -16,9 +16,6 @@ module.exports = internal.ImageFlipper = class {
 // dispatchers
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
-    console.log('doQuery: ');
-    console.log(params);
-    
     var dbResult = this._dbManager.queryFailureResult();
 
     if (params.queryName == 'projectinfo') {
@@ -31,10 +28,7 @@ module.exports = internal.ImageFlipper = class {
     return dbResult;
   }
 
-  async doInsert(params, postData, userInfo, funcCheckPrivilege) {
-    console.log('doInsert: ');
-    console.log(params);
-    
+  async doInsert(params, postData, userInfo, funcCheckPrivilege) {    
     var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'defaultproject') {
@@ -48,6 +42,9 @@ module.exports = internal.ImageFlipper = class {
   }
   
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
+    console.log('doUpdate');
+    console.log(params);
+    console.log(postData);
     var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'project') {
@@ -213,9 +210,6 @@ module.exports = internal.ImageFlipper = class {
 // specific delete methods
 //---------------------------------------------------------------
   async _deleteProject(params, postData, userInfo) {
-    console.log('delete project');
-    return this._dbManager.queryFailureResult();
-    
     var result = this._dbManager.queryFailureResult();
     
     var query, queryResults;

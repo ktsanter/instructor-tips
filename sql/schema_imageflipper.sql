@@ -64,19 +64,21 @@ DELIMITER //
 create procedure add_default_project(in user_Id int)
 begin
   select max(projectid)+1 into @maxproj from project where userid = user_Id;
-    insert into project(
-      userid, 
-      projectname, projecttitle, projectsubtitle,
-      colorscheme,
-      layoutrows, layoutcols
-    ) values (
-      user_Id,
-      concat('default name ', @maxproj) , 'default title', 'default subtitle',
-      'flipper-colorscheme-000',
-      4, 5
-    );
-    
-    select LAST_INSERT_ID() as projectid;
+  if @maxproj is null then select 1 into @maxproj; end if;
+  
+  insert into project(
+    userid, 
+    projectname, projecttitle, projectsubtitle,
+    colorscheme,
+    layoutrows, layoutcols
+  ) values (
+    user_Id,
+    concat('default name ', @maxproj) , 'default title', 'default subtitle',
+    'flipper-colorscheme-000',
+    4, 5
+  );
+  
+  select LAST_INSERT_ID() as projectid;
 end;
 //
 DELIMITER ;

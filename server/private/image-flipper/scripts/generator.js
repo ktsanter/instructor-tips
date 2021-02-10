@@ -340,7 +340,9 @@ const app = function () {
 	//--------------------------------------------------------------    
   function _handleReloadProject() {
     if (!settings.currentProject) return;
-    if (settings.dirtyBit) _updateProjectInfo(settings.currentProject);
+    if (settings.dirtyBit && !confirm('Current changes will be lost.\nContinue with reloading project?')) return;
+
+    _updateProjectInfo(settings.currentProject);
   }
   
   async function _handleAddProject() {
@@ -489,49 +491,16 @@ const app = function () {
   async function _deleteProjectFromDB() {
     console.log('_deleteProjectFromDB() stub');
 
-    //-------- debug version until DB in place
-    // var dbResult = await doPostQuery('image-flipper', 'deleteprojectinfo', settings.currentProject);
-    
-    var newProjectList = [];
-    for (var i = 0; i < dummyProjectData.length; i++) {
-      var proj = settings.projectInfo[i];
-      if (proj.projectid != settings.currentProject.projectid) newProjectList.push(proj);
-    }
-    dummyProjectData = newProjectList;
-    
-    var dbResult = { success: true };
-    //-------------------------------------
+    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/delete', 'project', {projectid: settings.currentProject.projectid});
 
     return dbResult.success;
   }
-  
-  function _addDummyProject() {
-    var newProjId = dummyProjectData.length + 1;
-    var newProj = {
-      projectid: newProjId,
-      projectname: 'new proj' + newProjId,
-      projecttitle: 'new title' + newProjId,
-      projectsubtitle: 'new subtitle' + newProjId,
-      colorscheme: 'flipper-colorscheme-000',
-      layoutrows: 4,
-      layoutcols: 4,
-      layoutimages: [
-        '', '', '', '', 
-        '', '', '', '', 
-        '', '', '', '', 
-        '', '', '', '' 
-      ]
-    }      
-      
-    dummyProjectData.push(newProj);
     
-    return dummyProjectData[dummyProjectData.length - 1];
-  }
-  
 	//---------------------------------------
 	// utility functions
 	//---------------------------------------
   function _restrictInput(e) {
+    if (e.inputType.includes('delete')) _setDirty(true);
     if (!e.data) return;
     
     if (!e.data.match(/[0-9a-zA-Z\:_\- ]/)) {
