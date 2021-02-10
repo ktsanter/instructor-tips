@@ -624,6 +624,12 @@ app.get('/image-flipper/flipper', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.get('/image-flipper/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'image-flipper/pug/help.pug');
+  
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
 app.get('/roster-manager', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});

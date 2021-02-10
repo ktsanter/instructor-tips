@@ -17,30 +17,33 @@ html(lang="en")
     body(class='flipper-colorscheme instructortips-colorscheme')
       .navbarcontainer
       
-      .contents(class="contents-projects hide-me") projects
-      
-      .contents(class="contents-layout hide-me")
+      .contents(class="contents-layout hide-me")        
         .controls
           table
             tr
-              td(class="control-label") key value
+              td(colspan="2")
+                select(class="control-selection")
+                button(class='save-project' disabled) save
+
+            tr
+              td(class="control-label") project
               td
-                input(class="control-keyvalue" type="text" value="" size="20" maxlength="20", placeholder='only letters and digits')
+                input(class="control-keyvalue" disabled type="text" value="" size="20" maxlength="20")
             
             tr
               td(class="control-label") title
               td
-                input(class="control-title" type="text" value="" size="40" maxlength="40")
+                input(class="control-title" disabled type="text" value="" size="40" maxlength="40")
             
             tr
               td(class="control-label") subtitle
               td
-                input(class="control-subtitle" type="text" value="" size="60" maxlength="60")
+                input(class="control-subtitle" disabled type="text" value="" size="60" maxlength="60")
               
             tr
               td(class="control-label") colors
               td
-                .control-color(class="flipper-colorscheme-000") sample text
+                .control-color(class="flipper-colorscheme-000 hide-me") sample text
                   
                 .color-options(class="hide-me")
                   .flipper-colorscheme-000(class="color-sample") sample text
@@ -53,17 +56,12 @@ html(lang="en")
             tr
               td(class="control-label") layout
               td
-                select(class="control-layout")
+                select(class="control-layout" disabled)
                   option(value="3x3") 3 x 3
                   option(value="4x4") 4 x 4
                   option(value="4x5" selected) 4 x 5
                   option(value="5x5") 5 x 5
                   option(value="6x5") 6 x 5
-                
-        .embed(class="hide-me")
-          .embed-copy-container
-            button(class="embed-copy") copy to clipboard
-          textarea(class="embed-text" rows="8" cols="40")
 
         .layout
           table

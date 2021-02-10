@@ -23,6 +23,25 @@ body {
 }
 
 /*---------------------------------------------*/
+/* navbar additions and overrides              */
+/*---------------------------------------------*/
+.navbar .dropdown-content div.disarm-me {
+  color: var(--borderPrimary);
+}
+
+.navbar .dropdown-content div.disarm-me:hover {
+  background-color: transparent;
+}
+
+.navbar .navbar-main-item.disarm-me {
+  color: var(--borderPrimary);
+}
+
+.navbar li.navbar-item:not(.navbar-selected):hover {
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+/*---------------------------------------------*/
 /* contents                                    */
 /*---------------------------------------------*/
 .contents {
@@ -43,10 +62,22 @@ body {
 	font-size: 13px;
 }
 
-.contents .controls select {
+.contents .controls .control-selection {
   font-size: 1.0em;
-	width: 7.0em;
-  padding: 0.2em;
+	width: 32.0em;
+  padding: 0.2em;  
+}
+
+.contents .controls .save-project {
+  color: white;
+  background-color: var(--bgPrimary);
+  margin-left: 0.4em;
+  margin-bottom: 1.0em;
+}
+
+.contents .controls .save-project:disabled {
+  color: var(--borderPrimary);
+  background-color: transparent;
 }
 
 .contents .controls .control-color {
@@ -73,6 +104,12 @@ body {
   padding: 0.2em;
 }
 
+.contents .controls .control-layout {
+  font-size: 1.0em;
+	width: 7.0em;
+  padding: 0.2em;
+}
+
 /*-------------------------------------------------------------------
  * embed
  *------------------------------------------------------------------*/
@@ -96,6 +133,10 @@ body {
   font-size: 1.5em;
   width: 5.0em;
   height: 5.0em;
+}
+
+.contents .layout .cardbutton:disabled {
+  opacity: 0;
 }
 
 .contents .layout .imageurl {

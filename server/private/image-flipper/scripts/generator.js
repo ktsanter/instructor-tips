@@ -9,10 +9,45 @@ const app = function () {
   };
 	
 	const settings = {
+    currentProject: null,
+    dirtyBit: false,
     logoutURL: '/usermanagement/logout',
+    helpURL: '/image-flipper/help',
     maxCards: 36,
     thumbnailErrorImg: 'https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png'
 	};
+  
+  var dummyProjectData = [
+    {
+      projectid: 1,  
+      projectname: 'proj1', 
+      projecttitle: 'title for proj1', 
+      projectsubtitle: 'subtitle for proj1', 
+      colorscheme: 'flipper-colorscheme-000',
+      layoutrows: 4, 
+      layoutcols: 5, 
+      layoutimages: [
+        '', '', 'https://drive.google.com/uc?id=1FbgvosSliDx-1rOS9y1iNtph88b5HNVN', '', '',
+        '', '', '', '', '',
+        'xxx', '', '', '', '',
+        '', '', '', '', ''
+      ]
+    },
+    {
+      projectid: 2,  
+      projectname: 'proj2', 
+      projecttitle: 'title for proj2', 
+      projectsubtitle: 'subtitle for proj2', 
+      colorscheme: 'flipper-colorscheme-004',
+      layoutrows: 3, 
+      layoutcols: 3, 
+      layoutimages: [
+        '', '', '',
+        '', '', '',
+        '', 'https://drive.google.com/uc?id=1cxy-Sd8pmQeeDOsgpBV5qrvMl9sOEKx5', ''
+      ]
+    }
+  ];
 	
 	//---------------------------------------
 	// get things going
@@ -21,25 +56,21 @@ const app = function () {
     page.body = document.getElementsByTagName('body')[0];
     
     await _getUserInfo();
+    await _getProjectInfo();
     
     _renderPage();
+    _updateProjectInfoSelection();
+    _setDirty(false);
   }
-  
-  async function _getUserInfo() {
-    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
-    settings.userInfo = null;
-    if (dbResult.success) {
-      settings.userInfo = dbResult.userInfo;
-    }     
-  }    
-	
+  	
 	//--------------------------------------------------------------
 	// page rendering
 	//--------------------------------------------------------------
   function _renderPage() {
-    page.contentsProjects = page.body.getElementsByClassName('contents-projects')[0];
     page.contentsLayout = page.body.getElementsByClassName('contents-layout')[0];
     page.contentsPreview = page.body.getElementsByClassName('contents-preview')[0];
+    
+    page.projectSelection = page.body.getElementsByClassName('control-selection')[0];
     
     page.keyvalueControl = page.body.getElementsByClassName('control-keyvalue')[0];
     page.titleControl = page.body.getElementsByClassName('control-title')[0];
@@ -55,7 +86,7 @@ const app = function () {
     _renderLayout();
     _updateLayout();
     
-    settings.navbar.selectOption('Projects');    
+    settings.navbar.selectOption('Layout');    
   }
   
   function _renderNavbar() {
@@ -63,14 +94,16 @@ const app = function () {
       title: appInfo.appName,
       
       items: [
-        {label: 'Projects', callback: () => {return _navDispatch('projects');}, subitems: null, rightjustify: false},
         {label: 'Layout', callback: () => {return _navDispatch('layout');}, subitems: null, rightjustify: false},
+        {label: 'Preview', callback: () => {return _navDispatch('preview');}, subitems: null, rightjustify: false},
+        {label: 'Embed', callback: () => {return _navDispatch('embed');}, subitems: null, rightjustify: false},
         {label: settings.userInfo.userName, callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
       ],
       
       hamburgeritems: [           
-        {label: 'preview', markselected: false, callback: () => {return _navDispatch('preview');}},
-        {label: 'embed', markselected: false, callback: () => {return _navDispatch('embed');}},
+        {label: 'reload project', markselected: false, callback: _handleReloadProject},
+        {label: 'add project', markselected: false, callback: _handleAddProject},
+        {label: 'delete project', markselected: false, callback: _handleDeleteProject},
         {label: 'help', markselected: false, callback: _showHelp},
         {label: 'sign out', markselected: false, callback: _doLogout}
       ]   
@@ -82,12 +115,15 @@ const app = function () {
   } 
   
   function _attachHandlers() {
-    page.keyvalueControl.addEventListener('input', (e) => { _hideEmbed(); _restrictInput(e); });
-    page.titleControl.addEventListener('input', (e) => {_hideEmbed();});
-    page.subtitleControl.addEventListener('input', (e) => {_hideEmbed();});
+    page.projectSelection.addEventListener('change', (e) => { _handleProjectSelection(e); });
+    page.body.getElementsByClassName('save-project')[0].addEventListener('click', (e) => { _handleProjectSave(e); });
+    
+    page.keyvalueControl.addEventListener('input', (e) => { _restrictInput(e); });
+    page.titleControl.addEventListener('input', (e) => { _setDirty(true); });
+    page.subtitleControl.addEventListener('input', (e) => { _setDirty(true); });
    
-    page.layoutControl.addEventListener('change', (e) => {_hideEmbed(); _updateLayout();});
-    page.colorControl.addEventListener('click', (e) => {_hideEmbed(); _handleColorControl(e);});
+    page.layoutControl.addEventListener('change', (e) => { _setDirty(true); _updateLayout();});
+    page.colorControl.addEventListener('click', (e) => {_handleColorControl(e);});
     
     page.colorOptions.addEventListener('mouseleave', (e) => { UtilityKTS.setClass(page.colorOptions, 'hide-me', true); });
     var samples = page.colorOptions.getElementsByClassName('color-sample');
@@ -105,9 +141,10 @@ const app = function () {
     tableRow.appendChild(tableCell);
     
     for (var i = 0; i < settings.maxCards; i++) {
-      var handler = (e) => { _hideEmbed(); _handleCardButton(e);};
+      var handler = (e) => { _handleCardButton(e);};
       var elem = CreateElement.createButton('btnCard' + i, 'cardbutton cardbutton' + i, i + 1, null, handler);
       elem.value = i;
+      elem.disabled = true;
       elem.imageURL = '';
       elem.title = 'specify image URL for card #' + (i + 1);
       tableCell.appendChild(elem);
@@ -123,8 +160,9 @@ const app = function () {
 	//--------------------------------------------------------------
   function _navDispatch(dispatchOption) {
     var dispatchMap = {
-      'projects': function() { _showContents('contents-projects'); },
-      'layout': function() { _showContents('contents-layout'); },
+      'layout': function() {
+                  _showContents('contents-layout'); 
+                },
       'preview': function() { _showContents('contents-preview'); },
       'embed': function() { _showContents('contents-embed'); },
       'profile': function() {}
@@ -140,6 +178,71 @@ const app = function () {
       UtilityKTS.setClass(contents[i], 'hide-me', true);
     }
     UtilityKTS.setClass(page.body.getElementsByClassName(contentsClass)[0], 'hide-me', false);
+  }
+  
+  function _updateProjectInfoSelection() {
+    UtilityKTS.removeChildren(page.projectSelection);
+    
+    var indexToSelect = -1;
+    
+    for (var i = 0; i < settings.projectInfo.length; i++) {
+      var project = settings.projectInfo[i];
+      var elem = CreateElement.createOption(null, 'project', project.projectid, project.projectname + ': ' + project.projecttitle);
+      elem.projectInfo = project;      
+      if (settings.currentProject && project.projectid == settings.currentProject.projectid) indexToSelect = i;
+      page.projectSelection.appendChild(elem);
+    }
+    
+    page.projectSelection.selectedIndex = indexToSelect;
+  }
+  
+  function _updateProjectInfo(projectInfo) {
+    settings.currentProject = projectInfo;
+    if (projectInfo) {
+      page.keyvalueControl.value = projectInfo.projectname;
+      page.titleControl.value = projectInfo.projecttitle;
+      page.subtitleControl.value = projectInfo.projectsubtitle;
+      
+      elemColor = page.colorOptions.getElementsByClassName('color-sample ' + projectInfo.colorscheme)[0].click();
+      
+      page.layoutControl.value = projectInfo.layoutrows + 'x' + projectInfo.layoutcols;
+      _updateLayout();
+      
+      for (var i = 0; i < settings.maxCards; i++) {
+        var imageURL = '';
+        if (i < projectInfo.layoutimages.length) imageURL = projectInfo.layoutimages[i];
+        _setCardImage(page.layoutContainer.getElementsByClassName('cardbutton cardbutton' + i)[0], imageURL)
+      }
+      
+      page.keyvalueControl.disabled = false;
+      page.titleControl.disabled = false;
+      page.subtitleControl.disabled = false;
+      UtilityKTS.setClass(page.colorControl, 'hide-me', false);
+      page.layoutControl.disabled = false;
+      
+      var cards = page.layoutContainer.getElementsByClassName('cardbutton');
+      for (var i = 0; i < cards.length; i++) {
+        cards[i].disabled = false;
+      }
+      
+    } else {
+      page.keyvalueControl.value = '';
+      page.titleControl.value = '';
+      page.subtitleControl.value = '';
+      
+      page.keyvalueControl.disabled = true;
+      page.titleControl.disabled = true;
+      page.subtitleControl.disabled = true;
+      UtilityKTS.setClass(page.colorControl, 'hide-me', true);
+      page.layoutControl.disabled = true;
+      
+      var cards = page.layoutContainer.getElementsByClassName('cardbutton');
+      for (var i = 0; i < cards.length; i++) {
+        cards[i].disabled = true;
+      }
+    }
+    
+    _setDirty(false);
   }
   
   function _updateLayout() {
@@ -183,19 +286,102 @@ const app = function () {
     var origHeight = elem.offsetHeight;
 
     if (imageURL == null || imageURL == "") {
-      elem.style.background = "";
-      elem.imageURL = "";
+      elem.style.background = '';
+      elem.imageURL = '';
 
     } else {
       elem.style.background = "url(" + imageURL + "), url('" + settings.thumbnailErrorImg + "') no-repeat right top";
-      elem.style.backgroundSize = origWidth + "px " + origHeight + "px";
+      elem.style.backgroundSize = origWidth + 'px ' + origHeight + 'px';
       elem.imageURL = imageURL;
+    }
+  }
+  
+  function _setDirty(dirty) {
+    settings.dirtyBit = dirty;
+    page.body.getElementsByClassName('save-project')[0].disabled = !dirty;
+    
+    var navbarItems = page.body.getElementsByClassName('navbar-main-item');
+    for (var i = 0; i < navbarItems.length; i++) {
+      var item = navbarItems[i];
+      console.log(item);
+      if (item.innerHTML.includes('Preview')) {
+        UtilityKTS.setClass(item, 'disarm-me', !settings.currentProject);
+        
+      } else if (item.innerHTML.includes('Embed')) {
+        UtilityKTS.setClass(item, 'disarm-me', !settings.currentProject || settings.dirtyBit);
+      }
+    }
+    
+    var dropdownItems = page.body.getElementsByClassName('dropdown-content hamburger')[0].children;
+    for (var i = 0; i < dropdownItems.length; i++) {
+      var item = dropdownItems[i];
+      if (item.innerHTML.includes('reload project')) {
+        UtilityKTS.setClass(item, 'disarm-me', !dirty);
+
+      } else if (item.innerHTML.includes('delete project')) {
+        UtilityKTS.setClass(item, 'disarm-me', !settings.currentProject);
+      }
     }
   }
 
 	//--------------------------------------------------------------
 	// handlers
 	//--------------------------------------------------------------    
+  function _handleReloadProject() {
+    if (!settings.currentProject) return;
+    if (settings.dirtyBit) _updateProjectInfo(settings.currentProject);
+  }
+  
+  async function _handleAddProject() {
+    if (settings.dirtyBit && !confirm('Current changes will be lost.\nContinue with adding project?')) return;
+    
+    var newProject = await _addNewProjectToDB();
+    
+    if (newProject) {
+      settings.currentProject = newProject;
+      await _getProjectInfo();
+      _updateProjectInfoSelection();
+      _updateProjectInfo(newProject);
+      
+    } else {
+        console.log('failed to add new project');
+    }        
+  }
+  
+  async function _handleDeleteProject() {
+    if (!settings.currentProject) return;
+    
+    var projName = settings.currentProject.projectname;
+    if (!confirm('This project will be permanently removed.\nContinue with deleting "' + projName + '"?')) return; 
+    
+    var deleteSucceeded = await _deleteProjectFromDB();
+    if (deleteSucceeded) {
+      settings.currentProject = null;
+      await _getProjectInfo();
+      _updateProjectInfoSelection();
+      _updateProjectInfo(settings.currentProject);
+      
+    } else {
+      console.log('failed to delete project');
+    }
+  }
+  
+  function _handleProjectSelection(e) {
+    var projectInfo = e.target[e.target.selectedIndex].projectInfo;
+    _updateProjectInfo(projectInfo);
+  }
+  
+  async function _handleProjectSave(e) {
+    if (await _saveProjectToDB()) {
+      await _getProjectInfo();
+      _updateProjectInfoSelection();
+      _updateProjectInfo(settings.currentProject);
+
+    } else {
+      console.log('failed to save project');
+    }
+  }
+  
   function _handleColorControl(e) {
     UtilityKTS.setClass(page.colorOptions, 'hide-me', false);
   }
@@ -211,6 +397,7 @@ const app = function () {
     }
     
     UtilityKTS.setClass(page.colorControl, newSchemeClass, true);
+   if (currentSchemeClass != newSchemeClass) _setDirty(true);
   }
   
   function _handleCardButton(e) {
@@ -218,17 +405,136 @@ const app = function () {
     var currentURL = e.target.imageURL;
     
     var imageURL = _promptForImageURL(e.target);
-    if (imageURL) _setCardImage(e.target, imageURL);
+    if (imageURL) {
+      _setCardImage(e.target, imageURL);
+      _setDirty(true);
+    }
   }
 	
+	//---------------------------------------
+	// DB interface
+	//---------------------------------------
+  async function _getUserInfo() {
+    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
+    settings.userInfo = null;
+    if (dbResult.success) {
+      settings.userInfo = dbResult.userInfo;
+    }     
+  }
+  
+  async function _getProjectInfo() {    
+    console.log('_getProjectInfo() stub');
+
+    //-------- debug version until DB in place
+    //var dbResult = await SQLDBInterface.doGetQuery('image-flipper', 'getprojectinfo');
+    var dbResult = {
+      success: true,
+      projectInfo: dummyProjectData
+    }
+    //-------------------------------------
+
+    settings.projectInfo = null;
+    if (dbResult.success) {
+      settings.projectInfo = dbResult.projectInfo;
+    } 
+  }  
+
+  async function _saveProjectToDB() {
+    console.log('_saveProjectToDB() stub');
+    var layout = page.layoutControl.value.split('x');
+
+    var postData = {
+      projectid: settings.currentProject.projectid,
+      projectname: page.keyvalueControl.value,
+      projecttitle: page.titleControl.value,
+      projectsubtitle: page.subtitleControl.value,
+      colorscheme: _getColorScheme(page.colorControl),
+      layoutrows: layout[0],
+      layoutcols: layout[1],
+      layoutimages: [] // loop to get images
+    };
+    
+    //-------- debug version until DB in place
+    // var dbResult = await doPostQuery('image-flipper', 'saveprojectinfo', postData);
+    
+    var dbResult = { success: true };
+    //-------------------------------------
+    
+    return dbResult.success;    
+  }
+  
+  async function _addNewProjectToDB() {
+    console.log('_addNewProjectToDB() stub');
+
+    //-------- debug version until DB in place
+    //var dbResult = await SQLDBInterface.doGetQuery('image-flipper', 'addproject');
+      
+    var newProject = _addDummyProject();
+    
+    var dbResult = { 
+      success: true,
+      projectinfo: newProject
+    }
+    //-------------------------------------
+
+    var newProject = null;
+    if (dbResult.success) newProject = dbResult.projectinfo;
+    
+    return newProject;
+  }
+  
+  async function _deleteProjectFromDB() {
+    console.log('_deleteProjectFromDB() stub');
+
+    //-------- debug version until DB in place
+    // var dbResult = await doPostQuery('image-flipper', 'deleteprojectinfo', settings.currentProject);
+    
+    var newProjectList = [];
+    for (var i = 0; i < dummyProjectData.length; i++) {
+      var proj = settings.projectInfo[i];
+      if (proj.projectid != settings.currentProject.projectid) newProjectList.push(proj);
+    }
+    dummyProjectData = newProjectList;
+    
+    var dbResult = { success: true };
+    //-------------------------------------
+
+    return dbResult.success;
+  }
+  
+  function _addDummyProject() {
+    var newProjId = dummyProjectData.length + 1;
+    var newProj = {
+      projectid: newProjId,
+      projectname: 'new proj' + newProjId,
+      projecttitle: 'new title' + newProjId,
+      projectsubtitle: 'new subtitle' + newProjId,
+      colorscheme: 'flipper-colorscheme-000',
+      layoutrows: 4,
+      layoutcols: 4,
+      layoutimages: [
+        '', '', '', '', 
+        '', '', '', '', 
+        '', '', '', '', 
+        '', '', '', '' 
+      ]
+    }      
+      
+    dummyProjectData.push(newProj);
+    
+    return dummyProjectData[dummyProjectData.length - 1];
+  }
+  
 	//---------------------------------------
 	// utility functions
 	//---------------------------------------
   function _restrictInput(e) {
     if (!e.data) return;
     
-    if (!e.data.match(/[0-9a-zA-Z_\-]/)) {
-      e.target.value = e.target.value.replace(/[^0-9a-zA-Z_\-]/g, '');
+    if (!e.data.match(/[0-9a-zA-Z\:_\- ]/)) {
+      e.target.value = e.target.value.replace(/[^0-9a-zA-Z_\:\- ]/g, '');
+    } else {
+      _setDirty(true);
     }
   }
   
@@ -249,402 +555,16 @@ const app = function () {
       cols: layoutValues[1]
     };
   }
-  
+
   async function _doLogout() {
     window.open(settings.logoutURL, '_self'); 
   }
 
   function _showHelp() {
-    console.log('help');
+    window.open(settings.helpURL, '_blank');
   }
 	
 	return {
 		init: init
  	};
 }();
-
-/*----------------------------------
-function initFlipperGenerator()
-{
-	var previewClass = 'kts-preview-layout-button';
-	var elemDefaultLayout = document.getElementById('ktsFlipperLayout2');
-
-	elemDefaultLayout.checked = true;
-	handleLayoutChange(elemDefaultLayout, previewClass);
-	
-	var layoutButtons = document.getElementsByClassName('kts-layout-button');
-	for (var i = 0; i < layoutButtons.length; i++) {
-		layoutButtons[i].addEventListener('change', function() {
-			handleLayoutChange(this, previewClass);
-		});
-	}
-	
-	document.getElementById('ktsGenerateButton').addEventListener('click', function() {
-		displayFlipperEmbedCode(previewClass);
-	});
-	
-	
-	var embedHideElements = document.getElementsByClassName('kts-hide-embed');
-	for (var i = 0; i < embedHideElements.length; i++) {
-		embedHideElements[i].addEventListener('click', function() {
-			hideArea('ktsEmbedCodeArea');
-		})
-	}
-	
-	document.getElementById('ktsCopyToClipboardButton').addEventListener('click', copyEmbedCodeToClipboard);
-	document.getElementById('ktsUploadSelector').addEventListener('click', triggerConfigFileUpload);
-	document.getElementById('ktsUploadFileName').addEventListener('change', handleUploadFileSelect, false);
-	document.getElementById('ktsDownloadConfigFile').addEventListener('click', handleDownloadFileSelect);
-	document.getElementById('ktsShowPreviewButton').addEventListener('click', showPreviewWithCurrentLayout);
-	document.getElementById('ktsFlipperPreview').style.display = 'none';
-	document.getElementById('ktsClosePreviewButton').addEventListener('click', hidePreview);
-	document.getElementById('ktsColorSchemeSample000').classList.remove('kts-dont-show');
-	
-	var schemes = document.getElementsByClassName('kts-flipper-generator-colorscheme');
-	for (var i = 0; i < schemes.length; i++) {
-		schemes[i].addEventListener('click', function() {
-			handleColorSchemeClick(this);
-			});
-	}
-
-	document.getElementById("ktsColorSchemeContainer").addEventListener("mouseleave", function() {
-		handleColorSchemeMouseLeave(this);
-	});
-}
-
-function triggerConfigFileUpload()
-{
-	var ctrl = document.getElementById('ktsUploadFileName');
-	
-	try {
-		ctrl.value = null;
-	} catch(ex) { }
-
-	if (ctrl.value) {
-		ctrl.parentNode.replaceChild(ctrl.cloneNode(true), ctrl);
-	}
-
-	ctrl.click();
-}
-
-function handleLayoutChange(elem, previewClass)
-{
-	document.getElementById('ktsFlipperLayoutPreview').innerHTML = loadFlipperImageLayout(elem.value, previewClass);
-	
-	var previewElems = document.getElementsByClassName(previewClass);
-	for (var i = 0; i < previewElems.length; i++) {
-		previewElems[i].addEventListener('click', function() {
-			hideArea('ktsEmbedCodeArea');
-			handleFlipperPreviewButtonClick(this);
-		})
-	}
-}
-
-function loadFlipperImageLayout(numItems, previewClass) 
-{
-	var layoutRowsCols = {
-		"9": [3, 3],
-		"16": [4, 4],
-		"20": [4, 5],
-		"25": [5, 5],
-		"30": [6, 5]
-	};
-	var layout = layoutRowsCols[numItems];
-	if (layout == null) {
-		console.log("no layout for this number of items: " + numItems);
-		alert("internal error - no layout for this number of items: " + numItems);
-		return;
-	}
-	
-	var rows = layout[0];
-	var cols = layout[1];
-	
-	var s = '';
-	s += '<div >'
-	s += '<table>';
-	for (var i = 0; i < numItems; i++) {
-		var btnId = ' id="' + makeButtonId(i) + '" ';
-		var btnClass = ' class="kts-flipper-generator ' + previewClass + '"';
-		var text = (i+1);
-		
-		if (i % cols == 0) s += '<tr>';
-
-		s += '<td>';
-		s += '<button ' + btnId + btnClass + '>' + text + '</button>';
-		s += '</td>';
-		
-		if (i % cols == cols - 1) s += '</tr>';
-	}
-
-	if (i % cols != 0) s += '</tr>';
-	s += '</table>';
-	s += '</div>';
-
-	return s;
-}
-
-function makeButtonId(num)
-{
-	var paddedNum = ("00" + num).slice(-2);
-	return 'btnGeneratorPreview' + paddedNum;
-}
-
-function handleFlipperPreviewButtonClick(elemButton)
-{
-	var idNum = elemButton.id.slice(-2);
-	
-    var txtURL = prompt("Please enter the URL for image #" + (idNum * 1), elemButton.value);
-	setFlipperPreviewImage(elemButton, txtURL);
-}
-
-function setFlipperPreviewImage(elemButton, imageURL)
-{
-	var origWidth = elemButton.offsetWidth;
-	var origHeight = elemButton.offsetHeight;
-
-    if (imageURL == null || imageURL == "") {
-		elemButton.style.background = "";
-		elemButton.value = "";
-
-	} else {
-		elemButton.style.background = "url(" + imageURL + ") no-repeat right top";
-		elemButton.style.backgroundSize = origWidth + "px " + origHeight + "px";
-		elemButton.value = imageURL;
-    }
-}
-
-
-function displayFlipperEmbedCode(previewClass)
-{
-	var param = getFlipperParameters(previewClass);
-	var embedCode = generateFlipperEmbedCode(param);
-	var embedElement = document.getElementById('ktsEmbedCodeText');
-	
-	embedElement.value = embedCode;
-	document.getElementById('ktsCopiedNotice').innerHTML = '';
-	showArea('ktsEmbedCodeArea');
-}
-
-function getFlipperParameters(previewClass)
-{
-	var param = {};
-	
-	param.title = document.getElementById('ktsFlipperGeneratorTitle').value;
-	param.subtitle = document.getElementById('ktsFlipperGeneratorSubtitle').value;
-	param.colorscheme = getColorScheme();
-	
-	var flipperImages = [];
-	var imageElement = document.getElementsByClassName(previewClass);
-	for (var i = 0; i < imageElement.length; i++) {
-		flipperImages[i] = imageElement[i].value;
-	}
-	param.images = flipperImages;
-
-	return param;
-}
-
-function generateFlipperEmbedCode(param)
-{
-	var sHTML = "<span id='ktsFlipperIframeWrapper'> loading iframe... </span>"
-		+ "<script>"
-		+ "var ktsXHTTP = new XMLHttpRequest();ktsXHTTP.onreadystatechange = function() {"
-		+ "if (this.readyState == 4 && this.status == 200) {"
-		+ "var scriptElement = document.createElement('script');"
-		+ "scriptElement.innerHTML = ktsXHTTP.responseText;"
-		+ "document.getElementById('ktsFlipperIframeWrapper').parentElement.appendChild(scriptElement);"
-		+ "ktsFlipperCode.prepareFlipperIframe('ktsFlipperIframeWrapper', " + JSON.stringify(param) + ");"
-		+ "}"
-		+ "};"	
-		+ "ktsXHTTP.open('GET', 'https://raw.githubusercontent.com/ktsanter/flipper-generator/master/scripts/flipper.js', true);"
-		+ "ktsXHTTP.send();"
-		+ "</script>"
-	return sHTML;
-}
-
-function showArea(elemId)
-{
-	var embedAreaClist = document.getElementById(elemId).classList;
-
-	if (embedAreaClist.contains('kts-dont-show')) {
-		embedAreaClist.remove('kts-dont-show');
-	}
-}
-
-function hideArea(elemId)
-{
-	document.getElementById(elemId).classList.add('kts-dont-show');
-}
-
-function copyEmbedCodeToClipboard()
-{
-	var embedElement = document.getElementById('ktsEmbedCodeText');
-	embedElement.select();
-	document.execCommand("Copy");
-	embedElement.selectionEnd = embedElement.selectionStart;
-	document.getElementById('ktsCopiedNotice').innerHTML = 'embed code copied to clipboard';
-}
-
-function handleUploadFileSelect(evt)
-{
-	var fileList = evt.target.files;
-	if (fileList.length < 1) {
-		return;
-	}
-	
-	var configFile = fileList[0];
-	if (configFile.size > 5000) {
-		console.log('file is too big: ' + configFile.size + '\nfile=' + configFile.name);
-		alert('file is too big: ' + configFile.size + '\nfile=' + configFile.name);
-		return;
-	}
-	
-	var reader = new FileReader();
-
-	reader.onload = (function(theFile) {
-        return function(e) {
-			var param;
-			try {
-				param = JSON.parse(e.target.result);
-			} catch(e) {
-				console.log('not a valid configuration file - unable to parse as JSON');
-				console.log(e);
-				alert('not a valid configuration file - unable to parse as JSON' + '\n' + console.log(e));
-				return;
-			}
-			loadConfiguration(param);
-		};
-	})(configFile);
-
-	reader.readAsText(configFile);
-}
-
-function loadConfiguration(param)
-{
-	if (!('title' in param) || !('subtitle' in param) || !('images' in param)) {
-		console.log('not a valid configuration file - missing one or more elements');
-		alert('not a valid configuration file - missing one or more elements');
-		return;
-	}
-	
-	var nImages = param.images.length;
-	var layoutElementId = {
-		"9": "ktsFlipperLayout0",
-		"16": "ktsFlipperLayout1",
-		"20": "ktsFlipperLayout2",
-		"25": "ktsFlipperLayout3",
-		"30": "ktsFlipperLayout4"
-	}
-
-	if (!(nImages in layoutElementId)) {
-		console.log('not a valid number of images: ' + nImages);
-		alert('not a valid number of images: ' + nImages);
-		return;
-	}
-	
-	document.getElementById('ktsFlipperGeneratorTitle').value = param.title;
-	document.getElementById('ktsFlipperGeneratorSubtitle').value = param.subtitle;
-	setColorScheme(param.colorscheme);
-	
-	var layoutElement = document.getElementById(layoutElementId[nImages]);
-	layoutElement.click();
-	
-	var theImages = param.images;
-	for (var i = 0; i < nImages; i++) {
-		var btnElement = document.getElementById(makeButtonId(i));
-		setFlipperPreviewImage(btnElement, theImages[i]);
-	}
-}
-
-function handleDownloadFileSelect()
-{
-	var param = getFlipperParameters('kts-preview-layout-button');
-	downloadFile('flipper_configuration.json', JSON.stringify(param));
-}
-
-function downloadFile(filename, data) 
-{
-    var blob = new Blob([data], {type: 'application/json'});
-    if(window.navigator.msSaveOrOpenBlob) {
-        window.navigator.msSaveBlob(blob, filename);
-    }
-    else{
-        var elem = window.document.createElement('a');
-        elem.href = window.URL.createObjectURL(blob);
-        elem.download = filename;        
-        document.body.appendChild(elem);
-        elem.click();        
-        document.body.removeChild(elem);
-    }
-}
-
-function showPreviewWithCurrentLayout()
-{
-	hideArea('ktsEmbedCodeArea');
-	document.getElementById('ktsMainFlipperGeneratorContainer').style.display = 'none';
-	document.getElementById('ktsFlipperPreview').style.display = '';
-
-	var ktsXHTTP = new XMLHttpRequest();
-	ktsXHTTP.onreadystatechange = function() {	
-		if (this.readyState == 4 && this.status == 200) {		
-			var scriptElement = document.createElement('script');		
-			scriptElement.innerHTML = ktsXHTTP.responseText;		
-			document.getElementById('ktsFlipperWrapper').parentElement.appendChild(scriptElement);	
-			var p2 = getFlipperParameters('kts-preview-layout-button');
-			ktsFlipperCode.prepareFlipper(p2);	
-		}
-	};
-	ktsXHTTP.open('GET', 'https://raw.githubusercontent.com/ktsanter/flipper-generator/master/scripts/flipper.js', true);
-	ktsXHTTP.send();
-}
-
-function hidePreview()
-{
-	document.getElementById('ktsMainFlipperGeneratorContainer').style.display = '';
-	document.getElementById('ktsFlipperPreview').style.display = 'none';
-}
-
-function handleColorSchemeClick(elem)
-{
-	var elemContent = document.getElementById('ktsColorSchemeContent');
-	
-	if (elem.id.includes('Sample')) {
-		elemContent.style.display = 'block';
-		
-	} else {
-		elemContent.style.display = 'none';
-		setColorScheme(elem.id.slice(-3) * 1);
-	}
-}
-
-function handleColorSchemeMouseLeave(elem)
-{
-	document.getElementById('ktsColorSchemeContent').style.display = 'none';
-}
-
-function getColorScheme()
-{
-	var schemeNum = 0;
-	
-	var elemSamples = document.getElementsByClassName('kts-flipper-color-sample');
-	for (var i = 0; i < elemSamples.length; i++) {
-		var clist = elemSamples[i].classList;
-		if (!clist.contains('kts-dont-show')) {
-			schemeNum = i;
-		}
-	}
-
-	return schemeNum;
-}
-
-function setColorScheme(schemeNum)
-{
-	var schemeString = ("000" + schemeNum).slice(-3);
-
-	var elemSamples = document.getElementsByClassName('kts-flipper-color-sample');
-	for (var i = 0; i < elemSamples.length; i++) {
-		elemSamples[i].classList.add('kts-dont-show');
-	}
-
-	document.getElementById('ktsColorSchemeSample' + schemeString).classList.remove('kts-dont-show');
-}
----------------------------------------------------*/

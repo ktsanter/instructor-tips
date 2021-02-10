@@ -99,8 +99,10 @@ class NavigationBar {
     return function(e) { 
       if (origCallback) {
         var elemMainItem = e.target;
-        me._setSelectedItem(elemMainItem);
-        origCallback();
+        if (!elemMainItem.classList.contains('disarm-me')) {
+          me._setSelectedItem(elemMainItem);
+          origCallback();
+        }
       }
     }
   }
