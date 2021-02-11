@@ -1,0 +1,80 @@
+<body class="flipper">
+	<div class="contents flipper-colorscheme-000">
+		<table class="main-container">
+			<tbody>
+				<tr>
+					<td>
+						<table class="flipper-table-title">
+							<tbody>
+								<tr>
+									<td>
+										<div class="flipper-title">default title</div>
+									</td>
+									<td class="flipper-control-cell">
+										<button class="flipper-button">reset</button>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+						<br>
+						<div class="flipper-subtitle">default subtitle</div>
+						<br>
+						<div class="flipper-container">
+							<div class="flipper-card" id="flipperMainCard">
+								<div id="card-front" class="front">
+									<table class="flipper-card-table">
+										<tbody>
+											<tr>
+												<td>
+													<button id="ktsFlipperButton00" class="flipper-card-button" style="visibility: visible;">1</button>
+												</td>
+												<td>
+													<button id="ktsFlipperButton01" class="flipper-card-button" style="visibility: visible;">2</button>
+												</td>
+												<td>
+													<button id="ktsFlipperButton02" class="flipper-card-button" style="visibility: visible;">3</button>
+												</td>
+											</tr>
+											<tr>
+												<td>
+													<button id="ktsFlipperButton03" class="flipper-card-button" style="visibility: visible;">4</button>
+												</td>
+												<td>
+													<button id="ktsFlipperButton04" class="flipper-card-button" style="visibility: visible;">5</button>
+												</td>
+												<td>
+													<button id="ktsFlipperButton05" class="flipper-card-button" style="visibility: visible;">6</button>
+												</td>
+											</tr>
+											<tr>
+												<td>
+													<button id="ktsFlipperButton06" class="flipper-card-button" style="visibility: visible;">7</button>
+												</td>
+												<td>
+													<button id="ktsFlipperButton07" class="flipper-card-button" style="visibility: visible;">8</button>
+												</td>
+												<td>
+													<button id="ktsFlipperButton08" class="flipper-card-button" style="visibility: visible;">9</button>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</div>
+								<div id="back00" class="back" style="visibility: visible;"><img alt="no image" src="" style="height:100%"></div>
+								<div id="back01" class="back" style="visibility: hidden;"><img alt="no image" src="" style="height:100%"></div>
+								<div id="back02" class="back" style="visibility: hidden;"><img alt="no image" src="" style="height:100%"></div>
+								<div id="back03" class="back" style="visibility: hidden;"><img alt="no image" src="" style="height:100%"></div>
+								<div id="back04" class="back" style="visibility: hidden;"><img alt="no image" src="" style="height:100%"></div>
+								<div id="back05" class="back" style="visibility: hidden;"><img alt="no image" src="" style="height:100%"></div>
+								<div id="back06" class="back" style="visibility: hidden;"><img alt="no image" src="https://drive.google.com/uc?id=1cxy-Sd8pmQeeDOsgpBV5qrvMl9sOEKx5" style="height:100%"></div>
+								<div id="back07" class="back" style="visibility: hidden;"><img alt="no image" src="" style="height:100%"></div>
+								<div id="back08" class="back" style="visibility: hidden;"><img alt="no image" src="" style="height:100%"></div>
+							</div>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+</body>

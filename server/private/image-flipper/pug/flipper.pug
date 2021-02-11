@@ -13,25 +13,21 @@ html(lang="en")
     script(data-main="/scripts/image-flipper/require_flipper", src="/scripts/require.js")    
       
     body(class="flipper")
-      div(id="notice" class='notice notice')
-      .contents(class="hide-me")     
-        table(class="main-container")
-          tr
-            td
-              table(class="flipper-table-title")
-                tr
-                  td
-                    .flipper-title
-                  td(class="flipper-control-cell")
-                    button(class="flipper-button") reset
-                    
-              br
-              
-              .flipper-subtitle
-              
-              br
-              
-              .flipper-container
-                .flipper-card(id="flipperMainCard")
+      .contents(class="hide-me")
+      
+        .flipper-title
+          .flipper-title-text
+          button(class="flipper-button") reset
+        
+        .flipper-subtitle
+          .flipper-subtitle-text
+        
+        .flipper-container
+          .flipper-card
+                
+      button(class="card-proto front-proto flipper-card-button hide-me") #n
+      
+      div(class="card-proto back-proto back hide-me" )
+        img(alt="invalid image" src="https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png")
 
 

@@ -8,48 +8,66 @@ body {
 	font-size: 13px;
 }
 
-.hide-me {
+.flipper .hide-me {
   display: none;
 }
 
-.flipper .main-container {
-	width: 600px;
-	height: 500px;
-}
+/*-----------------------------------------------------*/
+/* contents                                            */
+/*-----------------------------------------------------*/
+.flipper .contents {}
 
-.flipper .flipper-table-title {
+/*-----------------------------------------------------*/
+/* title and subtitle                                  */
+/*-----------------------------------------------------*/
+.flipper .contents .flipper-title {
   background-color: var(--flipper-color2);
-  color: var(--flipper-color3);
   width: 550px;
   border: 1px solid var(--flipper-color1);
-  border-radius:4px;
 }
 
-.flipper .flipper-title {
+.flipper .contents .flipper-title .flipper-title-text {
+  display: inline-block;
+  color: var(--flipper-color3);
   font-size: 20px;
+  margin-left: 0.2em;
 }
 
-.flipper .flipper-subtitle {
-  font-size: 14px;
-  color: var(--flipper-color1);
-}
-
-.flipper .flipper-button {
+.flipper .contents .flipper-title .flipper-button {
+  float: right;
   font-size: 12px;
   border-radius: 3px;
   background-color: var(--flipper-color3);
   color: var(--flipper-color2);
   border: 1px solid var(--flipper-color3);
+  margin: 0.4em;
 }
 
-.flipper .flipper-container {
+.flipper .contents .flipper-subtitle {
   width: 550px;
-  height: 400px;
-  position: relative;
-  -webkit-perspective: 800px;
-  -moz-perspective: 800px;
-  -o-perspective: 800px;
-   perspective: 800px;
+  border: 1px solid var(--flipper-color1);
+}
+
+.flipper .contents .flipper-subtitle .flipper-subtitle-text {
+  font-size: 14px;
+  color: var(--flipper-color1);
+  margin-left: 0.2em;
+}
+
+
+/*-----------------------------------------------------*/
+/* the flipper itself                                  */
+/*-----------------------------------------------------*/
+.flipper .contents .flipper-container {}
+
+.flipper .contents .flipper-container .flipper-card {}
+
+.flipper .contents .flipper-container .flipper-card .flipper-card-button {}
+
+/*
+.flipper .main-container {
+	width: 600px;
+	height: 500px;
 }
 
 .flipper .flipper-card {
@@ -131,3 +149,4 @@ body {
 	font-size: 14px;
 	font-style: italic;
 }
+*/

@@ -21,6 +21,9 @@ module.exports = internal.ImageFlipper = class {
     if (params.queryName == 'projectinfo') {
       dbResult = await this._getProjectInfo(params, userInfo);
       
+    } else if (params.queryName == 'singleproject') {
+      dbResult = await this._getSingleProjectInfo(params);
+
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -132,6 +135,63 @@ module.exports = internal.ImageFlipper = class {
       result.success = true;
       result.details = 'query succeeded';
       result.projects = projectInfo;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+ 
+  async _getSingleProjectInfo(params) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+      
+    queryList = {
+      project:
+        'select ' + 
+          'p.projectid, p.projectname, ' + 
+          'p.projecttitle, p.projectsubtitle, ' +
+          'p.colorscheme, p.layoutrows, p.layoutcols ' +
+        'from project as p ' +
+        'where p.projectid = ' + params.configkey + ' ',        
+        
+      layoutimages:
+        'select ' + 
+          'l.imageindex, l.imageurl ' + 
+        'from layoutimage as l ' +
+        'where l.projectid = ' + params.configkey + ' ' + 
+        'order by l.imageindex'
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    if (queryResults.data.project.length < 1) {
+      result.details = 'project info not found';
+      return result;
+    }
+    
+    //-- collate image info
+    var imageInfo = queryResults.data.layoutimages;
+    var imageInfoArray = [];
+    for (var i = 0; i < imageInfo.length; i++) {
+      imageInfoArray.push(imageInfo[i].imageurl);
+    }
+        
+    //-- combine project info with image info
+    var projectInfo = queryResults.data.project[0];
+    projectInfo.layoutimages = JSON.stringify(imageInfoArray);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.project = projectInfo;
 
     } else {
       result.details = queryResults.details;

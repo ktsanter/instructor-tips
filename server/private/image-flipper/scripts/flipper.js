@@ -9,32 +9,31 @@ const app = function () {
 		"mainCardId": "flipperMainCard"
 	};
 	
-	const settings = {
-		"colorSchemeClasses": [
-			'flipper-colorscheme-000',
-			'flipper-colorscheme-001',
-			'flipper-colorscheme-002',
-			'flipper-colorscheme-003',
-			'flipper-colorscheme-004',
-			'flipper-colorscheme-005'
-		]
-	};
+	const settings = {};
 	
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	function init () {
+	async function init () {
     page.body = document.getElementsByTagName('body')[0];
-    page.notice = page.body.getElementsByClassName('notice')[0];
+    page.notice = new StandardNotice(page.body, page.body);
+    console.log('add styling for notice, including spinner');
+
 		page.contents = page.body.getElementsByClassName('contents')[0];
-    page.title = page.body.getElementsByClassName('flipper-title')[0];
-    page.subtitle = page.body.getElementsByClassName('flipper-subtitle')[0];
-    page.maincard = page.body.getElementsByClassName('flipper-card')[0];
+    page.titletext = page.contents.getElementsByClassName('flipper-title-text')[0];
+    page.subtitletext = page.contents.getElementsByClassName('flipper-subtitle-text')[0];
+    
+    page.flipperContainer = page.contents.getElementsByClassName('flipper-container')[0];
+    page.flipperCard = page.flipperContainer.getElementsByClassName('flipper-card')[0];
 
 		if (!_initializeSettings()) {
-			_setNotice('error in parameters');
+			page.notice.setNotice('error in parameters');
+      
 		} else {
-			_getConfiguration(_renderLayout);
+      settings.config = await _getConfigInfo(settings.configkey);
+      if (settings.config) {
+        _renderLayout();
+      }
 		}
 	}
 	
@@ -60,120 +59,143 @@ const app = function () {
 	// layout routines
 	//--------------------------------------------------------------
 	function _renderLayout() {
-		page.contents.classList.add(settings.colorSchemeClasses[settings.config.colorscheme])
+    UtilityKTS.setClass(page.contents, settings.config.colorscheme, true);
 		
 		_renderDescriptiveInfo();
-		_loadMainCard();
-		page.body.getElementsByClassName('flipper-button')[0].addEventListener('click', _handleReset);
+		_renderFlipper();
+		
+    page.contents.getElementsByClassName('flipper-button')[0].addEventListener('click', _handleReset);
     
     UtilityKTS.setClass(page.contents, 'hide-me', false);
 	}
 	
 	function _renderDescriptiveInfo() {
-		page.title.textContent = settings.config.title;
-		page.subtitle.textContent = settings.config.subtitle;
+		page.titletext.innerHTML = settings.config.projecttitle;
+		page.subtitletext.innerHTML = settings.config.projectsubtitle;
 	};
 	
-	function _loadMainCard() {
-		var numItems = settings.config.images.length;
-		var s = '';
+	function _renderFlipper() {
+    page.flipperCard.appendChild(_loadFrontOfCard());
+    page.flipperCard.appendChild(_loadBackOfCard());
 
-		s += _loadFrontOfCard(numItems);
-		s += _loadBackOfCard(numItems);
-
-    page.maincard.innerHTML = s;
-
-		var cardButtons = document.getElementsByClassName('flipper-card-button');
+		var cardButtons = document.getElementsByClassName('card-front');
 		for (var i = 0; i < cardButtons.length; i++) {
-			cardButtons[i].addEventListener('click', function() {
-				_flip(page.mainCardId, this.id);
-			});
+			cardButtons[i].addEventListener(
+        'click', 
+        (function(cardIndex) {
+          return function() { 
+            _flip(cardIndex);
+          }
+        })(i), 
+        false);
 		}
 
-		var cardBacks = document.getElementsByClassName('back');
+		var cardBacks = document.getElementsByClassName('card-back');
 		for (var i = 0; i < cardBacks.length; i++) {
-			var back = cardBacks[i];
-			back.style.visiblity = 'hidden';
-			back.addEventListener('click', function () {
-				_unflip();
-			});
+			cardBacks[i].addEventListener(
+        'click', 
+        (function(cardIndex) {
+          return function() { 
+            _unflip(cardIndex);
+          }
+        })(i), 
+        false);
 		}
-	}
+  }
 	
-	function _loadFrontOfCard(numItems)	{
-		var layoutRowsCols = {
-			"9": [3, 3],
-			"16": [4, 4],
-			"20": [4, 5],
-			"25": [5, 5],
-			"30": [6, 5]
-		};
-		var layout = layoutRowsCols[numItems];
-		if (layout == null) {
-			console.log("no layout for this number of items: " + numItems);
-			_setNotice('internal error - no layout for this number of items: ' + numItems);
-			return;
-		}
-		
-		var rows = layout[0];
-		var cols = layout[1];
-		
-		var s = '';
-		s += '<div id="card-front" class="front">'
-		s += '<table class="flipper-card-table">';
-		for (var i = 0; i < numItems; i++) {
-			if (i % cols == 0) s += '<tr>';
-			var paddedNum = ("00" + i).slice (-2);
-			var sid = ' id="ktsFlipperButton' + paddedNum + '" ';
-			var sclass = ' class="flipper-card-button" ';
-			var text = (i+1);
-			
-			s += '<td>';
-			s += '<button ' + sid + sclass + '>' + text + '</button>';
-			s += '</td>';
-			if (i % cols == cols - 1) s += '</tr>';
-		}
-
-		if (i % cols != 0) s += '</tr>';
-		s += '</table>';
-		s += '</div>';
-		
-		return s;
+	function _loadFrontOfCard()	{
+    var rows = settings.config.layoutrows;
+    var cols = settings.config.layoutcols;
+    var elemFrontPrototype = page.body.getElementsByClassName('card-proto front-proto')[0];
+    
+    var elemTable = CreateElement.createTable(null, 'flipper-card-table');
+    var count = 0;
+    for (var r = 0; r < rows; r++) {
+      var elemRow = CreateElement._createElement('tr', null, null);
+      elemTable.appendChild(elemRow);
+      
+      for (var c = 0; c < cols; c++) {
+        var elemCell = CreateElement._createElement('td', null, null);
+        elemRow.appendChild(elemCell);
+        var elemContents = elemFrontPrototype.cloneNode();
+        elemCell.appendChild(elemContents);
+        
+        UtilityKTS.setClass(elemContents, 'card-proto', false);
+        UtilityKTS.setClass(elemContents, 'front-proto', false);
+        UtilityKTS.setClass(elemContents, 'card-front', true);
+        UtilityKTS.setClass(elemContents, 'front' + count, true);
+        UtilityKTS.setClass(elemContents, 'hide-me', false);
+        
+        elemContents.innerHTML = (count + 1);
+        count++;
+      }
+    }
+    
+    return elemTable;
 	}
 
-	function _loadBackOfCard(numItems) {
-		var s= '';
+	function _loadBackOfCard() {
+    var numItems = settings.config.layoutrows * settings.config.layoutcols;
+    var container = CreateElement.createDiv(null, 'cardbacks');
+    var elemBackPrototype = page.body.getElementsByClassName('card-proto back-proto')[0];
+    
+    for (var i = 0; i < numItems; i++) {
+      var elem = elemBackPrototype.cloneNode(true);
+      UtilityKTS.setClass(elem, 'card-proto', false);
+      UtilityKTS.setClass(elem, 'back-proto', false);
+      UtilityKTS.setClass(elem, 'card-back', true);
+      UtilityKTS.setClass(elem, 'back' + i, true);
+      
+      var elemImage = elem.getElementsByTagName('img')[0];
+      
+      var imageURL = settings.config.layoutimages[i];
+      if (imageURL && imageURL != '') {
+        elemImage.src = imageURL;
+        elemImage.alt = 'image #' + i;
+      }
+      container.appendChild(elem);
+    }
 		  
-		for (var i = 0; i < numItems; i++) {
-			var paddedNum = ("00" + i).slice (-2);
-			var sid = ' id="back' + paddedNum + '" ';
-			var sclass = ' class="back" ';
-			var scontent = 'back of card ' + (i+1);
-			s += '<div ' + sid + sclass + '>' 
-			s += '<img src="' + settings.config.images[i] + '" style="height:100%" />'; 
-			s += '</div>';
-		}
-		  
-		return s;
+		return container;
 	}
 
 	
-	function _flip(id1, id2) {
-		var cardBacks = document.getElementsByClassName('back');
+	function _flip(cardIndex) {  
+    var elemFlipperTable = page.flipperContainer.getElementsByClassName('flipper-card-table')[0];
+    var elemBack = page.flipperContainer.getElementsByClassName('card-back back' + cardIndex)[0];
+
+    UtilityKTS.setClass(elemFlipperTable, 'hide-me', true);    
+    UtilityKTS.setClass(elemBack, 'hide-me', false);
+
+    /*
+		var cardBacks = page.flipperContainer.getElementsByClassName('back');
 		for (var i = 0; i < cardBacks.length; i++) {
-			cardBacks[i].style.visibility = 'hidden';
+      UtilityKTS.setClass(cardBacks[i], 'hide-me', true);
 		}
+    
 		document.getElementById('back' + id2.substring(id2.length-2)).style.visibility = 'visible';
 
 		_toggleClass(document.getElementById(id1), 'flipped');
 		document.getElementById(id2).style.visibility = 'hidden';
+    */
 	}
 
-	function _unflip() {
+	function _unflip(cardIndex) {
+    var elemFlipperTable = page.flipperContainer.getElementsByClassName('flipper-card-table')[0];
+    var elemBack = page.flipperContainer.getElementsByClassName('card-back back' + cardIndex)[0];
+
+    UtilityKTS.setClass(elemBack, 'hide-me', true);
+    UtilityKTS.setClass(elemFlipperTable, 'hide-me', false);    
+
+    /*
 		_toggleClass(document.getElementById(page.mainCardId), 'flipped');
+    */
 	}
 
 	function _handleReset() {
+    console.log('_handleReset');
+    return;
+    
 		var cardButtons = document.getElementsByClassName('flipper-card-button');
 		for (var i = 0; i < cardButtons.length; i++) {
 			cardButtons[i].style.visibility = 'visible';
@@ -208,44 +230,25 @@ const app = function () {
 	}
 	
 	//--------------------------------------------------------------
-	// use Google Sheet web API to get course list
+	// DB interaction
 	//--------------------------------------------------------------
-	function _getConfiguration (callback) {
-		_setNotice('loading configuration...');
-
-		fetch(_buildApiUrl('config', settings.configkey))
-			.then((response) => response.json())
-			.then((json) => {
-				//console.log('json.status=' + json.status);
-				if (json.status !== 'success') {
-					_setNotice(json.message);
-				}
-				//console.log('json.data: ' + JSON.stringify(json.data));
-				settings.config = json.data;
-				_setNotice('');
-
-				callback();
-			})
-			.catch((error) => {
-				_setNotice('failed to load configuration for "' + settings.configkey + '"');
-				console.log(error);
-			})
-	}	
+  async function _getConfigInfo(configkey) {
+    var result = null;
+    
+    page.notice.setNotice('loading configuration...', true);
+    var dbResult = await SQLDBInterface.doGetQuery('image-flipper/project', configkey, page.notice);
+    if (dbResult.success) {
+      page.notice.setNotice('');
+      dbResult.project.layoutimages = JSON.parse(dbResult.project.layoutimages);
+      result = dbResult.project;
+    }
+    
+    return result;
+  }
 	
 	//---------------------------------------
 	// utility functions
 	//----------------------------------------
-	function _setNotice (label) {
-		page.notice.innerHTML = label;
-
-		if (label == '') {
-			page.notice.style.display = 'none'; 
-			page.notice.style.visibility = 'hidden';
-		} else {
-			page.notice.style.display = 'block';
-			page.notice.style.visibility = 'visible';
-		}
-	}
 	
 	return {
 		init: init

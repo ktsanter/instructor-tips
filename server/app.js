@@ -646,6 +646,12 @@ app.get('/image-flipper/flipper', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.get('/image-flipper/project/:configkey', async function (req, res) {
+  var dbManager = dbManagerLookup['imageflipper'];
+  req.params.queryName = 'singleproject';
+  res.send(await dbManager.doQuery(req.params, req.body));
+})
+
 app.get('/image-flipper/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'image-flipper/pug/help.pug');
   

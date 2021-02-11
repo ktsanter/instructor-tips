@@ -391,6 +391,7 @@ const app = function () {
     
     var imageURL = _promptForImageURL(e.target);
     if (imageURL) {
+      console.log('sanitize image URL');
       _setCardImage(e.target, imageURL);
       _setDirty(true);
     }
