@@ -42,9 +42,6 @@ module.exports = internal.ImageFlipper = class {
   }
   
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
-    console.log('doUpdate');
-    console.log(params);
-    console.log(postData);
     var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'project') {
@@ -96,6 +93,7 @@ module.exports = internal.ImageFlipper = class {
     };
     
     queryResults = await this._dbManager.dbQueries(queryList);
+
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -124,13 +122,11 @@ module.exports = internal.ImageFlipper = class {
     var projectInfo = [];
     for (var i = 0; i < queryResults.data.projects.length; i++) {
       var project = queryResults.data.projects[i];
-      project.layoutimages = imageInfoArrays[project.projectid];
+      project.layoutimages = JSON.stringify(imageInfoArrays[project.projectid]);
       projectInfo.push(project);
     }
     delete queryResults.data.layoutimages;
     queryResults.projects = projectInfo;
-        
-    var projectInfo = queryResults.data.projects;
 
     if (queryResults.success) {
       result.success = true;
@@ -175,25 +171,35 @@ module.exports = internal.ImageFlipper = class {
 // specific update methods
 //---------------------------------------------------------------
   async _updateProject(params, postData, userInfo) {
-    console.log('update project');
-    return this._dbManager.queryFailureResult();
-    
     var result = this._dbManager.queryFailureResult();
     
-    var query, queryResults;
+    var queryList, queryResults;
     
-    query =
-      'update project ' +
-      'set ' +
-        'projectname = "' + postData.projectname + '", ' +
-        'imagename = "' + postData.imagename + '", ' +
-        'imagefullpage = ' + postData.imagefullpage + ', ' +
-        'message = "' + postData.message + '", ' +
-        'positiveresponse = "' + postData.positiveresponse + '", ' +
-        'negativeresponse = "' + postData.negativeresponse + '" ' +
-      'where projectid = ' + postData.projectid;
+    queryList = {
+      project: 
+        'update project ' +
+        'set ' +
+          'projectname = "' + postData.projectname + '", ' +
+          'projecttitle = "' + postData.projecttitle + '", ' +
+          'projectsubtitle = "' + postData.projectsubtitle + '", ' +
+          'colorscheme = "' + postData.colorscheme + '", ' +
+          'layoutrows = ' + postData.layoutrows + ', ' +
+          'layoutcols = ' + postData.layoutcols + ' ' +
+        'where projectid = ' + postData.projectid + ' ' +
+          'and userid = ' + userInfo.userId ,
+    };
+    
+    for (var i = 0; i < postData.layoutimages.length; i++) {
+      queryList['layoutimage' + i] = 
+        'update layoutimage ' +
+        'set ' +
+          'imageurl = "' + postData.layoutimages[i] + '" ' +
+        'where projectid = ' + postData.projectid + ' ' +
+          'and imageindex = ' + i          
+    }
       
-    queryResults = await this._dbManager.dbQuery(query);
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';

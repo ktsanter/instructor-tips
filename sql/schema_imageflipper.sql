@@ -24,7 +24,6 @@ create table project
   layoutcols            int unsigned not null,
   
   primary key (projectid),
-  constraint unique(userid, projectname),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
 );
 

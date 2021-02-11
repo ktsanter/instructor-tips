@@ -16,38 +16,6 @@ const app = function () {
     maxCards: 36,
     thumbnailErrorImg: 'https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png'
 	};
-  
-  var dummyProjectData = [
-    {
-      projectid: 1,  
-      projectname: 'proj1', 
-      projecttitle: 'title for proj1', 
-      projectsubtitle: 'subtitle for proj1', 
-      colorscheme: 'flipper-colorscheme-000',
-      layoutrows: 4, 
-      layoutcols: 5, 
-      layoutimages: [
-        '', '', 'https://drive.google.com/uc?id=1FbgvosSliDx-1rOS9y1iNtph88b5HNVN', '', '',
-        '', '', '', '', '',
-        'xxx', '', '', '', '',
-        '', '', '', '', ''
-      ]
-    },
-    {
-      projectid: 2,  
-      projectname: 'proj2', 
-      projecttitle: 'title for proj2', 
-      projectsubtitle: 'subtitle for proj2', 
-      colorscheme: 'flipper-colorscheme-004',
-      layoutrows: 3, 
-      layoutcols: 3, 
-      layoutimages: [
-        '', '', '',
-        '', '', '',
-        '', 'https://drive.google.com/uc?id=1cxy-Sd8pmQeeDOsgpBV5qrvMl9sOEKx5', ''
-      ]
-    }
-  ];
 	
 	//---------------------------------------
 	// get things going
@@ -116,6 +84,7 @@ const app = function () {
   
   function _attachHandlers() {
     page.projectSelection.addEventListener('change', (e) => { _handleProjectSelection(e); });
+
     page.body.getElementsByClassName('save-project')[0].addEventListener('click', (e) => { _handleProjectSave(e); });
     
     page.keyvalueControl.addEventListener('input', (e) => { _restrictInput(e); });
@@ -360,6 +329,17 @@ const app = function () {
     }        
   }
   
+  async function _handleProjectSave(e) {
+    if (await _saveProjectToDB()) {
+      await _getProjectInfo();
+      _updateProjectInfoSelection();
+      _selectProject(settings.currentProject.projectid);
+
+    } else {
+      console.log('failed to save project');
+    }
+  }
+  
   async function _handleDeleteProject() {
     if (!settings.currentProject) return;
     
@@ -379,20 +359,11 @@ const app = function () {
   }
   
   function _handleProjectSelection(e) {
-    console.log('_handleProjectSelection');
-    console.log('check dirty bit (' + settings.dirtyBit + ') before using new selection');
-    var projectInfo = e.target[e.target.selectedIndex].projectInfo;
-    _updateProjectInfo(projectInfo);
-  }
-  
-  async function _handleProjectSave(e) {
-    if (await _saveProjectToDB()) {
-      await _getProjectInfo();
-      _updateProjectInfoSelection();
-      _updateProjectInfo(settings.currentProject);
-
+    if (settings.dirtyBit && !confirm('Current changes will be lost.\nContinue with selecting different project?')) {
+      e.target.value = settings.currentProject.projectid;
+      
     } else {
-      console.log('failed to save project');
+      _updateProjectInfo(e.target[e.target.selectedIndex].projectInfo);
     }
   }
   
@@ -442,12 +413,7 @@ const app = function () {
     settings.projectInfo = null;
     if (dbResult.success) {
       for (var i = 0; i < dbResult.projects.length; i++) {
-        var project = dbResult.projects[i];
-        project.layoutimages = [];
-        for (var j = 0; j < settings.maxCards; j++) {
-          project.layoutimages.push('');
-        }
-        dbResult.projects[i] = project;
+        dbResult.projects[i].layoutimages = JSON.parse(dbResult.projects[i].layoutimages);
       }
 
       settings.projectInfo = dbResult.projects;
@@ -455,7 +421,6 @@ const app = function () {
   }  
 
   async function _saveProjectToDB() {
-    console.log('_saveProjectToDB() stub');
     var layout = page.layoutControl.value.split('x');
 
     var postData = {
@@ -466,20 +431,15 @@ const app = function () {
       colorscheme: _getColorScheme(page.colorControl),
       layoutrows: layout[0],
       layoutcols: layout[1],
-      layoutimages: [] // loop to get images
+      layoutimages: _getLayoutImageArray()
     };
     
-    //-------- debug version until DB in place
-    // var dbResult = await doPostQuery('image-flipper', 'saveprojectinfo', postData);
-    
-    var dbResult = { success: true };
-    //-------------------------------------
+    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/update', 'project', postData);
     
     return dbResult.success;    
   }
   
   async function _addNewProjectToDB() {
-
     var dbResult = await SQLDBInterface.doPostQuery('imageflipper/insert', 'defaultproject');
       
     var newProjectId = null;
@@ -489,8 +449,6 @@ const app = function () {
   }
   
   async function _deleteProjectFromDB() {
-    console.log('_deleteProjectFromDB() stub');
-
     var dbResult = await SQLDBInterface.doPostQuery('imageflipper/delete', 'project', {projectid: settings.currentProject.projectid});
 
     return dbResult.success;
@@ -526,6 +484,18 @@ const app = function () {
       rows: layoutValues[0],
       cols: layoutValues[1]
     };
+  }
+  
+  function _getLayoutImageArray() {
+    var imageURLArray = [];
+    
+    var elemCards = page.body.getElementsByClassName('cardbutton');
+    for (var i = 0; i < settings.maxCards; i++) {
+      var card = page.body.getElementsByClassName('cardbutton cardbutton' + i)[0];
+      imageURLArray.push(card.imageURL);
+    }
+
+    return imageURLArray;
   }
   
   function _setDisarm(elem, disarm) {
