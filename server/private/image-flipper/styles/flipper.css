@@ -15,21 +15,25 @@ body {
 /*-----------------------------------------------------*/
 /* contents                                            */
 /*-----------------------------------------------------*/
-.flipper .contents {}
+.flipper .contents {
+  width: 600px;
+  height: 400px;
+}
 
 /*-----------------------------------------------------*/
 /* title and subtitle                                  */
 /*-----------------------------------------------------*/
 .flipper .contents .flipper-title {
   background-color: var(--flipper-color2);
-  width: 550px;
+  width: 100%;  
   border: 1px solid var(--flipper-color1);
+  padding: 0.2em 0;
 }
 
 .flipper .contents .flipper-title .flipper-title-text {
   display: inline-block;
   color: var(--flipper-color3);
-  font-size: 20px;
+  font-size: 18px;
   margin-left: 0.2em;
 }
 
@@ -40,12 +44,12 @@ body {
   background-color: var(--flipper-color3);
   color: var(--flipper-color2);
   border: 1px solid var(--flipper-color3);
-  margin: 0.4em;
+  margin: 0.4em 0.4em 0 0.4em;
 }
 
 .flipper .contents .flipper-subtitle {
-  width: 550px;
-  border: 1px solid var(--flipper-color1);
+  width: 100%;
+  margin: 0.8em 0;
 }
 
 .flipper .contents .flipper-subtitle .flipper-subtitle-text {
@@ -54,15 +58,58 @@ body {
   margin-left: 0.2em;
 }
 
-
 /*-----------------------------------------------------*/
 /* the flipper itself                                  */
 /*-----------------------------------------------------*/
-.flipper .contents .flipper-container {}
+.flipper .contents .flipper-container {
+  width: 100%;
+  height: 100%;
+}
 
-.flipper .contents .flipper-container .flipper-card {}
+.flipper .contents .flipper-container .flipper-card {
+  width: 100%;
+  height: 100%;
+}
 
-.flipper .contents .flipper-container .flipper-card .flipper-card-button {}
+.flipper .contents .flipper-container .flipper-card .flipper-card-table {
+  width: 100%;
+  height: 100%;
+  background-color: var(--flipper-color3);
+}
+
+.flipper .contents .flipper-container .flipper-card .flipper-card-table td {
+  text-align: center;
+}
+
+/*-----------------------------------------------------*/
+/* individual card front                               */
+/*-----------------------------------------------------*/
+.flipper .contents .flipper-container .flipper-card .card-front {
+  background-color: var(--flipper-color2);
+  border: 1px solid var(--flipper-color1);
+  border-radius: 6px;
+  color: var(--flipper-color3);
+  width: 90%;
+  height: 90%;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 32px;
+}
+
+.flipper .contents .flipper-container .flipper-card .card-front.invisible {
+  visibility: hidden;
+}
+
+/*-----------------------------------------------------*/
+/* individual card back                                */
+/*-----------------------------------------------------*/
+.flipper .contents .flipper-container .flipper-card .card-back {}
+
+.flipper .contents .flipper-container .flipper-card .card-back img {
+  width: 100%;
+  height: auto;
+}
 
 /*
 .flipper .main-container {

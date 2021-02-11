@@ -1,14 +1,13 @@
-//---------------------------------------------------
+//-------------------------------------------------------------------------
 // image flipper app
-//---------------------------------------------------
+//-------------------------------------------------------------------------
+// TODO: add flipping animation
+// TODO: resize "invalid image" pic
+// TODO: disable reset when card back is shown?
+// TODO: add "use preview" query param (or extend configkey interpretation
+//-------------------------------------------------------------------------
 const app = function () {
-	const API_BASE = 'https://script.google.com/macros/s/AKfycbw8ApLPHifjUm1NM12ek5cK2AoTvbVUrfUi_v9S4dtdpxzLeOPG/exec';
-	const API_KEY = 'MVimageflipperAPI';
-
-	const page = {
-		"mainCardId": "flipperMainCard"
-	};
-	
+	const page = {};	
 	const settings = {};
 	
 	//---------------------------------------
@@ -159,25 +158,24 @@ const app = function () {
 		return container;
 	}
 
+	//--------------------------------------------------------------
+	// handlers
+	//--------------------------------------------------------------
+	function _handleReset() {
+    var cardFronts = page.flipperContainer.getElementsByClassName('card-front');
+    for (var i = 0; i < cardFronts.length; i++) {
+      UtilityKTS.setClass(cardFronts[i], 'invisible', false);
+    }
+	}	
 	
 	function _flip(cardIndex) {  
     var elemFlipperTable = page.flipperContainer.getElementsByClassName('flipper-card-table')[0];
+    var elemFront = page.flipperContainer.getElementsByClassName('card-front front' + cardIndex)[0];
     var elemBack = page.flipperContainer.getElementsByClassName('card-back back' + cardIndex)[0];
 
+    UtilityKTS.setClass(elemFront, 'invisible', true);
     UtilityKTS.setClass(elemFlipperTable, 'hide-me', true);    
     UtilityKTS.setClass(elemBack, 'hide-me', false);
-
-    /*
-		var cardBacks = page.flipperContainer.getElementsByClassName('back');
-		for (var i = 0; i < cardBacks.length; i++) {
-      UtilityKTS.setClass(cardBacks[i], 'hide-me', true);
-		}
-    
-		document.getElementById('back' + id2.substring(id2.length-2)).style.visibility = 'visible';
-
-		_toggleClass(document.getElementById(id1), 'flipped');
-		document.getElementById(id2).style.visibility = 'hidden';
-    */
 	}
 
 	function _unflip(cardIndex) {
@@ -186,49 +184,8 @@ const app = function () {
 
     UtilityKTS.setClass(elemBack, 'hide-me', true);
     UtilityKTS.setClass(elemFlipperTable, 'hide-me', false);    
-
-    /*
-		_toggleClass(document.getElementById(page.mainCardId), 'flipped');
-    */
 	}
 
-	function _handleReset() {
-    console.log('_handleReset');
-    return;
-    
-		var cardButtons = document.getElementsByClassName('flipper-card-button');
-		for (var i = 0; i < cardButtons.length; i++) {
-			cardButtons[i].style.visibility = 'visible';
-		}
-
-		var clist = document.getElementById(page.mainCardId).classList;
-		if (clist.contains('flipped')) {
-			clist.remove('flipped');
-		}
-	}	
-		
-	function _toggleClass(elem, className) {
-		var clist = elem.classList;
-		if (clist.contains(className)) {
-			clist.remove(className);
-		} else {
-			clist.add(className);
-		}
-	}
-			
-	//--------------------------------------------------------------
-	// build URL for use with Google sheet web API
-	//--------------------------------------------------------------
-		function _buildApiUrl (datasetname, configkey) {
-		let url = API_BASE;
-		url += '?key=' + API_KEY;
-		url += datasetname && datasetname !== null ? '&dataset=' + datasetname : '';
-		url += configkey && configkey !== null ? '&configkey=' + configkey : '';
-		//console.log('buildApiUrl: url=' + url);
-		
-		return url;
-	}
-	
 	//--------------------------------------------------------------
 	// DB interaction
 	//--------------------------------------------------------------
