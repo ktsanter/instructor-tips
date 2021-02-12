@@ -1,10 +1,9 @@
 //-------------------------------------------------------------------------
 // image flipper app
 //-------------------------------------------------------------------------
-// TODO: add flipping animation
-// TODO: resize "invalid image" pic
-// TODO: disable reset when card back is shown?
-// TODO: add "use preview" query param (or extend configkey interpretation
+// TODO: implement embed
+// TODO: implement preview
+//        - add "use preview" query param (or extend configkey interpretation
 //-------------------------------------------------------------------------
 const app = function () {
 	const page = {};	
@@ -16,14 +15,15 @@ const app = function () {
 	async function init () {
     page.body = document.getElementsByTagName('body')[0];
     page.notice = new StandardNotice(page.body, page.body);
-    console.log('add styling for notice, including spinner');
 
 		page.contents = page.body.getElementsByClassName('contents')[0];
     page.titletext = page.contents.getElementsByClassName('flipper-title-text')[0];
     page.subtitletext = page.contents.getElementsByClassName('flipper-subtitle-text')[0];
     
-    page.flipperContainer = page.contents.getElementsByClassName('flipper-container')[0];
-    page.flipperCard = page.flipperContainer.getElementsByClassName('flipper-card')[0];
+    page.flipperCard = page.contents.getElementsByClassName('flipper-card')[0];
+    page.flipperCardInner = page.flipperCard.getElementsByClassName('flipper-card-inner')[0];
+    page.flipperCardFront = page.flipperCardInner.getElementsByClassName('flipper-card-front')[0];
+    page.flipperCardBack = page.flipperCardInner.getElementsByClassName('flipper-card-back')[0];
 
 		if (!_initializeSettings()) {
 			page.notice.setNotice('error in parameters');
@@ -74,10 +74,10 @@ const app = function () {
 	};
 	
 	function _renderFlipper() {
-    page.flipperCard.appendChild(_loadFrontOfCard());
-    page.flipperCard.appendChild(_loadBackOfCard());
-
-		var cardButtons = document.getElementsByClassName('card-front');
+    _loadFrontOfCard(page.flipperCardFront);
+    _loadBackOfCard(page.flipperCardBack);
+    
+		var cardButtons = page.flipperCardFront.getElementsByClassName('front');
 		for (var i = 0; i < cardButtons.length; i++) {
 			cardButtons[i].addEventListener(
         'click', 
@@ -89,25 +89,20 @@ const app = function () {
         false);
 		}
 
-		var cardBacks = document.getElementsByClassName('card-back');
+		var cardBacks = page.flipperCardBack.getElementsByClassName('back');
 		for (var i = 0; i < cardBacks.length; i++) {
-			cardBacks[i].addEventListener(
-        'click', 
-        (function(cardIndex) {
-          return function() { 
-            _unflip(cardIndex);
-          }
-        })(i), 
-        false);
+			cardBacks[i].addEventListener('click', () => {_unflip();}, false);
 		}
   }
 	
-	function _loadFrontOfCard()	{
+	function _loadFrontOfCard(container)	{
     var rows = settings.config.layoutrows;
     var cols = settings.config.layoutcols;
     var elemFrontPrototype = page.body.getElementsByClassName('card-proto front-proto')[0];
     
     var elemTable = CreateElement.createTable(null, 'flipper-card-table');
+    container.appendChild(elemTable);
+    
     var count = 0;
     for (var r = 0; r < rows; r++) {
       var elemRow = CreateElement._createElement('tr', null, null);
@@ -121,28 +116,22 @@ const app = function () {
         
         UtilityKTS.setClass(elemContents, 'card-proto', false);
         UtilityKTS.setClass(elemContents, 'front-proto', false);
-        UtilityKTS.setClass(elemContents, 'card-front', true);
         UtilityKTS.setClass(elemContents, 'front' + count, true);
-        UtilityKTS.setClass(elemContents, 'hide-me', false);
         
         elemContents.innerHTML = (count + 1);
         count++;
       }
     }
-    
-    return elemTable;
 	}
 
-	function _loadBackOfCard() {
+	function _loadBackOfCard(container) {
     var numItems = settings.config.layoutrows * settings.config.layoutcols;
-    var container = CreateElement.createDiv(null, 'cardbacks');
     var elemBackPrototype = page.body.getElementsByClassName('card-proto back-proto')[0];
     
     for (var i = 0; i < numItems; i++) {
       var elem = elemBackPrototype.cloneNode(true);
       UtilityKTS.setClass(elem, 'card-proto', false);
       UtilityKTS.setClass(elem, 'back-proto', false);
-      UtilityKTS.setClass(elem, 'card-back', true);
       UtilityKTS.setClass(elem, 'back' + i, true);
       
       var elemImage = elem.getElementsByTagName('img')[0];
@@ -154,36 +143,36 @@ const app = function () {
       }
       container.appendChild(elem);
     }
-		  
-		return container;
 	}
 
 	//--------------------------------------------------------------
 	// handlers
 	//--------------------------------------------------------------
 	function _handleReset() {
-    var cardFronts = page.flipperContainer.getElementsByClassName('card-front');
+    var cardFronts = page.flipperCardFront.getElementsByClassName('front');
     for (var i = 0; i < cardFronts.length; i++) {
       UtilityKTS.setClass(cardFronts[i], 'invisible', false);
     }
+    if (page.flipperCard.classList.contains('flipped')) _unflip();
 	}	
 	
 	function _flip(cardIndex) {  
-    var elemFlipperTable = page.flipperContainer.getElementsByClassName('flipper-card-table')[0];
-    var elemFront = page.flipperContainer.getElementsByClassName('card-front front' + cardIndex)[0];
-    var elemBack = page.flipperContainer.getElementsByClassName('card-back back' + cardIndex)[0];
-
+    var backList = page.flipperCardBack.getElementsByClassName('back');
+    var elemFront = page.flipperCardFront.getElementsByClassName('front front' + cardIndex)[0];
+    var elemBack = page.flipperCardBack.getElementsByClassName('back back' + cardIndex)[0];
+    
+    for (var i = 0; i < backList.length; i++) {
+      UtilityKTS.setClass(backList[i], 'hide-me', true);
+    }
+    
     UtilityKTS.setClass(elemFront, 'invisible', true);
-    UtilityKTS.setClass(elemFlipperTable, 'hide-me', true);    
     UtilityKTS.setClass(elemBack, 'hide-me', false);
+    
+    UtilityKTS.setClass(page.flipperCard, 'flipped', true);       
 	}
 
-	function _unflip(cardIndex) {
-    var elemFlipperTable = page.flipperContainer.getElementsByClassName('flipper-card-table')[0];
-    var elemBack = page.flipperContainer.getElementsByClassName('card-back back' + cardIndex)[0];
-
-    UtilityKTS.setClass(elemBack, 'hide-me', true);
-    UtilityKTS.setClass(elemFlipperTable, 'hide-me', false);    
+	function _unflip() {
+    UtilityKTS.setClass(page.flipperCard, 'flipped', false);
 	}
 
 	//--------------------------------------------------------------
@@ -193,6 +182,7 @@ const app = function () {
     var result = null;
     
     page.notice.setNotice('loading configuration...', true);
+
     var dbResult = await SQLDBInterface.doGetQuery('image-flipper/project', configkey, page.notice);
     if (dbResult.success) {
       page.notice.setNotice('');

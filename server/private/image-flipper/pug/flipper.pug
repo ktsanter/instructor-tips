@@ -22,12 +22,15 @@ html(lang="en")
         .flipper-subtitle
           .flipper-subtitle-text
         
-        .flipper-container
-          .flipper-card
+        .flipper-card
+          .flipper-card-inner
+            .flipper-card-front
+            .flipper-card-back
                 
-      button(class="card-proto front-proto flipper-card-button hide-me") #n
-      
-      div(class="card-proto back-proto back hide-me" )
-        img(alt="invalid image" src="https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png")
+      .prototypes(class='hide-me')
+        button(class="card-proto front-proto front flipper-card-button")
+        
+        div(class="card-proto back-proto back" )
+          img(alt="invalid image" src="https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image2.png")
 
 

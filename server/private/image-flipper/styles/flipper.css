@@ -13,6 +13,18 @@ body {
 }
 
 /*-----------------------------------------------------*/
+/* standard notice                                     */
+/*-----------------------------------------------------*/
+.standard-notice {
+  font-style: italic;
+}
+
+#noticeSpinner {
+  font-size: 1.0em;
+  margin-left: 0.2em;
+}
+
+/*-----------------------------------------------------*/
 /* contents                                            */
 /*-----------------------------------------------------*/
 .flipper .contents {
@@ -61,30 +73,59 @@ body {
 /*-----------------------------------------------------*/
 /* the flipper itself                                  */
 /*-----------------------------------------------------*/
-.flipper .contents .flipper-container {
+.flipper-card {
   width: 100%;
   height: 100%;
+  
+  perspective: 1000px;
 }
 
-.flipper .contents .flipper-container .flipper-card {
+.flipper-card .flipper-card-inner {
+  width: 100%;
+  height: 100%;   
+  
+  position: relative;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flipper-card.flipped .flipper-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flipper-card .flipper-card-inner .flipper-card-front  {
   width: 100%;
   height: 100%;
+  
+  position: absolute;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;  
 }
 
-.flipper .contents .flipper-container .flipper-card .flipper-card-table {
+.flipper-card .flipper-card-inner .flipper-card-back  {
+  width: 100%;
+  height: 100%;
+  
+  position: absolute;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden; 
+  transform: rotateY(180deg);  
+}
+
+.flipper-card .flipper-card-inner .flipper-card-front .flipper-card-table {
   width: 100%;
   height: 100%;
   background-color: var(--flipper-color3);
 }
 
-.flipper .contents .flipper-container .flipper-card .flipper-card-table td {
+.flipper-card .flipper-card-inner .flipper-card-front .flipper-card-table td {
   text-align: center;
 }
 
 /*-----------------------------------------------------*/
-/* individual card front                               */
+/* individual button front                             */
 /*-----------------------------------------------------*/
-.flipper .contents .flipper-container .flipper-card .card-front {
+.flipper-card .flipper-card-inner .flipper-card-front .front {
   background-color: var(--flipper-color2);
   border: 1px solid var(--flipper-color1);
   border-radius: 6px;
@@ -97,103 +138,18 @@ body {
   font-size: 32px;
 }
 
-.flipper .contents .flipper-container .flipper-card .card-front.invisible {
+.flipper-card .flipper-card-inner .invisible {
   visibility: hidden;
 }
 
 /*-----------------------------------------------------*/
-/* individual card back                                */
+/* individual card back (images)                       */
 /*-----------------------------------------------------*/
-.flipper .contents .flipper-container .flipper-card .card-back {}
+.flipper-card .flipper-card-inner .back {
+  width: 100%;
+}
 
-.flipper .contents .flipper-container .flipper-card .card-back img {
+.flipper-card .flipper-card-inner .back img {
   width: 100%;
   height: auto;
 }
-
-/*
-.flipper .main-container {
-	width: 600px;
-	height: 500px;
-}
-
-.flipper .flipper-card {
-  --flip-time: 0.6s;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  -webkit-transition: -webkit-transform var(--flip-time);
-  -moz-transition: -moz-transform  var(--flip-time);
-  -o-transition: -o-transform  var(--flip-time);
-  transition: transform  var(--flip-time);
-  -webkit-transform-style: preserve-3d;
-  -moz-transform-style: preserve-3d;
-  -o-transform-style: preserve-3d;
-  transform-style: preserve-3d;
-  -webkit-transform-origin: 50% 50%;
-}
-
-.flipper .flipper-card div {
-  display: block;
-  height: 100%;
-  width: 100%;
-  line-height: 50px;
-  color: var(--flipper-color3);
-  text-align: center;
-  position: absolute;
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  -o-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-.flipper .flipper-card .front {
-  border: 1px solid var(--flipper-color1);
-  font-size: 40px;
-  font-weight: bold;
-}
-
-.flipper .flipper-card .back {
-  -webkit-transform: rotateY( 180deg );
-  -moz-transform: rotateY( 180deg );
-  -o-transform: rotateY( 180deg );
-  transform: rotateY( 180deg );
-  font-size: 20px;
-}
-
-.flipper .flipper-card.flipped {
-  -webkit-transform: rotateY( 180deg );
-  -moz-transform: rotateY( 180deg );
-  -o-transform: rotateY( 180deg );
-  transform: rotateY( 180deg );
-}
-
-.flipper .flipper-control-cell {
-  text-align: right;
-}
-
-.flipper .flipper-card-table {
-  width: 100%;
-  height: 100%;
-  background-color: var(--flipper-color3);
-}
-
-.flipper .flipper-card-button {
-  background-color: var(--flipper-color2);
-  border: 1px solid var(--flipper-color1);
-  border-radius: 6px;
-  color: var(--flipper-color3);
-  width: 90%;
-  height: 90%;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 32px
-}
-
-.flipper .notice {
-	color: blue;
-	font-size: 14px;
-	font-style: italic;
-}
-*/
