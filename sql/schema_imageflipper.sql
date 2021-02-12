@@ -39,6 +39,15 @@ create table layoutimage
   constraint foreign key (projectid) references project (projectid) on delete cascade
 );
 
+create table projectpreview
+(
+  userid                int unsigned not null,
+  snapshot              JSON,
+  
+  primary key (userid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------

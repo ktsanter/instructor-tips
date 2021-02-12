@@ -1,9 +1,7 @@
 //-------------------------------------------------------------------------
 // image flipper app
 //-------------------------------------------------------------------------
-// TODO: implement embed
-// TODO: implement preview
-//        - add "use preview" query param (or extend configkey interpretation
+// TODO: add handling of 'preview' configkey
 //-------------------------------------------------------------------------
 const app = function () {
 	const page = {};	
@@ -182,12 +180,20 @@ const app = function () {
     var result = null;
     
     page.notice.setNotice('loading configuration...', true);
-
-    var dbResult = await SQLDBInterface.doGetQuery('image-flipper/project', configkey, page.notice);
-    if (dbResult.success) {
-      page.notice.setNotice('');
-      dbResult.project.layoutimages = JSON.parse(dbResult.project.layoutimages);
-      result = dbResult.project;
+    if (configkey == 'preview') {
+      var dbResult = await SQLDBInterface.doGetQuery('image-flipper/project', 'preview', page.notice);
+      if (dbResult.success) {
+        page.notice.setNotice('');
+        result = dbResult.project;
+      }
+      
+    } else {
+      var dbResult = await SQLDBInterface.doGetQuery('image-flipper/project', configkey, page.notice);
+      if (dbResult.success) {
+        page.notice.setNotice('');
+        dbResult.project.layoutimages = JSON.parse(dbResult.project.layoutimages);
+        result = dbResult.project;
+      }
     }
     
     return result;

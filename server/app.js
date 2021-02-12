@@ -649,7 +649,9 @@ app.get('/image-flipper/flipper', function (req, res) {
 app.get('/image-flipper/project/:configkey', async function (req, res) {
   var dbManager = dbManagerLookup['imageflipper'];
   req.params.queryName = 'singleproject';
-  res.send(await dbManager.doQuery(req.params, req.body));
+  var userInfo = userManagement.getUserInfo(req.session);
+  
+  res.send(await dbManager.doQuery(req.params, req.body, userInfo));
 })
 
 app.get('/image-flipper/help', function (req, res) {

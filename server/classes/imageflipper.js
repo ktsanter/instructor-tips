@@ -15,14 +15,19 @@ module.exports = internal.ImageFlipper = class {
 //---------------------------------------------------------------
 // dispatchers
 //---------------------------------------------------------------
-  async doQuery(params, postData, userInfo, funcCheckPrivilege) {
+  async doQuery(params, postData, userInfo) {
     var dbResult = this._dbManager.queryFailureResult();
 
     if (params.queryName == 'projectinfo') {
       dbResult = await this._getProjectInfo(params, userInfo);
       
     } else if (params.queryName == 'singleproject') {
-      dbResult = await this._getSingleProjectInfo(params);
+      if (params.configkey == 'preview') {
+        dbResult = await this._getProjectPreview(userInfo);
+        
+      } else {
+        dbResult = await this._getSingleProjectInfo(params);
+      }
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -49,6 +54,9 @@ module.exports = internal.ImageFlipper = class {
     
     if (params.queryName == 'project') {
       dbResult = await this._updateProject(params, postData, userInfo);      
+      
+    } else if (params.queryName == 'preview') {
+      dbResult = await this._updateProjectPreview(params, postData, userInfo);      
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -200,6 +208,33 @@ module.exports = internal.ImageFlipper = class {
     return result;
   }
  
+  async _getProjectPreview(userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+      
+    queryList = {
+      project:
+        'select ' + 
+          'p.snapshot ' + 
+        'from projectpreview as p ' +
+        'where p.userid = ' + userInfo.userId + ' '
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.project = JSON.parse(queryResults.data.project[0].snapshot);
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+ 
 //---------------------------------------------------------------
 // specific insert methods
 //---------------------------------------------------------------
@@ -257,6 +292,36 @@ module.exports = internal.ImageFlipper = class {
         'where projectid = ' + postData.projectid + ' ' +
           'and imageindex = ' + i          
     }
+      
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+
+    } else {
+      result.details = queryResults.details;
+    }      
+
+    return result;
+  }    
+  
+  async _updateProjectPreview(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      project: 
+        'replace into projectpreview( ' +
+          'userid, ' +
+          'snapshot ' +
+        ') values (' +        
+          userInfo.userId + ', ' +
+          '\'' + JSON.stringify(postData) + '\' ' +
+        ')'
+    };
       
     queryResults = await this._dbManager.dbQueries(queryList);
     

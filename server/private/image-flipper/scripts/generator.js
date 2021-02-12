@@ -1,6 +1,11 @@
-//---------------------------------------------------
+//------------------------------------------------------------------------------
 // image flipper generator app
-//---------------------------------------------------
+//------------------------------------------------------------------------------
+// TODO: implement embed
+// TODO: implement preview
+//        - add "use preview" query param (or extend configkey interpretation
+// TODO: think about how to handle reload when on preview or embed page
+//------------------------------------------------------------------------------
 const app = function () {
 	const page = {};
   
@@ -37,6 +42,8 @@ const app = function () {
   function _renderPage() {
     page.contentsLayout = page.body.getElementsByClassName('contents-layout')[0];
     page.contentsPreview = page.body.getElementsByClassName('contents-preview')[0];
+    page.previewFrame = page.contentsPreview.getElementsByClassName('preview-frame')[0];
+    console.log(page.previewFrame);
     
     page.projectSelection = page.body.getElementsByClassName('control-selection')[0];
     
@@ -132,7 +139,7 @@ const app = function () {
       'layout': function() {
                   _showContents('contents-layout'); 
                 },
-      'preview': function() { _showContents('contents-preview'); },
+      'preview': _showPreview,
       'embed': function() { _showContents('contents-embed'); },
       'profile': function() {}
     };
@@ -304,6 +311,20 @@ const app = function () {
     }
   }
 
+  async function _showPreview() { 
+    console.log('_showPreview');
+    
+    var result = await _saveProjectToDB(true);
+    if (!result.success) {
+      console.log('preview save failed');
+      return;
+    }
+    
+    page.previewFrame.src = page.previewFrame.src;
+    
+    _showContents('contents-preview'); 
+  }
+
 	//--------------------------------------------------------------
 	// handlers
 	//--------------------------------------------------------------    
@@ -330,7 +351,9 @@ const app = function () {
   }
   
   async function _handleProjectSave(e) {
-    if (await _saveProjectToDB()) {
+    var result = await _saveProjectToDB();
+
+    if (result.success) {
       await _getProjectInfo();
       _updateProjectInfoSelection();
       _selectProject(settings.currentProject.projectid);
@@ -421,7 +444,7 @@ const app = function () {
     } 
   }  
 
-  async function _saveProjectToDB() {
+  async function _saveProjectToDB(preview) {
     var layout = page.layoutControl.value.split('x');
 
     var postData = {
@@ -435,9 +458,11 @@ const app = function () {
       layoutimages: _getLayoutImageArray()
     };
     
-    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/update', 'project', postData);
+    var command = 'project'
+    if (preview) command = 'preview';
+    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/update', command, postData);
     
-    return dbResult.success;    
+    return dbResult;    
   }
   
   async function _addNewProjectToDB() {
