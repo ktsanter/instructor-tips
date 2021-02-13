@@ -1,10 +1,7 @@
 //------------------------------------------------------------------------------
 // image flipper generator app
 //------------------------------------------------------------------------------
-// TODO: implement embed
-// TODO: implement preview
-//        - add "use preview" query param (or extend configkey interpretation
-// TODO: think about how to handle reload when on preview or embed page
+// TODO: 
 //------------------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -17,6 +14,8 @@ const app = function () {
     currentProject: null,
     dirtyBit: false,
     logoutURL: '/usermanagement/logout',
+    previewURL: '/image-flipper/flipper?configkey=preview',
+    baseShareURL: window.location.origin + '/image-flipper/flipper?configkey=',
     helpURL: '/image-flipper/help',
     maxCards: 36,
     thumbnailErrorImg: 'https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png'
@@ -43,7 +42,7 @@ const app = function () {
     page.contentsLayout = page.body.getElementsByClassName('contents-layout')[0];
     page.contentsPreview = page.body.getElementsByClassName('contents-preview')[0];
     page.previewFrame = page.contentsPreview.getElementsByClassName('preview-frame')[0];
-    console.log(page.previewFrame);
+    page.contentsShare = page.body.getElementsByClassName('contents-share')[0];
     
     page.projectSelection = page.body.getElementsByClassName('control-selection')[0];
     
@@ -57,6 +56,32 @@ const app = function () {
     page.layoutContainer = page.body.getElementsByClassName('layout')[0];
     
     page.body.getElementsByClassName('navbarcontainer')[0].appendChild(_renderNavbar());
+    var navbarItems = page.body.getElementsByClassName('navbar-main-item');
+    page.navitems = {};
+    for (var i = 0; i < navbarItems.length; i++) {
+      var item = navbarItems[i];
+      if (item.innerHTML.includes('Preview')) {
+        page.navitems.previewItem = item;
+        
+      } else if (item.innerHTML.includes('Share')) {
+        page.navitems.shareItem = item;
+      }
+    }
+    
+    var dropdownItems = page.body.getElementsByClassName('dropdown-content hamburger')[0].children;
+    for (var i = 0; i < dropdownItems.length; i++) {
+      var item = dropdownItems[i];
+      if (item.innerHTML.includes('reload project')) {
+        page.navitems.reloadItem = item;
+
+      } else if (item.innerHTML.includes('add project')) {
+        page.navitems.addItem = item;
+
+      } else if (item.innerHTML.includes('delete project')) {
+        page.navitems.deleteItem = item;
+      }
+    }
+    
     _attachHandlers();
     _renderLayout();
     _updateLayout();
@@ -71,7 +96,7 @@ const app = function () {
       items: [
         {label: 'Layout', callback: () => {return _navDispatch('layout');}, subitems: null, rightjustify: false},
         {label: 'Preview', callback: () => {return _navDispatch('preview');}, subitems: null, rightjustify: false},
-        {label: 'Embed', callback: () => {return _navDispatch('embed');}, subitems: null, rightjustify: false},
+        {label: 'Share', callback: () => {return _navDispatch('share');}, subitems: null, rightjustify: false},
         {label: settings.userInfo.userName, callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
       ],
       
@@ -106,6 +131,9 @@ const app = function () {
     for (var i = 0; i < samples.length; i++) {
       samples[i].addEventListener('click', (e) => { _handleColorSelection(e); });
     }
+    
+    page.contentsShare.getElementsByClassName('button-link')[0].addEventListener('click', (e) => { _handleLinkClick(e); });
+    page.contentsShare.getElementsByClassName('button-embed')[0].addEventListener('click', (e) => { _handleEmbedClick(e); });
   }
   
   function _renderLayout() {
@@ -136,11 +164,9 @@ const app = function () {
 	//--------------------------------------------------------------
   function _navDispatch(dispatchOption) {
     var dispatchMap = {
-      'layout': function() {
-                  _showContents('contents-layout'); 
-                },
+      'layout': function() {_showContents('contents-layout'); },
       'preview': _showPreview,
-      'embed': function() { _showContents('contents-embed'); },
+      'share': _showShare,
       'profile': function() {}
     };
     
@@ -150,7 +176,19 @@ const app = function () {
   
   function _showContents(contentsClass) {
     var contents = page.body.getElementsByClassName('contents');
+    
     for (var i = 0; i < contents.length; i++) {
+      if (contentsClass == 'contents-preview' || contentsClass == 'contents-share') {
+        _setDisarm(page.navitems.reloadItem, true);
+        _setDisarm(page.navitems.addItem, true);
+        _setDisarm(page.navitems.deleteItem, true);
+        
+      } else {
+        _setDisarm(page.navitems.reloadItem, !settings.dirtyBit);
+        _setDisarm(page.navitems.addItem, false);
+        _setDisarm(page.navitems.deleteItem, !settings.currentProject);
+      }
+      
       UtilityKTS.setClass(contents[i], 'hide-me', true);
     }
     UtilityKTS.setClass(page.body.getElementsByClassName(contentsClass)[0], 'hide-me', false);
@@ -274,29 +312,13 @@ const app = function () {
   
   function _setDirty(dirty) {
     settings.dirtyBit = dirty;
+    
     page.body.getElementsByClassName('save-project')[0].disabled = !dirty;
     
-    var navbarItems = page.body.getElementsByClassName('navbar-main-item');
-    for (var i = 0; i < navbarItems.length; i++) {
-      var item = navbarItems[i];
-      if (item.innerHTML.includes('Preview')) {
-        _setDisarm(item, !settings.currentProject);
-        
-      } else if (item.innerHTML.includes('Embed')) {
-        _setDisarm(item, !settings.currentProject || settings.dirtyBit);
-      }
-    }
-    
-    var dropdownItems = page.body.getElementsByClassName('dropdown-content hamburger')[0].children;
-    for (var i = 0; i < dropdownItems.length; i++) {
-      var item = dropdownItems[i];
-      if (item.innerHTML.includes('reload project')) {
-        _setDisarm(item, !dirty);
-
-      } else if (item.innerHTML.includes('delete project')) {
-        _setDisarm(item, !settings.currentProject);
-      }
-    }
+    _setDisarm(page.navitems.previewItem, !settings.currentProject);
+    _setDisarm(page.navitems.shareItem, !settings.currentProject || settings.dirtyBit);
+    _setDisarm(page.navitems.reloadItem, !dirty);
+    _setDisarm(page.navitems.deleteItem, !settings.currentProject);
   }
   
   function _selectProject(projectId) {
@@ -312,17 +334,31 @@ const app = function () {
   }
 
   async function _showPreview() { 
-    console.log('_showPreview');
-    
     var result = await _saveProjectToDB(true);
     if (!result.success) {
-      console.log('preview save failed');
+      console.log('failed to save preview');
       return;
     }
     
-    page.previewFrame.src = page.previewFrame.src;
-    
+    page.previewFrame.src = settings.previewURL;
     _showContents('contents-preview'); 
+  }
+
+  function _showShare() { 
+    var elemLink = page.contentsShare.getElementsByClassName('share-link')[0];
+    var elemEmbed = page.contentsShare.getElementsByClassName('share-embed')[0];
+    
+    var url = settings.baseShareURL + settings.currentProject.projectid;
+    elemLink.value = url;
+
+    var elem = CreateElement.createIframe(null, null, url, 650, 500);
+    elem.style.overflowY = 'hidden';
+    elem.style.border = 'none';
+    elem.scrolling = 'no';
+    elemEmbed.value = elem.outerHTML;
+    
+    _showShareCopiedMessage(null);
+    _showContents('contents-share'); 
   }
 
 	//--------------------------------------------------------------
@@ -420,6 +456,20 @@ const app = function () {
     }
   }
 	
+  function _handleLinkClick(e) {
+    var elemLink = page.contentsShare.getElementsByClassName('share-link')[0];
+    var msg = elemLink.value;
+    _copyToClipboard(msg);
+    _showShareCopiedMessage('link');
+  }
+  
+  function _handleEmbedClick(e) {
+    var elemEmbed = page.contentsShare.getElementsByClassName('share-embed')[0];
+    var msg = elemEmbed.value;
+    _copyToClipboard(msg);
+    _showShareCopiedMessage('embed');
+  }
+  
 	//---------------------------------------
 	// DB interface
 	//---------------------------------------
@@ -479,6 +529,21 @@ const app = function () {
 
     return dbResult.success;
   }
+  
+  //---------------------------------------
+  // clipboard functions
+  //----------------------------------------
+  function _copyToClipboard(txt) {
+    if (!page._clipboard) page._clipboard = new ClipboardCopy(page.body, 'plain');
+
+    page._clipboard.copyToClipboard(txt);
+	}	
+
+  function _copyRenderedToClipboard(txt) {
+    if (!page._renderedclipboard) page._renderedclipboard = new ClipboardCopy(page.body, 'rendered');
+
+    page._renderedclipboard.copyRenderedToClipboard(txt);
+	}	    
     
 	//---------------------------------------
 	// utility functions
@@ -534,6 +599,18 @@ const app = function () {
 
   function _showHelp() {
     window.open(settings.helpURL, '_blank');
+  }
+  
+  function _showShareCopiedMessage(category) {
+    var elem = page.contentsShare.getElementsByClassName('copy-message')[0];
+    
+    if (category == 'link') {
+      elem.innerHTML = 'copied link to clipboard';
+    } else if (category == 'embed') {
+      elem.innerHTML = 'copied embed code to clipboard';
+    } else {
+      elem.innerHTML = '';
+    }
   }
 	
 	return {

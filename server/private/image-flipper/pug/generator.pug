@@ -74,8 +74,19 @@ html(lang="en")
           .swaparea(class="hide-me")
         
       .contents(class="contents-preview hide-me")
-        iframe(class="preview-frame" scrolling="no" src="/image-flipper/flipper?configkey=preview")
+        iframe(class="preview-frame" scrolling="no")
       
-      .contents(class="contents-embed hide-me") embed
-
-      
+      .contents(class="contents-share hide-me")
+        .share-item
+          .share-item-text link
+          input(type="text" class="share-value share-link")
+          button(class="share-button button-link") copy
+          
+        .share-item
+          .share-item-text embed
+          textarea(class="share-value share-embed" rows="6" cols="50")
+          button(class="share-button button-embed") copy
+          
+        .share-item
+          .copy-message
+          

@@ -111,13 +111,6 @@ body {
 }
 
 /*-------------------------------------------------------------------
- * embed
- *------------------------------------------------------------------*/
-.contents.contens-embed {
-  margin-top: 4.0em;
-}
-
-/*-------------------------------------------------------------------
  * preview
  *------------------------------------------------------------------*/
 .contents.contents-preview {
@@ -129,6 +122,40 @@ body {
   width: 650px;
   height: 550px;
   overflow-y: hidden;
+  border: none;
+}
+
+/*-------------------------------------------------------------------
+ * share
+ *------------------------------------------------------------------*/
+.contents.contents-share {
+  margin-top: 4.0em;
+}
+
+.contents.contents-share .share-item {
+  margin-bottom: 1.0em;
+}
+
+.contents.contents-share .share-item .share-item-text {
+  display: inline-block;
+  width: 4.0em;
+  vertical-align: top;
+}
+
+.contents.contents-share .share-item .share-link {
+  width: 28.0em;
+}
+
+.contents.contents-share .share-item .share-button {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);  
+  vertical-align: top;
+  margin-left: 0.4em;
+}
+
+.contents.contents-share .share-item .copy-message {
+  color: var(--bgPrimaryEmphasis);
+  font-style: italic;
 }
 
 /*-------------------------------------------------------------------
