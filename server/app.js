@@ -8,6 +8,7 @@ const THIS_PORT =getEnv('THIS_PORT', true);
 const MARIA_HOST = getEnv('MARIA_HOST', true);
 const MARIA_USER = getEnv('MARIA_USER', true);
 const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
+console.log(MARIA_PASSWORD);
 const MARIA_DBNAME_INSTRUCTORTIPS = getEnv('MARIA_DBNAME_INSTRUCTORTIPS', true);
 const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
 const MARIA_DBNAME_WELCOME = getEnv('MARIA_DBNAME_WELCOME', true);
