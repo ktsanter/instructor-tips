@@ -1,9 +1,9 @@
-docker ps
+dodocker ps
   - get CONTAINERID for mariadb
 docker network ls
  - get NETWORKID for instructor-tips_backend
 
-docker run -it --rm --network NETWORKID mariadb mysql -hCONTAINERID -uroot -pPASSWORD
+docker run -it --rm --mount type=bind,src=$(pwd)/sql,dst=/sql --network NETWORKID mariadb mysql -hCONTAINERID -uroot -pPASSWORD
 
 
 // force db creation
