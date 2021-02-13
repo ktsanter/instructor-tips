@@ -1,0 +1,48 @@
+/*--------------------------------------------------------*/
+/* "About me" styling                                  */
+/*--------------------------------------------------------*/
+body {
+	color: black;
+	background-color: var(--bgOverall);
+	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+	font-size: 13px;
+}
+
+.hide-me {
+  display: none;
+}
+
+/*-----------------------------------------------------*/
+/* title and subtitle                                  */
+/*-----------------------------------------------------*/
+.title {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  margin-bottom: 0.4em;
+}
+
+.title .title-text {
+  display: inline-block;
+  font-size: 1.2em;
+  margin-left: 0.2em;
+  padding: 0.2em 0.2em;
+}
+
+/*-----------------------------------------------------*/
+/* contents                                            */
+/*-----------------------------------------------------*/
+.contents {}
+
+.contents .section {
+  margin-bottom: 0.8em;
+}
+
+.contents .section .section-title {
+  display: inline-block;
+  font-weight: bold;
+  color: var(--bgPrimaryEmphasis);
+  background-color: white;
+  border: 1px solid var(--bgPrimaryEmphasis);
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+}

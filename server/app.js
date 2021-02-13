@@ -686,6 +686,12 @@ async function processRosterManagerResult(req, res, result) {
   }
 }
 
+app.get('/aboutme', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'aboutme/pug/aboutme.pug');
+  
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
 app.get('/cte-department', function (req, res) {
   res.redirect('/cte-department/home');
 })

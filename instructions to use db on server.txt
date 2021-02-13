@@ -5,6 +5,9 @@ docker network ls
 
 docker run -it --rm --mount type=bind,src=$(pwd)/sql,dst=/sql --network NETWORKID mariadb mysql -hCONTAINERID -uroot -pPASSWORD
 
+// new script to do the same
+./db-client.sh
+
 
 // force db creation
 sudo rm -rf db-data
