@@ -120,8 +120,8 @@ const app = function () {
     page.body.getElementsByClassName('save-project')[0].addEventListener('click', (e) => { _handleProjectSave(e); });
     
     page.keyvalueControl.addEventListener('input', (e) => { _restrictInput(e); });
-    page.titleControl.addEventListener('input', (e) => { _setDirty(true); });
-    page.subtitleControl.addEventListener('input', (e) => { _setDirty(true); });
+    page.titleControl.addEventListener('input', (e) => { _restrictInput(e); });
+    page.subtitleControl.addEventListener('input', (e) => { _restrictInput(e); });
    
     page.layoutControl.addEventListener('change', (e) => { _setDirty(true); _updateLayout();});
     page.colorControl.addEventListener('click', (e) => {_handleColorControl(e);});
@@ -448,9 +448,8 @@ const app = function () {
     var cardNum = e.target.value;
     var currentURL = e.target.imageURL;
     
-    var imageURL = _promptForImageURL(e.target);
+    var imageURL = _sanitizeURL(_promptForImageURL(e.target));
     if (imageURL) {
-      console.log('sanitize image URL');
       _setCardImage(e.target, imageURL);
       _setDirty(true);
     }
@@ -552,11 +551,17 @@ const app = function () {
     if (e.inputType.includes('delete')) _setDirty(true);
     if (!e.data) return;
     
-    if (!e.data.match(/[0-9a-zA-Z\:_\- ]/)) {
-      e.target.value = e.target.value.replace(/[^0-9a-zA-Z_\:\- ]/g, '');
+    if (!e.data.match(/[0-9a-zA-Z\:_\-\. (),\!\?]/)) {
+      e.target.value = e.target.value.replace(/[^0-9a-zA-Z_\:\-\. (),\!\?]/g, '');
     } else {
       _setDirty(true);
     }
+  }
+  
+  function _sanitizeURL(url) {
+    url = url.replace(/[\"]/g, '%22');
+    url = url.replace(/[\']/g, '%22');
+    return url;
   }
   
   function _getColorScheme(elem) {

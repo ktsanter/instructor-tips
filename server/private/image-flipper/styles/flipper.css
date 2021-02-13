@@ -130,12 +130,18 @@ body {
   border: 1px solid var(--flipper-color1);
   border-radius: 6px;
   color: var(--flipper-color3);
-  width: 90%;
+  width: 90%;  
   height: 90%;
   text-align: center;
   text-decoration: none;
   display: inline-block;
   font-size: 32px;
+}
+
+@-moz-document url-prefix() {
+  .flipper-card .flipper-card-inner .flipper-card-front .front {
+    height: 90px;
+  }
 }
 
 .flipper-card .flipper-card-inner .invisible {
