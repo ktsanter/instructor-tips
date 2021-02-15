@@ -1,96 +1,76 @@
 /*-------------------------------------------------------------------
  * styling for welcome letter course parameters editor
  *------------------------------------------------------------------*/
-.colorscheme {
-  --MVdeepteal: #093c44;
-  --MVdarkteal: #115e6e;
-  --MVlightteal: #2f8d98;
-  --MVgreen: #b5cd34;
-  --MVorange: #f7941e;
-  --MVdarkgray: #414042;
-  --MVlightgray: #6d6e71;
-  --MVwhite: #ffffff;
-}
-
 body {
-	color: var(--MVblack);
-	background-color: #eee;
+	color: var(--fgPrimary);
+	background-color: var(--bgTertiary);
 	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
 	font-size: 13px;
   margin-right: 2.0em;
 }
 
-/*-------------------------------------------------------------------
- * title bar
- *------------------------------------------------------------------*/
-.titlecontainer {
-  color: var(--MVwhite);
-  background-color: var(--MVdeepteal);
-  border-radius: 3px;
-  padding: 0.2em 0;
+.hide-me {
+  display: none;
 }
 
-.titlecontainer .titletext {
-  display: inline-block;
-  font-size: 1.2em;
-  padding-left: 0.2em;
-  padding-right: 0.4em;
-}
-
-.titlecontainer .controlcontainer {
-  display: inline-block;
-}
-
-.titlecontainer .controlcontainer.rightside {
-  float: right;
-}
-
-.titlecontainer .controlcontainer .icon {
-  font-size: 1.2em;
-  margin: 0 0.3em;
-}
-
-.titlecontainer .controlcontainer .icon.disabled {
-  color: var(--MVlightgray);
-}
-
-.titlecontainer .controlcontainer .message {
+/*-----------------------------------------------------*/
+/* standard notice                                     */
+/*-----------------------------------------------------*/
+.standard-notice {
   font-style: italic;
 }
 
-/*-------------------------------------------------------------------
- * input controls
- *------------------------------------------------------------------*/
-.configcontainer {
-  display: inline-block;
+#noticeSpinner {
+  font-size: 1.0em;
+  margin-left: 0.2em;
 }
 
-.configcontainer .configitem {
+.standard-notice.navbar-notice {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  position: absolute;
+  z-index: 1;
+  right: 11.0em;
+}
+
+/*-----------------------------------------------------*/
+/* contents                                            */
+/*-----------------------------------------------------*/
+.contents {
+  margin-top: 3.0em;
+}
+
+/*-------------------------------------------------------------------
+ * configuration contents
+ *------------------------------------------------------------------*/
+.contents-configuration {}
+ 
+.contents-configuration .configitem {
   margin: 0.2em 0;
 }
 
-.configcontainer .configitem .itemlabel {
+.contents-configuration .configitem .itemlabel {
   display: inline-block;
   width: 8.0em;
 }
 
-.configcontainer .configitem .itemcontent {
+.contents-configuration .configitem .itemcontent {
   display: inline-block;
 }
 
-.configcontainer .configitem .itemcontent .switch {
+.contents-configuration .configitem .itemcontent .switch {
   vertical-align: middle;
 }
 
-.configcontainer .configitem .itemcontent .switch.disabled {
+.contents-configuration .configitem .itemcontent .switch.disabled {
   visibility: hidden;
 }
 
-.configcontainer .configitem .itemcontent .switch-yes-no .switch-label:after {
-	background: var(--MVdeepteal);
+.contents-configuration .configitem .itemcontent .switch-yes-no .switch-label:after {
+	background: var(--bgPrimaryEmphasis);
 }
 
-.configcontainer .configitem .itemcontent input {
+.contents-configuration .configitem .itemcontent input {
   font-family: "Segoe UI", Tahoma, Arial, sans-serif;
   font-size: 1.0em;
 	display: inline-block;
@@ -105,7 +85,7 @@ body {
   margin-top: 0.2em;
  }
 
-.configcontainer .configitem .itemcontent .select-css {
+.contents-configuration .configitem .itemcontent .select-css {
   font-size: 1.0em;
   width: 56.0em;
   text-overflow: ellipsis;
@@ -113,10 +93,20 @@ body {
   margin-top: 0.2em;
 }
 
-.configcontainer .configitem .itemcontent .select-css.wideselect {
+.contents-configuration .configitem .itemcontent .select-css.wideselect {
   max-width: none;
-  width: 70.0em; 
+  width: 50.0em; 
 }
+
+/*-------------------------------------------------------------------
+ * configuration contents
+ *------------------------------------------------------------------*/
+.contents-preview {}
+
+/*-------------------------------------------------------------------
+ * share contents
+ *------------------------------------------------------------------*/
+.contents-share {}
 
 /*-------------------------------------------------------------------
  * clipboard copy

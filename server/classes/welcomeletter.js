@@ -2,7 +2,8 @@
 //---------------------------------------------------------------
 // Welcome letter interface
 //---------------------------------------------------------------
-// TODO: 
+// TODO: see if the original queries can be eliminated (other than rendering)
+//       after refactoring 
 //---------------------------------------------------------------
 const internal = {};
 
@@ -158,11 +159,8 @@ module.exports = internal.WelcomeLetter = class {
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
 
-    if (params.queryName == 'courselist') {
-      dbResult = await this._getCourseList(params, postData, userInfo);
-
-    } else if (params.queryName == 'course') {
-      dbResult = await this._getCourse(params, postData, userInfo);
+    if (params.queryName == 'courselist2') {
+      dbResult = await this._getCourseList2(params, postData, userInfo);
             
     } else if (params.queryName == 'mailmessage') {
       dbResult = await this._getMailMessage(params, postData, userInfo);
@@ -177,9 +175,9 @@ module.exports = internal.WelcomeLetter = class {
   async doInsert(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'course') {
-      dbResult = await this._insertCourse(params, postData, userInfo);
-            
+    if (params.queryName == 'course2') {
+      dbResult = await this._insertCourse2(params, postData, userInfo);
+        
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -190,8 +188,8 @@ module.exports = internal.WelcomeLetter = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'course') {
-      dbResult = await this._updateCourse(params, postData, userInfo);
+    if (params.queryName == 'course2') {
+      dbResult = await this._updateCourse2(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -203,8 +201,8 @@ module.exports = internal.WelcomeLetter = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'course') {
-      dbResult = await this._deleteCourse(params, postData, userInfo);
+    if (params.queryName == 'course2') {
+      dbResult = await this._deleteCourse2(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -227,6 +225,34 @@ module.exports = internal.WelcomeLetter = class {
       'order by coursename';
       
     queryResults = await this._dbManager.dbQuery(query);    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
+  async _getCourseList2(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select ' +
+        'a.courseid, a.coursename, a.ap, ' +
+        'b.configurationid, b.examid, b.proctoringid, b.retakeid, b.resubmissionid ' +
+      'from course2 as a, configuration2 as b ' +
+      'where userid = ' + userInfo.userId + ' ' +
+        'and a.courseid = b.courseid ' +
+      'order by coursename';
+      
+    queryResults = await this._dbManager.dbQuery(query);    
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -270,6 +296,37 @@ module.exports = internal.WelcomeLetter = class {
     return result;
   }
 
+  async _getCourse2(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+
+    var queryList, queryResults;
+    
+    queryList = {
+      course: 
+        'select courseid, coursename, ap ' +
+        'from course2 ' +
+        'where courseid = ' + postData.courseid,
+        
+      configuration:
+        'select configurationid, courseid, examid, proctoringid, retakeid, resubmissionid ' +
+        'from configuration2 ' +
+        'where courseid = ' + postData.courseid
+    };
+      
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
   async _insertCourse(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
 
@@ -288,6 +345,31 @@ module.exports = internal.WelcomeLetter = class {
       result.success = true;
       result.details = 'query succeeded';
       result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+
+  async _insertCourse2(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+
+    var query, queryResults;
+    
+    query = 
+      'call add_default_course(' +
+         userInfo.userId + ', ' +
+         '"' + postData.coursename + '"' +
+      ')';
+    
+    queryResults = await this._dbManager.dbQuery(query);    
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data[0][0];
       
     } else {
       result.details = queryResults.details;
@@ -338,6 +420,47 @@ module.exports = internal.WelcomeLetter = class {
     return result;
   }
 
+  async _updateCourse2(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+ 
+    var queryList, queryResults;
+    
+    var updatedExamId = (postData.examid) == '' ? 'null' : postData.examid;
+    var updatedProctoringId = (postData.proctoringid) == '' ? 'null' : postData.proctoringid;
+    var updatedRetakeId = (postData.retakeid) == '' ? 'null' : postData.retakeid;
+    var updatedResubmissionId = (postData.resubmissionid) == '' ? 'null' : postData.resubmissionid;
+    
+    queryList = {
+      course:
+        'update course2 ' +
+        'set ' +
+          'ap = ' + postData.ap + ' ' +
+        'where courseid = ' + postData.courseid,
+      
+      configuration: 
+        'update configuration2 ' +
+        'set ' +
+          'examid = ' + updatedExamId + ', ' +
+          'proctoringid = ' + updatedProctoringId + ', ' +
+          'retakeid = ' + updatedRetakeId + ', ' +
+          'resubmissionid = ' + updatedResubmissionId + ' ' +
+        'where courseid = ' + postData.courseid
+    };
+      
+    queryResults = await this._dbManager.dbQueries(queryList);    
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
   async _deleteCourse(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
 
@@ -345,6 +468,28 @@ module.exports = internal.WelcomeLetter = class {
     
     query = 
       'delete from course  ' +
+      'where courseid = ' + postData.courseid;
+      
+    queryResults = await this._dbManager.dbQuery(query);    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+  
+  async _deleteCourse2(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+
+    var query, queryResults;
+    
+    query = 
+      'delete from course2  ' +
       'where courseid = ' + postData.courseid;
       
     queryResults = await this._dbManager.dbQuery(query);    

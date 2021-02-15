@@ -387,6 +387,14 @@ app.get('/welcomeletter/:coursekey/:audience', async function(req, res) {
   }
 })
 
+app.get('/welcomeletter/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'welcomeletter/pug/help.pug');
+  
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+
+
 //------------------------------------------------------
 // user management, login, logout, etc.
 //------------------------------------------------------

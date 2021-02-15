@@ -1,10 +1,10 @@
 define(function (require) {
   require('/scripts/utilitykts'); 
-  require('/scripts/sqldbinterface'); 
-  
-  //require('/scripts/clipboard.min.js');
-  require('/scripts/clipboard_copy.js');
   require('/scripts/create_element.js');  
+  require('/scripts/navbar');
+  require('/scripts/standard_notice'); 
+  require('/scripts/clipboard_copy.js');
+  require('/scripts/sqldbinterface');
   
   require('welcomeletter');
 

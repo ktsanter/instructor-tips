@@ -1,3 +1,4 @@
+include ../../common/pug/fontawesome-mixins.pug
 include configuration-mixins.pug
 
 - var examlist = params.exam
@@ -11,9 +12,11 @@ html
     title welcome letter configuration
     meta(charset="utf-8")
     
-    link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")    
+    +fontawesome()
 
     style
+      include ../../common/styles/colorscheme.css    
+      include ../../common/styles/navbar.css     
       include ../../common/styles/sliderswitch.css
       include ../../common/styles/select.css
       include ../styles/configuration.css
@@ -21,61 +24,52 @@ html
     script(src="/scripts/clipboard.min.js")
     script(data-main="/scripts/welcomeletter/require_welcomeletter", src="/scripts/require.js")    
       
-  body(class="colorscheme")    
-    div(class="titlecontainer")
-      div(class="titletext") Welcome letter configuration
-      
-      div(class="controlcontainer")
-        +icon("addicon far fa-plus-square", "add new course")
-        +icon("trashicon far fa-trash-alt disabled", "delete course")
-      
-      div(class="controlcontainer rightside")
-        span(class="message")
-        +icon("linkstudent fa fa-link disabled", "get link to student welcome letter")
-        +icon("linkmentor fa fa-link disabled", "get link to mentor welcome letter")
-        +icon("notestudent fa fa-comment disabled", "get formatted note for student")
-        +icon("notementor fa fa-comment disabled", "get formatted note for mentor")
-        
-    div(class="configcontainer")
-      div(class="configitem")
-        div(class="itemlabel") course
-        div(class="itemcontent")
-          select(class="course select-css")
+  body(class="instructortips-colorscheme")
+    .navbarcontainer
+    
+    .contents(class="contents-configuration hide-me")
+      .configitem
+        .itemlabel course
+        .itemcontent
+          select(class="course config-control select-css")
 
-      div(class="configitem")
-        div(class="itemlabel") key
-        div(class="itemcontent")
-          input(class="coursekey" type="text", maxlength="20", placeholder="course key", disabled=true)
+      .configitem
+        .itemlabel AP course
+        .itemcontent
+          +sliderswitch("apcourse config-param ", "yes", "no")      
 
-      div(class="configitem")
-        div(class="itemlabel") AP course
-        div(class="itemcontent")
-          +sliderswitch("apcourse", "yes", "no")
-
-      div(class="configitem")
-        div(class="itemlabel") exams
-        div(class="itemcontent")
-          select(class="exams select-css wideselect", disabled=true)
+      .configitem
+        .itemlabel exams
+        .itemcontent
+          select(class="exams config-param select-css wideselect", disabled=true)
             each val in examlist
-              option(value=val.examid)= val.examdescription
-
-      div(class="configitem")
-        div(class="itemlabel") proctoring
-        div(class="itemcontent")
-          select(class="proctoring select-css wideselect", disabled=true)
+              option(value=val.examid)= val.examdescription          
+  
+      .configitem
+        .itemlabel proctoring
+        .itemcontent
+          select(class="proctoring config-param select-css wideselect", disabled=true)
             each val in proctoringlist
               option(value=val.proctoringid)= val.proctoringdescription
 
-      div(class="configitem")
-        div(class="itemlabel") retakes
-        div(class="itemcontent")
-          select(class="retakes select-css wideselect", disabled=true)
+      .configitem
+        .itemlabel retakes
+        .itemcontent
+          select(class="retakes config-param select-css wideselect", disabled=true)
             each val in retakelist
               option(value=val.retakeid)= val.retakedescription
-
-      div(class="configitem")
-        div(class="itemlabel") resubmission 
-        div(class="itemcontent")
-          select(class="resubmission select-css wideselect", disabled=true)
+              
+      .configitem
+        .itemlabel resubmission 
+        .itemcontent
+          select(class="resubmission config-param select-css wideselect", disabled=true)
             each val in resubmissionlist
               option(value=val.resubmissionid)= val.resubmissiondescription
+              
+
+    .contents(class="contents-preview hide-me") preview
+    
+    .contents(class="contents-share hide-me") share
+    
+    .contents(class="contents-options hide-me") options
+
