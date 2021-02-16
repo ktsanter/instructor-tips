@@ -1,0 +1,23 @@
+include ../../common/pug/fontawesome-mixins.pug
+
+doctype html
+html
+  head
+    title welcome letter options
+    meta(charset="utf-8")
+    
+    +fontawesome()
+
+    style
+      include ../../common/styles/colorscheme.css    
+      include ../../common/styles/navbar.css     
+      include ../../common/styles/select.css
+      include ../styles/options.css
+    
+    script(src="/scripts/clipboard.min.js")
+    script(data-main="/scripts/welcomeletter/require_options", src="/scripts/require.js")    
+      
+  body(class="instructortips-colorscheme")
+    .navbarcontainer
+    
+    .contents Options editor: not built yet

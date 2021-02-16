@@ -317,8 +317,15 @@ var appLookup = {
     routeFunction: dbWelcomeLetter.renderConfigurationPage,
     routeData: 'welcomeletter/pug/configuration.pug',
     loginReRoute: 'welcomeletter/configuration'
-  } 
-,
+  },
+  
+  "welcome-options" : {
+    appDescriptor: 'welcome-options',
+    appName: 'Welcome letter options editor',
+    routePug: 'welcomeletter/pug/options.pug',
+    loginReRoute: 'welcomeletter/options'
+  },
+
   "image-flipper-generator" : {
     appDescriptor: 'image-flipper-generator',
     appName: 'Image flipper generator',
@@ -353,7 +360,10 @@ app.get('/treasurehunt-configuration', function (req, res) {
     res.redirect('/login'); 
   }
 })
+
 app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcome'); })
+app.get('/welcomeletter/options', function (req, res) { routeIfLoggedIn(req, res, 'welcome-options'); })
+
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 
 app.get('/treasurehunt-landing/:projectid', async function (req, res) {
@@ -377,6 +387,27 @@ app.get('/welcomeletter/:coursekey/:audience', async function(req, res) {
     var fileNameStudent = path.join(__dirname, 'private', 'welcomeletter/pug/welcomeletter-student.pug');
 
     var result = await dbWelcomeLetter.renderWelcomeLetter(req.params, {mentor: fileNameMentor, student: fileNameStudent});
+
+    if (result.success) {
+      res.send(result.data);
+    } else {
+      sendFailedAccess(res, 'welcomeletter');
+    }
+    
+      
+  } else {
+    sendFailedAccess(res, 'welcomeletter');
+  }
+})
+
+app.get('/welcomeletter2/:courseid/:audience', async function(req, res) { 
+  if (req.params.audience == '000' || req.params.audience == '100') {
+    req.params.audience = (req.params.audience == '000') ? 'student' : 'mentor';
+
+    var fileNameMentor = path.join(__dirname, 'private', 'welcomeletter/pug/mentor.pug');
+    var fileNameStudent = path.join(__dirname, 'private', 'welcomeletter/pug/student.pug');
+
+    var result = await dbWelcomeLetter.renderWelcomeLetter2(req.params, {mentor: fileNameMentor, student: fileNameStudent});
 
     if (result.success) {
       res.send(result.data);
@@ -418,7 +449,7 @@ app.get('/usermanagement/routeToApp/:app', async function (req, res) {
     
   } else if (appInfo && appInfo.routeFunction) {
     var pugFileName = path.join(__dirname, 'private', appInfo.routeData);
-    await appInfo.routeFunction(res, dbManagerLookup[appDescriptor], pugFileName, renderAndSendPugIfExists);
+    await appInfo.routeFunction(res, dbManagerLookup[appDescriptor], pugFileName, renderAndSendPugIfExists, userManagement, req.session.userInfo);
     
   } else {
     sendFailedAccess(res, 'routeToApp/' + appDescriptor);

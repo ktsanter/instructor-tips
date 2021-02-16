@@ -9,3 +9,9 @@ mixin sliderswitch(classlist, onlabel, offlabel)
     span(class="switch-label", data-on=onlabel, data-off=offlabel)
     span(class="switch-handle")
 
+mixin twochoiceswitch(classlist, onlabel, offlabel)
+  - var sliderclasslist = "switch switch-two-choice " + classlist
+  label(class=sliderclasslist)
+    input(class="switch-input", type="checkbox")
+    span(class="switch-label", data-on=onlabel, data-off=offlabel)
+    span(class="switch-handle")

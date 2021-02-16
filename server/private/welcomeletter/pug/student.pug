@@ -1,0 +1,105 @@
+include welcomeletter-mixins_v2.pug
+
+- var coursekey = params.coursekey
+- var coursename = params.coursename
+- var apcourse = params.ap
+- var keypointlist = params.keypoints
+- var apcourse = params.ap;
+
+doctype html
+html
+  head
+    title welcome letter
+    meta(charset="utf-8")
+    
+    //-
+      link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")   
+
+    link(rel="stylesheet", type="text/css" href="/styles/welcomeletter/welcomeletter.css")
+      
+  body(class="colorscheme")
+    +title("student")
+        
+    div(class="header")
+      +idcard
+      +keypoints("students", keypointlist, apcourse)
+      
+    div(class="section")
+      |I'm eager to work with you this term and I hope you find online learning enjoyable and interesting. 
+      |The Instructor Info section of your course lists a number of ways to get in touch. 
+      |Please contact me whenever you have a question, to tell me how things are going, or just to say hi!
+      ul(class="section-list")
+        li 
+          strong Contacting me: 
+          |I encourage you to use the Student Learning Portal messaging system to contact me. 
+          |You can also get in touch using a number of other methods described on the Instructor Info page. 
+          |I hold office hours (scheduled and by appointment) - see the LiveChat section in the 
+          em Additional Resources 
+          |section for details.
+          
+        li 
+          strong Technical Support: 
+          |You will find a link in the 
+          em: strong Course Quick Access 
+          |section titled 
+          em Getting Help 
+          |which gives information about the Customer Care Center and other resources
+          
+        li 
+          strong Term Dates: 
+          |The 
+          +linktoslp 
+          |is the official source for your 
+          a(href="https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/Find_Your_End_Date_-_small.jpg", target="_blank") start and end dates. 
+          |These are critical for you to know. Please contact me if you are not sure of them.
+          
+        li
+          strong Pacing: 
+          if apcourse
+            |As this is an AP course there are hard due dates for your work and we won't be using a typical pacing guide. 
+            |Instead, please use the 
+            a(href="https://ru-werkinstructies.screenstepslive.com/s/Student/m/brightspace-student-en/l/974486-how-do-i-use-the-calendar", target="_blank")
+              em: strong Calendar 
+            |tool in your Brightspace course.
+            |The
+            a(href="https://michiganvirtual.org/about/support/knowledge-base/brightspace-my-progress/", target="_blank") 
+              em: strong My Progress 
+            |tool is handy for tracking progress too. 
+          else
+            |In the SLP you'll find a tool giving you personalized pacing guidance, based on your start and end dates.  
+            |Here's a link to instructions and information: 
+            a(href="https://michiganvirtual.org/about/support/knowledge-base/what-activities-assignments-should-i-complete-this-week/", target="_blank") using the pacing widget. 
+            |The
+            a(href="https://michiganvirtual.org/about/support/knowledge-base/brightspace-my-progress/", target="_blank") 
+              em: strong My Progress 
+            |tool is handy for tracking progress too. 
+
+    div(class="section")
+      div(class="section-label") what I expect of you in this course
+      ul(class="section-list")
+        li I expect you to log in every weekday. Come to your online course at least as often as you come to your face-to-face classes.
+        if (apcourse == 1)
+          li I expect you to be familiar with Michigan Virtual's 
+            a(href="https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy/", target="_blank") AP Course Policy.
+          li I expect you to effectively manage your time.  There are firm due dates for assignments and late work will be penalized.
+        else
+          li I expect you to effectively manage your time. While the course is self-paced, I strongly suggest you follow the pacing guide very closely.
+        li I expect you to complete your own work and to contribute to the class discussions. 
+          |You should be familiar with Michigan Virtual’s policies on 
+          a(href="https://michiganvirtual.org/policies/academic-integrity-policy/", target="blank") academic integrity 
+          |and follow them.
+        li I expect you to read the class Announcements every day.
+        li I expect you to check your SLP messages every day.
+        li I expect you to be respectful and considerate when communicating and working with classmates
+      div(class="section-note") Please contact me when you have questions or if you’re feeling frustrated with class. I am here to help!      
+
+    div(class="section")
+      div(class="section-label") what to expect of me in this course
+      ul(class="section-list")
+        li I will always treat you with respect and friendliness and do my best to encourage your learning and growth.
+        li I will respond to any communication from a student, mentor or parent within 24 hours.
+        li I will grade all assignments, providing solid feedback, within 72 hours (not counting weekends and holidays)
+        li I will communicate with your school and parents regarding your progress in class.
+        li I will help explain difficult concepts and provide additional material where appropriate.
+        li I will make weekly announcements, highlighting upcoming assignments and providing suggestions.
+        li I will be an active member of the class discussions.      

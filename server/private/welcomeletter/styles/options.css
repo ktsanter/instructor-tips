@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------
- * styling for welcome letter course parameters editor
+ * styling for welcome letter options editor
  *------------------------------------------------------------------*/
 body {
 	color: var(--fgPrimary);
@@ -62,8 +62,7 @@ body {
   background-color: var(--bgPrimaryEmphasis);
   position: absolute;
   z-index: 1;
-  top: 0.6em;
-  right: 13.0em;
+  right: 11.0em;
 }
 
 /*-----------------------------------------------------*/
@@ -134,65 +133,12 @@ body {
 /*-------------------------------------------------------------------
  * configuration contents
  *------------------------------------------------------------------*/
-.contents-preview {
-  width: 100%;
-  height: 1000px;
-  overflow-y: hidden;
-}
-
-.contents-preview .switch-two-choice .switch-label:after {
-	background: var(--bgSecondaryChoice);
-}
-.contents-preview .switch-two-choice .switch-label:before {
-	background: var(--bgSecondaryChoice);
-}
-
-.contents-preview .preview-frame {
-  width: 100%;
-  height: 800px;
-  border: none;
-  overflow-y: hidden;
-  margin-top: 0.4em;
-}
+.contents-preview {}
 
 /*-------------------------------------------------------------------
  * share contents
  *------------------------------------------------------------------*/
 .contents-share {}
-
-.contents-share .share-item {
-  margin-bottom: 1.0em;
-}
-
-.contents-share .share-item .share-item-text {
-  display: inline-block;
-  width: 13.0em;
-  vertical-align: top;
-}
-
-.contents-share .share-item .share-link {
-  display: inline-block;
-  background-color: #f7f7f7;
-  border: 1px solid #bbb;
-  width: 28.8em;
-  padding: 0.2em;
-}
-
-.contents-share .share-item .share-message {
-  border: 1px solid #bbb;
-}
-
-.contents-share .share-item .share-button {
-  color: white;
-  background-color: var(--bgPrimaryEmphasis);  
-  vertical-align: top;
-  margin-left: 0.4em;
-}
-
-.contents-share .share-item .copy-message {
-  color: var(--bgPrimaryEmphasis);
-  font-style: italic;
-}
 
 /*-------------------------------------------------------------------
  * clipboard copy

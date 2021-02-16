@@ -5,6 +5,7 @@ include configuration-mixins.pug
 - var proctoringlist = params.proctoring
 - var retakelist = params.retake
 - var resubmissionlist = params.resubmission
+- var allowOptions = params.allowoptionsediting
 
 doctype html
 html
@@ -22,9 +23,11 @@ html
       include ../styles/configuration.css
     
     script(src="/scripts/clipboard.min.js")
-    script(data-main="/scripts/welcomeletter/require_welcomeletter", src="/scripts/require.js")    
+    script(data-main="/scripts/welcomeletter/require_configuration", src="/scripts/require.js")    
       
   body(class="instructortips-colorscheme")
+    .allowoptions(class="hide-me")= allowOptions
+    
     .navbarcontainer
     
     .contents(class="contents-configuration hide-me")
@@ -67,9 +70,30 @@ html
               option(value=val.resubmissionid)= val.resubmissiondescription
               
 
-    .contents(class="contents-preview hide-me") preview
+    .contents(class="contents-preview hide-me")
+      +twochoiceswitch("audience", "mentor", "student")      
+
+      iframe(class="preview-frame")
     
-    .contents(class="contents-share hide-me") share
+    .contents(class="contents-share hide-me")
+        .share-item
+          .share-item-text link to student letter
+          .share-value(class="share-link share-link-student")
+          button(class="share-button button-link button-link-student") copy
+          
+        .share-item
+          .share-item-text formatted message for student
+          textarea(class="share-value share-message share-message-student" rows="6" cols="50" disabled)
+          button(class="share-button button-message button-message-student") copy
+              
+        .share-item
+          .share-item-text link to mentor letter
+          .share-value(class="share-link share-link-mentor")
+          button(class="share-button button-link button-link-mentor") copy
+          
+        .share-item
+          .share-item-text formatted message for mentor
+          textarea(class="share-value share-message share-message-mentor" rows="6" cols="50" disabled)
+          button(class="share-button button-message button-message-mentor") copy
     
-    .contents(class="contents-options hide-me") options
 

@@ -1,10 +1,7 @@
 //-------------------------------------------------------------------
-// welcome letter configuration
+// welcome letter options editor
 //-------------------------------------------------------------------
-// TODO: implement preview
-// TODO: implement share
-// TODO: add editing for dropdown values (or create another app?)
-// TODO: sanitize course name and limit length, check for uniqueness fail
+// TODO: 
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
@@ -13,10 +10,7 @@ const app = function () {
     appName: 'Welcome letter configuration'
   };
   
-  const settings = {
-    logoutURL: '/usermanagement/logout',
-    helpURL: '/welcomeletter/help'
-  };
+  const settings = {};
 
   //---------------------------------------
   // get things going
@@ -24,7 +18,8 @@ const app = function () {
   async function init () {
     page.body = document.getElementsByTagName('body')[0];
     page.contents = page.body.getElementsByClassName('contents')[0];
-    
+    console.log('okay so far');
+    /*
     page.contentsConfiguration = page.body.getElementsByClassName('contents-configuration')[0];
     page.contentsPreview = page.body.getElementsByClassName('contents-preview')[0];
     page.contentsShare = page.body.getElementsByClassName('contents-share')[0];
@@ -39,6 +34,7 @@ const app = function () {
     
     settings.currentCourseInfo = null;
     await _loadCourseList();
+    */
   }
 
   //-----------------------------------------------------------------------------

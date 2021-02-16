@@ -6,7 +6,7 @@ define(function (require) {
   require('/scripts/clipboard_copy.js');
   require('/scripts/sqldbinterface');
   
-  require('welcomeletter');
+  require('configuration');
 
   document.addEventListener('DOMContentLoaded', app.init());
 });
