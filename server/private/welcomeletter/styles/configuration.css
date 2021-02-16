@@ -13,6 +13,38 @@ body {
   display: none;
 }
 
+/*---------------------------------------------*/
+/* navbar additions and overrides              */
+/*---------------------------------------------*/
+.navbar .dropdown-content div.disarm-me {
+  color: #bbb;
+}
+
+.navbar .dropdown-content div.disarm-me:hover {
+  background-color: transparent;
+}
+
+.navbar .navbar-main-item.disarm-me {
+  color: #bbb;
+}
+
+.navbar li.navbar-item:not(.navbar-selected):hover {
+  background-color: var(--bgTertiaryChoice);
+}
+
+.navbar li.navbar-item.disarm-me:hover {
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+.navbar li.navbar-item.navbar-title:hover {
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+.navbar li.navbar-item.username:hover {
+  background-color: var(--bgPrimaryEmphasis);
+}
+
+
 /*-----------------------------------------------------*/
 /* standard notice                                     */
 /*-----------------------------------------------------*/

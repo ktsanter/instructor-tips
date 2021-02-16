@@ -65,7 +65,8 @@ const app = function () {
         
       } else if (item.innerHTML.includes('Share')) {
         page.navitems.shareItem = item;
-      }
+      
+      } else if (item.innerHTML == settings.userInfo.userName) UtilityKTS.setClass(item, 'username', true);
     }
     
     var dropdownItems = page.body.getElementsByClassName('dropdown-content hamburger')[0].children;

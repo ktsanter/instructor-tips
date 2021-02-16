@@ -375,7 +375,9 @@ app.get('/welcomeletter/:coursekey/:audience', async function(req, res) {
   if (req.params.audience == 'student' || req.params.audience == 'mentor') {
     var fileNameMentor = path.join(__dirname, 'private', 'welcomeletter/pug/welcomeletter-mentor.pug');
     var fileNameStudent = path.join(__dirname, 'private', 'welcomeletter/pug/welcomeletter-student.pug');
+
     var result = await dbWelcomeLetter.renderWelcomeLetter(req.params, {mentor: fileNameMentor, student: fileNameStudent});
+
     if (result.success) {
       res.send(result.data);
     } else {

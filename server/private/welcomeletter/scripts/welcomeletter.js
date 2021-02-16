@@ -1,11 +1,10 @@
 //-------------------------------------------------------------------
 // welcome letter configuration
 //-------------------------------------------------------------------
-// TODO: enable navbar items based on circumstances
 // TODO: implement preview
 // TODO: implement share
 // TODO: add editing for dropdown values (or create another app?)
-// TODO: sanitize course name and limit length
+// TODO: sanitize course name and limit length, check for uniqueness fail
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
@@ -34,10 +33,12 @@ const app = function () {
     
     page.notice.setNotice('loading...', true);
     if (!(await _getUserInfo())) return;
-    if (!(await _loadCourseList())) return;
     page.notice.setNotice('');
     
     _renderPage();
+    
+    settings.currentCourseInfo = null;
+    await _loadCourseList();
   }
 
   //-----------------------------------------------------------------------------
@@ -48,6 +49,19 @@ const app = function () {
     page.navbar = _renderNavbar();
     navbarContainer.appendChild(page.navbar); 
     
+    var navbarMainItems = Array.prototype.slice.call(page.body.getElementsByClassName('navbar-main-item'), 0);
+    var hamburgerItems = Array.prototype.slice.call(page.body.getElementsByClassName('dropdown-content hamburger')[0].children, 0);
+    var navbarItems = navbarMainItems.concat(hamburgerItems);
+    
+    page.navitem = {};
+    for (var i = 0; i < navbarItems.length; i++) {
+      var item = navbarItems[i];
+      var itemKey = item.innerHTML.split(' ').join('_').toLowerCase();
+      page.navitem[itemKey] = item;
+      
+      if (item.innerHTML == settings.userInfo.userName) UtilityKTS.setClass(item, 'username', true);
+    }
+    
     // move standard notice
     navbarContainer.appendChild(page.notice._errorNotice);
     navbarContainer.appendChild(page.notice._normalNoticeContainer);
@@ -56,9 +70,6 @@ const app = function () {
     
     page.notice.setNotice('');
     _attachHandlers();
-    
-    settings.currentCourseInfo = null;
-    _loadCourseInfo(settings.currentCourseInfo);
     
     settings.navbar.selectOption('Confguration');
   }
@@ -174,6 +185,8 @@ const app = function () {
     _enableElement('proctoring', enable);
     _enableElement('retakes', enable);
     _enableElement('resubmission', enable); 
+    
+    _setMenuItems();
   }
   
   async function _addCourse(e) {  
@@ -256,21 +269,34 @@ const app = function () {
     }
     
     UtilityKTS.setClass(page.body.getElementsByClassName(contentsClass)[0], 'hide-me', false);
+    _setMenuItems();
   }  
   
   function _showPreview() {
-    console.log('_showPreview: add conditional disarming of nav items');
     _showContents('contents-preview');
+    _setMenuItems();
   }
   
   function _showShare() {
-    console.log('_showShare: add conditional disarming of nav items');
     _showContents('contents-share');
+    _setMenuItems();
   }
     
   function _showOptions() {
-    console.log('_showOptions: add conditional disarming of nav items');
     _showContents('contents-options');
+    _setMenuItems();
+  }
+  
+  function _setMenuItems() {
+    if (!page.navitem) return;
+    var courseIsSelected = (page.body.getElementsByClassName('course')[0].selectedIndex >= 0);
+    var configurationDisplayed = !page.contentsConfiguration.classList.contains('hide-me');
+
+    _setDisarm(page.navitem.preview, !courseIsSelected);
+    _setDisarm(page.navitem.share, !courseIsSelected);
+
+    _setDisarm(page.navitem.add_course, !configurationDisplayed);
+    _setDisarm(page.navitem.delete_course, !(courseIsSelected && configurationDisplayed));
   }
 
   //---------------------------------------
@@ -390,6 +416,10 @@ const app = function () {
   function _getSwitch(className) {
     var elemSwitch = page.body.getElementsByClassName(className)[0];
     return elemSwitch.getElementsByClassName('switch-input')[0].checked;
+  }
+  
+  function _setDisarm(elem, disarm) {
+    UtilityKTS.setClass(elem, 'disarm-me', disarm);
   }
 
   //---------------------------------------

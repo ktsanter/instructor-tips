@@ -32,7 +32,8 @@ create table course2
   ap                    boolean not null,
   
   primary key (courseid),
-  constraint foreign key (userid) references instructortips.user (userid) on delete cascade  
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid, coursename)
 );
 
 #----------------------------------------------------------------------
