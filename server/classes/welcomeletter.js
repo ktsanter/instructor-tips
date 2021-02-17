@@ -472,6 +472,9 @@ module.exports = internal.WelcomeLetter = class {
       
     } else {
       result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate';
+      }
     }
     
     return result;
@@ -528,11 +531,12 @@ module.exports = internal.WelcomeLetter = class {
     var updatedProctoringId = (postData.proctoringid) == '' ? 'null' : postData.proctoringid;
     var updatedRetakeId = (postData.retakeid) == '' ? 'null' : postData.retakeid;
     var updatedResubmissionId = (postData.resubmissionid) == '' ? 'null' : postData.resubmissionid;
-    console.log('_updateCourse2: allow change of course name?');
+
     queryList = {
       course:
         'update course2 ' +
         'set ' +
+          'coursename = "' + postData.coursename + '", ' +
           'ap = ' + postData.ap + ', ' +
           'haspasswords = ' + postData.haspasswords + ' ' +
         'where courseid = ' + postData.courseid,
@@ -555,7 +559,12 @@ module.exports = internal.WelcomeLetter = class {
       result.data = queryResults.data;
       
     } else {
-      result.details = queryResults.details;
+      console.log(queryResults.details);
+      if (queryResults.details.toLowerCase().includes('duplicate entry')) {
+        result.details = 'duplicate';
+      } else {
+        result.details = queryResults.details;
+      }
     }
 
     return result;

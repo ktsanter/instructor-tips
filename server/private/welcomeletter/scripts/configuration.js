@@ -1,12 +1,11 @@
 //-------------------------------------------------------------------
 // welcome letter configuration
 //-------------------------------------------------------------------
-// TODO: sanitize course name and limit length
-// TODO: check for coursename uniqueness fail on insert and update
 // TODO: temporary rerouting scheme for v1 pages
 // TODO: options editor
 // TODO: final pass at content including Essentials
 // TODO: think through rollover plan for v1 to v2
+// TODO: add Profile nav option to allow email change/specification?
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
@@ -90,6 +89,7 @@ const app = function () {
       ],
       
       hamburgeritems: [           
+        {label: 'rename course', markselected: false, callback: () => {return _navDispatch('rename');}},
         {label: 'add course', markselected: false, callback: () => {return _navDispatch('add');}},
         {label: 'delete course', markselected: false, callback: () => {return _navDispatch('delete');}},
         {label: 'edit options', markselected: false, callback: () => {return _navDispatch('options');}},
@@ -208,15 +208,49 @@ const app = function () {
     _setMenuItems();
   }
   
+  async function _renameCourse() {
+    var courseInfo = _getSelectedCourse();
+    if (!courseInfo) return;
+
+    var msg = 'Please enter the new name for the course.';
+    var newCourseName = prompt(msg, courseInfo.coursename);
+    if (!newCourseName || newCourseName == courseInfo.coursename) return;
+
+    if (!_validateCourseName(newCourseName)) {
+      var msg = "The course name\n" + newCourseName + '\nis not valid.';
+      msg += '\n\nIt must have length between 1 and 200';
+      msg += ' and include only letters, digits, spaces, parentheses and commas.';
+      alert(msg);
+      return;
+    }
+    
+    settings.currentCourseInfo.coursename = newCourseName;
+    
+    await _saveCourseInfo();
+  }
+  
   async function _addCourse(e) {  
     var msg = 'Enter the name of the new course';
     var courseName = prompt(msg);
     if (!courseName) return;
     
+    if (!_validateCourseName(courseName)) {
+      var msg = "The course name\n" + courseName + '\nis not valid.';
+      msg += '\n\nIt must have length between 1 and 200';
+      msg += ' and include only letters, digits, spaces, parentheses and commas.';
+      alert(msg);
+      return;
+    }
+    
     page.notice.setNotice('adding course...', true);
     var result = await queryInsertCourse({coursename: courseName});
     if (!result.success) {
-      page.notice.setNotice(result.details);
+      if (result.details.includes('duplicate')) {
+        alert('failed to add course\n a configuration for "' + courseName + '" already exists');
+        page.notice.setNotice('');
+      } else {
+        page.notice.setNotice(result.details);
+      }
       return;
     }
 
@@ -229,7 +263,6 @@ const app = function () {
 
   async function _deleteCourse() {
     var courseInfo = _getSelectedCourse();
-
     if (!courseInfo) return;
 
     var msg = 'This course will be deleted:';
@@ -252,11 +285,12 @@ const app = function () {
   }
   
   async function _saveCourseInfo() {
-    var courseInfo = _getSelectedCourse();
+    var courseInfo = settings.currentCourseInfo;
     if (!courseInfo) return;
     
     var configurationInfo = {
       courseid: courseInfo.courseid,
+      coursename: courseInfo.coursename,
       ap: _getSwitch('apcourse'),
       haspasswords: _getSwitch('haspasswords'),
       examid: page.body.getElementsByClassName('exams')[0].value,
@@ -267,8 +301,12 @@ const app = function () {
     
     var result = await queryUpdateCourse(configurationInfo);
     if (!result.success) {
-      page.notice.setNotice(result.details);
-      return;
+      if (result.details.includes('duplicate')) {
+        alert('failed to rename course\n a configuration for "' + courseInfo.coursename + '" already exists');
+        page.notice.setNotice('');
+      } else {
+        page.notice.setNotice(result.details);
+      }
     }
     
     await _loadCourseList();
@@ -317,6 +355,7 @@ const app = function () {
     _setDisarm(page.navitem.preview, !courseIsSelected);
     _setDisarm(page.navitem.share, !courseIsSelected);
 
+    _setDisarm(page.navitem.rename_course, !(courseIsSelected && configurationDisplayed));
     _setDisarm(page.navitem.add_course, !configurationDisplayed);
     _setDisarm(page.navitem.delete_course, !(courseIsSelected && configurationDisplayed));
   }
@@ -331,6 +370,7 @@ const app = function () {
       'share': _showShare,
       'options': _openOptions,
       'profile': function() {},
+      'rename': _renameCourse,
       'add': _addCourse,
       'delete': _deleteCourse
     };
@@ -515,7 +555,15 @@ const app = function () {
     
     return result;
   }
+   
+  function _validateCourseName(courseName) {
+    var valid = courseName.length < 200;
+    valid = valid && courseName.length > 0;
     
+    valid = valid && (courseName.match(/[A-Za-z0-9&\(\), ]+/) == courseName);
+    
+    return valid;
+  }
 
   //---------------------------------------
 	// return from wrapper function
