@@ -1,10 +1,8 @@
 //-------------------------------------------------------------------
 // welcome letter configuration
 //-------------------------------------------------------------------
-// TODO: temporary rerouting scheme for v1 pages
 // TODO: options editor
 // TODO: final pass at content including Essentials
-// TODO: think through rollover plan for v1 to v2
 // TODO: add Profile nav option to allow email change/specification?
 //-------------------------------------------------------------------
 const app = function () {
@@ -18,7 +16,7 @@ const app = function () {
     optionsURL: '/welcomeletter/options',
     logoutURL: '/usermanagement/logout',
     helpURL: '/welcomeletter/help',
-    previewURL_base: '/welcomeletter2'
+    previewURL_base: '/welcomeletterV2'
   };
 
   //---------------------------------------
@@ -454,27 +452,23 @@ const app = function () {
   }
   
   async function queryCourseList() {
-    return await SQLDBInterface.doGetQuery('welcome/query', 'courselist2');
-  }
-  
-  async function queryCourse(courseInfo) {
-    return await SQLDBInterface.doPostQuery('welcome/query', 'course2', courseInfo);
+    return await SQLDBInterface.doGetQuery('welcomeV2/query', 'courselist');
   }
   
   async function queryInsertCourse(courseInfo) {
-    return await SQLDBInterface.doPostQuery('welcome/insert', 'course2', courseInfo);
+    return await SQLDBInterface.doPostQuery('welcomeV2/insert', 'course', courseInfo);
   }
   
   async function queryUpdateCourse(configurationInfo) {
-    return await SQLDBInterface.doPostQuery('welcome/update', 'course2', configurationInfo);
+    return await SQLDBInterface.doPostQuery('welcomeV2/update', 'course', configurationInfo);
   }
 
   async function queryDeleteCourse(courseInfo) {
-    return await SQLDBInterface.doPostQuery('welcome/delete', 'course2', courseInfo);
+    return await SQLDBInterface.doPostQuery('welcomeV2/delete', 'course', courseInfo);
   }
   
   async function queryMailMessage(params) {
-    return await SQLDBInterface.doPostQuery('welcome/query', 'mailmessage2', params);
+    return await SQLDBInterface.doPostQuery('welcome/query', 'mailmessage', params);
   }
   
   //---------------------------------------

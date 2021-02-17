@@ -11,6 +11,7 @@ const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
 const MARIA_DBNAME_INSTRUCTORTIPS = getEnv('MARIA_DBNAME_INSTRUCTORTIPS', true);
 const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
 const MARIA_DBNAME_WELCOME = getEnv('MARIA_DBNAME_WELCOME', true);
+const MARIA_DBNAME_WELCOMEV2 = getEnv('MARIA_DBNAME_WELCOMEV2', true);
 const MARIA_DBNAME_IMAGEFLIPPER = getEnv('MARIA_DBNAME_IMAGEFLIPPER', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
@@ -98,6 +99,15 @@ const mariadbParams_WelcomeLetter = {
     connectionLimit: 5 */
 };
     
+const mariadbParams_WelcomeLetterV2 = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_WELCOMEV2 /*, 
+    connectionLimit: 5 */
+};
+    
 const mariadbParams_ImageFlipper = {
     reqd: mariadb,
     host: MARIA_HOST,
@@ -111,6 +121,7 @@ const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
 const mariaDBManager_WelcomeLetter = new mariaDBManagerClass(mariadbParams_WelcomeLetter);
+const mariaDBManager_WelcomeLetterV2 = new mariaDBManagerClass(mariadbParams_WelcomeLetterV2);
 const mariaDBManager_ImageFlipper = new mariaDBManagerClass(mariadbParams_ImageFlipper);
     
 //------------------------------------------
@@ -274,6 +285,15 @@ const dbWelcomeLetter = new dbWelcomeLetterClass({
   "pugPath": path.join(__dirname + '/private/welcomeletter/pug')
 });
 
+const dbWelcomeLetterClassV2 = require('./classes/welcomeletterv2')
+const dbWelcomeLetterV2 = new dbWelcomeLetterClassV2({
+  "dbManager": mariaDBManager_WelcomeLetterV2,
+  "userManagement": userManagement,
+  "pug": pug,
+  "fileServices": fileservices,
+  "pugPath": path.join(__dirname + '/private/welcomeletter/pug')
+});
+
 //------------------------------------------
 // Image flipper general query objects
 //------------------------------------------
@@ -293,6 +313,7 @@ var dbManagerLookup = {
   "tipmanager": dbTipManager,
   "treasurehunt": dbTreasureHunt,
   "welcome": dbWelcomeLetter,
+  "welcomeV2": dbWelcomeLetterV2,
   "imageflipper": dbImageFlipper
 };
 
@@ -311,10 +332,10 @@ var appLookup = {
     loginReRoute: 'treasurehunt'
   },
   
-  "welcome" : {
-    appDescriptor: 'welcome',
+  "welcomeV2" : {
+    appDescriptor: 'welcomeV2',
     appName: 'Welcome letter configuration',
-    routeFunction: dbWelcomeLetter.renderConfigurationPage,
+    routeFunction: dbWelcomeLetterV2.renderConfigurationPage,
     routeData: 'welcomeletter/pug/configuration.pug',
     loginReRoute: 'welcomeletter/configuration'
   },
@@ -361,7 +382,7 @@ app.get('/treasurehunt-configuration', function (req, res) {
   }
 })
 
-app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcome'); })
+app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcomeV2'); })
 app.get('/welcomeletter/options', function (req, res) { routeIfLoggedIn(req, res, 'welcome-options'); })
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
@@ -400,14 +421,14 @@ app.get('/welcomeletter/:coursekey/:audience', async function(req, res) {
   }
 })
 
-app.get('/welcomeletter2/:courseid/:audience', async function(req, res) { 
+app.get('/welcomeletterV2/:courseid/:audience', async function(req, res) { 
   if (req.params.audience == '000' || req.params.audience == '100') {
     req.params.audience = (req.params.audience == '000') ? 'student' : 'mentor';
 
     var fileNameMentor = path.join(__dirname, 'private', 'welcomeletter/pug/mentor.pug');
     var fileNameStudent = path.join(__dirname, 'private', 'welcomeletter/pug/student.pug');
 
-    var result = await dbWelcomeLetter.renderWelcomeLetter2(req.params, {mentor: fileNameMentor, student: fileNameStudent});
+    var result = await dbWelcomeLetterV2.renderWelcomeLetter(req.params, {mentor: fileNameMentor, student: fileNameStudent});
 
     if (result.success) {
       res.send(result.data);
@@ -425,8 +446,6 @@ app.get('/welcomeletter/help', function (req, res) {
   
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
-
-
 
 //------------------------------------------------------
 // user management, login, logout, etc.

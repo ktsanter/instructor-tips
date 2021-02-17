@@ -1,11 +1,11 @@
 #-----------------------------------------------------------------
-#-- create DB for welcome letter configuration
+#-- create DB for welcome letter configuration (version 2)
 #-----------------------------------------------------------------
-select "creating welcome letter configuration db" as comment;
+select "creating welcome letter configuration db (v2)" as comment;
 
-DROP DATABASE IF EXISTS welcomeletter;
-CREATE DATABASE welcomeletter;
-USE welcomeletter;
+DROP DATABASE IF EXISTS welcomeletterv2;
+CREATE DATABASE welcomeletterv2;
+USE welcomeletterv2;
 
 #-----------------------------------------------------------------
 #-- tables
@@ -16,12 +16,14 @@ select "creating tables" as comment;
 create table course
 (
   courseid              int unsigned not null AUTO_INCREMENT,
-  coursekey             varchar(30) null,
+  userid                int unsigned not null,
   coursename            varchar(200) not null,
   ap                    boolean not null,
+  haspasswords          boolean not null,
   
   primary key (courseid),
-  constraint unique(coursename)
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid, coursename)
 );
 
 #----------------------------------------------------------------------
@@ -98,12 +100,12 @@ create table generalkeypoint
 #-- triggers
 #--------------------------------------------------------------------------
 select "creating triggers" as comment;
-
+    
 CREATE TRIGGER trigger_newcourse
   AFTER INSERT ON course FOR EACH ROW
     INSERT configuration (courseid, examid, proctoringid, retakeid, resubmissionid)
     SELECT new.courseid, NULL, NULL, NULL, NULL;
-        
+    
 #--------------------------------------------------------------------------
 #-- views
 #--------------------------------------------------------------------------
@@ -113,3 +115,24 @@ select "creating views" as comment;
 #-- stored procedures
 #--------------------------------------------------------------------------
 select "creating stored procedures" as comment;
+
+DELIMITER //
+create procedure add_default_course(in user_Id int, in course_name varchar(200))
+begin
+  insert into course(
+    userid, 
+    coursename,
+    ap,
+    haspasswords
+  ) values (
+    user_Id,
+    course_name,
+    false,
+    true
+  );
+  
+  select LAST_INSERT_ID() as courseid;
+end;
+//
+DELIMITER ;
+    
