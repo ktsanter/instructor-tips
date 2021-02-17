@@ -39,7 +39,12 @@ html
       .configitem
         .itemlabel AP course
         .itemcontent
-          +sliderswitch("apcourse config-param ", "yes", "no")      
+          +sliderswitch("apcourse config-param ", "yes", "no")       
+
+      .configitem
+        .itemlabel has password(s)
+        .itemcontent
+          +sliderswitch("haspasswords config-param ", "yes", "no")       
 
       .configitem
         .itemlabel exams
@@ -78,23 +83,11 @@ html
     
     .contents(class="contents-share hide-me")
         .share-item
-          .share-item-text link to student letter
-          .share-value(class="share-link share-link-student")
-          button(class="share-button button-link button-link-student") copy
+          .share-item-label student
+          button(class="share-button button-link button-link-student") link to letter
+          button(class="share-button button-message button-message-student") formatted message
           
         .share-item
-          .share-item-text formatted message for student
-          textarea(class="share-value share-message share-message-student" rows="6" cols="50" disabled)
-          button(class="share-button button-message button-message-student") copy
-              
-        .share-item
-          .share-item-text link to mentor letter
-          .share-value(class="share-link share-link-mentor")
-          button(class="share-button button-link button-link-mentor") copy
-          
-        .share-item
-          .share-item-text formatted message for mentor
-          textarea(class="share-value share-message share-message-mentor" rows="6" cols="50" disabled)
-          button(class="share-button button-message button-message-mentor") copy
-    
-
+          .share-item-label mentor
+          button(class="share-button button-link button-link-mentor") link to letter
+          button(class="share-button button-message button-message-mentor") formatted message

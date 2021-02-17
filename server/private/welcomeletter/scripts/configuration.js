@@ -1,9 +1,12 @@
 //-------------------------------------------------------------------
 // welcome letter configuration
 //-------------------------------------------------------------------
-// TODO: add actual welcome message content to Share
-// TODO: finish reworking v2 of welcome letter landing pages
-// TODO: sanitize course name and limit length, check for uniqueness fail
+// TODO: sanitize course name and limit length
+// TODO: check for coursename uniqueness fail on insert and update
+// TODO: temporary rerouting scheme for v1 pages
+// TODO: options editor
+// TODO: final pass at content including Essentials
+// TODO: think through rollover plan for v1 to v2
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
@@ -180,6 +183,7 @@ const app = function () {
     
     var courseVal = courseInfo ? page.body.getElementsByClassName('course')[0].value : -1;
     var apVal = courseInfo ? courseInfo.ap : false;
+    var haspasswordsVal = courseInfo ? courseInfo.haspasswords : false;
     var examVal = courseInfo ? courseInfo.examid : -1;
     var proctoringVal = courseInfo ? courseInfo.proctoringid : -1;
     var retakeVal = courseInfo ? courseInfo.retakeid : -1;
@@ -187,6 +191,7 @@ const app = function () {
     
     _setSelectValue('course', courseVal);
     _setSwitch('apcourse', apVal);
+    _setSwitch('haspasswords', haspasswordsVal);
     _setSelectValue('exams', examVal);
     _setSelectValue('proctoring', proctoringVal);
     _setSelectValue('retakes', retakeVal);
@@ -194,6 +199,7 @@ const app = function () {
     
     var enable = courseVal > -1
     _enableElement('apcourse', enable);
+    _enableElement('haspasswords', enable);
     _enableElement('exams', enable);
     _enableElement('proctoring', enable);
     _enableElement('retakes', enable);
@@ -252,6 +258,7 @@ const app = function () {
     var configurationInfo = {
       courseid: courseInfo.courseid,
       ap: _getSwitch('apcourse'),
+      haspasswords: _getSwitch('haspasswords'),
       examid: page.body.getElementsByClassName('exams')[0].value,
       proctoringid: page.body.getElementsByClassName('proctoring')[0].value,
       retakeid: page.body.getElementsByClassName('retakes')[0].value,
@@ -298,12 +305,6 @@ const app = function () {
   }
   
   function _showShare() {
-    page.contentsShare.getElementsByClassName('share-link-student')[0].innerHTML = _landingPageURL('student');
-    page.contentsShare.getElementsByClassName('share-link-mentor')[0].innerHTML = _landingPageURL('mentor');
-
-    page.contentsShare.getElementsByClassName('share-message-student')[0].value = 'put student message here';
-    page.contentsShare.getElementsByClassName('share-message-mentor')[0].value = 'put mentor message here';
-
     _showContents('contents-share');
     _setMenuItems();
   }
@@ -366,21 +367,34 @@ const app = function () {
   
   function _handleLinkClick(e) {
     var audience = 'student'
-    if (e.target.classList.contains('button-link-mentor')) audience = 'mentor';
-    var linkClass = 'share-link-' + audience;    
-    
-    var msg = page.contentsShare.getElementsByClassName(linkClass)[0].innerHTML;
+    if (e.target.classList.contains('button-link-mentor')) audience = 'mentor';    
+
+    var msg = _landingPageURL(audience);
     _copyToClipboard(msg);
+
     page.notice.setNotice(audience + ' link copied');
   }  
   
-  function _handleMessageClick(e) {
+  async function _handleMessageClick(e) {
     var audience = 'student'
     if (e.target.classList.contains('button-message-mentor')) audience = 'mentor';
-    var linkClass = 'share-message-' + audience;    
     
-    var msg = page.contentsShare.getElementsByClassName(linkClass)[0].value;
-    _copyToClipboard(msg);
+    var msg = await _mailMessage(audience);
+    if (!msg) return;
+
+    //--- is this necessary? --------------------
+    // strip non-body material
+    msg = msg.replace(/<!DOCTYPE html>/g, '');
+    msg = msg.replace(/<html>/g, '');
+    msg = msg.replace(/<html lang=\"en\">/g, '');
+    msg = msg.replace(/<\/html>/g, '');
+    msg = msg.replace(/<head>.*<\/head>/g, '');
+    msg = msg.replace(/<body>/, '');
+    msg = msg.replace(/<\/body>/, '');
+    //-------------------------------------------
+    
+    _copyRenderedToClipboard(msg);
+
     page.notice.setNotice(audience + ' message copied');
   }  
   
@@ -419,8 +433,8 @@ const app = function () {
     return await SQLDBInterface.doPostQuery('welcome/delete', 'course2', courseInfo);
   }
   
-  async function queryMailMessage(courseInfo) {
-    return await SQLDBInterface.doPostQuery('welcome/query', 'mailmessage', courseInfo);
+  async function queryMailMessage(params) {
+    return await SQLDBInterface.doPostQuery('welcome/query', 'mailmessage2', params);
   }
   
   //---------------------------------------
@@ -481,6 +495,26 @@ const app = function () {
     
     return previewURL;
   }    
+  
+  async function _mailMessage(audience) {
+    var result = null;
+    var params = settings.currentCourseInfo;
+    params.audience = audience;
+    params.letterURL = _landingPageURL(audience);
+    
+    page.notice.setNotice('retrieving message data...', true);
+    
+    var queryResult = await queryMailMessage(params);
+    if (queryResult.success) {
+      result = queryResult.data;
+      page.notice.setNotice('');
+      
+    } else {
+      page.notice.setNotice('failed to retrieve ' + audience + ' message');
+    }
+    
+    return result;
+  }
     
 
   //---------------------------------------

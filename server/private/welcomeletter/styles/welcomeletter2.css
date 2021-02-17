@@ -34,6 +34,10 @@ body {
 /*-----------------------------------------------------------------------
  *  "business card"
  *----------------------------------------------------------------------*/
+ .idcard-container {
+   display: inline-block;
+ }
+ 
 .idcard {
   background-color: var(--bgSubtle);
 }

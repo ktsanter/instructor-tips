@@ -120,7 +120,7 @@ module.exports = internal.WelcomeLetter = class {
     queryList = { 
       courseinfo:
         'select ' +
-        '  courseid, coursename, ap ' +
+        '  courseid, coursename, ap, haspasswords ' +
         'from course2 ' +
         'where courseid = "' + params.courseid + '"'
     };
@@ -192,6 +192,7 @@ module.exports = internal.WelcomeLetter = class {
       coursekey: params.coursekey,
       coursename: courseInfo.coursename,
       ap: courseInfo.ap,
+      haspasswords: courseInfo.haspasswords,
       keypoints: keyPoints
     }
     
@@ -259,6 +260,9 @@ module.exports = internal.WelcomeLetter = class {
             
     } else if (params.queryName == 'mailmessage') {
       dbResult = await this._getMailMessage(params, postData, userInfo);
+            
+    } else if (params.queryName == 'mailmessage2') {
+      dbResult = await this._getMailMessage2(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -339,7 +343,7 @@ module.exports = internal.WelcomeLetter = class {
     
     query = 
       'select ' +
-        'a.courseid, a.coursename, a.ap, ' +
+        'a.courseid, a.coursename, a.ap, a.haspasswords, ' +
         'b.configurationid, b.examid, b.proctoringid, b.retakeid, b.resubmissionid ' +
       'from course2 as a, configuration2 as b ' +
       'where userid = ' + userInfo.userId + ' ' +
@@ -398,7 +402,7 @@ module.exports = internal.WelcomeLetter = class {
     
     queryList = {
       course: 
-        'select courseid, coursename, ap ' +
+        'select courseid, coursename, ap, haspasswords ' +
         'from course2 ' +
         'where courseid = ' + postData.courseid,
         
@@ -524,12 +528,13 @@ module.exports = internal.WelcomeLetter = class {
     var updatedProctoringId = (postData.proctoringid) == '' ? 'null' : postData.proctoringid;
     var updatedRetakeId = (postData.retakeid) == '' ? 'null' : postData.retakeid;
     var updatedResubmissionId = (postData.resubmissionid) == '' ? 'null' : postData.resubmissionid;
-    
+    console.log('_updateCourse2: allow change of course name?');
     queryList = {
       course:
         'update course2 ' +
         'set ' +
-          'ap = ' + postData.ap + ' ' +
+          'ap = ' + postData.ap + ', ' +
+          'haspasswords = ' + postData.haspasswords + ' ' +
         'where courseid = ' + postData.courseid,
       
       configuration: 
@@ -627,6 +632,40 @@ module.exports = internal.WelcomeLetter = class {
       haspasswords: postData.haspasswords
     };
     result.data = this._pug.renderFile(pugFileName, {params: messageParams});
+    result.success = true;
+
+    return result;
+  }  
+
+  
+  async _getMailMessage2(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var pugFileName = '';
+    if (postData.audience == 'student') {
+      pugFileName = this._pugPath + '/mailmessage/student_mailmessage.pug';
+    } else if (postData.audience == 'mentor') {
+      pugFileName = this._pugPath + '/mailmessage/mentor_mailmessage.pug';
+    } else {
+      result.details = 'invalid audience';
+      return result;
+    }
+    
+    if (!this._fileServices.existsSync(pugFileName)) {
+      result.details = 'cannot read message file';
+      return result;
+    }
+    
+    var messageParams = {
+      coursename: postData.coursename,
+      ap: postData.ap,
+      audience: postData.audience,
+      letterURL: postData.letterURL,
+      haspasswords: postData.haspasswords
+    };
+    
+    result.data = this._pug.renderFile(pugFileName, {params: messageParams});
+    result.details = 'file rendered successfully';
     result.success = true;
 
     return result;

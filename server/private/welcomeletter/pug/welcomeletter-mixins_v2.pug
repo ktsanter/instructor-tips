@@ -18,40 +18,41 @@ mixin title(audience)
       em= coursename
 
 mixin idcard
-  .container(class="idcard border border-secondary")
-    .row
-      .col-sm(id="logoContainer")
-        img(src="https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/MVlogo_small2.png" class="img-responsive" alt="Michigan Virtual logo" id="logoImage")
+  .idcard-container
+    .container(class="idcard border border-secondary")
+      .row
+        .col-sm(id="logoContainer")
+          img(src="https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/MVlogo_small2.png" class="img-responsive" alt="Michigan Virtual logo" id="logoImage")
 
-    .row
-      .container
-        .row
-          col-4
-            img(src="https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/instructor.jpg" class="img-responsive float-left" alt="Mr. Kevin Santer" id="instructorImage")
-            
-          .col-8 
-            .container
-              .row
-                .col-sm
-                  strong= instructorname
-              .row
-                .container
-                  .row
-                    .col-3 phone&nbsp;
-                    .col-sm #{phone}
-                  .row
-                    .col-3 email
-                    .col-sm 
-                      +linktoslp
-                      |&nbsp;or
-                  .row
-                    .col-3
-                    .col-sm 
-                      a(href="instructoremaillink", target="_blank") #{instructoremail}
-                  .row
-                    .col-3 Zoom
-                    .col-sm
-                      a(href="instructorschedule" target="_blank") schedule a meeting
+      .row
+        .container
+          .row
+            col-4
+              img(src="https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/instructor.jpg" class="img-responsive float-left" alt="Mr. Kevin Santer" id="instructorImage")
+              
+            .col-8 
+              .container
+                .row
+                  .col-sm
+                    strong= instructorname
+                .row
+                  .container
+                    .row
+                      .col-3 phone&nbsp;
+                      .col-sm #{phone}
+                    .row
+                      .col-3 email
+                      .col-sm 
+                        +linktoslp
+                        |&nbsp;or
+                    .row
+                      .col-3
+                      .col-sm 
+                        a(href=instructoremaillink, target="_blank") #{instructoremail}
+                    .row
+                      .col-3 Zoom
+                      .col-sm
+                        a(href=instructorschedule target="_blank") schedule a meeting
                                             
 mixin linktoslp
   a(href=slplink, target="_blank") SLP

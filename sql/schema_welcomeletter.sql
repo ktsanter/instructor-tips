@@ -30,6 +30,7 @@ create table course2
   userid                int unsigned not null,
   coursename            varchar(200) not null,
   ap                    boolean not null,
+  haspasswords          boolean not null,
   
   primary key (courseid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
@@ -156,11 +157,13 @@ begin
   insert into course2(
     userid, 
     coursename,
-    ap
+    ap,
+    haspasswords
   ) values (
     user_Id,
     course_name,
-    false
+    false,
+    true
   );
   
   select LAST_INSERT_ID() as courseid;

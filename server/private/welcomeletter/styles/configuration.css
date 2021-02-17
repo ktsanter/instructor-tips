@@ -163,35 +163,26 @@ body {
 /*-------------------------------------------------------------------
  * share contents
  *------------------------------------------------------------------*/
-.contents-share {}
+.contents-share {
+  padding-top: 1.0em;
+}
 
 .contents-share .share-item {
   margin-bottom: 1.0em;
 }
 
-.contents-share .share-item .share-item-text {
+.contents-share .share-item .share-item-label {
   display: inline-block;
-  width: 13.0em;
-  vertical-align: top;
-}
-
-.contents-share .share-item .share-link {
-  display: inline-block;
-  background-color: #f7f7f7;
-  border: 1px solid #bbb;
-  width: 28.8em;
-  padding: 0.2em;
-}
-
-.contents-share .share-item .share-message {
-  border: 1px solid #bbb;
+  padding-bottom: 0.6em;
 }
 
 .contents-share .share-item .share-button {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;  
+  font-size: 0.9em;
   color: white;
   background-color: var(--bgPrimaryEmphasis);  
   vertical-align: top;
-  margin-left: 0.4em;
+  margin-left: 0.6em;
 }
 
 .contents-share .share-item .copy-message {
