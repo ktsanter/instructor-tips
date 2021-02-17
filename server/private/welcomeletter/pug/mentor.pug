@@ -1,3 +1,4 @@
+include ../../common/pug/fontawesome-mixins.pug
 include welcomeletter-mixins_v2.pug
 
 - var coursekey = params.coursekey
@@ -13,8 +14,7 @@ html
     title welcome letter
     meta(charset="utf-8")
     
-    //-
-      link(rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous")   
+    +fontawesome()  
 
     link(rel="stylesheet", type="text/css" href="/styles/welcomeletter/welcomeletter.css")
       

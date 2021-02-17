@@ -1,8 +1,8 @@
 //-------------------------------------------------------------------
 // welcome letter configuration
 //-------------------------------------------------------------------
-// TODO: implement preview
-// TODO: implement share
+// TODO: add actual welcome message content to Share
+// TODO: finish reworking v2 of welcome letter landing pages
 // TODO: sanitize course name and limit length, check for uniqueness fail
 //-------------------------------------------------------------------
 const app = function () {

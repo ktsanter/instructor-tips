@@ -1,0 +1,74 @@
+/*-------------------------------------------------------------------
+ * styling for welcome letter v2
+ *------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary:  #426296;
+  --bgSubtle: #eee;
+}
+
+body {
+	color: black;
+	background-color: white;
+	font-size: 13px;
+}
+
+.titlerow {
+  color: white;
+  background-color: var(--bgPrimary);
+}
+
+.titlerow .title-text {
+  font-size: 1.2em;
+  padding: 0.2em 0.4em;
+}
+
+/*-----------------------------------------------------------------------
+ *  key points
+ *----------------------------------------------------------------------*/
+.keypoints-label {
+  font-size: 1.1em;
+  font-weight: bold;
+  padding-left: 0.2em;
+}
+
+/*-----------------------------------------------------------------------
+ *  "business card"
+ *----------------------------------------------------------------------*/
+.idcard {
+  background-color: var(--bgSubtle);
+}
+
+#logoContainer {
+  padding: 0.2em 0 0.2em 0.4em;
+}
+
+ #logoImage {
+   width: 150px;
+ }
+ 
+ #instructorImage {
+  width: 100px;
+ }
+ 
+ /*-----------------------------------------------------------------------
+ *  sections
+ *----------------------------------------------------------------------*/
+ .section-title {
+  color: white;
+  background-color: var(--bgPrimary);
+  padding: 0.2em 0.4em;
+}
+
+/*-----------------------------------------------------------------------
+ *  encouragement note
+ *----------------------------------------------------------------------*/
+.encouragement {
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--bgPrimary);
+  border-radius: 4px;
+  font-size: 1.1em;
+  font-style: italic;
+  text-align: center;
+  padding: 0.2em 0;
+}

@@ -155,8 +155,12 @@ body {
   vertical-align: top;
 }
 
-.contents.contents-share .share-item .share-link {
-  width: 28.0em;
+.contents-share .share-item .share-link {
+  display: inline-block;
+  background-color: #f7f7f7;
+  border: 1px solid #bbb;
+  width: 28.8em;
+  padding: 0.2em;
 }
 
 .contents.contents-share .share-item .share-button {

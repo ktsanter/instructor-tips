@@ -350,7 +350,7 @@ const app = function () {
     var elemEmbed = page.contentsShare.getElementsByClassName('share-embed')[0];
     
     var url = settings.baseShareURL + settings.currentProject.projectid;
-    elemLink.value = url;
+    elemLink.innerHTML = url;
 
     var elem = CreateElement.createIframe(null, null, url, 650, 500);
     elem.style.overflowY = 'hidden';
@@ -458,7 +458,7 @@ const app = function () {
 	
   function _handleLinkClick(e) {
     var elemLink = page.contentsShare.getElementsByClassName('share-link')[0];
-    var msg = elemLink.value;
+    var msg = elemLink.innerHTML;
     _copyToClipboard(msg);
     _showShareCopiedMessage('link');
   }

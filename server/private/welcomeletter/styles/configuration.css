@@ -147,6 +147,11 @@ body {
 	background: var(--bgSecondaryChoice);
 }
 
+.contents-preview .frame-container {
+  border: 1px solid #bbb;
+  margin-top: 0.4em;
+}
+
 .contents-preview .preview-frame {
   width: 100%;
   height: 800px;
