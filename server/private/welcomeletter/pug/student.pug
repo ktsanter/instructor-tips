@@ -11,7 +11,7 @@ include welcomeletter-mixins_v2.pug
 doctype html
 html(lang="en")
   head
-    title welcome letter
+    title student welcome letter
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
     
@@ -36,18 +36,17 @@ html(lang="en")
           +idcard
         
       .row
-        .col-sm
-          br
+        .col-sm(class="overview")
           include boilerplate/student_overview.pug
         
       .row
         .col-sm 
           .section-title what I expect of you in this course
-          include boilerplate/expect_of_you.pug
+          include boilerplate/student_expect_of_you.pug
             
         .col-sm 
           .section-title what you can expect from me
-          include boilerplate/expect_from_me.pug
+          include boilerplate/student_expect_from_me.pug
 
       .row
         .col-2
