@@ -44,7 +44,6 @@ body {
   background-color: var(--bgPrimaryEmphasis);
 }
 
-
 /*-----------------------------------------------------*/
 /* standard notice                                     */
 /*-----------------------------------------------------*/
@@ -62,7 +61,8 @@ body {
   background-color: var(--bgPrimaryEmphasis);
   position: absolute;
   z-index: 1;
-  right: 11.0em;
+  top: 0.6em;
+  right: 13.0em;
 }
 
 /*-----------------------------------------------------*/
@@ -72,77 +72,4 @@ body {
   margin-top: 3.0em;
 }
 
-/*-------------------------------------------------------------------
- * configuration contents
- *------------------------------------------------------------------*/
-.contents-configuration {}
- 
-.contents-configuration .configitem {
-  margin: 0.2em 0;
-}
 
-.contents-configuration .configitem .itemlabel {
-  display: inline-block;
-  width: 8.0em;
-}
-
-.contents-configuration .configitem .itemcontent {
-  display: inline-block;
-}
-
-.contents-configuration .configitem .itemcontent .switch {
-  vertical-align: middle;
-}
-
-.contents-configuration .configitem .itemcontent .switch.disabled {
-  visibility: hidden;
-}
-
-.contents-configuration .configitem .itemcontent .switch-yes-no .switch-label:after {
-	background: var(--bgPrimaryEmphasis);
-}
-
-.contents-configuration .configitem .itemcontent input {
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  font-size: 1.0em;
-	display: inline-block;
-	color: #444;
-	line-height: 1.0;
-	padding: .6em 0.4em .5em .8em;
-  width: 15.0em;
-	box-sizing: border-box;
-	border: 1px solid #aaa;
-	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
-	background-color: #fff;
-  margin-top: 0.2em;
- }
-
-.contents-configuration .configitem .itemcontent .select-css {
-  font-size: 1.0em;
-  width: 56.0em;
-  text-overflow: ellipsis;
-  margin-left: 0;
-  margin-top: 0.2em;
-}
-
-.contents-configuration .configitem .itemcontent .select-css.wideselect {
-  max-width: none;
-  width: 50.0em; 
-}
-
-/*-------------------------------------------------------------------
- * configuration contents
- *------------------------------------------------------------------*/
-.contents-preview {}
-
-/*-------------------------------------------------------------------
- * share contents
- *------------------------------------------------------------------*/
-.contents-share {}
-
-/*-------------------------------------------------------------------
- * clipboard copy
- *-------------------------------------------------------------------*/
-.renderedcopy {
-  background-color: white;
-}

@@ -59,8 +59,6 @@ const app = function () {
       var item = navbarItems[i];
       var itemKey = item.innerHTML.split(' ').join('_').toLowerCase();
       page.navitem[itemKey] = item;
-      
-      if (item.innerHTML == settings.userInfo.userName) UtilityKTS.setClass(item, 'username', true);
     }
     
     // move standard notice
@@ -367,7 +365,7 @@ const app = function () {
       'preview': _showPreview,
       'share': _showShare,
       'options': _openOptions,
-      'profile': function() {},
+      'profile': function() { console.log('profile'); },
       'rename': _renameCourse,
       'add': _addCourse,
       'delete': _deleteCourse
@@ -468,7 +466,7 @@ const app = function () {
   }
   
   async function queryMailMessage(params) {
-    return await SQLDBInterface.doPostQuery('welcome/query', 'mailmessage', params);
+    return await SQLDBInterface.doPostQuery('welcomeV2/query', 'mailmessage', params);
   }
   
   //---------------------------------------

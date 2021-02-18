@@ -2,8 +2,7 @@
 //---------------------------------------------------------------
 // Welcome letter interface (version 2)
 //---------------------------------------------------------------
-// TODO: see if the original queries can be eliminated (other than rendering)
-//       after refactoring 
+// TODO: 
 //---------------------------------------------------------------
 const internal = {};
 
@@ -167,8 +166,11 @@ module.exports = internal.WelcomeLetterV2 = class {
       dbResult = await this._getCourseList(params, postData, userInfo);
             
     } else if (params.queryName == 'mailmessage') {
-      dbResult = await this._getMailMessage2(params, postData, userInfo);
+      dbResult = await this._getMailMessage(params, postData, userInfo);
             
+    } else if (params.queryName == 'optionvalues') {
+      dbResult = await this._getOptionValues(params, postData, userInfo);
+                        
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -375,6 +377,53 @@ module.exports = internal.WelcomeLetterV2 = class {
 
     return result;
   }  
+  
+  async _getOptionValues(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    var queryChoices = {
+      exams:
+        'select e.examid, e.examdescription ' +
+        'from exam as e ' +
+        'order by e.examdescription ',
+
+      proctoring:
+        'select p.proctoringid, p.proctoringdescription ' +
+        'from proctoring as p ' +
+        'order by p.proctoringdescription ',
+
+      retakes:
+        'select r.retakeid, r.retakedescription ' +
+        'from retake as r ' +
+        'order by r.retakedescription ',
+
+      resubmission:
+        'select r.resubmissionid, r.resubmissiondescription ' +
+        'from resubmission as r ' +
+        'order by r.resubmissiondescription ',
+          
+      general:
+        'select generalkeypointid, ap, student, mentor, keypoint ' +
+        'from generalkeypoint ' +
+        'order by generalkeypointid '
+    };
+    
+    query = queryChoices[postData.editorKey];
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
 
 //---------------------------------------------------------------
 // other support methods
