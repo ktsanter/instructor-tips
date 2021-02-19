@@ -413,14 +413,67 @@ module.exports = internal.WelcomeLetterV2 = class {
     query = queryChoices[postData.editorKey];
     queryResults = await this._dbManager.dbQuery(query);
     
-    if (queryResults.success) {
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var tableLookup = {
+      "exams": 'exam',
+      "proctoring": 'proctoring',
+      "retakes": 'retake',
+      "resubmission": 'resubmission',
+      "general": 'generalkeypoint'
+    };
+      
+    var tableInfo = await this._getTableInfo(tableLookup[postData.editorKey]);
+    
+    if (tableInfo) {
       result.success = true;
       result.details = 'query succeeded';
-      result.data = queryResults.data;
+      result.data = {};
+      result.data.tabledata = queryResults.data;
+      result.data.tableinfo = tableInfo;
       
     } else {
-      result.details = queryResults.details;
+      result.details = 'failed to get table info for ' + postData.editorKey;
     }
+
+    return result;
+  }
+
+  async _getTableInfo(tableName) {
+    var result = null; 
+    
+    var query, queryResults;
+    
+    var query =
+        'select ' + 
+          't.table_name, t.column_name, t.data_type, t.column_type, ' + 
+          't.is_nullable, t.column_key, t.character_maximum_length ' +
+        'from options_tableinfo as t ' +
+        'where t.table_name = "' + tableName + '" ' +
+        'order by t.column_name ';
+    
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (!queryResults.success) return result;
+
+    var collated = {};
+    for (var i = 0; i < queryResults.data.length; i++) {
+      var row = queryResults.data[i];
+      
+      collated[row.column_name] = {
+        "columnName": row.column_name,
+        "primaryKey": row.column_key == 'PRI',
+        "dataType": row.data_type,
+        "columnType": row.column_type,
+        "nullable": row.is_nullable == 'YES',
+        "maxColumnLength": row.character_maximum_length
+      }
+    }
+    
+    result = collated;
 
     return result;
   }

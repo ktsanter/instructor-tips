@@ -110,6 +110,18 @@ CREATE TRIGGER trigger_newcourse
 #-- views
 #--------------------------------------------------------------------------
 select "creating views" as comment;
+
+create view options_tableinfo as 
+  select 
+    table_name, 
+    column_name,
+    data_type,
+    column_type,
+    character_maximum_length,
+    is_nullable,
+    column_key
+  from information_schema.COLUMNS 
+  where table_schema = DATABASE();
     
 #--------------------------------------------------------------------------
 #-- stored procedures

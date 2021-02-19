@@ -165,7 +165,7 @@ const app = function () {
     
     if (dbResult.success) {
       result = dbResult.data;
-      page.notice.setNotice();
+      page.notice.setNotice('');
     } else {
       result = null;
       page.notice.setNotice('failed to get ' + editorKey + ' data');
