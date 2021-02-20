@@ -3,13 +3,36 @@
  *------------------------------------------------------------------*/
 .te-table-editor {}
 
-.te-table-editor .btn-primary {
-  background-color: var(--bgPrimaryEmphasis);
-  border-color: var(--bgPrimaryEmphasis);
-  margin-right: 0.3em;
+/*-------------------------------------------------------------------
+ * table display
+ *------------------------------------------------------------------*/
+.te-table-editor .te-table-container {}
+
+.te-table-editor .te-table-container .add-icon {
+  color: var(--bgPrimaryEmphasis);
+  cursor: pointer;
 }
 
-.te-table-editor .te-edit-label {
+.te-table-editor .te-table-container .trash-icon {
+  color: var(--bgPrimaryEmphasis);
+  visibility: hidden;
+}
+
+.te-table-editor .te-table-container .table-hover>tbody>tr:hover .trash-icon {
+  visibility: visible;
+  cursor: pointer;
+}
+
+.te-table-editor .te-table-container .te-text-val {
+  cursor: pointer;
+}
+
+/*-------------------------------------------------------------------
+ * text value editor
+ *------------------------------------------------------------------*/
+ .te-table-edit-container .te-edit-container {}
+ 
+.te-table-editor .te-edit-container .te-edit-label {
   color: white;
   background-color: var(--bgPrimaryEmphasis);
   border: 1px solid var(--bgPrimaryEmphasis);
@@ -17,6 +40,12 @@
   padding: 0 0.2em 0.1em 0.2em
 }
 
-.te-table-editor .edit-markdown, .te-table-editor .edit-rendered {
+.te-table-editor .te-edit-container .edit-markdown, .te-table-editor .te-edit-container .edit-rendered {
   margin-top: 0.8em;
+}
+
+.te-table-editor .te-edit-container .btn-primary {
+  background-color: var(--bgPrimaryEmphasis);
+  border-color: var(--bgPrimaryEmphasis);
+  margin-right: 0.3em;
 }

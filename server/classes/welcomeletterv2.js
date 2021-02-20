@@ -183,6 +183,9 @@ module.exports = internal.WelcomeLetterV2 = class {
     
     if (params.queryName == 'course') {
       dbResult = await this._insertCourse(params, postData, userInfo);
+
+    } else if (params.queryName == 'optionvalues'&& funcCheckPrivilege(userInfo, 'admin')) {
+      dbResult = await this._insertOptionValues(params, postData, userInfo);
         
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -212,6 +215,9 @@ module.exports = internal.WelcomeLetterV2 = class {
     
     if (params.queryName == 'course') {
       dbResult = await this._deleteCourse(params, postData, userInfo);
+    
+    } else if (params.queryName == 'optionvalues'&& funcCheckPrivilege(userInfo, 'admin')) {
+      dbResult = await this._deleteOptionValues(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -260,6 +266,33 @@ module.exports = internal.WelcomeLetterV2 = class {
       'call add_default_course(' +
          userInfo.userId + ', ' +
          '"' + postData.coursename + '"' +
+      ')';
+    
+    queryResults = await this._dbManager.dbQuery(query);    
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data[0][0];
+      
+    } else {
+      result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate';
+      }
+    }
+    
+    return result;
+  }
+
+  async _insertOptionValues(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+
+    var query, queryResults;
+    
+    query = 
+      'call add_default_optionvalues(' +
+         '"' + postData.tableName + '" ' +
       ')';
     
     queryResults = await this._dbManager.dbQuery(query);    
@@ -336,6 +369,29 @@ module.exports = internal.WelcomeLetterV2 = class {
       'where courseid = ' + postData.courseid;
       
     queryResults = await this._dbManager.dbQuery(query);    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+  
+  async _deleteOptionValues(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'delete from ' + postData.tableName + ' ' +
+      'where ' + postData.columnName + ' = ' + postData.columnValue;
+
+    queryResults = await this._dbManager.dbQuery(query);    
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';

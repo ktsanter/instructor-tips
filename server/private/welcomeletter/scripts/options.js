@@ -78,7 +78,9 @@ const app = function () {
     var params = {
       hideClass: 'hide-me',
       selectCallback: _handleSelectCallback,
-      updateCallback: _handleUpdateCallback
+      updateCallback: _handleUpdateCallback,
+      deleteCallback: _handleDeleteCallback,
+      addCallback: _handleAddCallback
     };
     
     page.editor = {};
@@ -181,7 +183,44 @@ const app = function () {
     return result;
   }
   
-  
+  async function _handleDeleteCallback(params) {
+    var result = false;
+    
+    page.notice.setNotice('deleting row', true);
+    console.log(params);
+    var dbResult = await SQLDBInterface.doPostQuery('welcomeV2/delete', 'optionvalues', params);
+    
+    if (dbResult.success) {
+      result = true;
+      page.notice.setNotice('');
+    } else {
+      page.notice.setNotice('failed to delete row');
+    }
+    
+    return result;
+  }
+    
+  async function _handleAddCallback(params) {
+    var result = false;
+    
+    page.notice.setNotice('adding row', true);
+    console.log(params);
+    var dbResult = await SQLDBInterface.doPostQuery('welcomeV2/insert', 'optionvalues', params);
+    
+    if (dbResult.success) {
+      result = true;
+      page.notice.setNotice('');
+    } else {
+      if (dbResult.details.includes('duplicate')) {
+        page.notice.setNotice('a row with these values already exists');
+      } else {
+        page.notice.setNotice('failed to add row');
+      }
+    }
+    
+    return result;
+  }
+    
   async function queryCourseList() {
     return await SQLDBInterface.doGetQuery('welcomeV2/query', 'courselist');
   }

@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 // TableEditor class
 //-------------------------------------------------------------------
-// TODO: 
+// TODO: add "usedby" count to each row, and disable delete if non-zero (?)
 //-------------------------------------------------------------------
 class TableEditor {
   constructor(config) {
@@ -35,7 +35,7 @@ class TableEditor {
     elemTable.appendChild(elemHead);
     elemTable.appendChild(elemBody);
     
-    elemHead.appendChild(this._renderTableHead(tableData[0], tableInfo));    
+    elemHead.appendChild(this._renderTableHead(tableInfo));    
     
     for (var i = 0; i < tableData.length; i++) {
       elemBody.appendChild(this._renderTableRow(tableData[i], tableInfo));
@@ -44,12 +44,13 @@ class TableEditor {
     return container;
   }
   
-  _renderTableHead(firstDataRow, tableInfo) {
+  _renderTableHead(tableInfo) {
     var elemRow = CreateElement._createElement('tr', null, null);
+    var primaryKeyInfo = this._getPrimaryKeyInfo(tableInfo);
     
-    elemRow.appendChild(CreateElement._createElement('th', null, null));
+    elemRow.appendChild(this._renderRowControlCell('head', primaryKeyInfo));
     
-    for (var columnName in firstDataRow) {
+    for (var columnName in tableInfo) {
       if (!tableInfo[columnName].primaryKey) {
         var headCell = CreateElement._createElement('th', null, null);
         elemRow.appendChild(headCell);
@@ -62,9 +63,9 @@ class TableEditor {
   
   _renderTableRow(rowData, tableInfo) {
     var elemRow = CreateElement._createElement('tr', null, null);
-    var primaryKeyInfo = this._getPrimaryKeyInfo(rowData, tableInfo);
+    var primaryKeyInfo = this._getPrimaryKeyInfo(tableInfo, rowData);
     
-    elemRow.appendChild(this._renderRowControlCell());
+    elemRow.appendChild(this._renderRowControlCell('data', primaryKeyInfo));
     
     for (var columnName in rowData) {
       var columnData = rowData[columnName];
@@ -82,11 +83,23 @@ class TableEditor {
     return elemRow;
   }
   
-  _renderRowControlCell() {
-    var elem = CreateElement._createElement('td', null, null);
+  _renderRowControlCell(controlType, primaryKeyInfo) {
+    var elem = null;
     
-    var handler = (e) => {this._dummy(e); };
-    //elem.appendChild(CreateElement.createIcon(null, 'fas fa-trash', null, handler));
+    if (controlType == 'data') {
+      elem = CreateElement._createElement('td', null, null);
+      var handler = (e) => {this._handleRowDelete(e); };
+      var elemIcon = CreateElement.createIcon(null, 'trash-icon fas fa-trash-alt', 'delete row', handler);
+      elem.appendChild(elemIcon);
+      elemIcon.primaryKeyInfo = primaryKeyInfo;
+      
+    } else if (controlType == 'head') {
+      elem = CreateElement._createElement('th', null, null);
+      var handler = (e) => {this._handleRowAdd(e); };
+      var elemIcon = CreateElement.createIcon(null, 'add-icon fas fa-plus', 'add row', handler);
+      elem.appendChild(elemIcon);
+      elemIcon.primaryKeyInfo = primaryKeyInfo;
+    }
     
     return elem;
   }
@@ -110,8 +123,8 @@ class TableEditor {
   _renderColumnTextInput(columnName, columnData, columnInfo) {
     var container = CreateElement.createDiv(null, 'te-col-container col-sm');
     
-    var elemInput = CreateElement.createDiv(null, null, columnData);
-    container.appendChild(elemInput);
+    var elemText = CreateElement.createDiv(null, 'te-text-val', columnData);
+    container.appendChild(elemText);
     
     container.columnStuff = {
       "columnName": columnName,
@@ -220,11 +233,9 @@ class TableEditor {
 
     this._container.appendChild(this._renderTableData(resultData));  
     this._container.appendChild(this._renderEditArea());
-  }
-  
-  async _postUpdate(params) {
-    var success = await this._config.updateCallback(params);
-    if (success) await this.update();    
+    
+    this._showTableContainer(true);
+    this._showEditContainer(false);
   }
   
   _updateRenderedText(elemSource, elemDest) {
@@ -234,7 +245,30 @@ class TableEditor {
     elemDest.innerHTML = cleanText;
   }
   
-
+  async _postUpdate(params) {
+    var success = await this._config.updateCallback(params);
+    if (success) await this.update();
+  }
+  
+  _packageUpdateParams(columnName, columnInfo, columnValue) {
+    return {
+      "columnName": columnName,
+      "tableName": columnInfo.tableName,
+      "primaryKey": columnInfo.primaryKeyInfo,
+      "columnValue": columnValue
+    };
+  }
+  
+  async _postDelete(params) {
+    var success = await this._config.deleteCallback(params);
+    if (success) await this.update();
+  }
+  
+  async _postAdd(params) {
+    var success = await this._config.addCallback(params);
+    if (success) await this.update();
+  }
+  
   //--------------------------------------------------------------
   // show/hide
   //--------------------------------------------------------------
@@ -279,7 +313,6 @@ class TableEditor {
     var elemMarkdown = this._getMarkdownElement();
     var elemRendered = this._getRenderedElement();
 
-    var x = columnStuff.columnData;
     elemMarkdown.value = columnStuff.columnData;
     elemMarkdown.maxLength = columnStuff.columnInfo.maxColumnLength - 1;
     this._updateRenderedText(elemMarkdown, elemRendered);
@@ -299,22 +332,27 @@ class TableEditor {
     var columnName = e.target.columnStuff.columnName;
     var columnInfo = e.target.columnStuff.columnInfo;
     
-    var updateParams = {
-      "columnName": columnName,
-      "tableName": columnInfo.tableName,
-      "primaryKey": columnInfo.primaryKeyInfo,
-      "columnValue": e.target.checked ? 1 : 0
-    };
+    var updateParams = this._packageUpdateParams(
+      columnName, 
+      columnInfo, 
+      e.target.checked ? 1 : 0
+    );
     
     await this._postUpdate(updateParams);
   }
   
-  _handleEditSave(e) {
+  async _handleEditSave(e) {
     var columnStuff = this._getEditContainer().columnStuff;
-
-    console.log(columnStuff); 
     
-    //await
+    var columnName = columnStuff.columnName;
+    var columnInfo = columnStuff.columnInfo;
+    var updateParams = this._packageUpdateParams(
+      columnName,
+      columnInfo,
+      '"' + this._sanitizeText(this._getMarkdownElement().value) + '"'
+    );
+    
+    await this._postUpdate(updateParams);
 
     this._showEditContainer(false);
     this._showTableContainer(true);
@@ -324,7 +362,17 @@ class TableEditor {
     this._showEditContainer(false);
     this._showTableContainer(true);
   }
+  
+  async _handleRowDelete(e) {
+    await this._postDelete(e.target.primaryKeyInfo);
+  }
 
+  async _handleRowAdd(e) {
+    console.log('_handleRowAdd');
+    console.log(e.target.primaryKeyInfo);
+    await this._postAdd({"tableName": e.target.primaryKeyInfo.tableName});
+  }
+  
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------        
@@ -336,15 +384,16 @@ class TableEditor {
     return cleaned;
   }
   
-  _getPrimaryKeyInfo(rowData, tableInfo) {
+  _getPrimaryKeyInfo(tableInfo, rowData) {
     var pkey = null;
-    
     for (var columnName in tableInfo) {
       var columnInfo = tableInfo[columnName];
       if (columnInfo.primaryKey) {
-        pkey = {};
-        pkey.columnName = columnName;
-        pkey.columnValue = rowData[columnName];
+        pkey = {
+          "tableName": columnInfo.tableName,
+          "columnName": columnName,
+          "columnValue": rowData ? rowData[columnName] : null
+        };
       }
     }
     
@@ -370,4 +419,4 @@ class TableEditor {
   _getSaveButtonElement() {
     return this._getEditContainer().getElementsByClassName('save-button')[0];
   }
-  }
+}
