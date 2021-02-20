@@ -5,6 +5,7 @@ define(function (require) {
   require('/scripts/standard_notice'); 
   require('/scripts/sqldbinterface');
   
+  require('/scripts/markdowntohtml');
   require('classTableEditor');
   
   require('options');

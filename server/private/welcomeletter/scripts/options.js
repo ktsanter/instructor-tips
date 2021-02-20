@@ -77,7 +77,8 @@ const app = function () {
   async function _createTableEditors(editorList) {
     var params = {
       hideClass: 'hide-me',
-      selectCallback: _handleSelectCallback
+      selectCallback: _handleSelectCallback,
+      updateCallback: _handleUpdateCallback
     };
     
     page.editor = {};
@@ -91,8 +92,11 @@ const app = function () {
   //---------------------------------------
 	// update
 	//----------------------------------------          
-  function _displayEditor(title) {
-    for (var key in page.editor) page.editor[key].show(false);
+  async function _displayEditor(title) {
+    for (var key in page.editor) {
+      await page.editor[key].update();
+      page.editor[key].show(false);
+    }
     page.editor[title].show(true);
   }
 
@@ -147,7 +151,7 @@ const app = function () {
     var result = null;
     var editorKey = title.toLowerCase();
 
-    page.notice.setNotice('retrieving data for ' + title + '...');
+    page.notice.setNotice('retrieving data for ' + title, true);
     var dbResult = await SQLDBInterface.doPostQuery('welcomeV2/query', 'optionvalues', {"editorKey": editorKey});
     
     if (dbResult.success) {
@@ -156,6 +160,22 @@ const app = function () {
     } else {
       result = null;
       page.notice.setNotice('failed to get ' + editorKey + ' data');
+    }
+    
+    return result;
+  }
+  
+  async function _handleUpdateCallback(params) {
+    var result = false;
+    
+    page.notice.setNotice('saving data', true);
+    var dbResult = await SQLDBInterface.doPostQuery('welcomeV2/update', 'optionvalues', params);
+    
+    if (dbResult.success) {
+      result = true;
+      page.notice.setNotice('');
+    } else {
+      page.notice.setNotice('failed to save data');
     }
     
     return result;
@@ -176,7 +196,7 @@ const app = function () {
   function _capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1)
   }
-  
+
   //---------------------------------------
 	// return from wrapper function
 	//----------------------------------------

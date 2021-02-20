@@ -1,0 +1,22 @@
+/*-------------------------------------------------------------------
+ * styling for TableEditor class
+ *------------------------------------------------------------------*/
+.te-table-editor {}
+
+.te-table-editor .btn-primary {
+  background-color: var(--bgPrimaryEmphasis);
+  border-color: var(--bgPrimaryEmphasis);
+  margin-right: 0.3em;
+}
+
+.te-table-editor .te-edit-label {
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  border: 1px solid var(--bgPrimaryEmphasis);
+  border-radius: 3px;
+  padding: 0 0.2em 0.1em 0.2em
+}
+
+.te-table-editor .edit-markdown, .te-table-editor .edit-rendered {
+  margin-top: 0.8em;
+}

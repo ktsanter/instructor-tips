@@ -197,6 +197,9 @@ module.exports = internal.WelcomeLetterV2 = class {
     if (params.queryName == 'course') {
       dbResult = await this._updateCourse(params, postData, userInfo);
     
+    } else if (params.queryName == 'optionvalues' && funcCheckPrivilege(userInfo, 'admin')) {
+      dbResult = await this._updateOptionValues(params, postData, userInfo);
+    
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -464,6 +467,7 @@ module.exports = internal.WelcomeLetterV2 = class {
       var row = queryResults.data[i];
       
       collated[row.column_name] = {
+        "tableName": row.table_name,
         "columnName": row.column_name,
         "primaryKey": row.column_key == 'PRI',
         "dataType": row.data_type,
@@ -474,6 +478,32 @@ module.exports = internal.WelcomeLetterV2 = class {
     }
     
     result = collated;
+
+    return result;
+  }
+
+  async _updateOptionValues(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+
+    query = 
+      'update ' + postData.tableName + ' ' +
+      'set ' +
+        postData.columnName + ' = ' + postData.columnValue + ' ' +
+      'where ' +
+        postData.primaryKey.columnName + ' = ' + postData.primaryKey.columnValue;
+        
+
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      
+    } else {
+      result.details = queryResults.details;
+    }
 
     return result;
   }
