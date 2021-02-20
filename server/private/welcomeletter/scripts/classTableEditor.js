@@ -51,12 +51,16 @@ class TableEditor {
     elemRow.appendChild(this._renderRowControlCell('head', primaryKeyInfo));
     
     for (var columnName in tableInfo) {
-      if (!tableInfo[columnName].primaryKey) {
+      if (!tableInfo[columnName].primaryKey && columnName != 'usageCount') {
         var headCell = CreateElement._createElement('th', null, null);
         elemRow.appendChild(headCell);
         headCell.innerHTML = columnName;
       }
     }
+    
+    var usageHeadCell = CreateElement._createElement('th', null, null);
+    elemRow.appendChild(usageHeadCell);
+    usageHeadCell.innerHTML = 'usage';
     
     return elemRow;
   }
@@ -113,6 +117,9 @@ class TableEditor {
 
     } else if (columnInfo.dataType == 'tinyint') {
       cellContents = this._renderColumnSwitch(columnName, columnData, columnInfo);
+      
+    } else if (columnName == 'usagecount') {
+      cellContents = CreateElement.createDiv(null, null, columnData ? columnData : 0);
     }
     
     elemCell.appendChild(cellContents);

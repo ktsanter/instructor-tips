@@ -444,32 +444,58 @@ module.exports = internal.WelcomeLetterV2 = class {
     
     var queryChoices = {
       exams:
-        'select e.examid, e.examdescription ' +
-        'from exam as e ' +
-        'order by e.examdescription ',
+        'select a.examid, a.examdescription, b.usagecount ' +
+        'from exam as a ' +
+        'left outer join (' +
+          'select examid, count(examid) as usagecount ' +
+          'from configuration ' +
+          'group by examid ' +
+        ') as b ' +
+          'on a.examid = b.examid ' +
+        'order by a.examdescription ',
 
       proctoring:
-        'select p.proctoringid, p.proctoringdescription ' +
-        'from proctoring as p ' +
-        'order by p.proctoringdescription ',
+        'select a.proctoringid, a.proctoringdescription, b.usagecount ' +
+        'from proctoring as a ' +
+        'left outer join (' +
+          'select proctoringid, count(proctoringid) as usagecount ' +
+          'from configuration ' +
+          'group by proctoringid ' +
+        ') as b ' +
+          'on a.proctoringid = b.proctoringid ' +
+        'order by a.proctoringdescription ',
 
       retakes:
-        'select r.retakeid, r.retakedescription ' +
-        'from retake as r ' +
-        'order by r.retakedescription ',
+        'select a.retakeid, a.retakedescription, b.usagecount ' +
+        'from retake as a ' +
+        'left outer join (' +
+          'select retakeid, count(retakeid) as usagecount ' +
+          'from configuration ' +
+          'group by retakeid ' +
+        ') as b ' +
+          'on a.retakeid = b.retakeid ' +
+        'order by a.retakedescription ',
 
       resubmission:
-        'select r.resubmissionid, r.resubmissiondescription ' +
-        'from resubmission as r ' +
-        'order by r.resubmissiondescription ',
+        'select a.resubmissionid, a.resubmissiondescription, b.usagecount ' +
+        'from resubmission as a ' +
+        'left outer join (' +
+          'select resubmissionid, count(resubmissionid) as usagecount ' +
+          'from configuration ' +
+          'group by resubmissionid ' +
+        ') as b ' +
+          'on a.resubmissionid = b.resubmissionid ' +
+        'order by a.resubmissiondescription ',
           
       general:
-        'select generalkeypointid, ap, student, mentor, keypoint ' +
-        'from generalkeypoint ' +
-        'order by generalkeypointid '
+        'select a.generalkeypointid, a.ap, a.student, a.mentor, a.keypoint, b.usagecount ' +
+        'from generalkeypoint as a, coursecount as b ' +
+        'where a.ap = b.ap ' + 
+        'order by a.generalkeypointid '
     };
     
     query = queryChoices[postData.editorKey];
+    
     queryResults = await this._dbManager.dbQuery(query);
     
     if (!queryResults.success) {
