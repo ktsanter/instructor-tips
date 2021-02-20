@@ -1,0 +1,125 @@
+/*-------------------------------------------------------------------
+ * navbar and dropdown menu (compatible with Bootstrap
+ *-------------------------------------------------------------------*/
+ul.kts-navbar {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  background-color: var(--bgPrimaryEmphasis);
+  z-index: 1;
+}
+
+.kts-navbar .kts-navbar-item {
+  margin-left: 0.3em;
+}
+
+.kts-navbar li.kts-navbar-item {
+  float: left;
+}
+
+.kts-navbar li.kts-navbar-title {
+  border: 1px solid white;
+  border-radius: 6px;
+  padding: 0px 3px 2px 3px;
+  margin-top: 7px;
+  margin-left: 0.2em;
+  margin-right: 0.4em;
+  color: white;
+  font-size: 1.1em;
+}
+
+.kts-navbar .kts-navbar-item li, .dropbtn {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+.kts-navbar li.kts-navbar-main-item {
+  display: inline-block;
+  color: white;
+  text-align: center;
+  padding: 8px 16px;
+  text-decoration: none;
+}
+
+.kts-navbar li.kts-navbar-item:not(.kts-navbar-selected):hover {
+  background-color: var(--bgTertiaryChoice);
+}
+
+.kts-navbar li.kts-navbar-item.kts-navbar-title:hover {
+  background-color: transparent;
+}
+
+.kts-navbar li.kts-navbar-item.kts-navbar-disabled:hover {
+  background-color: transparent;
+}
+
+.kts-navbar li.dropdown {
+  display: inline-block;
+}
+
+.kts-navbar .kts-navbar-item-right {
+  float: right !important;
+  right: 0;
+}
+
+.kts-navbar .hamburger {
+  right: 8px;
+}
+
+.kts-navbar .hamburger-btn {
+  font-size: 1.4em;
+}
+
+.kts-navbar .dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  min-width: 100px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.kts-navbar .dropdown-content div {
+  color: #093c44; /*black;*/
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+  text-align: left;
+}
+
+.kts-navbar .dropdown-content div:hover {
+  color: white;
+  background-color: var(--bgTertiaryChoice);
+}
+
+.kts-navbar .dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.kts-navbar .kts-navbar-check {
+  margin-right: 4px;
+}
+
+.kts-navbar .kts-navbar-invisible {
+  visibility: hidden;
+}
+
+.kts-navbar .kts-navbar-item.kts-navbar-selected {
+  color: background-color: var(--bgPrimaryEmphasis);
+  background-color: white;
+}
+
+.kts-navbar .kts-navbar-item.kts-navbar-selected .dropbtn {
+  color: background-color: var(--bgPrimaryEmphasis);
+  background-color: white;
+}
+
+.kts-navbar .kts-navbar-item.kts-navbar-selected .dropbtn.hamburger-btn {
+  border: none;
+}

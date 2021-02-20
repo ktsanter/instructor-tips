@@ -386,7 +386,7 @@ const app = function () {
   }
 
   function _openOptions() {
-    window.open(settings.optionsURL, '_blank');
+    window.open(settings.optionsURL, '_self');
   }
 
   async function _doLogout() {

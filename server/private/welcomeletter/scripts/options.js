@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 // welcome letter options editor
 //-------------------------------------------------------------------
-// TODO:
+// TODO: add profile editing ala InstructorTips?
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
@@ -11,6 +11,7 @@ const app = function () {
   };
   
   const settings = {
+    configurationEditorURL: '/welcomeletter/configuration',
     logoutURL: '/usermanagement/logout'
   };
 
@@ -38,17 +39,6 @@ const app = function () {
     page.navbar = _renderNavbar();
     navbarContainer.appendChild(page.navbar); 
     
-    var navbarMainItems = Array.prototype.slice.call(page.body.getElementsByClassName('navbar-main-item'), 0);
-    var hamburgerItems = Array.prototype.slice.call(page.body.getElementsByClassName('dropdown-content hamburger')[0].children, 0);
-    var navbarItems = navbarMainItems.concat(hamburgerItems);
-    
-    page.navitem = {};
-    for (var i = 0; i < navbarItems.length; i++) {
-      var item = navbarItems[i];
-      var itemKey = item.innerHTML.split(' ').join('_').toLowerCase();
-      page.navitem[itemKey] = item;
-    }
-    
     // move standard notice
     navbarContainer.appendChild(page.notice._errorNotice);
     navbarContainer.appendChild(page.notice._normalNoticeContainer);
@@ -56,8 +46,6 @@ const app = function () {
     UtilityKTS.setClass(page.notice._normalNoticeContainer, 'navbar-notice', true);
     
     _createTableEditors( ['exams', 'proctoring', 'retakes', 'resubmission', 'general'] );
-    
-    _attachHandlers();
     
     settings.navbar.selectOption('Exams');
   }
@@ -76,6 +64,7 @@ const app = function () {
       ],
       
       hamburgeritems: [           
+        {label: 'configurations', markselected: false, callback: () => {return _navDispatch('configurations');}},
         {label: 'sign out', markselected: false, callback: _doLogout}
       ]   
     };
@@ -99,17 +88,9 @@ const app = function () {
     }
   }
   
-  function _attachHandlers() {
-    console.log('_attachHandlers()');
-  }
-
   //---------------------------------------
 	// update
 	//----------------------------------------          
-  function _setMenuItems() {
-    // use _setDisarm(elem, true/false) based on current display choices
-  }
-  
   function _displayEditor(title) {
     for (var key in page.editor) page.editor[key].show(false);
     page.editor[title].show(true);
@@ -125,7 +106,8 @@ const app = function () {
       'retakes': function() { _displayEditor('retakes'); },
       'resubmission': function() { _displayEditor('resubmission'); },
       'general': function() { _displayEditor('general'); },
-      'profile': function() {_dummy('profile'); }
+      'profile': function() {_dummy('profile'); },
+      'configurations': _openConfigurationEditor      
     };
     
     var route = dispatchMap[dispatchOption];
@@ -137,6 +119,11 @@ const app = function () {
     console.log('dummy: ' + param);
   }
   
+  
+  function _openConfigurationEditor() {
+    window.open(settings.configurationEditorURL, '_self');
+  }
+
   async function _doLogout() {
     window.open(settings.logoutURL, '_self'); 
   }

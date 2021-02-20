@@ -1,7 +1,7 @@
 define(function (require) {
   require('/scripts/utilitykts'); 
   require('/scripts/create_element.js');  
-  require('/scripts/navbar');
+  require('/scripts/navbar_for_bootstrap');
   require('/scripts/standard_notice'); 
   require('/scripts/sqldbinterface');
   
