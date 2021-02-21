@@ -23,19 +23,23 @@ html(lang="en")
   body(class="colorscheme")
     .container-fluid(class="contents")
       .row
-        .col-8
+        .col-sm
           .container
             .row(class="titlerow")
-              col-sm
+              .col-sm
                 +title('student')
 
-            .row(class="border border-secondary")
-              col-sm
+            .row(class="keypoints-row")
+              .col-4
+                +idcard
+
+              .col-sm
+                div(style="padding-bottom: 0.3em;")
+                  |Hello! I'm eager to work with you this term and I hope you find online learning enjoyable and interesting. 
+                  |Please get in touch whenever you have a question or concern, or just to talk things over. 
+                  
                 +keypoints("students", keypointlist, apcourse)
-        
-        .col-sm
-          +idcard
-        
+                
       .row
         .col-sm(class="overview")
           .section-title general information

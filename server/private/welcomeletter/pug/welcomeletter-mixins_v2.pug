@@ -19,7 +19,7 @@ mixin title(audience)
 
 mixin idcard
   .idcard-container
-    .container(class="idcard border border-secondary")
+    .container(class="idcard border")
       .row
         .col-sm(id="logoContainer")
           img(src="https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/MVlogo_small2.png" class="img-responsive" alt="Michigan Virtual logo" id="logoImage")
@@ -64,7 +64,7 @@ mixin linktospecpop
   a(href=specpopemaillink, target="_blank") #{specpopemail}
   
 mixin keypoints(audience, keypoints, ap)
-  div(class="keypoints")
+  div(class="keypoints border")
     div(class="keypoints-label") Key points
 
     ul
