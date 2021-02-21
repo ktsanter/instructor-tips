@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 // TableEditor class
 //-------------------------------------------------------------------
-// TODO: add "usedby" count to each row, and disable delete if non-zero (?)
+// TODO:
 //-------------------------------------------------------------------
 class TableEditor {
   constructor(config) {
@@ -69,7 +69,7 @@ class TableEditor {
     var elemRow = CreateElement._createElement('tr', null, null);
     var primaryKeyInfo = this._getPrimaryKeyInfo(tableInfo, rowData);
     
-    elemRow.appendChild(this._renderRowControlCell('data', primaryKeyInfo));
+    elemRow.appendChild(this._renderRowControlCell('data', primaryKeyInfo, rowData.usagecount));
     
     for (var columnName in rowData) {
       var columnData = rowData[columnName];
@@ -87,18 +87,21 @@ class TableEditor {
     return elemRow;
   }
   
-  _renderRowControlCell(controlType, primaryKeyInfo) {
+  _renderRowControlCell(controlType, primaryKeyInfo, usageCount) {
     var elem = null;
     
     if (controlType == 'data') {
       elem = CreateElement._createElement('td', null, null);
+      var classes = 'trash-icon fas fa-trash-alt';
+      if (usageCount && usageCount > 0) classes += ' invisible-icon';
+
       var handler = (e) => {this._handleRowDelete(e); };
-      var elemIcon = CreateElement.createIcon(null, 'trash-icon fas fa-trash-alt', 'delete row', handler);
+      var elemIcon = CreateElement.createIcon(null, classes, 'delete row', handler);
       elem.appendChild(elemIcon);
       elemIcon.primaryKeyInfo = primaryKeyInfo;
       
     } else if (controlType == 'head') {
-      elem = CreateElement._createElement('th', null, null);
+      elem = CreateElement._createElement('th', null, null);      
       var handler = (e) => {this._handleRowAdd(e); };
       var elemIcon = CreateElement.createIcon(null, 'add-icon fas fa-plus', 'add row', handler);
       elem.appendChild(elemIcon);

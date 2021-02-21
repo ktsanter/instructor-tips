@@ -291,7 +291,8 @@ const dbWelcomeLetterV2 = new dbWelcomeLetterClassV2({
   "userManagement": userManagement,
   "pug": pug,
   "fileServices": fileservices,
-  "pugPath": path.join(__dirname + '/private/welcomeletter/pug')
+  "pugPath": path.join(__dirname + '/private/welcomeletter/pug'),
+  "commonmark": commonmark
 });
 
 //------------------------------------------

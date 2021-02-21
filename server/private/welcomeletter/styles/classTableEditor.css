@@ -15,12 +15,11 @@
 
 .te-table-editor .te-table-container .trash-icon {
   color: var(--bgPrimaryEmphasis);
-  visibility: hidden;
+  cursor: pointer;
 }
 
-.te-table-editor .te-table-container .table-hover>tbody>tr:hover .trash-icon {
-  visibility: visible;
-  cursor: pointer;
+.te-table-editor .te-table-container .trash-icon.invisible-icon {
+  visibility: hidden;
 }
 
 .te-table-editor .te-table-container .te-text-val {

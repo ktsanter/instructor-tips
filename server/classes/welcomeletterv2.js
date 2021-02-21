@@ -13,6 +13,7 @@ module.exports = internal.WelcomeLetterV2 = class {
     this._pug = params.pug;
     this._fileServices = params.fileServices;
     this._pugPath = params.pugPath;
+    this._commonmark = params.commonmark;
   }
   
 //---------------------------------------------------------------
@@ -90,6 +91,10 @@ module.exports = internal.WelcomeLetterV2 = class {
       } else if (params.audience == 'mentor' && generalKeypoints[i].mentor) {
         keyPoints.push(generalKeypoints[i].keypoint);
       }
+    }
+   
+    for (var i = 0; i < keyPoints.length; i++) {
+      keyPoints[i] = this._markdownToHTML(keyPoints[i]);
     }
    
     var pugFile = pugFileNames.student;
@@ -595,5 +600,20 @@ module.exports = internal.WelcomeLetterV2 = class {
 //---------------------------------------------------------------       
   _renderFail() {
     res.send('cannot access page: welcome letter configuration')    
+  }  
+   
+  _markdownToHTML(str) {
+    var reader = new this._commonmark.Parser();
+    var writer = new this._commonmark.HtmlRenderer();
+    
+    var parsed = reader.parse(str);
+    var result = writer.render(parsed);
+    
+    result = result.replace(/%%(.*?)%%/g, '<span style=\"background-color: #FFFF00\">$1</span>');
+    
+    result = result.replace(/\x0A/g, '');  // remove line feeds
+    result = result.replace(/^<p>(.*)<\/p>$/, '$1'); // remove enclosing paragraph tags
+
+    return result;
   }  
 }
