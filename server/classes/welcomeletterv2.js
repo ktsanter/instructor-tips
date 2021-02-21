@@ -507,7 +507,17 @@ module.exports = internal.WelcomeLetterV2 = class {
       result.details = queryResults.details;
       return result;
     }
+
     
+    if (postData.editorKey == 'general') {
+      for (var i = 0; i < queryResults.data.length; i++) {
+        var row = queryResults.data[i];
+        if (!(row.ap || row.student || row.mentor)) {
+          queryResults.data[i].usagecount = 0;
+        }
+      }
+    }
+  
     var tableLookup = {
       "exams": 'exam',
       "proctoring": 'proctoring',

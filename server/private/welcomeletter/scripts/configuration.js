@@ -552,7 +552,7 @@ const app = function () {
     var valid = courseName.length < 200;
     valid = valid && courseName.length > 0;
     
-    valid = valid && (courseName.match(/[A-Za-z0-9&\(\), ]+/) == courseName);
+    valid = valid && (courseName.match(/[A-Za-z0-9&:\(\), ]+/) == courseName);
     
     return valid;
   }
