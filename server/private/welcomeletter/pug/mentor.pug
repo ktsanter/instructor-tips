@@ -22,7 +22,7 @@ html(lang="en")
     link(rel="stylesheet", type="text/css" href="/styles/welcomeletter/welcomeletter2.css")
       
   body(class="colorscheme")    
-    .container-fluid
+    .container-fluid(class="contents")
       .row
         .col-8
           .container
@@ -37,7 +37,7 @@ html(lang="en")
           +idcard
           
       .row
-        .col-sm(class="overview overview-mentor")
+        .col-sm(class="overview overview-mentor")      
           include boilerplate/mentor_overview.pug
           
       .row

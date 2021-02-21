@@ -21,22 +21,24 @@ html(lang="en")
     link(rel="stylesheet", type="text/css" href="/styles/welcomeletter/welcomeletter2.css")
       
   body(class="colorscheme")
-    .container-fluid
+    .container-fluid(class="contents")
       .row
         .col-8
           .container
             .row(class="titlerow")
               col-sm
                 +title('student')
+
             .row(class="border border-secondary")
               col-sm
                 +keypoints("students", keypointlist, apcourse)
         
-        .col-sm 
+        .col-sm
           +idcard
         
       .row
         .col-sm(class="overview")
+          .section-title general information
           include boilerplate/student_overview.pug
         
       .row
