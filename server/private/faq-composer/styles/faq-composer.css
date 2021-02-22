@@ -1,0 +1,51 @@
+/*------------------------------------------------------------------------------
+ * FAQ composer
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+}
+
+body {}
+
+.hide-me {
+  display: none;
+}
+
+/*------------------------------------------------------------------------------
+ * navbar overrides
+ *------------------------------------------------------------------------------*/
+.navbar.my-primary{
+  color: white ;
+  background-color: var(--bgPrimary);
+}
+
+.navbar a.navbar-brand {
+  color: white;
+}
+
+.navbar .navbar-brand:hover{
+  color: white;
+}
+
+.navbar a:not(.dropdown-item) {
+  color: white;
+  transition-duration: 0s;
+}
+
+.navbar a:hover:not(.navbar-brand):not(.dropdown-item) {
+  color: var(--bgPrimary);
+  background-color: white;
+  transition-duration: 0s;
+}
+
+.navbar .navbar-toggler {
+  color: white;
+  background-color: var(--bgPrimary);
+}
+
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {
+  margin-top: 3.7em;
+}

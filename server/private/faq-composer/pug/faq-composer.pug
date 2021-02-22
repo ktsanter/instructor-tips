@@ -1,0 +1,45 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title FAQ composer
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+
+    link(rel="stylesheet", type="text/css" href="/styles/faq-composer/faq-composer.css")
+    
+    script(data-main="/scripts/faq-composer/require_faq-composer", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    - var menuParams = {};
+    +makeNavbar("FAQ composer",
+      [
+        {id: "navEditor", type: "link", label: "editor"},
+        {id: "navMapper", type: "link", label: "mapper"},
+        {id: "navPresenter", type: "link", label: "presenter"},
+        {type: "dropdown", label: "options", items: [
+          {id: "navHelp", type: "link", label: "help"},
+          {id: "navProfile", type: "link", label: "profile"},
+          {id: "navSignout", type: "link", label: "sign out"},
+        ]}
+      ]
+    )
+    
+    .contents
+      .container-fluid(class="contents-container contents-navEditor hide-me")
+        .row: .col-sm editor
+
+      .container-fluid(class="contents-container contents-navMapper hide-me")
+        .row: .col-sm mapper
+
+      .container-fluid(class="contents-container contents-navPresenter hide-me")
+        .row: .col-sm presenter
+
+      .container-fluid(class="contents-container contents-navProfile hide-me")
+        .row: .col-sm profile

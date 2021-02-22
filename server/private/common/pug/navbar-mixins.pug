@@ -1,0 +1,40 @@
+mixin makeNavbar(title, params)
+  .navbar(class="navbar-expand-sm fixed-top my-primary")
+    .container-fluid
+      a(class="navbar-brand" href="#")= title
+      button(
+        class="navbar-toggler" 
+        type="button" 
+        data-bs-toggle="collapse" 
+        data-bs-target="#navbarSupportedContent" 
+        aria-controls="navbarSupportedContent" 
+        aria-expanded="false"  
+        aria-label="Toggle navigation"
+      )
+        i(class="fas fa-bars")
+        
+      .navbar-collapse(class="collapse" id="navbarSupportedContent")
+        ul(class="navbar-nav me-auto mb-2 mb-lg-0")
+          each mainItem in params
+            if (mainItem.type == "link")
+              li(class="nav-item")
+              a(id=mainItem.id class="nav-link active use-handler" aria-current="page" href="#")= mainItem.label
+              
+            else if (mainItem.type == "dropdown")
+              li(class="nav-item dropdown")
+                
+                a(
+                  class="nav-link dropdown-toggle" 
+                  href="#" 
+                  id="navbarDropdown" 
+                  role="button" 
+                  data-bs-toggle="dropdown" 
+                  aria-expanded="false"
+                )= mainItem.label
+                  
+                ul(class="dropdown-menu" aria-labelledby="navbarDropdown")
+                  each subItem in mainItem.items
+                    if (subItem.type == "link")
+                        li: a(id=subItem.id class="dropdown-item use-handler" href="#")= subItem.label
+                    else if (subItem.type == "divider")
+                        li: hr(class="dropdown-divider")

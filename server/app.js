@@ -353,7 +353,14 @@ var appLookup = {
     appName: 'Image flipper generator',
     routePug: 'image-flipper/pug/generator.pug',
     loginReRoute: 'image-flipper/generator'
-  } 
+  }, 
+
+  "faq-composer" : {
+    appDescriptor: 'faq-composer',
+    appName: 'FAQ composer',
+    routePug: 'faq-composer/pug/faq-composer.pug',
+    loginReRoute: 'faq-composer/compose'
+  }  
 };
 
 //------------------------------------------------------
@@ -362,6 +369,9 @@ var appLookup = {
 function routeIfLoggedIn(req, res, appDescriptor) {
   var loggedin = userManagement.isLoggedIn(req.session);
   var appInfo = appLookup[appDescriptor];
+  
+  console.log(appDescriptor);
+  console.log(appInfo);
   
   userManagement.setAppInfoForSession(req.session, appInfo);
 
@@ -385,6 +395,13 @@ app.get('/treasurehunt-configuration', function (req, res) {
 
 app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcomeV2'); })
 app.get('/welcomeletter/options', function (req, res) { routeIfLoggedIn(req, res, 'welcome-options'); })
+
+app.get('/faq-composer/compose', function (req, res) { routeIfLoggedIn(req, res, 'faq-composer'); })
+app.get('/faq-composer/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'faq-composer/pug/help.pug');
+  
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 
