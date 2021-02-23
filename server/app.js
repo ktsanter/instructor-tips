@@ -370,9 +370,6 @@ function routeIfLoggedIn(req, res, appDescriptor) {
   var loggedin = userManagement.isLoggedIn(req.session);
   var appInfo = appLookup[appDescriptor];
   
-  console.log(appDescriptor);
-  console.log(appInfo);
-  
   userManagement.setAppInfoForSession(req.session, appInfo);
 
   if (loggedin) {
