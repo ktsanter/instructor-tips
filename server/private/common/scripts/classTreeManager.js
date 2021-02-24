@@ -2,7 +2,6 @@
 // TreeManager class
 //-------------------------------------------------------------------
 // TODO: think through dirty bit
-// TODO: look into ellipses for long names - separate name from label 
 // TODO: consider using loadDataFromURL and other Ajax options
 //-------------------------------------------------------------------
 class TreeManager {
@@ -47,18 +46,15 @@ class TreeManager {
     elemParent.appendChild(menu);
     this._config.contextMenu = menu;
     
-    menu.appendChild(CreateElement.createSpan(null, 'contextmenu-item'));
-    menu.appendChild(CreateElement._createElement('hr', null, 'contextmenu-divider'));
-    
-    var menuList = CreateElement._createElement('ul', null, 'contextmenu-options');
+    var menuList = CreateElement._createElement('ul', null, 'contextmenu-list');
     menu.appendChild(menuList);
     
-    var menuOption = CreateElement._createElement('li', null, 'contextmenu-option option-add');
+    var menuOption = CreateElement._createElement('li', null, 'contextmenu-item option-add');
     menuOption.innerHTML = 'add item';
     menuOption.addEventListener('click', (e) => { this._handleContextMenuSelection(e); })
     menuList.appendChild(menuOption);
 
-    var menuOption = CreateElement._createElement('li', null, 'contextmenu-option option-delete');
+    var menuOption = CreateElement._createElement('li', null, 'contextmenu-item option-delete');
     menuOption.innerHTML = 'remove item';
     menuOption.addEventListener('click', (e) => { this._handleContextMenuSelection(e); })
     menuList.appendChild(menuOption);
@@ -82,8 +78,7 @@ class TreeManager {
     var thisTree = $(this._config.treeSelector);
     var selectedNode = thisTree.tree('getNodeById', nodeInfo.id);
     
-    if (nodeInfo.name) thisTree.tree('updateNode', selectedNode, nodeInfo.name);
-    if (nodeInfo.markdown) thisTree.tree('updateNode', selectedNode, {markdown: nodeInfo.markdown});
+    thisTree.tree('updateNode', selectedNode, {name: nodeInfo.name, tmContent: nodeInfo.tmContent});
 
     selectedNode = thisTree.tree('getNodeById', nodeInfo.id);
     this._config.selectCallback(selectedNode);
@@ -92,9 +87,6 @@ class TreeManager {
   _showContextMenu(show, nodeInfo, x, y) {
     if (nodeInfo) {
       this._config.contextMenu.nodeInfo = nodeInfo;
-      
-      var menuLabel = this._config.contextMenu.getElementsByClassName('contextmenu-item')[0];
-      menuLabel.innerHTML = nodeInfo.name;
       
       this._config.contextMenu.style.left = x.toString() + 'px';
       this._config.contextMenu.style.top = y.toString() + 'px';
@@ -108,24 +100,23 @@ class TreeManager {
     var newId = this._makeUniqueTreeId();
 
     // deselect any selected nodes
-    console.log('deselect');
 		thisTree.tree('selectNode', null);  
     
     // append new node
-    console.log('add new node');
 		thisTree.tree(   
 		    'addNodeAfter', {
 				name: 'new item', 
 				id: newId,
-				markdown: ''
+				tmContent: {
+          label: 'new item',
+          markdown: ''
+        }
 			}, 
 		  nodeInfo
     );  
 		
     // select new node
-    console.log('select new node');
     var newNode = thisTree.tree('getNodeById', newId);
-    console.log(newNode);
 		thisTree.tree('selectNode', newNode);  
   }
   
@@ -175,7 +166,6 @@ class TreeManager {
 
   _handleTreeSelect(e, me) {
     if (!e.node) return;
-
     var thisTree = $(me._config.treeSelector);
     var selectedNode = thisTree.tree('getNodeById', e.node.id);
     
@@ -185,6 +175,7 @@ class TreeManager {
   _handleTreeContextMenu(e, me) {
     var thisTree = $(me._config.treeSelector);
     var selectedNode = thisTree.tree('getNodeById', e.node.id);
+    thisTree.tree('selectNode', selectedNode);
     me._showContextMenu(true, selectedNode, e.click_event.pageX, e.click_event.pageY);
   }
     

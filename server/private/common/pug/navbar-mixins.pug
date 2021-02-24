@@ -41,3 +41,6 @@ mixin makeNavbar(title, params)
 
         each navButton in params.buttons
           button(id=navButton.id class="btn btn-outline-success use-handler")=navButton.label
+          
+        if params.profile
+          i(id="navProfile" class="icon icon-profile use-handler fas fa-user-circle")

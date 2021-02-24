@@ -43,11 +43,35 @@ body {}
   background-color: var(--bgPrimary);
 }
 
+.navbar .btn {
+  visibility: hidden;
+  color: white;
+  background-color: var(--bgPrimary);
+  border-color: white;
+}
+
+.navbar .btn:hover {
+  color: var(--bgPrimary);
+  background-color: white;
+  border-color: white;
+  transition-duration: 0s;
+}
+
+.navbar .btn#navSave {
+  margin-right: 0.2em;
+}
+
+.navbar .icon#navProfile {
+  font-size: 2.0em;
+  margin-left: 0.2em;
+  cursor: pointer;
+}
+
 /*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/
 .contents {
-  margin-top: 3.7em;
+  margin-top: 4.4em;
 }
 
 /*------------------------------------------------------------------------------
@@ -70,10 +94,34 @@ body {}
 /*------------------------------------------------------------------------------
  * contents - tree context menu
  *------------------------------------------------------------------------------*/
-.contents .contextmenu {
-  border: 1px solid black;
-  background-color: white;
-  position: absolute;
-  display: none;
-  z-index: 10;
+.contents .hierarchy-container {
+  font-size: 0.9em;
 }
+
+.contents .hierarchy-container .tm-tree {}
+
+.contents .hierarchy-container .contextmenu {
+  display: none;
+  position: absolute;
+  border: 1px solid #aaa;
+  background-color: white;
+  z-index: 10;
+  font-size: 0.9em;
+  box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+  
+}
+
+.contents .hierarchy-container .contextmenu .contextmenu-list {
+  list-style-type:none;
+  padding: 0.5em 0.5em 0.2em 0.5em;
+  margin: 0;
+}
+
+.contents .hierarchy-container .contextmenu .contextmenu-list .contextmenu-item {
+  padding-bottom: 0.4em;
+}
+
+.contents .hierarchy-container .contextmenu .contextmenu-list .contextmenu-item:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+

@@ -3,10 +3,10 @@
 //-----------------------------------------------------------------------
 // TODO: think through dirty bit
 // TODO: add DB
-// TODO: support multiple projects for an instructor?
-// TODO: add root node?
-// TODO: enable/disable save and reload based on context
-// TODO: trim long node labels (add ellipses)
+// TODO: finish mapper
+// TODO: finish profile
+// TODO: finish help
+// TODO: save and reload enabling should be different for mapper and editor
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -17,7 +17,8 @@ const app = function () {
     treeContainerClass: 'hierarchy-container',
     helpURL: '/faq-composer/help',
     logoutURL: '/usermanagement/logout',
-    currentNodeInfo: null
+    currentNodeInfo: null,
+    labelTruncateLimit: 60
   };
   
   const dummyData = [
@@ -51,8 +52,9 @@ const app = function () {
 	//----------------------------------------
 	async function init () {
 		page.body = document.getElementsByTagName('body')[0]; 
-    page.navbar = page.body.getElementsByClassName('navbar')[0];    
-    page.contents = page.body.getElementsByClassName('contents')[0];
+    page.navbar = page.body.getElementsByClassName('navbar')[0];
+    
+    page.contents = page.body.getElementsByClassName('contents')[0];    
     page.contentsEditor = page.contents.getElementsByClassName('contents-navEditor')[0];
     page.contentsMapper = page.contents.getElementsByClassName('contents-navMapper')[0];
     page.contentsProfile = page.contents.getElementsByClassName('contents-navProfile')[0];
@@ -62,6 +64,9 @@ const app = function () {
 
     _attachNavbarHandlers();
     _renderContents();
+    
+    var profileIcon = page.navbar.getElementsByClassName('icon-profile');
+    if (profileIcon.length > 0) profileIcon[0].title = settings.userInfo.userName;
     
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
@@ -113,22 +118,33 @@ const app = function () {
 	// updating
 	//-----------------------------------------------------------------------------
   function _showContents(contentsId) {
+    _hideNavOption('navSave', true);
+    _hideNavOption('navReload', true);
+    _enableNavOption('navSave', false);
+    _enableNavOption('navReload', false);
+    
     var containers = page.contents.getElementsByClassName('contents-container');
     for (var i = 0; i < containers.length; i++) {
       var hide = !containers[i].classList.contains('contents-' + contentsId);
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
+    }
+    
+    if (contentsId == 'navEditor' || contentsId == 'navMapper') {
+      _hideNavOption('navSave', false);
+      _hideNavOption('navReload', false);
     }
   }
   
   function _loadFAQItem(params) {
     var editorElements = _getEditorElements();
     
-    var markdown = params.isLeaf ? params.markdown : '';
+    var label = params.tmContent.label;
+    var markdown = params.isLeaf ? params.tmContent.markdown : '';
     var rendered = MarkdownToHTML.convert(_sanitizeText(markdown));
     
-    editorElements.markdownLabel.value = params.label;
+    editorElements.markdownLabel.value = label;
     editorElements.markdownContent.value = markdown;
-    editorElements.renderedLabel.innerHTML = params.label;
+    editorElements.renderedLabel.innerHTML = label;
     editorElements.renderedContent.innerHTML = rendered;
     
     _setVisible(editorElements.markdownContent, params.isLeaf);
@@ -149,7 +165,7 @@ const app = function () {
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
-  function _navDispatch(e) {
+  function _navDispatch(e) {    
     var dispatchMap = {
       "navEditor": function() { _showContents('navEditor'); },
       "navMapper": function() { _showContents('navMapper'); },
@@ -166,9 +182,8 @@ const app = function () {
   function _handleTreeSelect(nodeInfo) {
    _loadFAQItem({
      id: nodeInfo.id,
-     label: nodeInfo.name,
      isLeaf: nodeInfo.children.length == 0,
-     markdown: nodeInfo.markdown
+     tmContent: nodeInfo.tmContent
    });
   }
   
@@ -176,15 +191,22 @@ const app = function () {
     var target = e.target;
     var targetClassList = target.classList;
     
-    var updatedNodeInfo = {id: settings.currentNodeInfo.id};
-    if (targetClassList.contains('navEditor-itemlabel')) {
-      updatedNodeInfo.name = target.value;
-      
-    } else if (targetClassList.contains('navEditor-itemcontent')) {
-      updatedNodeInfo.markdown = target.value;
-    }
+    var editLabel = page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].value;
+    var editMarkdown = page.contentsEditor.getElementsByClassName('navEditor-itemcontent')[0].value;
+    
+    var updatedNodeInfo = {
+      id: settings.currentNodeInfo.id,
+      name: _truncateNodeName(editLabel),
+      tmContent: {
+        label: editLabel,
+        markdown: editMarkdown
+      }
+    };
 
-    settings.editorTree.updateNode(updatedNodeInfo);  
+    settings.editorTree.updateNode(updatedNodeInfo); 
+    _enableNavOption('navSave', true);
+    _enableNavOption('navReload', true);
+    
   }
   
   function _handleSave(e) {
@@ -219,7 +241,7 @@ const app = function () {
     //---- temporary, retrieve from DB -------------------------------------------
     var dbResult = {success: true};
 
-    dbResult.faqInfo = dummyData;
+    dbResult.faqInfo = _debugProcessData(dummyData);
     //------------------------------------------------------------------------------
     
     if (dbResult.success) {
@@ -230,6 +252,29 @@ const app = function () {
     
     return dbResult.success;
   }  
+  
+  function _debugProcessData(data) {
+    var newData = [];
+    for (var i = 0; i < data.length; i++) {
+      var item = data[i];
+      var newItem = {
+        id: item.id,
+        name: _truncateNodeName(item.name),
+        tmContent: {
+          label: item.name,
+          markdown: item.markdown
+        }
+      }
+
+      if (item.hasOwnProperty('children') && item.children.length > 0) {
+        newItem.children = _debugProcessData(item.children);
+      }
+      
+      newData.push(newItem);
+    }
+    
+    return newData;
+  }
   
   //--------------------------------------------------------------------------
   // utility
@@ -261,6 +306,20 @@ const app = function () {
     }
   }
   
+  function _truncateNodeName(origName) {
+    var name = origName;
+    if (name.length > settings.labelTruncateLimit) name = name.slice(0, settings.labelTruncateLimit) + '...';
+    return name;
+  }
+  
+  function _enableNavOption(navOption, enable) {
+    document.getElementById(navOption).disabled = !enable;    
+  }
+  
+  function _hideNavOption(navOption, hide) {
+    document.getElementById(navOption).style.visibility = hide ? 'hidden': 'visible';    
+  }
+
 	//-----------------------------------------------------------------------------------
 	// init:
 	//-----------------------------------------------------------------------------------
