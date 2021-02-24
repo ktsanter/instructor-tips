@@ -66,3 +66,14 @@ body {}
 .contents .contents-navProfile {
   border: 1px solid red;
 }
+
+/*------------------------------------------------------------------------------
+ * contents - tree context menu
+ *------------------------------------------------------------------------------*/
+.contents .contextmenu {
+  border: 1px solid black;
+  background-color: white;
+  position: absolute;
+  display: none;
+  z-index: 10;
+}

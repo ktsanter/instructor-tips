@@ -1,22 +1,16 @@
 mixin editorContainer()
   .row
-    .col-sm
-      .container-fluid
-        .row: col-sm
-          .container-fluid
-            .row
-              .col-sm [save]
-              .col-sm [reload]
-              
-        .row: col-sm 
-          div(id="editorTree")
+    .col-sm(class='hierarchy-container')
     
     .col-sm 
       .container-fluid
-        .row: col-sm
-          div label
-          textarea(placeholder="enter Markdown here")
+        .row: col-sm(class="navEditor-item-edit")
+          .container-fluid
+            .row: .col-sm
+              input(type="text" class="navEditor-itemlabel")
+            .row: .col-sm
+              textarea(class="navEditor-itemcontent navEditor-markdown-content" placeholder="enter Markdown here")
           
-        .row: col-sm
-          div label
-          div render Markdown here
+        .row: col-sm(class="navEditor-item-rendered")
+          div(class="navEditor-itemlabel")
+          div(class="navEditor-itemcontent navEditor-rendered-content") render Markdown here

@@ -16,9 +16,12 @@ html(lang="en")
     
     +fontawesome()
     +bootstrapstyle()
-
+    
+    script(src="/scripts/commonmark_min.js") 
+    
     style
       include ../../common/styles/jqtree.css
+      include ../../common/styles/classTreeManager.css
       include ../styles/faq-composer.css
     
     +addJQuery()
@@ -26,16 +29,23 @@ html(lang="en")
     
   body(class="colorscheme")
     - var menuParams = {};
-    +makeNavbar("FAQ composer",
-      [
-        {id: "navEditor", type: "link", label: "editor"},
-        {id: "navMapper", type: "link", label: "mapper"},
-        {type: "dropdown", label: "options", items: [
-          {id: "navHelp", type: "link", label: "help"},
-          {id: "navProfile", type: "link", label: "profile"},
-          {id: "navSignout", type: "link", label: "sign out"},
-        ]}
-      ]
+    +makeNavbar("FAQ composer", 
+      {
+        items: [
+          {id: "navEditor", type: "link", label: "editor"},
+          {id: "navMapper", type: "link", label: "mapper"},
+          {type: "dropdown", label: "options", items: [
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navProfile", type: "link", label: "profile"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}
+        ]
+      }
     )
     
     .contents

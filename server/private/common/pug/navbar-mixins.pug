@@ -15,7 +15,7 @@ mixin makeNavbar(title, params)
         
       .navbar-collapse(class="collapse" id="navbarSupportedContent")
         ul(class="navbar-nav me-auto mb-2 mb-lg-0")
-          each mainItem in params
+          each mainItem in params.items
             if (mainItem.type == "link")
               li(class="nav-item")
               a(id=mainItem.id class="nav-link active use-handler" aria-current="page" href="#")= mainItem.label
@@ -38,3 +38,6 @@ mixin makeNavbar(title, params)
                         li: a(id=subItem.id class="dropdown-item use-handler" href="#")= subItem.label
                     else if (subItem.type == "divider")
                         li: hr(class="dropdown-divider")
+
+        each navButton in params.buttons
+          button(id=navButton.id class="btn btn-outline-success use-handler")=navButton.label
