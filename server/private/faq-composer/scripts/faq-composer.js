@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------
 // FAQ composer
 //-----------------------------------------------------------------------
-// TODO: think through dirty bit
 // TODO: add DB
 // TODO: finish mapper
 // TODO: finish profile
 // TODO: finish help
 // TODO: save and reload enabling should be different for mapper and editor
+// TODO: add messaging for errors (setNotice?)
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -52,7 +52,12 @@ const app = function () {
 	//----------------------------------------
 	async function init () {
 		page.body = document.getElementsByTagName('body')[0]; 
+    page.errorContainer = page.body.getElementsByClassName('error-container')[0];
+    page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
+    page.notice.setNotice('loading...', true);
+
     page.navbar = page.body.getElementsByClassName('navbar')[0];
+    UtilityKTS.setClass(page.navbar, 'hide-me', true);
     
     page.contents = page.body.getElementsByClassName('contents')[0];    
     page.contentsEditor = page.contents.getElementsByClassName('contents-navEditor')[0];
@@ -61,6 +66,9 @@ const app = function () {
 
     if ( !(await _getUserInfo()) ) return;
     if ( !(await _getFAQInfo()) ) return;
+    
+    page.notice.setNotice('');
+    UtilityKTS.setClass(page.navbar, 'hide-me', false);
 
     _attachNavbarHandlers();
     _renderContents();
@@ -97,6 +105,7 @@ const app = function () {
     settings.editorTree = new TreeManager({
       appendTo: treeContainer,
       selectCallback: _handleTreeSelect,
+      changeCallback: _handleTreeChange,
       useContextMenu: true
     });
     settings.editorTree.render(settings.faqInfo);
@@ -138,19 +147,28 @@ const app = function () {
   function _loadFAQItem(params) {
     var editorElements = _getEditorElements();
     
-    var label = params.tmContent.label;
-    var markdown = params.isLeaf ? params.tmContent.markdown : '';
-    var rendered = MarkdownToHTML.convert(_sanitizeText(markdown));
+    if (params) {
+      var label = params.tmContent.label;
+      var markdown = params.isLeaf ? params.tmContent.markdown : '';
+      if (!markdown) markdown = '';
+      var rendered = MarkdownToHTML.convert(_sanitizeText(markdown));
+      
+      editorElements.markdownLabel.value = label;
+      editorElements.markdownContent.value = markdown;
+      editorElements.renderedLabel.innerHTML = label;
+      editorElements.renderedContent.innerHTML = rendered;
+      
+      _setVisible(editorElements.markdownLabel, true);
+      _setVisible(editorElements.markdownContent, params.isLeaf);
+      _setVisible(editorElements.renderedLabel, params.isLeaf);
+      _setVisible(editorElements.renderedContent, params.isLeaf);
     
-    editorElements.markdownLabel.value = label;
-    editorElements.markdownContent.value = markdown;
-    editorElements.renderedLabel.innerHTML = label;
-    editorElements.renderedContent.innerHTML = rendered;
-    
-    _setVisible(editorElements.markdownContent, params.isLeaf);
-    _setVisible(editorElements.renderedLabel, params.isLeaf);
-    _setVisible(editorElements.renderedContent, params.isLeaf);
-    
+    } else {
+      _setVisible(editorElements.markdownLabel, false);
+      _setVisible(editorElements.markdownContent, false);
+      _setVisible(editorElements.renderedLabel, false);
+      _setVisible(editorElements.renderedContent, false);      
+    }
     settings.currentNodeInfo = params;
   }
   
@@ -180,11 +198,20 @@ const app = function () {
   }
   
   function _handleTreeSelect(nodeInfo) {
-   _loadFAQItem({
-     id: nodeInfo.id,
-     isLeaf: nodeInfo.children.length == 0,
-     tmContent: nodeInfo.tmContent
-   });
+    if (nodeInfo) {
+       _loadFAQItem({
+         id: nodeInfo.id,
+         isLeaf: nodeInfo.children.length == 0,
+         tmContent: nodeInfo.tmContent
+       });
+    } else {
+      _loadFAQItem();
+    }     
+  }
+  
+  function _handleTreeChange() {
+    _enableNavOption('navSave', true);
+    _enableNavOption('navReload', true);    
   }
   
   function _handleMarkdownChange(e) {
@@ -203,20 +230,21 @@ const app = function () {
       }
     };
 
-    settings.editorTree.updateNode(updatedNodeInfo); 
-    _enableNavOption('navSave', true);
-    _enableNavOption('navReload', true);
-    
+    settings.editorTree.updateNode(updatedNodeInfo);     
   }
   
   function _handleSave(e) {
     console.log('_handleSave');
+    _enableNavOption('navSave', false);
+    _enableNavOption('navReload', false);
   }
   
   async function _handleReload(e) {
     if ( !(await _getFAQInfo()) ) return;
 
     settings.editorTree.update(settings.faqInfo);
+    _enableNavOption('navSave', false);
+    _enableNavOption('navReload', false);
   }
   
   //---------------------------------------
@@ -229,7 +257,7 @@ const app = function () {
     if (dbResult.success) {
       settings.userInfo = dbResult.userInfo;
     } else {
-      console.log('failed to get user info');
+      page.notice.setNotice('failed to get user info');
     }
     
     return dbResult.success;
@@ -238,16 +266,22 @@ const app = function () {
   async function _getFAQInfo() {
     settings.faqInfo = null
     
+    if (true) {
     //---- temporary, retrieve from DB -------------------------------------------
     var dbResult = {success: true};
-
     dbResult.faqInfo = _debugProcessData(dummyData);
+    //dbResult.faqInfo = null;  // for testing default tree
     //------------------------------------------------------------------------------
     
-    if (dbResult.success) {
-      settings.faqInfo = dbResult.faqInfo;
     } else {
-      console.log('failed to get FAQ info');
+      dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'hierarchy');
+    }
+    
+    if (dbResult.success) {
+      settings.faqInfo = dbResult.faqInfo ? dbResult.faqInfo : _defaultTreeData();
+
+    } else {
+      page.notice.setNotice('failed to get FAQ info');
     }
     
     return dbResult.success;
@@ -276,6 +310,17 @@ const app = function () {
     return newData;
   }
   
+  function _defaultTreeData() {
+    return [{
+      id: 1,
+      name: 'default item',
+      tmContent: {
+        label: 'default item',
+        markdown: ''
+      }
+    }];
+  }
+  
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------
@@ -284,9 +329,9 @@ const app = function () {
   }
   
   function _sanitizeText(str) {
+    if (!str) return '';
     var cleaned = str.replace(/"/g, '\\"');  // escape double quotes
     cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
-    //cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
     
     return cleaned;
   }  

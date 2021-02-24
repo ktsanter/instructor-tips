@@ -28,7 +28,6 @@ html(lang="en")
     script(data-main="/scripts/faq-composer/require_faq-composer", src="/scripts/require.js")      \
     
   body(class="colorscheme")
-    - var menuParams = {};
     +makeNavbar("FAQ composer", 
       {
         items: [
@@ -50,6 +49,8 @@ html(lang="en")
     )
     
     .contents
+      .error-container
+      
       .container-fluid(class="contents-container contents-navEditor hide-me")
         +editorContainer()
 

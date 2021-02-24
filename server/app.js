@@ -13,6 +13,7 @@ const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
 const MARIA_DBNAME_WELCOME = getEnv('MARIA_DBNAME_WELCOME', true);
 const MARIA_DBNAME_WELCOMEV2 = getEnv('MARIA_DBNAME_WELCOMEV2', true);
 const MARIA_DBNAME_IMAGEFLIPPER = getEnv('MARIA_DBNAME_IMAGEFLIPPER', true);
+const MARIA_DBNAME_FAQCOMPOSER = getEnv('MARIA_DBNAME_FAQCOMPOSER', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -117,12 +118,22 @@ const mariadbParams_ImageFlipper = {
     connectionLimit: 5 */
 };
 
+const mariadbParams_FAQComposer = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_FAQCOMPOSER /*, 
+    connectionLimit: 5 */
+};
+    
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
 const mariaDBManager_WelcomeLetter = new mariaDBManagerClass(mariadbParams_WelcomeLetter);
 const mariaDBManager_WelcomeLetterV2 = new mariaDBManagerClass(mariadbParams_WelcomeLetterV2);
 const mariaDBManager_ImageFlipper = new mariaDBManagerClass(mariadbParams_ImageFlipper);
+const mariaDBManager_FAQComposer = new mariaDBManagerClass(mariadbParams_FAQComposer);
     
 //------------------------------------------
 // session management
@@ -306,6 +317,16 @@ const dbImageFlipper = new dbImageFlipperClass({
 });
 
 //------------------------------------------
+// FAQ composer general query objects
+//------------------------------------------
+const dbFAQComposerClass = require('./classes/FAQComposer')
+
+const dbFAQComposer = new dbFAQComposerClass({
+  "dbManager": mariaDBManager_FAQComposer,
+  "userManagement": userManagement
+});
+
+//------------------------------------------
 // DB manager lookup, app info lookup
 //------------------------------------------
 var dbManagerLookup = {
@@ -315,7 +336,8 @@ var dbManagerLookup = {
   "treasurehunt": dbTreasureHunt,
   "welcome": dbWelcomeLetter,
   "welcomeV2": dbWelcomeLetterV2,
-  "imageflipper": dbImageFlipper
+  "imageflipper": dbImageFlipper,
+  "faqcomposer": dbFAQComposer
 };
 
 var appLookup = {

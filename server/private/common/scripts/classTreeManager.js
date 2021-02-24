@@ -1,8 +1,7 @@
 //-------------------------------------------------------------------
 // TreeManager class
 //-------------------------------------------------------------------
-// TODO: think through dirty bit
-// TODO: consider using loadDataFromURL and other Ajax options
+// TODO:
 //-------------------------------------------------------------------
 class TreeManager {
   constructor(config) {
@@ -98,35 +97,48 @@ class TreeManager {
   _addNodeAfter(nodeInfo) {
     var thisTree = $(this._config.treeSelector);    
     var newId = this._makeUniqueTreeId();
+    var newName = nodeInfo ? 'new item' : 'default item';
+    var newNodeInfo =         {
+      name: newName, 
+      id: newId,
+      tmContent: {
+        label: newName,
+        markdown: ''
+      }
+    }
 
-    // deselect any selected nodes
-		thisTree.tree('selectNode', null);  
+    thisTree.tree('selectNode', null);  // deselect any selected nodes
+    if (nodeInfo) {
+      thisTree.tree('addNodeAfter', newNodeInfo, nodeInfo);
+      
+    } else {
+      thisTree.tree('appendNode', newNodeInfo);
+    }
     
-    // append new node
-		thisTree.tree(   
-		    'addNodeAfter', {
-				name: 'new item', 
-				id: newId,
-				tmContent: {
-          label: 'new item',
-          markdown: ''
-        }
-			}, 
-		  nodeInfo
-    );  
-		
     // select new node
     var newNode = thisTree.tree('getNodeById', newId);
 		thisTree.tree('selectNode', newNode);  
+
+    this._config.changeCallback();
   }
   
   _removeNode(nodeInfo) {
+    var thisTree = $(this._config.treeSelector);    
+
     var msg = 'The item named \n"' + nodeInfo.name + '"\n' +
       'will be permanently removed along with any children.' +
       '\n\nPress OK to delete the item.';
       
 		if (confirm(msg)) {
-			$(this._config.treeSelector).tree('removeNode', nodeInfo);
+			thisTree.tree('removeNode', nodeInfo);
+      
+      if (this._getNodeCount() == 0) {
+        this._addNodeAfter();
+        
+      } else {
+        this._config.selectCallback();
+        this._config.changeCallback();
+      }
 		}
   }
   
@@ -209,5 +221,11 @@ class TreeManager {
     
 		return maxId + 1;
 	}
+  
+  _getNodeCount() {
+    var thisTree = $(this._config.treeSelector).tree('getTree');
+
+    return thisTree.idMapping.size;
+  }
 
 }
