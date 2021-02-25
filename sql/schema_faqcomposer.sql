@@ -46,7 +46,10 @@ begin
     user_Id
   );
   
-  select LAST_INSERT_ID() as courseid;
+  select 
+    LAST_INSERT_ID() as projectid,
+    hierarchy
+  from project;
 end;
 //
 DELIMITER ;

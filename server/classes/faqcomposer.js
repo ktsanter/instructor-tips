@@ -31,12 +31,14 @@ module.exports = internal.FAQComposer = class {
   async doInsert(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
+    /*
     if (params.queryName == 'course') {
       dbResult = await this._insertCourse(params, postData, userInfo);
   
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
+    */
     
     return dbResult;
   }
@@ -44,8 +46,8 @@ module.exports = internal.FAQComposer = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'course') {
-      dbResult = await this._updateCourse(params, postData, userInfo);
+    if (params.queryName == 'hierarcy') {
+      dbResult = await this._updateHierarchy(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -57,12 +59,14 @@ module.exports = internal.FAQComposer = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
+    /*
     if (params.queryName == 'course') {
       dbResult = await this._deleteCourse(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
+    */
     
     return dbResult;
   }
@@ -73,24 +77,31 @@ module.exports = internal.FAQComposer = class {
   async _getHierarchy(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
-    console.log(params);
-    console.log(postData);
-    console.log(userInfo);
-    return result;
-    
     var query, queryResults;
     
     query = 
       'select ' +
-        'a.courseid, a.coursename, a.ap, a.haspasswords, ' +
-        'b.configurationid, b.examid, b.proctoringid, b.retakeid, b.resubmissionid ' +
-      'from course as a, configuration as b ' +
-      'where userid = ' + userInfo.userId + ' ' +
-        'and a.courseid = b.courseid ' +
-      'order by coursename';
+        'a.projectid, a.hierarchy ' +
+      'from project as a ' +
+      'where userid = ' + userInfo.userId;
       
-    queryResults = await this._dbManager.dbQuery(query);    
+    queryResults = await this._dbManager.dbQuery(query);   
 
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    if (queryResults.data.length == 0) {
+      query = 
+        'call add_default_project(' +
+          userInfo.userId + 
+        ')';
+
+      queryResults = await this._dbManager.dbQuery(query);
+    }      
+        
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
@@ -103,36 +114,13 @@ module.exports = internal.FAQComposer = class {
     return result;
   }
 
-  async _insertCourse(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult(); 
-
-    var query, queryResults;
-    
-    query = 
-      'call add_default_course(' +
-         userInfo.userId + ', ' +
-         '"' + postData.coursename + '"' +
-      ')';
-    
-    queryResults = await this._dbManager.dbQuery(query);    
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = queryResults.data[0][0];
-      
-    } else {
-      result.details = queryResults.details;
-      if (queryResults.details.code == 'ER_DUP_ENTRY') {
-        result.details = 'duplicate';
-      }
-    }
-    
-    return result;
-  }
-
   async _updateCourse(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
+    
+    console.log(params);
+    console.log(postData);
+    console.log(userInfo);
+    return result;
  
     var queryList, queryResults;
     
@@ -178,28 +166,6 @@ module.exports = internal.FAQComposer = class {
     return result;
   }
   
-  async _deleteCourse(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult(); 
-
-    var query, queryResults;
-    
-    query = 
-      'delete from course  ' +
-      'where courseid = ' + postData.courseid;
-      
-    queryResults = await this._dbManager.dbQuery(query);    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = queryResults.data;
-      
-    } else {
-      result.details = queryResults.details;
-    }
-
-    return result;
-  }
-
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------       

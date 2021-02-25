@@ -5,7 +5,7 @@
 // TODO: finish mapper
 // TODO: finish profile
 // TODO: finish help
-// TODO: save and reload enabling should be different for mapper and editor
+// TODO: *** save and reload enabling should be different for mapper and editor
 // TODO: add messaging for errors (setNotice?)
 //-----------------------------------------------------------------------
 const app = function () {
@@ -206,7 +206,7 @@ const app = function () {
        });
     } else {
       _loadFAQItem();
-    }     
+    }
   }
   
   function _handleTreeChange() {
@@ -230,11 +230,12 @@ const app = function () {
       }
     };
 
-    settings.editorTree.updateNode(updatedNodeInfo);     
+    settings.editorTree.updateNode(updatedNodeInfo);
+    _handleTreeChange();
   }
   
-  function _handleSave(e) {
-    console.log('_handleSave');
+  async function _handleSave(e) {
+    await _saveFAQInfo();
     _enableNavOption('navSave', false);
     _enableNavOption('navReload', false);
   }
@@ -266,7 +267,7 @@ const app = function () {
   async function _getFAQInfo() {
     settings.faqInfo = null
     
-    if (true) {
+    if (false) {
     //---- temporary, retrieve from DB -------------------------------------------
     var dbResult = {success: true};
     dbResult.faqInfo = _debugProcessData(dummyData);
@@ -286,6 +287,10 @@ const app = function () {
     
     return dbResult.success;
   }  
+  
+  async function _saveFAQInfo() {
+    xxxxx
+  }
   
   function _debugProcessData(data) {
     var newData = [];
