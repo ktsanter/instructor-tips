@@ -1,13 +1,11 @@
 //-----------------------------------------------------------------------
 // FAQ composer
 //-----------------------------------------------------------------------
-// TODO: styling for editor
 // TODO: add DB for mapper and profile
 // TODO: finish mapper
 // TODO: finish profile
 // TODO: finish help
 // TODO: save and reload enabling should be different for mapper and editor
-// TODO: check if multiple nested items are saving
 // TODO: test with emoji
 //-----------------------------------------------------------------------
 const app = function () {
@@ -304,6 +302,7 @@ const app = function () {
     var postData = {
       hierarchy: JSON.stringify(hierarchyData)
     };
+
     var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/update', 'hierarchy', postData);
     success = dbResult.success;
     if (!success) page.notice.setNotice('failed to save data');
@@ -313,7 +312,7 @@ const app = function () {
   
   function _processTreeData(origTree, replacementGroup) {
     var processed = [];
-
+    
     for (var i = 0; i < origTree.length; i++) {
       processed.push(_processTreeObject(origTree[i], replacementGroup));
     }
@@ -326,14 +325,38 @@ const app = function () {
     
     for (var key in origObj) {
       var value = origObj[key];
-      if (typeof value == 'object') {
-        value = _processTreeObject(value, replacementGroup);
-        
-      } else if (typeof value == 'string') {
+      if (typeof value == 'string') {
         value = _replaceGroup(value, replacementGroup);
+        
+      } else if (Array.isArray(value)) {
+        value = _processTreeArray(value, replacementGroup);
+        
+      } else if (typeof value == 'object') {
+        value = _processTreeObject(value, replacementGroup);
       }
       
       processed[key] = value;
+    }
+    
+    return processed;
+  }
+  
+  function _processTreeArray(origArray, replacementGroup) {
+    var processed = [];
+        
+    for (var i = 0; i < origArray.length; i++) {
+      var item = origArray[i];
+      if (typeof item == 'string') {
+        item = _replaceGroup(item, replacementGroup);
+        
+      } else if (Array.isArray(item)) {
+        item = _processTreeArray(item, replacementGroup);
+        
+      } else if (typeof item == 'object') {
+        item = _processTreeObject(item, replacementGroup);
+      } 
+        
+      processed.push(item);
     }
     
     return processed;

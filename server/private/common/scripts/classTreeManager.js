@@ -28,6 +28,7 @@ class TreeManager {
     $(this._config.treeSelector).on('tree.open', (e) => { this._treeEventDispatch(e, 'open'); } );
     $(this._config.treeSelector).on('tree.close', (e) => { this._treeEventDispatch(e, 'close'); } );
     $(this._config.treeSelector).on('tree.move', (e) => { this._treeEventDispatch(e, 'move'); } );   
+    $(this._config.treeSelector).on('tree.refresh', (e) => { this._treeEventDispatch(e, 'refresh'); } );   
     
     if (this._config.useContextMenu) this._renderContextMenu(this._config.appendTo);
 
@@ -172,7 +173,8 @@ class TreeManager {
       "init": this._handleTreeInit,
       'select': this._handleTreeSelect,
       "contextmenu": this._handleTreeContextMenu,
-      "move": this._handleTreeMove
+      "move": this._handleTreeMove,
+      "refresh": this._handleTreeRefresh
     };
     
     if (dispatchMap.hasOwnProperty(eventType)) {
@@ -219,6 +221,15 @@ class TreeManager {
   _handleTreeMove(e, me) {
     me._config.changeCallback();
     // for details about before/after move see http://mbraak.github.io/jqTree/#event-tree-move
+  }
+  
+  _handleTreeRefresh(e, me) {
+    /*
+    console.log('_handleTreeRefresh');
+    var thisTree = $(me._config.treeSelector);
+    var json = JSON.parse(thisTree.tree('toJson'));
+    console.log(JSON.stringify(json, null, 2));
+    */
   }
   
   //--------------------------------------------------------------
