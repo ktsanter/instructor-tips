@@ -3,6 +3,7 @@
  *------------------------------------------------------------------------------*/
 .colorscheme {
   --bgPrimary: rgba(66, 98, 150, 1.0);
+  --borderPrimary: #aaa;
 }
 
 body {}
@@ -97,6 +98,7 @@ body {}
  *------------------------------------------------------------------------------*/
 .contents .hierarchy-container {
   font-size: 0.9em;
+  border: 1px solid var(--borderPrimary);
 }
 
 .contents .hierarchy-container .tm-tree {}

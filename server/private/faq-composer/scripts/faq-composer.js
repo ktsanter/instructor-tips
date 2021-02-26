@@ -18,7 +18,7 @@ const app = function () {
     helpURL: '/faq-composer/help',
     logoutURL: '/usermanagement/logout',
     currentNodeInfo: null,
-    labelTruncateLimit: 60,
+    labelTruncateLimit: 50,
     dirtyBit: {
       navEditor: false,
       navMapper: false,
@@ -145,21 +145,20 @@ const app = function () {
       var markdown = params.isLeaf ? params.tmContent.markdown : '';
       if (!markdown) markdown = '';
       var rendered = MarkdownToHTML.convert(_sanitizeText(markdown));
+      console.log(label);
+      console.log(rendered);
       
       editorElements.markdownLabel.value = label;
       editorElements.markdownContent.value = markdown;
-      editorElements.renderedLabel.innerHTML = label;
-      editorElements.renderedContent.innerHTML = rendered;
+      editorElements.renderedContent.value = rendered;
       
       _setVisible(editorElements.markdownLabel, true);
       _setVisible(editorElements.markdownContent, params.isLeaf);
-      _setVisible(editorElements.renderedLabel, params.isLeaf);
       _setVisible(editorElements.renderedContent, params.isLeaf);
     
     } else {
       _setVisible(editorElements.markdownLabel, false);
       _setVisible(editorElements.markdownContent, false);
-      _setVisible(editorElements.renderedLabel, false);
       _setVisible(editorElements.renderedContent, false);      
     }
     settings.currentNodeInfo = params;
@@ -213,7 +212,7 @@ const app = function () {
   function _handleMarkdownChange(e) {
     var target = e.target;
     var targetClassList = target.classList;
-    
+
     var editLabel = page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].value;
     var editMarkdown = page.contentsEditor.getElementsByClassName('navEditor-itemcontent')[0].value;
     
@@ -385,19 +384,21 @@ const app = function () {
     var markdownContainer = page.contentsEditor.getElementsByClassName('navEditor-item-edit')[0];
     var renderedContainer = page.contentsEditor.getElementsByClassName('navEditor-item-rendered')[0];
     
+    console.log(markdownContainer);
+    
     return {
       "markdownContainer": markdownContainer,
       "renderedContainer": renderedContainer,
       
       "markdownLabel": markdownContainer.getElementsByClassName('navEditor-itemlabel')[0],
       "markdownContent":  markdownContainer.getElementsByClassName('navEditor-markdown-content')[0],
-      "renderedLabel": renderedContainer.getElementsByClassName('navEditor-itemlabel')[0],
       "renderedContent": renderedContainer.getElementsByClassName('navEditor-rendered-content')[0]
     }
   }
   
   function _truncateNodeName(origName) {
     var name = origName;
+
     if (name.length > settings.labelTruncateLimit) name = name.slice(0, settings.labelTruncateLimit) + '...';
     return name;
   }

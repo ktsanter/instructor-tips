@@ -1,16 +1,22 @@
 mixin editorContainer()
   .row
-    .col-sm(class="hierarchy-container")
+    .col-4(class="hierarchy-container")
     
     .col-sm 
       .container-fluid
         .row: col-sm(class="navEditor-item-edit")
           .container-fluid
             .row: .col-sm
-              input(type="text" class="navEditor-itemlabel")
+              div(class="input-group mb-3")
+                span(class="input-group-text" id="basic-addon1") label
+                input(type="text" class="navEditor-itemlabel form-control" aria-label="label" aria-describedby="basic-addon1")
+              
+              
             .row: .col-sm
-              textarea(class="navEditor-itemcontent navEditor-markdown-content" placeholder="enter Markdown here")
+              div(class="form-floating")
+                textarea(class="navEditor-itemcontent navEditor-markdown-content form-control" placeholder="enter Markdown for item here")
           
         .row: col-sm(class="navEditor-item-rendered")
-          div(class="navEditor-itemlabel")
-          div(class="navEditor-itemcontent navEditor-rendered-content") render Markdown here
+          .container-fluid
+            .row: .col-sm
+              input(class="navEditor-itemcontent navEditor-rendered-content form-control" type="text" aria-label="readonly input example" readonly)
