@@ -217,7 +217,7 @@ class TreeManager {
   }
 
   _handleTreeMove(e, me) {
-    console.log('do move stuff');
+    me._config.changeCallback();
     // for details about before/after move see http://mbraak.github.io/jqTree/#event-tree-move
   }
   

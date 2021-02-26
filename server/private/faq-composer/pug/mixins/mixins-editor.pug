@@ -1,22 +1,25 @@
 mixin editorContainer()
   .row
-    .col-4(class="hierarchy-container")
+    .col-sm-4(class="hierarchy-container" id="editorHierarchy")
+      label(for="editorHierarchy" class="col col-form-label col-form-label") FAQ items
     
-    .col-sm 
-      .container-fluid
-        .row: col-sm(class="navEditor-item-edit")
+    .col-sm(class="p-0")
+      .container-fluid(class="p-0")
+        .row(class="p-0"): col-sm(class="navEditor-item-edit")
           .container-fluid
-            .row: .col-sm
+            .row(class="p-0"): .col-sm
               div(class="input-group mb-3")
-                span(class="input-group-text" id="basic-addon1") label
-                input(type="text" class="navEditor-itemlabel form-control" aria-label="label" aria-describedby="basic-addon1")
+                span(class="input-group-text" id="navEditor-itemlabel") item label
+                input(type="text" class="navEditor-itemlabel form-control" aria-label="label" aria-describedby="navEditor-itemlabel")
               
               
-            .row: .col-sm
+            .row(class="p-0"): .col-sm
               div(class="form-floating")
-                textarea(class="navEditor-itemcontent navEditor-markdown-content form-control" placeholder="enter Markdown for item here")
+                textarea(class="navEditor-itemcontent navEditor-markdown-content form-control" id="navEditor-itemmarkdown" placeholder="enter Markdown for item here")
+                label(for="navEditor-itemmarkdown"): em Markdown for item
           
-        .row: col-sm(class="navEditor-item-rendered")
+        .row(class="p-0"): col-sm(class="navEditor-item-rendered")
           .container-fluid
             .row: .col-sm
-              input(class="navEditor-itemcontent navEditor-rendered-content form-control" type="text" aria-label="readonly input example" readonly)
+              div(class="navEditor-itemcontent navEditor-rendered-content form-control mt-2 mb-2")
+

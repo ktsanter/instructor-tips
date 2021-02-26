@@ -3,10 +3,13 @@
  *------------------------------------------------------------------------------*/
 .colorscheme {
   --bgPrimary: rgba(66, 98, 150, 1.0);
-  --borderPrimary: #aaa;
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
 }
 
-body {}
+body {
+  padding-top: 4.0em;
+}
 
 .hide-me {
   display: none;
@@ -59,27 +62,32 @@ body {}
   transition-duration: 0s;
 }
 
-.navbar .btn#navSave {
-  margin-right: 0.2em;
-}
+.navbar .btn#navSave {}
 
 .navbar .icon#navProfile {
   font-size: 2.0em;
-  margin-left: 0.2em;
   cursor: pointer;
 }
 
 /*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/
-.contents {
-  margin-top: 4.4em;
-}
+.contents {}
 
 /*------------------------------------------------------------------------------
  * contents - editor
  *------------------------------------------------------------------------------*/
 .contents .contents-navEditor {}
+
+.contents .contents-navEditor .navEditor-itemcontent {}
+
+.contents .contents-navEditor .navEditor-itemcontent.navEditor-markdown-content {
+  height: 10.0em;
+}
+
+.contents .contents-navEditor .navEditor-itemcontent.navEditor-rendered-content {
+  background: var(--bgShaded);
+}
 
 /*------------------------------------------------------------------------------
  * contents - mapper
@@ -96,12 +104,13 @@ body {}
 /*------------------------------------------------------------------------------
  * contents - tree context menu
  *------------------------------------------------------------------------------*/
-.contents .hierarchy-container {
+.contents .hierarchy-container {}
+
+.contents .hierarchy-container .tm-tree {
   font-size: 0.9em;
   border: 1px solid var(--borderPrimary);
+  border-radius: 0.25em;  
 }
-
-.contents .hierarchy-container .tm-tree {}
 
 .contents .hierarchy-container .contextmenu {
   display: none;

@@ -7,6 +7,8 @@
 // TODO: finish profile
 // TODO: finish help
 // TODO: save and reload enabling should be different for mapper and editor
+// TODO: check if multiple nested items are saving
+// TODO: test with emoji
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -145,12 +147,10 @@ const app = function () {
       var markdown = params.isLeaf ? params.tmContent.markdown : '';
       if (!markdown) markdown = '';
       var rendered = MarkdownToHTML.convert(_sanitizeText(markdown));
-      console.log(label);
-      console.log(rendered);
       
       editorElements.markdownLabel.value = label;
       editorElements.markdownContent.value = markdown;
-      editorElements.renderedContent.value = rendered;
+      editorElements.renderedContent.innerHTML = rendered;
       
       _setVisible(editorElements.markdownLabel, true);
       _setVisible(editorElements.markdownContent, params.isLeaf);
@@ -383,8 +383,6 @@ const app = function () {
   function _getEditorElements() {
     var markdownContainer = page.contentsEditor.getElementsByClassName('navEditor-item-edit')[0];
     var renderedContainer = page.contentsEditor.getElementsByClassName('navEditor-item-rendered')[0];
-    
-    console.log(markdownContainer);
     
     return {
       "markdownContainer": markdownContainer,
