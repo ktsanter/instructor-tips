@@ -46,7 +46,6 @@ body {}
 }
 
 .navbar .btn {
-  visibility: hidden;
   color: white;
   background-color: var(--bgPrimary);
   border-color: white;

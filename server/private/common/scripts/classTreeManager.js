@@ -9,7 +9,6 @@ class TreeManager {
     
     this._config.treeClass = 'tm-tree';
     this._config.treeSelector = '.' + this._config.treeClass;
-    this._config.dirtyBit = false;
     this._config.contextMenu = null;
   }
   
@@ -60,17 +59,31 @@ class TreeManager {
   }
     
   //--------------------------------------------------------------
+  // get
+  //--------------------------------------------------------------
+  getAsJSON() {
+    var thisTree = $(this._config.treeSelector);
+    return thisTree.tree('toJson');
+  }
+  
+  //--------------------------------------------------------------
   // updating
   //--------------------------------------------------------------
   update(treeData) {
     var thisTree = $(this._config.treeSelector);
+    var selectedNode = thisTree.tree('getSelectedNode');
+    
     thisTree.tree('loadData', treeData);
     var root = thisTree.tree('getTree');
-    if (root.children.length > 0) {
+    
+    // if a node was selectd before then try to select it now
+    if (selectedNode) {
+      selectedNode = thisTree.tree('getNodeById', selectedNode.id);
+      if (selectedNode) thisTree.tree('selectNode', selectedNode);
+
+    } else if (root.children.length > 0) {  // otherwise select the first node
       thisTree.tree('selectNode', root.children[0]);
     }
-    
-    this._config.dirtyBit = false;
   }
   
   updateNode(nodeInfo) {

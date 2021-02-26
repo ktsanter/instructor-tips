@@ -46,7 +46,7 @@ module.exports = internal.FAQComposer = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'hierarcy') {
+    if (params.queryName == 'hierarchy') {
       dbResult = await this._updateHierarchy(params, postData, userInfo);
     
     } else {
@@ -100,12 +100,14 @@ module.exports = internal.FAQComposer = class {
 
       queryResults = await this._dbManager.dbQuery(query);
     }      
-        
-    
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.data = queryResults.data;
+      result.data = {
+        projectid: queryResults.data[0].projectid,
+        hierarchy: queryResults.data[0].hierarchy
+      }
       
     } else {
       result.details = queryResults.details;
@@ -114,41 +116,20 @@ module.exports = internal.FAQComposer = class {
     return result;
   }
 
-  async _updateCourse(params, postData, userInfo) {
+  async _updateHierarchy(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
-    console.log(params);
-    console.log(postData);
-    console.log(userInfo);
-    return result;
- 
-    var queryList, queryResults;
-    
-    var updatedExamId = (postData.examid) == '' ? 'null' : postData.examid;
-    var updatedProctoringId = (postData.proctoringid) == '' ? 'null' : postData.proctoringid;
-    var updatedRetakeId = (postData.retakeid) == '' ? 'null' : postData.retakeid;
-    var updatedResubmissionId = (postData.resubmissionid) == '' ? 'null' : postData.resubmissionid;
+    var query, queryResults;
 
-    queryList = {
-      course:
-        'update course ' +
-        'set ' +
-          'coursename = "' + postData.coursename + '", ' +
-          'ap = ' + postData.ap + ', ' +
-          'haspasswords = ' + postData.haspasswords + ' ' +
-        'where courseid = ' + postData.courseid,
-      
-      configuration: 
-        'update configuration ' +
-        'set ' +
-          'examid = ' + updatedExamId + ', ' +
-          'proctoringid = ' + updatedProctoringId + ', ' +
-          'retakeid = ' + updatedRetakeId + ', ' +
-          'resubmissionid = ' + updatedResubmissionId + ' ' +
-        'where courseid = ' + postData.courseid
-    };
-      
-    queryResults = await this._dbManager.dbQueries(queryList);    
+    var hierarchyData = postData.hierarchy;
+    
+    query = 
+      'update project ' +
+      'set ' +
+        'hierarchy = \'' + hierarchyData + '\' ' +
+      'where userid = ' + userInfo.userId;
+
+    queryResults = await this._dbManager.dbQuery(query);    
     
     if (queryResults.success) {
       result.success = true;
@@ -156,11 +137,7 @@ module.exports = internal.FAQComposer = class {
       result.data = queryResults.data;
       
     } else {
-      if (queryResults.details.toLowerCase().includes('duplicate entry')) {
-        result.details = 'duplicate';
-      } else {
-        result.details = queryResults.details;
-      }
+      result.details = queryResults.details;
     }
 
     return result;

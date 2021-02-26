@@ -16,7 +16,7 @@ create table project
 (
   projectid             int unsigned not null AUTO_INCREMENT,
   userid                int unsigned not null,
-  hierarchy             JSON,
+  hierarchy             varchar(20000) null,
   
   primary key (projectid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade

@@ -1,12 +1,12 @@
 //-----------------------------------------------------------------------
 // FAQ composer
 //-----------------------------------------------------------------------
-// TODO: add DB
+// TODO: styling for editor
+// TODO: add DB for mapper and profile
 // TODO: finish mapper
 // TODO: finish profile
 // TODO: finish help
-// TODO: *** save and reload enabling should be different for mapper and editor
-// TODO: add messaging for errors (setNotice?)
+// TODO: save and reload enabling should be different for mapper and editor
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -18,34 +18,25 @@ const app = function () {
     helpURL: '/faq-composer/help',
     logoutURL: '/usermanagement/logout',
     currentNodeInfo: null,
-    labelTruncateLimit: 60
+    labelTruncateLimit: 60,
+    dirtyBit: {
+      navEditor: false,
+      navMapper: false,
+      navProfile: false
+    },
+    treeProcessingReplacement: {
+      pack: [
+        {seek: /"/g, replacement: '&quot;'},
+        {seek: /'/g, replacement: '&apos;'},
+        {seek: '\n', replacement: '&newline;'}
+      ],
+      unpack: [
+        {seek: /&quot;/g, replacement: '"'},
+        {seek: /&apos;/g, replacement: '\''},
+        {seek: /&newline;/g, replacement: '\n'}
+      ] 
+    }
   };
-  
-  const dummyData = [
-      {
-        name: 'General FAQs', id: 1,
-        children: [
-          { name: 'What I expect from you in this course', id: 2, markdown: 'some text' },
-          { name: 'What you can expect from me in this course', id: 3, markdown: 'some more text' }
-        ]
-      },
-      
-      {
-        name: 'AP Computer Science Principles (Sem 1)', id: 4,
-        children: [
-          { name: 'What are Michigan Virtual\'s policies for Advanced Placement courses?', id: 5, markdown: '**hello**' },
-          { name: 'What are the start and end dates for the term?', id: 6, markdown: '*goodbye*' }
-        ]
-      },
-      
-      {
-        name: 'Basic Web Design: HTML & CSS', id: 7,
-        children: [
-          { name: 'Can I redo assignments?', id: 8, markdown: '[google](https://www.google.com)' },
-          { name: 'What\'s the best way to learn programming?', id: 9, markdown: 'some random text' }
-        ]
-      }
-    ];
     
 	//---------------------------------------
 	// get things going
@@ -127,21 +118,23 @@ const app = function () {
 	// updating
 	//-----------------------------------------------------------------------------
   function _showContents(contentsId) {
-    _hideNavOption('navSave', true);
-    _hideNavOption('navReload', true);
-    _enableNavOption('navSave', false);
-    _enableNavOption('navReload', false);
+    settings.currentNavOption = contentsId;
     
     var containers = page.contents.getElementsByClassName('contents-container');
     for (var i = 0; i < containers.length; i++) {
       var hide = !containers[i].classList.contains('contents-' + contentsId);
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
-    
-    if (contentsId == 'navEditor' || contentsId == 'navMapper') {
-      _hideNavOption('navSave', false);
-      _hideNavOption('navReload', false);
-    }
+        
+    _setNavOptions();
+  }
+  
+  function _setNavOptions() {
+    var opt = settings.currentNavOption;
+    var enable = settings.dirtyBit[settings.currentNavOption]
+        
+    _enableNavOption('navSave', enable);
+    _enableNavOption('navReload', enable);
   }
   
   function _loadFAQItem(params) {
@@ -180,6 +173,10 @@ const app = function () {
     window.open(settings.logoutURL, '_self'); 
   }
   
+  function _setDirtyBit(dirty) {
+    settings.dirtyBit[settings.currentNavOption] = dirty;
+    _setNavOptions();
+  }
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
@@ -210,8 +207,7 @@ const app = function () {
   }
   
   function _handleTreeChange() {
-    _enableNavOption('navSave', true);
-    _enableNavOption('navReload', true);    
+    _setDirtyBit(true);
   }
   
   function _handleMarkdownChange(e) {
@@ -235,17 +231,18 @@ const app = function () {
   }
   
   async function _handleSave(e) {
-    await _saveFAQInfo();
-    _enableNavOption('navSave', false);
-    _enableNavOption('navReload', false);
+    if ( !(await _saveFAQInfo()) ) return;    
+    await _handleReload();
+    
+    _setDirtyBit(false);
   }
   
   async function _handleReload(e) {
     if ( !(await _getFAQInfo()) ) return;
 
+    page.notice.setNotice('');
     settings.editorTree.update(settings.faqInfo);
-    _enableNavOption('navSave', false);
-    _enableNavOption('navReload', false);
+    _setDirtyBit(false);
   }
   
   //---------------------------------------
@@ -267,19 +264,21 @@ const app = function () {
   async function _getFAQInfo() {
     settings.faqInfo = null
     
-    if (false) {
-    //---- temporary, retrieve from DB -------------------------------------------
-    var dbResult = {success: true};
-    dbResult.faqInfo = _debugProcessData(dummyData);
-    //dbResult.faqInfo = null;  // for testing default tree
-    //------------------------------------------------------------------------------
-    
-    } else {
-      dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'hierarchy');
-    }
+    dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'hierarchy');
     
     if (dbResult.success) {
-      settings.faqInfo = dbResult.faqInfo ? dbResult.faqInfo : _defaultTreeData();
+      var hierarchy = dbResult.data.hierarchy;
+
+      if (!hierarchy) {
+        hierarchy = _defaultTreeData();
+
+      } else {
+        hierarchy = JSON.parse(hierarchy);
+        hierarchy = _processTreeData(hierarchy, settings.treeProcessingReplacement.unpack);
+        if (hierarchy.length == 0) hierarchy = _defaultTreeData();
+      }
+
+      settings.faqInfo = hierarchy;
 
     } else {
       page.notice.setNotice('failed to get FAQ info');
@@ -289,30 +288,56 @@ const app = function () {
   }  
   
   async function _saveFAQInfo() {
-    xxxxx
-  }
-  
-  function _debugProcessData(data) {
-    var newData = [];
-    for (var i = 0; i < data.length; i++) {
-      var item = data[i];
-      var newItem = {
-        id: item.id,
-        name: _truncateNodeName(item.name),
-        tmContent: {
-          label: item.name,
-          markdown: item.markdown
-        }
-      }
-
-      if (item.hasOwnProperty('children') && item.children.length > 0) {
-        newItem.children = _debugProcessData(item.children);
-      }
-      
-      newData.push(newItem);
+    var success = false;
+    
+    var treeData = null;
+    if (settings.currentNavOption == 'navEditor') {
+      treeData = settings.editorTree.getAsJSON();
     }
     
-    return newData;
+    if (!treeData) {
+      page.notice.setNotice('failed to retrieve hierarchy data');
+      return success;
+    }
+    
+    var hierarchyData = _processTreeData(JSON.parse(treeData), settings.treeProcessingReplacement.pack);
+    
+    var postData = {
+      hierarchy: JSON.stringify(hierarchyData)
+    };
+    var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/update', 'hierarchy', postData);
+    success = dbResult.success;
+    if (!success) page.notice.setNotice('failed to save data');
+    
+    return success;
+  }
+  
+  function _processTreeData(origTree, replacementGroup) {
+    var processed = [];
+
+    for (var i = 0; i < origTree.length; i++) {
+      processed.push(_processTreeObject(origTree[i], replacementGroup));
+    }
+
+    return processed;
+  }
+  
+  function _processTreeObject(origObj, replacementGroup) {
+    var processed = {};
+    
+    for (var key in origObj) {
+      var value = origObj[key];
+      if (typeof value == 'object') {
+        value = _processTreeObject(value, replacementGroup);
+        
+      } else if (typeof value == 'string') {
+        value = _replaceGroup(value, replacementGroup);
+      }
+      
+      processed[key] = value;
+    }
+    
+    return processed;
   }
   
   function _defaultTreeData() {
@@ -339,7 +364,22 @@ const app = function () {
     cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
     
     return cleaned;
-  }  
+  }
+  
+  function _replaceGroup(strOrig, replacementGroup) {
+    var str = strOrig;
+    
+    for (var i = 0; i < replacementGroup.length; i++) {
+      var replaceDef = replacementGroup[i];
+      if (typeof replaceDef.seek == 'object') {
+        str = str.replace(replaceDef.seek, replaceDef.replacement);
+      } else {
+        str = str.replaceAll(replaceDef.seek, replaceDef.replacement);
+      }
+    }
+    
+    return str;
+  }
 
   function _getEditorElements() {
     var markdownContainer = page.contentsEditor.getElementsByClassName('navEditor-item-edit')[0];
@@ -364,10 +404,6 @@ const app = function () {
   
   function _enableNavOption(navOption, enable) {
     document.getElementById(navOption).disabled = !enable;    
-  }
-  
-  function _hideNavOption(navOption, hide) {
-    document.getElementById(navOption).style.visibility = hide ? 'hidden': 'visible';    
   }
 
 	//-----------------------------------------------------------------------------------
