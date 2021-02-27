@@ -22,4 +22,9 @@ mixin editorContainer()
           .container-fluid
             .row: .col-sm
               div(class="navEditor-itemcontent navEditor-rendered-content form-control mt-2 mb-2")
+              
+        .row(class="p-0"): .col-sm
+          +makeTinyMCE("contenteditor-navEditor")
 
+        .row(class="p-0"): .col-sm        
+          button(class='btnTest') test

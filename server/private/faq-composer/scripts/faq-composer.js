@@ -6,7 +6,6 @@
 // TODO: finish profile
 // TODO: finish help
 // TODO: save and reload enabling should be different for mapper and editor
-// TODO: test with emoji
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -87,6 +86,11 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
+    settings.contentEditorId = {};
+    myTinyMCE.initialize(_finishRendering);
+  }
+  
+  function _finishRendering() {
     _renderEditor();
     _renderMapper();
     _renderProfile();
@@ -94,6 +98,10 @@ const app = function () {
   
   function _renderEditor() {
     var treeContainer = page.contentsEditor.getElementsByClassName(settings.treeContainerClass)[0];
+
+    settings.contentEditorId.navEditor = 'contenteditor-navEditor';
+    var btn = page.contentsEditor.getElementsByClassName('btnTest')[0];
+    btn.addEventListener('click', (e) => {_test(e);});
 
     settings.editorTree = new TreeManager({
       appendTo: treeContainer,
@@ -108,7 +116,10 @@ const app = function () {
     editorElements.markdownContent.addEventListener('input', (e) => {_handleMarkdownChange(e);});
   }
   
-  function _renderMapper() {
+  function _renderMapper() {}
+  
+  function _test(e) {
+    console.log(myTinyMCE.getContent(settings.contentEditorId.navEditor));
   }
   
   function _renderProfile() {
@@ -145,6 +156,9 @@ const app = function () {
     if (params) {
       var label = params.tmContent.label;
       var markdown = params.isLeaf ? params.tmContent.markdown : '';
+      
+      myTinyMCE.setContent(settings.contentEditorId.navEditor, markdown);
+      
       if (!markdown) markdown = '';
       var rendered = MarkdownToHTML.convert(_sanitizeText(markdown));
       
@@ -214,14 +228,15 @@ const app = function () {
     var targetClassList = target.classList;
 
     var editLabel = page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].value;
-    var editMarkdown = page.contentsEditor.getElementsByClassName('navEditor-itemcontent')[0].value;
+    //var editMarkdown = page.contentsEditor.getElementsByClassName('navEditor-itemcontent')[0].value;
+    var editorContent = tinymce.get(settings.contentEditorId.navEditor).getContent();
     
     var updatedNodeInfo = {
       id: settings.currentNodeInfo.id,
       name: _truncateNodeName(editLabel),
       tmContent: {
         label: editLabel,
-        markdown: editMarkdown
+        markdown: editorContent
       }
     };
 
@@ -230,7 +245,14 @@ const app = function () {
   }
   
   async function _handleSave(e) {
-    if ( !(await _saveFAQInfo()) ) return;    
+    if (settings.currentNavOption == 'navEditor') {
+      console.log('save - editor');
+      if ( !(await _saveFAQInfo()) ) return;    
+    
+    } else if (settings.currentNavOption == 'navMapper') {
+      console.log('save - mapper');
+    }
+    
     await _handleReload();
     
     _setDirtyBit(false);

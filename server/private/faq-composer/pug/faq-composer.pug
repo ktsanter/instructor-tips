@@ -2,6 +2,7 @@ include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
 
 include ./mixins/mixins-editor.pug
 include ./mixins/mixins-mapper.pug
@@ -16,8 +17,9 @@ html(lang="en")
     
     +fontawesome()
     +bootstrapstyle()
+    +tinyMCEscripts()
     
-    script(src="/scripts/commonmark_min.js") 
+    script(src="/scripts/commonmark_min.js")   
     
     style
       include ../../common/styles/jqtree.css
