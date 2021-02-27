@@ -319,7 +319,7 @@ const dbImageFlipper = new dbImageFlipperClass({
 //------------------------------------------
 // FAQ composer general query objects
 //------------------------------------------
-const dbFAQComposerClass = require('./classes/FAQComposer')
+const dbFAQComposerClass = require('./classes/faqcomposer')
 
 const dbFAQComposer = new dbFAQComposerClass({
   "dbManager": mariaDBManager_FAQComposer,
