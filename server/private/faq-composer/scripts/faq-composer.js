@@ -87,7 +87,7 @@ const app = function () {
 	//-----------------------------------------------------------------------------
   function _renderContents() {
     settings.contentEditorId = {};
-    myTinyMCE.initialize(_finishRendering);
+    MyTinyMCE.initialize(_finishRendering, _handleEditorChange);
   }
   
   function _finishRendering() {
@@ -100,8 +100,6 @@ const app = function () {
     var treeContainer = page.contentsEditor.getElementsByClassName(settings.treeContainerClass)[0];
 
     settings.contentEditorId.navEditor = 'contenteditor-navEditor';
-    var btn = page.contentsEditor.getElementsByClassName('btnTest')[0];
-    btn.addEventListener('click', (e) => {_test(e);});
 
     settings.editorTree = new TreeManager({
       appendTo: treeContainer,
@@ -109,23 +107,17 @@ const app = function () {
       changeCallback: _handleTreeChange,
       useContextMenu: true
     });
-    settings.editorTree.render(settings.faqInfo);
     
-    var editorElements = _getEditorElements();
-    editorElements.markdownLabel.addEventListener('input', (e) => {_handleMarkdownChange(e);});
-    editorElements.markdownContent.addEventListener('input', (e) => {_handleMarkdownChange(e);});
+    settings.editorTree.render(settings.faqInfo);    
+    
+    page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].addEventListener('input', (e) => {_handleEditorChange(e);});    
   }
   
   function _renderMapper() {}
   
-  function _test(e) {
-    console.log(myTinyMCE.getContent(settings.contentEditorId.navEditor));
-  }
-  
   function _renderProfile() {
     page.contentsProfile.getElementsByClassName('user-name')[0].innerHTML = settings.userInfo.userName;
   }
-
   
   //-----------------------------------------------------------------------------
 	// updating
@@ -144,37 +136,32 @@ const app = function () {
   
   function _setNavOptions() {
     var opt = settings.currentNavOption;
-    var enable = settings.dirtyBit[settings.currentNavOption]
+    var enable = settings.dirtyBit[settings.currentNavOption];
         
     _enableNavOption('navSave', enable);
     _enableNavOption('navReload', enable);
   }
   
   function _loadFAQItem(params) {
-    var editorElements = _getEditorElements();
-    
+    var labelAndEditorContainer = page.contentsEditor.getElementsByClassName('navEditor-item-edit')[0];
+    var elemLabel = labelAndEditorContainer.getElementsByClassName('navEditor-itemlabel')[0];
+    var editorContainer = labelAndEditorContainer.getElementsByClassName('contenteditor-container-navEditor')[0];
+
     if (params) {
       var label = params.tmContent.label;
       var markdown = params.isLeaf ? params.tmContent.markdown : '';
+
+      elemLabel.value = label;
+      MyTinyMCE.setContent(settings.contentEditorId.navEditor, markdown);
       
-      myTinyMCE.setContent(settings.contentEditorId.navEditor, markdown);
+      UtilityKTS.setClass(labelAndEditorContainer, 'hide-me', false);
+      UtilityKTS.setClass(editorContainer, 'hide-me', !params.isLeaf);
       
-      if (!markdown) markdown = '';
-      var rendered = MarkdownToHTML.convert(_sanitizeText(markdown));
-      
-      editorElements.markdownLabel.value = label;
-      editorElements.markdownContent.value = markdown;
-      editorElements.renderedContent.innerHTML = rendered;
-      
-      _setVisible(editorElements.markdownLabel, true);
-      _setVisible(editorElements.markdownContent, params.isLeaf);
-      _setVisible(editorElements.renderedContent, params.isLeaf);
-    
     } else {
-      _setVisible(editorElements.markdownLabel, false);
-      _setVisible(editorElements.markdownContent, false);
-      _setVisible(editorElements.renderedContent, false);      
+      UtilityKTS.setClass(labelAndEditorContainer, 'hide-me', true);
+      UtilityKTS.setClass(editorContainer, 'hide-me', true);
     }
+
     settings.currentNodeInfo = params;
   }
   
@@ -190,6 +177,7 @@ const app = function () {
     settings.dirtyBit[settings.currentNavOption] = dirty;
     _setNavOptions();
   }
+  
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
@@ -223,14 +211,10 @@ const app = function () {
     _setDirtyBit(true);
   }
   
-  function _handleMarkdownChange(e) {
-    var target = e.target;
-    var targetClassList = target.classList;
-
+  function _handleEditorChange(e) {
     var editLabel = page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].value;
-    //var editMarkdown = page.contentsEditor.getElementsByClassName('navEditor-itemcontent')[0].value;
     var editorContent = tinymce.get(settings.contentEditorId.navEditor).getContent();
-    
+
     var updatedNodeInfo = {
       id: settings.currentNodeInfo.id,
       name: _truncateNodeName(editLabel),
@@ -240,29 +224,37 @@ const app = function () {
       }
     };
 
-    settings.editorTree.updateNode(updatedNodeInfo);
+    settings.editorTree.updateNode(updatedNodeInfo, false);
     _handleTreeChange();
-  }
+  }  
   
   async function _handleSave(e) {
     if (settings.currentNavOption == 'navEditor') {
-      console.log('save - editor');
       if ( !(await _saveFAQInfo()) ) return;    
     
     } else if (settings.currentNavOption == 'navMapper') {
       console.log('save - mapper');
     }
     
-    await _handleReload();
+    await _handleReload(e, true);
     
     _setDirtyBit(false);
   }
   
-  async function _handleReload(e) {
-    if ( !(await _getFAQInfo()) ) return;
+  async function _handleReload(e, skipConfirm) {
+    if (!skipConfirm) {
+      var msg = 'Any changes will be lost.\nChoose "OK" to continue with reloading';
+      if (!confirm(msg)) return;
+    }
+    
+    if (settings.currentNavOption == 'navEditor') {
+      if ( !(await _getFAQInfo()) ) return;
+      settings.editorTree.update(settings.faqInfo);
 
-    page.notice.setNotice('');
-    settings.editorTree.update(settings.faqInfo);
+    } else if (settings.currentNavOption == 'navMapper') {
+      console.log('reload - mapper');
+    }
+
     _setDirtyBit(false);
   }
   
@@ -428,17 +420,7 @@ const app = function () {
   }
 
   function _getEditorElements() {
-    var markdownContainer = page.contentsEditor.getElementsByClassName('navEditor-item-edit')[0];
-    var renderedContainer = page.contentsEditor.getElementsByClassName('navEditor-item-rendered')[0];
-    
-    return {
-      "markdownContainer": markdownContainer,
-      "renderedContainer": renderedContainer,
-      
-      "markdownLabel": markdownContainer.getElementsByClassName('navEditor-itemlabel')[0],
-      "markdownContent":  markdownContainer.getElementsByClassName('navEditor-markdown-content')[0],
-      "renderedContent": renderedContainer.getElementsByClassName('navEditor-rendered-content')[0]
-    }
+    return {}
   }
   
   function _truncateNodeName(origName) {

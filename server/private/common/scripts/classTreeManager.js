@@ -90,14 +90,14 @@ class TreeManager {
     }
   }
   
-  updateNode(nodeInfo) {
+  updateNode(nodeInfo, useSelectCallback) {
     var thisTree = $(this._config.treeSelector);
     var selectedNode = thisTree.tree('getNodeById', nodeInfo.id);
     
     thisTree.tree('updateNode', selectedNode, {name: nodeInfo.name, tmContent: nodeInfo.tmContent});
 
     selectedNode = thisTree.tree('getNodeById', nodeInfo.id);
-    this._config.selectCallback(selectedNode);
+    if (useSelectCallback) this._config.selectCallback(selectedNode);
   }
   
   _showContextMenu(show, nodeInfo, x, y) {

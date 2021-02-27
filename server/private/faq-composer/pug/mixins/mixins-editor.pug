@@ -11,20 +11,7 @@ mixin editorContainer()
               div(class="input-group mb-3")
                 span(class="input-group-text" id="navEditor-itemlabel") item label
                 input(type="text" class="navEditor-itemlabel form-control" aria-label="label" aria-describedby="navEditor-itemlabel")
-              
-              
+                
             .row(class="p-0"): .col-sm
-              div(class="form-floating")
-                textarea(class="navEditor-itemcontent navEditor-markdown-content form-control" id="navEditor-itemmarkdown" placeholder="enter Markdown for item here")
-                label(for="navEditor-itemmarkdown"): em Markdown for item
-          
-        .row(class="p-0"): col-sm(class="navEditor-item-rendered")
-          .container-fluid
-            .row: .col-sm
-              div(class="navEditor-itemcontent navEditor-rendered-content form-control mt-2 mb-2")
-              
-        .row(class="p-0"): .col-sm
-          +makeTinyMCE("contenteditor-navEditor")
-
-        .row(class="p-0"): .col-sm        
-          button(class='btnTest') test
+              .contenteditor-container(class="contenteditor-container-navEditor")
+                +makeTinyMCE("contenteditor-navEditor")
