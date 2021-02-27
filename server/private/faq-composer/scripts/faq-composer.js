@@ -15,8 +15,10 @@ const app = function () {
     hideClass: 'hide-me',
     navItemClass: 'use-handler',
     treeContainerClass: 'hierarchy-container',
+
     helpURL: '/faq-composer/help',
     logoutURL: '/usermanagement/logout',
+    
     currentNodeInfo: null,
     labelTruncateLimit: 50,
     dirtyBit: {
@@ -264,18 +266,18 @@ const app = function () {
     dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'hierarchy');
     
     if (dbResult.success) {
-      var hierarchy = dbResult.data.hierarchy;
+      var hierarchyData = dbResult.data.hierarchy;
 
-      if (!hierarchy) {
-        hierarchy = _defaultTreeData();
+      if (!hierarchyData) {
+        hierarchyData = _defaultTreeData();
 
       } else {
-        hierarchy = JSON.parse(hierarchy);
-        hierarchy = _processTreeData(hierarchy, settings.treeProcessingReplacement.unpack);
-        if (hierarchy.length == 0) hierarchy = _defaultTreeData();
+        hierarchyData = JSON.parse(decodeURIComponent(hierarchyData));
+        hierarchyData = _processTreeData(hierarchyData, settings.treeProcessingReplacement.unpack);
+        if (hierarchyData.length == 0) hierarchyData = _defaultTreeData();
       }
 
-      settings.faqInfo = hierarchy;
+      settings.faqInfo = hierarchyData;
 
     } else {
       page.notice.setNotice('failed to get FAQ info');
@@ -298,9 +300,9 @@ const app = function () {
     }
     
     var hierarchyData = _processTreeData(JSON.parse(treeData), settings.treeProcessingReplacement.pack);
-    
+        
     var postData = {
-      hierarchy: JSON.stringify(hierarchyData)
+      hierarchy: encodeURIComponent(JSON.stringify(hierarchyData))
     };
 
     var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/update', 'hierarchy', postData);

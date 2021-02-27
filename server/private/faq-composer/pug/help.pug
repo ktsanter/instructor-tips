@@ -1,16 +1,14 @@
-include ../../common/pug/fontawesome-mixins.pug
-include ../../common/pug/bootstrap-mixins.pug
-
 doctype html
 html(lang="en")
   head
-    title help - FAQ composer help
+    title help - TinyMCE test
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
-    
-    +fontawesome()
-    +bootstrapstyle()     
-    
+
+    script(src='https://cdn.tiny.cloud/1/ilhkd30p3n59d9tztl5424xgsewe5n8oex22x3uwg0ucxc0i/tinymce/5/tinymce.min.js' referrerpolicy="origin")
+    script(src="/scripts/faq-composer/tinyMCE-test.js")
+
     body()
-      h3 FAQ composer help
-      div under construction
+      h3 TinyMCE test
+      form(method="post")
+        textarea(id="mytextarea" name="mytextarea") Hello, World!

@@ -35,7 +35,10 @@ class TreeManager {
     $(this._config.treeSelector).tree({
       autoOpen: true,
       dragAndDrop: true,
-      slide: false  // slide animation
+      slide: false , // slide animation
+      buttonLeft: true ,
+      openedIcon: '&#9671;',
+      closedIcon: '&#9670;'
     });
     this.update(treeData);    
   }

@@ -107,9 +107,12 @@ body {
 .contents .hierarchy-container {}
 
 .contents .hierarchy-container .tm-tree {
+  font-family: inherit;
   font-size: 0.9em;
+  /*
   border: 1px solid var(--borderPrimary);
   border-radius: 0.25em;  
+  */
 }
 
 .contents .hierarchy-container .contextmenu {

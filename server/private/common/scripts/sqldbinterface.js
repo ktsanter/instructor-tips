@@ -69,7 +69,7 @@ class SQLDBInterface {
     var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
 
     try {
-      const resp = await fetch(url, {method: 'post', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(postData)});
+      const resp = await fetch(url, {method: 'post', headers: {'Content-Type': 'application/json; charset=utf-8'}, body: JSON.stringify(postData)});
       const json = await resp.json();
       //console.log(json);
       
