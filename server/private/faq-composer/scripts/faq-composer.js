@@ -6,6 +6,7 @@
 // TODO: finish profile
 // TODO: finish help
 // TODO: save and reload enabling should be different for mapper and editor
+// TODO: reload trees in showContents?
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -102,10 +103,12 @@ const app = function () {
     settings.contentEditorId.navEditor = 'contenteditor-navEditor';
 
     settings.editorTree = new TreeManager({
+      id: 'navEditorTreeControl',
       appendTo: treeContainer,
       selectCallback: _handleTreeSelect,
       changeCallback: _handleTreeChange,
-      useContextMenu: true
+      useContextMenu: true,
+      allowMultiSelect: false
     });
     
     settings.editorTree.render(settings.faqInfo);    
@@ -113,7 +116,20 @@ const app = function () {
     page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].addEventListener('input', (e) => {_handleEditorChange(e);});    
   }
   
-  function _renderMapper() {}
+  function _renderMapper() {
+    var treeContainer = page.contentsMapper.getElementsByClassName(settings.treeContainerClass)[0];
+
+    settings.mapperTree = new TreeManager({
+      id: 'navMapperTreeControl',
+      appendTo: treeContainer,
+      selectCallback: _handleTreeSelect,
+      changeCallback: _handleTreeChange,
+      useContextMenu: false,
+      allowMultiSelect: true
+    });
+    
+    settings.mapperTree.render(settings.faqInfo);        
+  }
   
   function _renderProfile() {
     page.contentsProfile.getElementsByClassName('user-name')[0].innerHTML = settings.userInfo.userName;
@@ -130,6 +146,8 @@ const app = function () {
       var hide = !containers[i].classList.contains('contents-' + contentsId);
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
+    
+    if (settings.editorTree) settings.editorTree.forceContextMenuClose();
         
     _setNavOptions();
   }
@@ -165,6 +183,19 @@ const app = function () {
     settings.currentNodeInfo = params;
   }
   
+  function _showMapping(selectedItems) {
+    var container = page.contentsMapper.getElementsByClassName('selected-items')[0];
+    var txt = '';
+    for (var i = 0; i < selectedItems.length; i++) {
+      var item = selectedItems[i];
+      if (item.hasOwnProperty('tmContent')) {
+        txt += item.tmContent.label + '<br>';
+      }
+      console.log(txt);
+    }
+    container.innerHTML = txt;
+  }
+  
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
   }
@@ -196,14 +227,19 @@ const app = function () {
   }
   
   function _handleTreeSelect(nodeInfo) {
-    if (nodeInfo) {
-       _loadFAQItem({
-         id: nodeInfo.id,
-         isLeaf: nodeInfo.children.length == 0,
-         tmContent: nodeInfo.tmContent
-       });
-    } else {
-      _loadFAQItem();
+    if (settings.currentNavOption == 'navEditor') {
+      if (nodeInfo) {
+         _loadFAQItem({
+           id: nodeInfo.id,
+           isLeaf: nodeInfo.children.length == 0,
+           tmContent: nodeInfo.tmContent
+         });
+      } else {
+        _loadFAQItem();
+      }
+      
+    } else if (settings.currentNavOption == 'navMapper') {
+      _showMapping(nodeInfo);
     }
   }
   
@@ -233,7 +269,7 @@ const app = function () {
       if ( !(await _saveFAQInfo()) ) return;    
     
     } else if (settings.currentNavOption == 'navMapper') {
-      console.log('save - mapper');
+      console.log('_handleSave - navMapper');
     }
     
     await _handleReload(e, true);
@@ -252,7 +288,7 @@ const app = function () {
       settings.editorTree.update(settings.faqInfo);
 
     } else if (settings.currentNavOption == 'navMapper') {
-      console.log('reload - mapper');
+      console.log('_handleReload - navMapper');
     }
 
     _setDirtyBit(false);

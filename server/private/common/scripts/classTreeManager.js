@@ -8,7 +8,7 @@ class TreeManager {
     this._config = config;
     
     this._config.treeClass = 'tm-tree';
-    this._config.treeSelector = '.' + this._config.treeClass;
+    this._config.treeSelector = '#' + this._config.id;
     this._config.contextMenu = null;
   }
   
@@ -17,20 +17,23 @@ class TreeManager {
   //--------------------------------------------------------------
   render(treeData) {
     var elemTree = document.createElement('div');
+    elemTree.id = this._config.id;
     elemTree.classList.add('tm-tree');
     this._config.elemTree = elemTree;
     this._config.appendTo.appendChild(elemTree);
     
     $(this._config.treeSelector).on('tree.init', (e) => { this._treeEventDispatch(e, 'init'); } );
     $(this._config.treeSelector).on('tree.select', (e) => { this._treeEventDispatch(e, 'select'); } );
-    $(this._config.treeSelector).on('tree.contextmenu', (e) => { this._treeEventDispatch(e, 'contextmenu'); } );
     $(this._config.treeSelector).on('tree.click', (e) => { this._treeEventDispatch(e, 'click'); } );
     $(this._config.treeSelector).on('tree.open', (e) => { this._treeEventDispatch(e, 'open'); } );
     $(this._config.treeSelector).on('tree.close', (e) => { this._treeEventDispatch(e, 'close'); } );
     $(this._config.treeSelector).on('tree.move', (e) => { this._treeEventDispatch(e, 'move'); } );   
     $(this._config.treeSelector).on('tree.refresh', (e) => { this._treeEventDispatch(e, 'refresh'); } );   
     
-    if (this._config.useContextMenu) this._renderContextMenu(this._config.appendTo);
+    if (this._config.useContextMenu) {
+      this._renderContextMenu(this._config.appendTo);
+      $(this._config.treeSelector).on('tree.contextmenu', (e) => { this._treeEventDispatch(e, 'contextmenu'); } );
+    }
 
     $(this._config.treeSelector).tree({
       autoOpen: true,
@@ -44,7 +47,8 @@ class TreeManager {
   }
   
   _renderContextMenu(elemParent) {
-    var menu = CreateElement.createDiv(null, 'contextmenu');
+    var menu = CreateElement.createDiv(this._config.id + 'Contextmenu', 'contextmenu');
+    
     elemParent.appendChild(menu);
     this._config.contextMenu = menu;
     
@@ -100,7 +104,13 @@ class TreeManager {
     if (useSelectCallback) this._config.selectCallback(selectedNode);
   }
   
+  forceContextMenuClose() {
+    this._config.contextMenu.style.display = 'none';
+  }
+  
   _showContextMenu(show, nodeInfo, x, y) {
+    if (!this._config.useContextMenu) return;
+        
     if (nodeInfo) {
       this._config.contextMenu.nodeInfo = nodeInfo;
       
@@ -177,7 +187,8 @@ class TreeManager {
       'select': this._handleTreeSelect,
       "contextmenu": this._handleTreeContextMenu,
       "move": this._handleTreeMove,
-      "refresh": this._handleTreeRefresh
+      "refresh": this._handleTreeRefresh,
+      "click": this._handleTreeClick
     };
     
     if (dispatchMap.hasOwnProperty(eventType)) {
@@ -200,6 +211,27 @@ class TreeManager {
     var selectedNode = thisTree.tree('getNodeById', e.node.id);
     
     me._config.selectCallback(selectedNode);
+  }
+  
+  _handleTreeClick(e, me) {
+    if (!me._config.allowMultiSelect) return;
+
+    e.preventDefault();
+    
+    var selected_node = e.node;
+
+    if (selected_node.id === undefined) {
+        console.warn('The multiple selection functions require that nodes have an id');
+    }
+
+    var thisTree = $(me._config.treeSelector);
+    if (thisTree.tree('isNodeSelected', selected_node)) {
+        thisTree.tree('removeFromSelection', selected_node);
+    } else {
+        thisTree.tree('addToSelection', selected_node);
+    }    
+    
+    me._config.selectCallback(me._getSelectedNodes(me, thisTree.tree('getTree'), true));
   }
   
   _handleTreeContextMenu(e, me) {
@@ -254,5 +286,20 @@ class TreeManager {
 
     return thisTree.idMapping.size;
   }
-
+  
+  _getSelectedNodes(me, basenode, leavesOnly) {
+		var list = [];
+    var thisTree = $(me._config.treeSelector);
+		
+    var baseIsLeaf = (basenode.children.length == 0);
+    if ((baseIsLeaf || !leavesOnly) && thisTree.tree('isNodeSelected', basenode)) {
+      list.push(basenode);
+    }
+		
+		var children = basenode.children;
+		for (var i = 0; i < children.length; i++) {
+			 list = list.concat(me._getSelectedNodes(me, children[i], leavesOnly));
+		}    
+    return list;
+  }
 }

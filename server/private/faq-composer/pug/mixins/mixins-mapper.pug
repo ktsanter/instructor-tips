@@ -1,17 +1,21 @@
 mixin mapperContainer()
   .row
+    .col-sm-3(class="hierarchy-container" id="mapperHierarchy")
+      label(for="mapperHierarchy" class="col col-form-label col-form-label") FAQ items
+    
     .col-sm
-      div(class="d-flex p-2 course-selection-container") 
-        div(class="input-group mb-3")
-          div(class="input-group-prepend")
-            label(class="input-group-text" for="inputGroupSelect-mapper") course
-          select(class="custom-select course-selection" id="inputGroupSelect-mapper")
-            option(selected) choose...
-            option(value="1") Basic Web Design: HTML & CSS
-            option(value="2") AP Computer Science Principles (Sem 1)
-            option(value="3") AP COmputer Science Principles (Sem 2)
-            option(value="4") Essentials Geometry B
-
-  .row
-    .col-sm(class="hierarchy-container")
-
+      .container-fluid(class="p-0")
+        .row(class="p-0"): col-sm(class="navMapper-item-edit")
+          div(class="d-flex p-2 course-selection-container") 
+            div(class="input-group mb-3")
+              div(class="input-group-prepend")
+                label(class="input-group-text" for="inputGroupSelect-mapper") project
+              select(class="custom-select course-selection" id="inputGroupSelect-mapper")
+                option(selected) choose...
+                option(value="1") Basic Web Design: HTML & CSS
+                option(value="2") AP Computer Science Principles (Sem 1)
+                option(value="3") AP COmputer Science Principles (Sem 2)
+                option(value="4") Essentials Geometry B
+                
+        .row(class="p-0"): col-sm(class="selected-items-container")
+          .selected-items selected item list
