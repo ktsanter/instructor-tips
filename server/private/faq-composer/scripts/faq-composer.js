@@ -1,12 +1,18 @@
 //-----------------------------------------------------------------------
 // FAQ composer
 //-----------------------------------------------------------------------
+// TODO: dummy DB interface for mapper
+// TODO: load tree function for mapper
+// TODO: dirty bit for mapper
+// TODO: think about how to use same code for presenter and mapper 
+//       when rendering selected items
 // TODO: add DB for mapper and profile
 // TODO: finish mapper
 // TODO: finish profile
 // TODO: finish help
 // TODO: save and reload enabling should be different for mapper and editor
-// TODO: reload trees in showContents?
+// TODO: reload trees in showContents? or both when
+// TODO: 
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -59,6 +65,7 @@ const app = function () {
 
     if ( !(await _getUserInfo()) ) return;
     if ( !(await _getFAQInfo()) ) return;
+    if ( !(await _getProjectList()) ) return;
     
     page.notice.setNotice('');
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
@@ -95,6 +102,11 @@ const app = function () {
     _renderEditor();
     _renderMapper();
     _renderProfile();
+    document.getElementById('btnTest').addEventListener('click', (e) => { _test(); });
+  }
+  
+  function _test(e) {
+    console.log('test');
   }
   
   function _renderEditor() {
@@ -108,7 +120,9 @@ const app = function () {
       selectCallback: _handleTreeSelect,
       changeCallback: _handleTreeChange,
       useContextMenu: true,
-      allowMultiSelect: false
+      allowMultiSelect: false,
+      allowDragAndDrop: true,
+      autoSelect: true
     });
     
     settings.editorTree.render(settings.faqInfo);    
@@ -125,7 +139,9 @@ const app = function () {
       selectCallback: _handleTreeSelect,
       changeCallback: _handleTreeChange,
       useContextMenu: false,
-      allowMultiSelect: true
+      allowMultiSelect: true,
+      allowDragAndDrop: false,
+      autoSelect: false
     });
     
     settings.mapperTree.render(settings.faqInfo);        
@@ -148,8 +164,22 @@ const app = function () {
     }
     
     if (settings.editorTree) settings.editorTree.forceContextMenuClose();
-        
+    
+    if (contentsId == 'navMapper') _showMapper();
+      
     _setNavOptions();
+  }
+  
+  async function _showMapper() {
+    console.log('show mapper');
+    console.log('  - set selected in tree');
+    console.log('  - render selected');
+    if ( !(await _getProjectList()) ) return;
+    
+    _loadProjectList(settings.projectList);
+    if (settings.mapperTree) settings.mapperTree.update(settings.faqInfo); 
+    
+    /* this is just a test - use actual settings for project */settings.mapperTree.setTreeState({selectedList: [3, 7], openedList: null});
   }
   
   function _setNavOptions() {
@@ -158,6 +188,10 @@ const app = function () {
         
     _enableNavOption('navSave', enable);
     _enableNavOption('navReload', enable);
+  }
+  
+  function _loadProjectList(projectList) {
+    console.log('_loadProjectList');
   }
   
   function _loadFAQItem(params) {
@@ -191,7 +225,6 @@ const app = function () {
       if (item.hasOwnProperty('tmContent')) {
         txt += item.tmContent.label + '<br>';
       }
-      console.log(txt);
     }
     container.innerHTML = txt;
   }
@@ -266,7 +299,7 @@ const app = function () {
   
   async function _handleSave(e) {
     if (settings.currentNavOption == 'navEditor') {
-      if ( !(await _saveFAQInfo()) ) return;    
+      if ( !(await _saveFAQInfo()) ) return;
     
     } else if (settings.currentNavOption == 'navMapper') {
       console.log('_handleSave - navMapper');
@@ -425,21 +458,34 @@ const app = function () {
     }];
   }
   
+  async function _getProjectList() {
+    settings.projectList = null
+    
+    //------- debug ------------------------------
+    dbResult = {
+      success: true, 
+      data: [
+        3, 4, 6, 2
+      ]
+    };
+    
+    //-------------------------------------------
+    //dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'projectlist');
+    //-------------------------------------------
+    
+    if (dbResult.success) {
+      settings.projectList = dbResult.data;
+
+    } else {
+      page.notice.setNotice('failed to get project list');
+    }
+    
+    return dbResult.success;
+  }  
+  
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------
-  function _setVisible(elem, makeVisible) {
-    elem.style.visibility = makeVisible ? 'visible' : 'hidden';
-  }
-  
-  function _sanitizeText(str) {
-    if (!str) return '';
-    var cleaned = str.replace(/"/g, '\\"');  // escape double quotes
-    cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
-    
-    return cleaned;
-  }
-  
   function _replaceGroup(strOrig, replacementGroup) {
     var str = strOrig;
     
@@ -455,10 +501,6 @@ const app = function () {
     return str;
   }
 
-  function _getEditorElements() {
-    return {}
-  }
-  
   function _truncateNodeName(origName) {
     var name = origName;
 

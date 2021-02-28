@@ -37,7 +37,7 @@ class TreeManager {
 
     $(this._config.treeSelector).tree({
       autoOpen: true,
-      dragAndDrop: true,
+      dragAndDrop: this._config.allowDragAndDrop,
       slide: false , // slide animation
       buttonLeft: true ,
       openedIcon: '&#9671;',
@@ -84,13 +84,15 @@ class TreeManager {
     thisTree.tree('loadData', treeData);
     var root = thisTree.tree('getTree');
     
-    // if a node was selectd before then try to select it now
-    if (selectedNode) {
-      selectedNode = thisTree.tree('getNodeById', selectedNode.id);
-      if (selectedNode) thisTree.tree('selectNode', selectedNode);
+    if (this._config.autoSelect) {
+      // if a node was selectd before then try to select it now
+      if (selectedNode) {
+        selectedNode = thisTree.tree('getNodeById', selectedNode.id);
+        if (selectedNode) thisTree.tree('selectNode', selectedNode);
 
-    } else if (root.children.length > 0) {  // otherwise select the first node
-      thisTree.tree('selectNode', root.children[0]);
+      } else if (root.children.length > 0) {  // otherwise select the first node
+        thisTree.tree('selectNode', root.children[0]);
+      }
     }
   }
   
@@ -102,6 +104,26 @@ class TreeManager {
 
     selectedNode = thisTree.tree('getNodeById', nodeInfo.id);
     if (useSelectCallback) this._config.selectCallback(selectedNode);
+  }
+  
+  setTreeState(newTreeState) {
+    var thisTree = $(this._config.treeSelector);
+    
+    var treeState = thisTree.tree('getState');
+    treeState.selected_node = newTreeState.selectedList;
+    
+    if (newTreeState.openedList) treeState.open_nodes = newTreeState.openedList;
+    thisTree.tree('setState', treeState);
+  }
+  
+  getTreeState() {
+    var thisTree = $(this._config.treeSelector);
+    
+    var treeState = thisTree.tree('getState');
+    return {
+      selectedList: treeState.selected_node,
+      openedList: treeState.open_nodes
+    }
   }
   
   forceContextMenuClose() {
