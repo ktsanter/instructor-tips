@@ -10,9 +10,8 @@
 // TODO: finish mapper
 // TODO: finish profile
 // TODO: finish help
-// TODO: save and reload enabling should be different for mapper and editor
-// TODO: reload trees in showContents? or both when
 // TODO: add share option for embed code to mapper
+// TODO: add Rename option to mapper ?
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -179,23 +178,27 @@ const app = function () {
     
     if (opt == 'navEditor') {
       var enable = settings.dirtyBit[settings.currentNavOption];
-          
       _enableNavOption('navSave', true, enable);
       _enableNavOption('navReload', true, enable);
       _enableNavOption('navProjectAdd', false);
       _enableNavOption('navProjectRemove', false);
+      _enableNavOption('navProjectShare', false);
       
     } else if (opt == 'navMapper') {
+      enable = settings.currentProjectId;
       _enableNavOption('navSave', false);
       _enableNavOption('navReload', false);
       _enableNavOption('navProjectAdd', true, true);
-      _enableNavOption('navProjectRemove', true, true);
+      _enableNavOption('navProjectRemove', true, enable);
+      _enableNavOption('navProjectShare', true, enable);
       
     } else if (opt == 'navProfile') {
-      _enableNavOption('navSave', true, true);
-      _enableNavOption('navReload', true, true);
+      var enable = settings.dirtyBit[settings.currentNavOption];
+      _enableNavOption('navSave', true, enable);
+      _enableNavOption('navReload', true, enable);
       _enableNavOption('navProjectAdd', false);
       _enableNavOption('navProjectRemove', false);
+      _enableNavOption('navProjectShare', false);
     }
   }
   
@@ -227,24 +230,27 @@ const app = function () {
     var elemProjectSelect = page.contentsMapper.getElementsByClassName('project-selection')[0];
     UtilityKTS.removeChildren(elemProjectSelect);
     
-    var elemOption = CreateElement.createOption(null, null, null, 'choose...');
-    elemProjectSelect.appendChild(elemOption);
-    if (!settings.currentProjectId) elemOption.selected = true;
+    if (!settings.currentProjectId) {
+      var elemOption = CreateElement.createOption(null, null, 'default', 'choose...');
+      elemProjectSelect.appendChild(elemOption);
+      if (!settings.currentProjectId) elemOption.selected = true;
+    }
     
     for (var i = 0; i < projectList.length; i++) {
       var project = projectList[i];
       elemOption = CreateElement.createOption(null, null, project.projectid, project.projectname);
       elemProjectSelect.appendChild(elemOption);
-      if (settings.currentProjectId && settings.currentProjectid == project.projectid) elemOption.selected = true;
+      if (settings.currentProjectId && settings.currentProjectId == project.projectid) elemOption.selected = true;
     }
+    
+    _loadProjectInfo(settings.currentProjectId);
   }
   
   function _loadProjectInfo(projectId) {
+    console.log('_loadProjectInfo ' + projectId);
     settings.currentProjectId = projectId;
    
     if (projectId) {
-      console.log(projectId);
-      console.log(settings.projectData);
       var projectInfo = settings.projectData[projectId];
       settings.mapperTree.setTreeState({
         selectedList: projectInfo.orderedItems,
@@ -259,12 +265,14 @@ const app = function () {
       });
       _loadProjectFAQs([]);
     }
+    
+    _setNavOptions();
   }
   
-  function _updateFAQSelections() {
-    if (!settings.currentProject) return;
+  function _updateProjectFAQSelections() {
+    if (!settings.currentProjectId) return;
     
-    var currentOrder = settings.currentProject.orderedItems;
+    var currentOrder = settings.projectData[settings.currentProjectId].orderedItems;
     var selectedItems = settings.mapperTree.getTreeState().selectedList;
 
     var currentSet = new Set(currentOrder);
@@ -280,9 +288,7 @@ const app = function () {
     }
     
     newOrder = newOrder.concat(addedItems);
-    
-    settings.currentProject.orderedItems = newOrder;
-    _loadProjectInfo(settings.currentProject);
+    settings.projectData[settings.currentProjectId].orderedItems = newOrder;
   }
   
   function _loadProjectFAQs(faqList) {
@@ -329,13 +335,14 @@ const app = function () {
       "navSave": function() { _handleSave(e);},
       "navReload": function() { _handleReload(e);},
       "navProjectAdd": function() { _handleProjectAdd(e);},
-      "navProjectRemove": function() { _handleProjectRemove(e);}
+      "navProjectRemove": function() { _handleProjectRemove(e);},
+      "navProjectShare": function() { _handleProjectShare(e);}
     }
     
     dispatchMap[e.target.id]();
   }
   
-  function _handleTreeSelect(nodeInfo) {
+  async function _handleTreeSelect(nodeInfo) {
     if (settings.currentNavOption == 'navEditor') {
       if (nodeInfo) {
          _loadFAQItem({
@@ -348,8 +355,10 @@ const app = function () {
       }
       
     } else if (settings.currentNavOption == 'navMapper') {
-      _updateFAQSelections();
-      _setDirtyBit(true);
+      _updateProjectFAQSelections();
+      var result = await _updateProjectInDB(settings.currentProjectId);
+      if (!result.success) return;
+      _loadProjectInfo(settings.currentProjectId);
     }
   }
   
@@ -377,7 +386,6 @@ const app = function () {
   async function _handleSave(e) {
     if (settings.currentNavOption == 'navEditor') {
       if ( !(await _saveFAQInfo()) ) return;
-    
     } 
     
     await _handleReload(e, true);
@@ -403,17 +411,55 @@ const app = function () {
   function _handleProjectSelect(e) {
     var projectId = e.target[e.target.selectedIndex].value;
     
-    //var projectInfo = null;
-    //if (projectId) projectInfo = settings.projectData[projectId];
-    _loadProjectInfo(projectId);
+    _removeDefaultOption(e.target);    
+    _loadProjectInfo(projectId); 
   }
   
-  function _handleProjectAdd(e) {
+  async function _handleProjectAdd(e) {
     console.log('_handleProjectAdd');
+    
+    var msg = 'Enter the name of the new project';
+    var projectName = prompt(msg);
+    if (!projectName) return;
+    
+    if (!_validateProjectName(projectName)) {
+      var msg = "The project name\n" + projectName + '\nis not valid.';
+      msg += '\n\nIt must have length between 1 and 200';
+      msg += ' and include only letters, digits, spaces, parentheses and commas.';
+      alert(msg);
+      return;
+    }
+    
+    page.notice.setNotice('creating project...', true);
+    var result = await _addProjectToDB(projectName);
+    if (!result.success) return;
+    page.notice.setNotice('');
+    
+    settings.currentProjectId = result.data.projectid;
+    await _showMapper();
   }
   
-  function _handleProjectRemove(e) {
-    console.log('_handleProjectRemove');
+  async function _handleProjectRemove(e) {
+    var projectId = settings.currentProjectId;
+    if (!projectId) return;
+
+    var msg = 'This project will be deleted:';
+    msg += '\n' + settings.projectData[projectId].projectname;
+    msg += '\n\nThis action cannot be undone.  Continue with deletion?';
+    
+    if (!confirm(msg)) return;
+
+    page.notice.setNotice('deleting project...', true);
+    var result = await _deleteProjectFromDB(projectId);
+    if (!result.success) return;
+    page.notice.setNotice('');
+    
+    settings.currentProjectId = null;
+    await _showMapper();
+  }
+  
+  function _handleProjectShare(e) {
+    console.log('_handleProjectShare');
   }
   
   //---------------------------------------
@@ -547,44 +593,46 @@ const app = function () {
     }];
   }
   
+  var dummyProjectData = {
+    projectlist: [
+      { projectid: 3, projectname: "Basic Web Design (2020-21)" },
+      { projectid: 1,  projectname: "AP Computer Science Principles, Sem 2 (2020-21)" },
+      { projectid: 2, projectname: "Essentials Geometry B (2020-21)" }
+    ],
+    
+    3: { 
+      projectid: 3,
+      projectname: "Basic Web Design (2020-21)",
+      orderedItems: [6, 2, 3, 4],
+      openedItems: []
+    },
+    
+    1: {
+      projectid: 1,
+      projectname: "AP Computer Science Principles, Sem 2 (2020-21)",
+      orderedItems: [4, 6],
+      openedItems: []
+    },
+    
+    2: {
+      projectid: 2,
+      projectname: "Essentials Geometry B (2020-21)",
+      orderedItems: [6, 2, 100, 7],
+      openedItems: []
+    }
+  };
+  
   async function _getProjectData() {
     settings.projectData = null
     
     //------- debug ------------------------------
-    dbResult = {
+    var dbResult = {
       success: true, 
-      data: {
-        projectlist: [
-          { projectid: 3, projectname: "Basic Web Design (2020-21)" },
-          { projectid: 1,  projectname: "AP Computer Science Principles, Sem 2 (2020-21)" },
-          { projectid: 2, projectname: "Essentials Geometry B (2020-21)" }
-        ],
-        
-        3: { 
-          projectid: 3,
-          projectname: "Basic Web Design (2020-21)",
-          orderedItems: [6, 2, 3, 4],
-          openedItems: []
-        },
-        
-        1: {
-          projectid: 1,
-          projectname: "AP Computer Science Principles, Sem 2 (2020-21)",
-          orderedItems: [4, 6],
-          openedItems: []
-        },
-        
-        2: {
-          projectid: 2,
-          projectname: "Essentials Geometry B (2020-21)",
-          orderedItems: [6, 2, 100, 7],
-          openedItems: []
-        }
-      }
+      data: dummyProjectData
     };
     
-    //-------------------------------------------
-    //dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'projectlist');
+    //------- live DB ----------------------------
+    //var dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'projectlist');
     //-------------------------------------------
     
     if (dbResult.success) {
@@ -596,6 +644,99 @@ const app = function () {
     
     return dbResult.success;
   }  
+  
+  async function _addProjectToDB(projectName) {    
+    var params = {
+    "projectname": projectName
+    };
+    
+    //------- debug ------------------------------
+    var maxId = -1;
+    var plist = dummyProjectData.projectlist;
+    for (var i = 0; i < plist.length; i++) {
+      if (plist[i].projectid > maxId) maxId = plist[i].projectid;
+    }
+    
+    var id = maxId + 1;
+    dummyProjectData.projectlist.push({projectid: id, projectname: projectName});
+    dummyProjectData[id] = {projectid: id, projectname: projectName, orderedItems: [], openedItems: []};
+    
+    var dbResult = {
+      success: true,
+      data: {
+        projectid: id,
+        projectname: projectName
+      }
+    };
+    
+    //------- live DB ----------------------------
+    //var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/insert', 'project', params);
+    //-------------------------------------------
+
+    if (!dbResult.success) {
+      page.notice.setNotice('failed to create project');
+    }
+    
+    return dbResult;
+  }  
+  
+  async function _deleteProjectFromDB(projectId) {    
+    var params = {
+      "projectid": projectId
+    };
+    
+    //------- debug ------------------------------
+    var plist = dummyProjectData.projectlist;
+    var index = -1;
+    for (var i = 0; i < plist.length && index < 0; i++) {
+      if (plist[i].projectid == projectId) index = i
+    }
+    plist.splice(index, 1);
+
+    dummyProjectData.projectList = plist;
+    delete dummyProjectData[projectId];
+
+    var dbResult = {
+      success: true,
+      data: {}
+    };
+    
+    //------- live DB ----------------------------
+    //var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/delete', 'project', params);
+    //-------------------------------------------
+
+    if (!dbResult.success) {
+      page.notice.setNotice('failed to create project');
+    }
+    
+    return dbResult;
+  }  
+  
+  async function _updateProjectInDB(projectId) {
+    console.log('_updateProjectInDB');
+    var params = {
+      "projectid": projectId
+      // add other params - ordered and opened
+    };
+    
+    //------- debug ------------------------------
+    dummyProjectData[projectId].orderedItems = settings.projectData[projectId].orderedItems;
+    dummyProjectData[projectId].openedItems = settings.projectData[projectId].openedItems;
+    
+    var dbResult = {
+      success: true
+    };
+    
+    //------- live DB ----------------------------
+    //var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/update', 'project', params);
+    //-------------------------------------------
+
+    if (!dbResult.success) {
+      page.notice.setNotice('failed to update project info');
+    }
+    
+    return dbResult;
+  }
   
   //--------------------------------------------------------------------------
   // utility
@@ -627,6 +768,24 @@ const app = function () {
     UtilityKTS.setClass(elem, 'hide-me', !visible);
     elem.disabled = !enable;    
   }
+  
+  function _removeDefaultOption(elemSelect) {
+    for (var i = 0; i < elemSelect.childNodes.length; i++) {
+      var elemOption = elemSelect.childNodes[i];
+      if (elemOption.value == 'default') {
+        elemSelect.removeChild(elemOption);
+      }
+    }
+  }
+  
+  function _validateProjectName(projectName) {
+    var valid = projectName.length < 200;
+    valid = valid && projectName.length > 0;
+    
+    valid = valid && (projectName.match(/[A-Za-z0-9&:\(\), ]+/) == projectName);
+    
+    return valid;
+  }  
 
 	//-----------------------------------------------------------------------------------
 	// init:

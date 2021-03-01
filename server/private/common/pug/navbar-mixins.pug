@@ -40,7 +40,7 @@ mixin makeNavbar(title, params)
                         li: hr(class="dropdown-divider")
 
         each navButton in params.buttons
-          button(id=navButton.id class="btn btn-outline-success use-handler mx-1")=navButton.label
+          button(id=navButton.id class="btn btn-outline-success use-handler hide-me mx-1")=navButton.label
           
         if params.profile
           i(id="navProfile" class="icon icon-profile use-handler fas fa-user-circle ml-1")
