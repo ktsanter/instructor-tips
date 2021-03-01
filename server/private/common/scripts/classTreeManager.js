@@ -69,6 +69,11 @@ class TreeManager {
   //--------------------------------------------------------------
   // get
   //--------------------------------------------------------------
+  getNode(id) {
+    var thisTree = $(this._config.treeSelector);
+    return thisTree.tree('getNodeById', id);
+  }
+  
   getAsJSON() {
     var thisTree = $(this._config.treeSelector);
     return thisTree.tree('toJson');
@@ -191,6 +196,19 @@ class TreeManager {
 		}
   }
   
+  _propagateSelection(me, baseNode, makeSelected) {
+    var thisTree = $(me._config.treeSelector);    
+
+		var action = 'removeFromSelection';
+		if (makeSelected) action = 'addToSelection';
+
+		thisTree.tree(action, baseNode);
+		var children = baseNode.children;
+		for (var i = 0; i < children.length; i++) {
+			me._propagateSelection(me, children[i], makeSelected);
+		}
+	}
+  
   //--------------------------------------------------------------
   // show/hide
   //--------------------------------------------------------------
@@ -247,12 +265,9 @@ class TreeManager {
     }
 
     var thisTree = $(me._config.treeSelector);
-    if (thisTree.tree('isNodeSelected', selected_node)) {
-        thisTree.tree('removeFromSelection', selected_node);
-    } else {
-        thisTree.tree('addToSelection', selected_node);
-    }    
-    
+    var makeSelected = !thisTree.tree('isNodeSelected', selected_node);
+    me._propagateSelection(me, selected_node, makeSelected);
+
     me._config.selectCallback(me._getSelectedNodes(me, thisTree.tree('getTree'), true));
   }
   

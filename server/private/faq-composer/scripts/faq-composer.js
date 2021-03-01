@@ -12,7 +12,7 @@
 // TODO: finish help
 // TODO: save and reload enabling should be different for mapper and editor
 // TODO: reload trees in showContents? or both when
-// TODO: 
+// TODO: add share option for embed code to mapper
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -65,7 +65,7 @@ const app = function () {
 
     if ( !(await _getUserInfo()) ) return;
     if ( !(await _getFAQInfo()) ) return;
-    if ( !(await _getProjectList()) ) return;
+    if ( !(await _getProjectData()) ) return;
     
     page.notice.setNotice('');
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
@@ -102,13 +102,8 @@ const app = function () {
     _renderEditor();
     _renderMapper();
     _renderProfile();
-    document.getElementById('btnTest').addEventListener('click', (e) => { _test(); });
   }
-  
-  function _test(e) {
-    console.log('test');
-  }
-  
+    
   function _renderEditor() {
     var treeContainer = page.contentsEditor.getElementsByClassName(settings.treeContainerClass)[0];
 
@@ -144,7 +139,9 @@ const app = function () {
       autoSelect: false
     });
     
-    settings.mapperTree.render(settings.faqInfo);        
+    settings.mapperTree.render(settings.faqInfo);       
+
+    page.contentsMapper.getElementsByClassName('project-selection')[0].addEventListener('change', (e) => {_handleProjectSelect(e);});
   }
   
   function _renderProfile() {
@@ -171,27 +168,35 @@ const app = function () {
   }
   
   async function _showMapper() {
-    console.log('show mapper');
-    console.log('  - set selected in tree');
-    console.log('  - render selected');
-    if ( !(await _getProjectList()) ) return;
+    if ( !(await _getProjectData()) ) return;
     
-    _loadProjectList(settings.projectList);
     if (settings.mapperTree) settings.mapperTree.update(settings.faqInfo); 
-    
-    /* this is just a test - use actual settings for project */settings.mapperTree.setTreeState({selectedList: [3, 7], openedList: null});
+    _loadProjectList(settings.projectData.projectlist);
   }
   
   function _setNavOptions() {
     var opt = settings.currentNavOption;
-    var enable = settings.dirtyBit[settings.currentNavOption];
-        
-    _enableNavOption('navSave', enable);
-    _enableNavOption('navReload', enable);
-  }
-  
-  function _loadProjectList(projectList) {
-    console.log('_loadProjectList');
+    
+    if (opt == 'navEditor') {
+      var enable = settings.dirtyBit[settings.currentNavOption];
+          
+      _enableNavOption('navSave', true, enable);
+      _enableNavOption('navReload', true, enable);
+      _enableNavOption('navProjectAdd', false);
+      _enableNavOption('navProjectRemove', false);
+      
+    } else if (opt == 'navMapper') {
+      _enableNavOption('navSave', false);
+      _enableNavOption('navReload', false);
+      _enableNavOption('navProjectAdd', true, true);
+      _enableNavOption('navProjectRemove', true, true);
+      
+    } else if (opt == 'navProfile') {
+      _enableNavOption('navSave', true, true);
+      _enableNavOption('navReload', true, true);
+      _enableNavOption('navProjectAdd', false);
+      _enableNavOption('navProjectRemove', false);
+    }
   }
   
   function _loadFAQItem(params) {
@@ -217,16 +222,85 @@ const app = function () {
     settings.currentNodeInfo = params;
   }
   
-  function _showMapping(selectedItems) {
+  function _loadProjectList(projectList) {
+    console.log('_loadProjectList');
+    var elemProjectSelect = page.contentsMapper.getElementsByClassName('project-selection')[0];
+    UtilityKTS.removeChildren(elemProjectSelect);
+    
+    var elemOption = CreateElement.createOption(null, null, null, 'choose...');
+    elemProjectSelect.appendChild(elemOption);
+    if (!settings.currentProjectId) elemOption.selected = true;
+    
+    for (var i = 0; i < projectList.length; i++) {
+      var project = projectList[i];
+      elemOption = CreateElement.createOption(null, null, project.projectid, project.projectname);
+      elemProjectSelect.appendChild(elemOption);
+      if (settings.currentProjectId && settings.currentProjectid == project.projectid) elemOption.selected = true;
+    }
+  }
+  
+  function _loadProjectInfo(projectId) {
+    settings.currentProjectId = projectId;
+   
+    if (projectId) {
+      console.log(projectId);
+      console.log(settings.projectData);
+      var projectInfo = settings.projectData[projectId];
+      settings.mapperTree.setTreeState({
+        selectedList: projectInfo.orderedItems,
+        openedList: projectInfo.openedItems
+      });
+      _loadProjectFAQs(projectInfo.orderedItems);
+      
+    } else {
+      settings.mapperTree.setTreeState({
+        selectedList: [],
+        openedList: null
+      });
+      _loadProjectFAQs([]);
+    }
+  }
+  
+  function _updateFAQSelections() {
+    if (!settings.currentProject) return;
+    
+    var currentOrder = settings.currentProject.orderedItems;
+    var selectedItems = settings.mapperTree.getTreeState().selectedList;
+
+    var currentSet = new Set(currentOrder);
+    var selectedSet = new Set(selectedItems);
+    
+    var removedItems = Array.from(UtilityKTS.setDifference(currentSet, selectedSet));
+    var addedItems = Array.from(UtilityKTS.setDifference(selectedSet, currentSet));
+    
+    var newOrder = currentOrder;
+    for (var i = 0; i < removedItems.length; i++) {
+      var index = newOrder.indexOf(removedItems[i]);
+      if (index > -1) newOrder.splice(index, 1);
+    }
+    
+    newOrder = newOrder.concat(addedItems);
+    
+    settings.currentProject.orderedItems = newOrder;
+    _loadProjectInfo(settings.currentProject);
+  }
+  
+  function _loadProjectFAQs(faqList) {
     var container = page.contentsMapper.getElementsByClassName('selected-items')[0];
-    var txt = '';
-    for (var i = 0; i < selectedItems.length; i++) {
-      var item = selectedItems[i];
-      if (item.hasOwnProperty('tmContent')) {
-        txt += item.tmContent.label + '<br>';
+    
+    UtilityKTS.removeChildren(container);
+    
+    for (var i = 0; i < faqList.length; i++) {
+      var faq = faqList[i];
+      var node = settings.mapperTree.getNode(faq);
+      if (node && node.children.length == 0) {
+        container.appendChild(_renderMapperFAQ(node.tmContent));
       }
     }
-    container.innerHTML = txt;
+  }
+  
+  function _renderMapperFAQ(content) {
+    return CreateElement.createDiv(null, null, content.label);
   }
   
   function _doHelp() {
@@ -253,7 +327,9 @@ const app = function () {
       "navProfile": function() { _showContents('navProfile'); },
       "navSignout": function() { _doLogout();},
       "navSave": function() { _handleSave(e);},
-      "navReload": function() { _handleReload(e);}
+      "navReload": function() { _handleReload(e);},
+      "navProjectAdd": function() { _handleProjectAdd(e);},
+      "navProjectRemove": function() { _handleProjectRemove(e);}
     }
     
     dispatchMap[e.target.id]();
@@ -272,7 +348,8 @@ const app = function () {
       }
       
     } else if (settings.currentNavOption == 'navMapper') {
-      _showMapping(nodeInfo);
+      _updateFAQSelections();
+      _setDirtyBit(true);
     }
   }
   
@@ -301,9 +378,7 @@ const app = function () {
     if (settings.currentNavOption == 'navEditor') {
       if ( !(await _saveFAQInfo()) ) return;
     
-    } else if (settings.currentNavOption == 'navMapper') {
-      console.log('_handleSave - navMapper');
-    }
+    } 
     
     await _handleReload(e, true);
     
@@ -320,11 +395,25 @@ const app = function () {
       if ( !(await _getFAQInfo()) ) return;
       settings.editorTree.update(settings.faqInfo);
 
-    } else if (settings.currentNavOption == 'navMapper') {
-      console.log('_handleReload - navMapper');
     }
-
+    
     _setDirtyBit(false);
+  }
+  
+  function _handleProjectSelect(e) {
+    var projectId = e.target[e.target.selectedIndex].value;
+    
+    //var projectInfo = null;
+    //if (projectId) projectInfo = settings.projectData[projectId];
+    _loadProjectInfo(projectId);
+  }
+  
+  function _handleProjectAdd(e) {
+    console.log('_handleProjectAdd');
+  }
+  
+  function _handleProjectRemove(e) {
+    console.log('_handleProjectRemove');
   }
   
   //---------------------------------------
@@ -458,15 +547,40 @@ const app = function () {
     }];
   }
   
-  async function _getProjectList() {
-    settings.projectList = null
+  async function _getProjectData() {
+    settings.projectData = null
     
     //------- debug ------------------------------
     dbResult = {
       success: true, 
-      data: [
-        3, 4, 6, 2
-      ]
+      data: {
+        projectlist: [
+          { projectid: 3, projectname: "Basic Web Design (2020-21)" },
+          { projectid: 1,  projectname: "AP Computer Science Principles, Sem 2 (2020-21)" },
+          { projectid: 2, projectname: "Essentials Geometry B (2020-21)" }
+        ],
+        
+        3: { 
+          projectid: 3,
+          projectname: "Basic Web Design (2020-21)",
+          orderedItems: [6, 2, 3, 4],
+          openedItems: []
+        },
+        
+        1: {
+          projectid: 1,
+          projectname: "AP Computer Science Principles, Sem 2 (2020-21)",
+          orderedItems: [4, 6],
+          openedItems: []
+        },
+        
+        2: {
+          projectid: 2,
+          projectname: "Essentials Geometry B (2020-21)",
+          orderedItems: [6, 2, 100, 7],
+          openedItems: []
+        }
+      }
     };
     
     //-------------------------------------------
@@ -474,7 +588,7 @@ const app = function () {
     //-------------------------------------------
     
     if (dbResult.success) {
-      settings.projectList = dbResult.data;
+      settings.projectData = dbResult.data;
 
     } else {
       page.notice.setNotice('failed to get project list');
@@ -508,8 +622,10 @@ const app = function () {
     return name;
   }
   
-  function _enableNavOption(navOption, enable) {
-    document.getElementById(navOption).disabled = !enable;    
+  function _enableNavOption(navOption, visible, enable) {
+    var elem = document.getElementById(navOption);
+    UtilityKTS.setClass(elem, 'hide-me', !visible);
+    elem.disabled = !enable;    
   }
 
 	//-----------------------------------------------------------------------------------
