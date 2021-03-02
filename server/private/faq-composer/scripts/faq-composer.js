@@ -1,13 +1,11 @@
 //-----------------------------------------------------------------------
 // FAQ composer
 //-----------------------------------------------------------------------
-// TODO: dummy DB interface for mapper
-// TODO: load tree function for mapper
-// TODO: dirty bit for mapper
+// TODO: FAQ rendering for mapper
 // TODO: think about how to use same code for presenter and mapper 
 //       when rendering selected items
-// TODO: add DB for mapper and profile
-// TODO: finish mapper
+// TODO: add DB for profile
+// TODO: styling for mapper
 // TODO: finish profile
 // TODO: finish help
 // TODO: add share option for embed code to mapper
@@ -64,7 +62,6 @@ const app = function () {
 
     if ( !(await _getUserInfo()) ) return;
     if ( !(await _getFAQInfo()) ) return;
-    if ( !(await _getProjectData()) ) return;
     
     page.notice.setNotice('');
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
@@ -141,6 +138,10 @@ const app = function () {
     settings.mapperTree.render(settings.faqInfo);       
 
     page.contentsMapper.getElementsByClassName('project-selection')[0].addEventListener('change', (e) => {_handleProjectSelect(e);});
+    
+    settings.mapperAccordion = new FAQAccordion({hideClass: 'hide-me'});
+    var container = page.contentsMapper.getElementsByClassName('accordion-container')[0];
+    container.appendChild(settings.mapperAccordion.render());
   }
   
   function _renderProfile() {
@@ -226,14 +227,17 @@ const app = function () {
   }
   
   function _loadProjectList(projectList) {
-    console.log('_loadProjectList');
     var elemProjectSelect = page.contentsMapper.getElementsByClassName('project-selection')[0];
     UtilityKTS.removeChildren(elemProjectSelect);
-    
-    if (!settings.currentProjectId) {
+
+    elemProjectSelect.disabled = false;
+          
+    if (projectList.length == 0) {
+      elemProjectSelect.disabled = true;
+    } else if (!settings.currentProjectId) {
       var elemOption = CreateElement.createOption(null, null, 'default', 'choose...');
       elemProjectSelect.appendChild(elemOption);
-      if (!settings.currentProjectId) elemOption.selected = true;
+      elemOption.selected = true;
     }
     
     for (var i = 0; i < projectList.length; i++) {
@@ -247,7 +251,6 @@ const app = function () {
   }
   
   function _loadProjectInfo(projectId) {
-    console.log('_loadProjectInfo ' + projectId);
     settings.currentProjectId = projectId;
    
     if (projectId) {
@@ -355,6 +358,8 @@ const app = function () {
       }
       
     } else if (settings.currentNavOption == 'navMapper') {
+      if (!settings.currentProjectId) return;
+      
       _updateProjectFAQSelections();
       var result = await _updateProjectInDB(settings.currentProjectId);
       if (!result.success) return;
@@ -416,8 +421,6 @@ const app = function () {
   }
   
   async function _handleProjectAdd(e) {
-    console.log('_handleProjectAdd');
-    
     var msg = 'Enter the name of the new project';
     var projectName = prompt(msg);
     if (!projectName) return;
@@ -430,12 +433,10 @@ const app = function () {
       return;
     }
     
-    page.notice.setNotice('creating project...', true);
     var result = await _addProjectToDB(projectName);
     if (!result.success) return;
-    page.notice.setNotice('');
     
-    settings.currentProjectId = result.data.projectid;
+    settings.currentProjectId = result.data.faqsetid;
     await _showMapper();
   }
   
@@ -449,10 +450,8 @@ const app = function () {
     
     if (!confirm(msg)) return;
 
-    page.notice.setNotice('deleting project...', true);
     var result = await _deleteProjectFromDB(projectId);
     if (!result.success) return;
-    page.notice.setNotice('');
     
     settings.currentProjectId = null;
     await _showMapper();
@@ -482,7 +481,7 @@ const app = function () {
     settings.faqInfo = null
     
     dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'hierarchy');
-    
+
     if (dbResult.success) {
       var hierarchyData = dbResult.data.hierarchy;
 
@@ -625,18 +624,10 @@ const app = function () {
   async function _getProjectData() {
     settings.projectData = null
     
-    //------- debug ------------------------------
-    var dbResult = {
-      success: true, 
-      data: dummyProjectData
-    };
-    
-    //------- live DB ----------------------------
-    //var dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'projectlist');
-    //-------------------------------------------
+    var dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'faqsetlist');
     
     if (dbResult.success) {
-      settings.projectData = dbResult.data;
+      settings.projectData = _processProjectDataList(dbResult.data);
 
     } else {
       page.notice.setNotice('failed to get project list');
@@ -645,36 +636,51 @@ const app = function () {
     return dbResult.success;
   }  
   
+  function _processProjectDataList(projectData) {
+    var processed = {
+      projectlist: []
+    };
+    
+    for (var i = 0; i < projectData.length; i++) {
+      var project = projectData[i];
+      processed.projectlist.push({
+        projectid: project.faqsetid, 
+        projectname: project.faqsetname
+      });
+      
+      var orderedItems = [];
+      var openedItems = [];
+      if (project.faqsetdata) {
+        var data = JSON.parse(project.faqsetdata);
+        orderedItems = data.orderedItems;
+        openedItems = data.openedItems;
+      }
+      
+      processed[project.faqsetid] = {
+        projectid: project.faqsetid,
+        projectname: project.faqsetname,
+        orderedItems: orderedItems,
+        openedItems: openedItems
+      }
+    }
+
+    return processed;
+  }
+  
   async function _addProjectToDB(projectName) {    
     var params = {
-    "projectname": projectName
+      "faqsetname": projectName
     };
     
-    //------- debug ------------------------------
-    var maxId = -1;
-    var plist = dummyProjectData.projectlist;
-    for (var i = 0; i < plist.length; i++) {
-      if (plist[i].projectid > maxId) maxId = plist[i].projectid;
-    }
-    
-    var id = maxId + 1;
-    dummyProjectData.projectlist.push({projectid: id, projectname: projectName});
-    dummyProjectData[id] = {projectid: id, projectname: projectName, orderedItems: [], openedItems: []};
-    
-    var dbResult = {
-      success: true,
-      data: {
-        projectid: id,
-        projectname: projectName
-      }
-    };
-    
-    //------- live DB ----------------------------
-    //var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/insert', 'project', params);
-    //-------------------------------------------
+    var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/insert', 'faqset', params);
 
     if (!dbResult.success) {
-      page.notice.setNotice('failed to create project');
+      if (dbResult.details.includes('duplicate')) {
+        alert('failed to add project\n another with the name (' + projectName + ') already exists');
+        page.notice.setNotice('');
+      } else {
+        page.notice.setNotice('failed to create project');
+      }
     }
     
     return dbResult;
@@ -682,54 +688,31 @@ const app = function () {
   
   async function _deleteProjectFromDB(projectId) {    
     var params = {
-      "projectid": projectId
+      "faqsetid": projectId
     };
     
-    //------- debug ------------------------------
-    var plist = dummyProjectData.projectlist;
-    var index = -1;
-    for (var i = 0; i < plist.length && index < 0; i++) {
-      if (plist[i].projectid == projectId) index = i
-    }
-    plist.splice(index, 1);
-
-    dummyProjectData.projectList = plist;
-    delete dummyProjectData[projectId];
-
-    var dbResult = {
-      success: true,
-      data: {}
-    };
-    
-    //------- live DB ----------------------------
-    //var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/delete', 'project', params);
-    //-------------------------------------------
+    var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/delete', 'faqset', params);
 
     if (!dbResult.success) {
-      page.notice.setNotice('failed to create project');
+      page.notice.setNotice('failed to delete project');
     }
     
     return dbResult;
   }  
   
   async function _updateProjectInDB(projectId) {
-    console.log('_updateProjectInDB');
+    if (!projectId) return;
+    
+    var projectData = settings.projectData[projectId];
     var params = {
-      "projectid": projectId
-      // add other params - ordered and opened
+      "faqsetid": projectId,
+      "faqsetdata": JSON.stringify({
+        "orderedItems": projectData.orderedItems,
+        "openedItems": projectData.openedItems
+      })
     };
     
-    //------- debug ------------------------------
-    dummyProjectData[projectId].orderedItems = settings.projectData[projectId].orderedItems;
-    dummyProjectData[projectId].openedItems = settings.projectData[projectId].openedItems;
-    
-    var dbResult = {
-      success: true
-    };
-    
-    //------- live DB ----------------------------
-    //var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/update', 'project', params);
-    //-------------------------------------------
+    var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/update', 'faqset', params);
 
     if (!dbResult.success) {
       page.notice.setNotice('failed to update project info');

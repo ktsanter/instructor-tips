@@ -8,6 +8,8 @@ define(function (require) {
   require('/scripts/markdowntohtml');
   require('/scripts/mytinymce');
   
+  require('classFaqAccordion');
+  
   require('faq-composer');
 
   document.addEventListener('DOMContentLoaded', app.init());

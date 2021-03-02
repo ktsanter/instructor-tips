@@ -22,6 +22,18 @@ create table project
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
 );
 
+create table faqset
+(
+  faqsetid             int unsigned not null AUTO_INCREMENT,
+  projectid            int unsigned not null,
+  faqsetname           varchar(200) not null,
+  faqsetdata           varchar(20000) null,
+  
+  primary key (faqsetid),
+  constraint foreign key (projectid) references project (projectid) on delete cascade,
+  constraint unique(projectid, faqsetname)
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------
@@ -51,5 +63,22 @@ begin
     hierarchy
   from project;
 end;
+
+create procedure add_default_faqset(in project_Id int, in faqset_Name varchar(200))
+begin
+  insert into faqset (
+    projectid,
+    faqsetname
+    
+  ) values (
+    project_Id,
+    faqset_Name
+  );
+  
+  select 
+    LAST_INSERT_ID() as faqsetid
+  from faqset;
+end;
+
 //
 DELIMITER ;
