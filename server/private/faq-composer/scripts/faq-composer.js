@@ -1,14 +1,11 @@
 //-----------------------------------------------------------------------
 // FAQ composer
 //-----------------------------------------------------------------------
-// TODO: FAQ rendering for mapper
-// TODO: think about how to use same code for presenter and mapper 
-//       when rendering selected items
 // TODO: add DB for profile
 // TODO: styling for mapper
 // TODO: finish profile
 // TODO: finish help
-// TODO: add share option for embed code to mapper
+// TODO: implement Share option for mapper
 // TODO: add Rename option to mapper ?
 //-----------------------------------------------------------------------
 const app = function () {
@@ -139,9 +136,19 @@ const app = function () {
 
     page.contentsMapper.getElementsByClassName('project-selection')[0].addEventListener('change', (e) => {_handleProjectSelect(e);});
     
-    settings.mapperAccordion = new FAQAccordion({hideClass: 'hide-me'});
+    page.buttonLink = page.contentsMapper.getElementsByClassName('button-link')[0]
+    page.buttonEmbed = page.contentsMapper.getElementsByClassName('button-embed')[0]
+    page.buttonLink.addEventListener('click', (e) => {_handleProjectShareLink(e);});
+    page.buttonEmbed.addEventListener('click', (e) => {_handleProjectShareEmbed(e);});
+    
+    settings.mapperAccordion = new FAQAccordion({
+      hideClass: 'hide-me',
+      baseId: 'mapperAccordion',
+      allowReordering: true,
+      callbackOnReordering: _handleAccordionReorder
+    });
     var container = page.contentsMapper.getElementsByClassName('accordion-container')[0];
-    container.appendChild(settings.mapperAccordion.render());
+    container.appendChild(settings.mapperAccordion.render([]));
   }
   
   function _renderProfile() {
@@ -183,7 +190,6 @@ const app = function () {
       _enableNavOption('navReload', true, enable);
       _enableNavOption('navProjectAdd', false);
       _enableNavOption('navProjectRemove', false);
-      _enableNavOption('navProjectShare', false);
       
     } else if (opt == 'navMapper') {
       enable = settings.currentProjectId;
@@ -191,7 +197,8 @@ const app = function () {
       _enableNavOption('navReload', false);
       _enableNavOption('navProjectAdd', true, true);
       _enableNavOption('navProjectRemove', true, enable);
-      _enableNavOption('navProjectShare', true, enable);
+      page.buttonLink.disabled = !enable;
+      page.buttonEmbed.disabled = !enable;
       
     } else if (opt == 'navProfile') {
       var enable = settings.dirtyBit[settings.currentNavOption];
@@ -199,7 +206,6 @@ const app = function () {
       _enableNavOption('navReload', true, enable);
       _enableNavOption('navProjectAdd', false);
       _enableNavOption('navProjectRemove', false);
-      _enableNavOption('navProjectShare', false);
     }
   }
   
@@ -295,17 +301,17 @@ const app = function () {
   }
   
   function _loadProjectFAQs(faqList) {
-    var container = page.contentsMapper.getElementsByClassName('selected-items')[0];
-    
-    UtilityKTS.removeChildren(container);
+    var faqData = [];
     
     for (var i = 0; i < faqList.length; i++) {
       var faq = faqList[i];
       var node = settings.mapperTree.getNode(faq);
       if (node && node.children.length == 0) {
-        container.appendChild(_renderMapperFAQ(node.tmContent));
+        faqData.push({id: node.id, label: node.tmContent.label, content: node.tmContent.markdown});
       }
     }
+    
+    settings.mapperAccordion.update(faqData);
   }
   
   function _renderMapperFAQ(content) {
@@ -338,8 +344,7 @@ const app = function () {
       "navSave": function() { _handleSave(e);},
       "navReload": function() { _handleReload(e);},
       "navProjectAdd": function() { _handleProjectAdd(e);},
-      "navProjectRemove": function() { _handleProjectRemove(e);},
-      "navProjectShare": function() { _handleProjectShare(e);}
+      "navProjectRemove": function() { _handleProjectRemove(e);}
     }
     
     dispatchMap[e.target.id]();
@@ -457,10 +462,20 @@ const app = function () {
     await _showMapper();
   }
   
-  function _handleProjectShare(e) {
-    console.log('_handleProjectShare');
+  function _handleProjectShareLink(e) {
+    console.log('_handleProjectShareLink');
   }
   
+  function _handleProjectShareEmbed(e) {
+    console.log('_handleProjectShareEmbed');
+  }
+  
+  async function _handleAccordionReorder(itemOrder) {
+    settings.projectData[settings.currentProjectId].orderedItems = itemOrder;
+    var result = await _updateProjectInDB(settings.currentProjectId);
+    if (!result.success) return;
+    _loadProjectInfo(settings.currentProjectId);
+  }
   //---------------------------------------
 	// DB interface
 	//----------------------------------------
@@ -591,35 +606,6 @@ const app = function () {
       }
     }];
   }
-  
-  var dummyProjectData = {
-    projectlist: [
-      { projectid: 3, projectname: "Basic Web Design (2020-21)" },
-      { projectid: 1,  projectname: "AP Computer Science Principles, Sem 2 (2020-21)" },
-      { projectid: 2, projectname: "Essentials Geometry B (2020-21)" }
-    ],
-    
-    3: { 
-      projectid: 3,
-      projectname: "Basic Web Design (2020-21)",
-      orderedItems: [6, 2, 3, 4],
-      openedItems: []
-    },
-    
-    1: {
-      projectid: 1,
-      projectname: "AP Computer Science Principles, Sem 2 (2020-21)",
-      orderedItems: [4, 6],
-      openedItems: []
-    },
-    
-    2: {
-      projectid: 2,
-      projectname: "Essentials Geometry B (2020-21)",
-      orderedItems: [6, 2, 100, 7],
-      openedItems: []
-    }
-  };
   
   async function _getProjectData() {
     settings.projectData = null

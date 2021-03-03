@@ -94,9 +94,22 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navMapper {}
 
-.contents .contents-navMapper .accordion-container {
-  border: 1px solid red;
+.contents .contents-navMapper .mapper-button {
+  color: #777;
+  background-color: transparent;
+  border: none;
+  font-size: 0.9em;
 }
+
+.contents .contents-navMapper .mapper-button:disabled {
+  color: var(--bgShaded);
+}
+
+.contents .contents-navMapper .mapper-button .mapper-embed-left {
+  padding-right: 0.2em;
+}
+
+.contents .contents-navMapper .accordion-container {}
 
 /*------------------------------------------------------------------------------
  * contents - profile
