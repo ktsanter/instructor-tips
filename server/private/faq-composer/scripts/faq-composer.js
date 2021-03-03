@@ -2,10 +2,8 @@
 // FAQ composer
 //-----------------------------------------------------------------------
 // TODO: add DB for profile
-// TODO: styling for mapper
 // TODO: finish profile
 // TODO: finish help
-// TODO: implement Share option for mapper
 // TODO: add Rename option to mapper ?
 //-----------------------------------------------------------------------
 const app = function () {
@@ -470,14 +468,32 @@ const app = function () {
   }
   
   function _handleProjectShareEmbed(e) {
-    console.log('_handleProjectShareEmbed');
-    var urlShare = _makeShareURL();
-    var elem = CreateElement.createIframe(null, null, urlShare, 650, 500);
-    elem.style.overflowY = 'hidden';
-    elem.style.border = 'none';
-    elem.scrolling = 'no';
+    // add a script which adds the Bootstrap CSS <link> - workaround for link not in <head>
+    var elemCSSScript = document.createElement('script');
+    elemCSSScript.text = 
+      "fileref = document.createElement('link');" +
+      "fileref.setAttribute('href', 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css');" +
+      "fileref.setAttribute('rel', 'stylesheet');" +
+      "fileref.setAttribute('integrity', 'sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl');" +
+      "fileref.setAttribute('crossorigin', 'anonymous');" +
+      "document.getElementsByTagName('head')[0].appendChild(fileref);";
     
-    _copyToClipboard(elem.outerHTML);
+    // add the Bootstrap JS
+    var elemScript = document.createElement('script');
+    elemScript.setAttribute('src', 'https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js');
+    elemScript.setAttribute('integrity', 'sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0');
+    elemScript.setAttribute('crossorigin', 'anonymous');
+    
+    // wrap the iframe in a responsive Bootstrap div
+    var elemIframeContainer = CreateElement.createDiv(null, 'ratio ratio-16x9');
+    var elemIframe = document.createElement('iframe');
+    elemIframe.setAttribute('src', _makeShareURL());
+    elemIframeContainer.appendChild(elemIframe);
+    
+    // get the HTML for all this stuff
+    var html = elemCSSScript.outerHTML + elemScript.outerHTML + elemIframeContainer.outerHTML
+    
+    _copyToClipboard(html);
     alert('embed code copied to clipboard');
   }
   
@@ -788,7 +804,7 @@ const app = function () {
     var valid = projectName.length < 200;
     valid = valid && projectName.length > 0;
     
-    valid = valid && (projectName.match(/[A-Za-z0-9&:\(\), ]+/) == projectName);
+    valid = valid && (projectName.match(/[A-Za-z0-9&:\-\(\), ]+/) == projectName);
     
     return valid;
   }  

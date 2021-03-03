@@ -341,7 +341,10 @@ module.exports = internal.FAQComposer = class {
     for (var i = 0; i < itemList.length; i++) {
       var foundNode = this._FAQItem(itemList[i], hierarchy);
       foundNode = this._cleanNode(foundNode);
-      nodeList.push({label: foundNode.tmContent.label, content: foundNode.tmContent.markdown});
+
+      if (!foundNode.children) {
+          nodeList.push({label: foundNode.tmContent.label, content: foundNode.tmContent.markdown});
+      }
     }
 
     result.data = nodeList;
