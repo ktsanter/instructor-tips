@@ -7,6 +7,7 @@ define(function (require) {
   require('/scripts/classTreeManager');
   require('/scripts/markdowntohtml');
   require('/scripts/mytinymce');
+  require('/scripts/clipboard_copy.js');  
   
   require('classFaqAccordion');
   

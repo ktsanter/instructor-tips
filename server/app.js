@@ -323,7 +323,9 @@ const dbFAQComposerClass = require('./classes/faqcomposer')
 
 const dbFAQComposer = new dbFAQComposerClass({
   "dbManager": mariaDBManager_FAQComposer,
-  "userManagement": userManagement
+  "userManagement": userManagement,
+  "fileServices": fileservices,
+  "pug": pug
 });
 
 //------------------------------------------
@@ -421,6 +423,16 @@ app.get('/faq-composer/help', function (req, res) {
   
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
+app.get('/faq-composer/faq/:faqsetid', async function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'faq-composer/pug/faq.pug');
+  var result = await dbFAQComposer.renderLandingPage(req.params, pugFileName);
+
+  if (result.success) {
+    res.send(result.data);
+  } else {
+    sendFailedAccess(res, pugFileName);
+  }
+})
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 
@@ -428,8 +440,7 @@ app.get('/treasurehunt-landing/:projectid', async function (req, res) {
   var fileName = path.join(__dirname, 'private', 'treasurehunt-landing/pug/treasurehunt-landing.pug');
   var result = await dbTreasureHuntLanding.renderLandingPage(req.params, fileName);
   if (result.success) {
-    res.send(result.data);
-    
+    res.send(result.data);    
   } else {
     sendFailedAccess(res, fileName);
   }

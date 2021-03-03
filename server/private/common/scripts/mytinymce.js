@@ -18,9 +18,9 @@ class MyTinyMCE {
       selector: '.mytinyMCE-textarea',
       height: defaultHeight,
       
-      plugins: 'advlist link image lists charmap code codesample formatpainter fullscreen table',
+      plugins: 'advlist link image lists charmap code codesample formatpainter fullscreen table lists',
       menubar: 'edit view insert format tools',
-      toolbar: 'formatpainter image link  table code fullscreen',
+      toolbar: 'formatpainter image link  table code fullscreen numlist bullist',
       
       init_instance_callback : initCallback,
       setup: function (ed) {

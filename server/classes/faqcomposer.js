@@ -10,6 +10,8 @@ module.exports = internal.FAQComposer = class {
   constructor(params) {
     this._dbManager = params.dbManager;
     this._userManagement = params.userManagement;
+    this._fileServices = params.fileServices;
+    this._pug = params.pug;
   }
     
 //---------------------------------------------------------------
@@ -258,6 +260,125 @@ module.exports = internal.FAQComposer = class {
     return result;
   }  
 
+//---------------------------------------------------------------
+// landing page 
+//---------------------------------------------------------------       
+  async renderLandingPage(params, pugFileName) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+
+    query =  
+      'select ' +
+      '  faqsetname, faqsetdata, projectid ' +
+      'from faqset ' +
+      'where faqsetid = ' + params.faqsetid;
+
+    queryResults = await this._dbManager.dbQuery(query);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    if (queryResults.data.length == 0) {
+      result.details = 'no data found for project';
+      return result;
+    }
+
+    var projectId = queryResults.data[0].projectid;
+    result.data = {
+      faqsetname: queryResults.data[0].faqsetname,
+      itemdata: []
+    };
+    
+    var faqsetData = JSON.parse(queryResults.data[0].faqsetdata);
+    var itemList = [];
+    if (faqsetData && faqsetData.orderedItems) itemList = faqsetData.orderedItems;
+
+    queryResults = await this._getFAQItems(projectId, itemList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var nodeList = queryResults.data;
+    
+    if (this._fileServices.existsSync(pugFileName)) {
+      result.success = true;
+      result.details = 'data retrieval successful';
+      result.data = this._pug.renderFile(pugFileName, {"params": nodeList});
+    } else {
+      result.details = 'could not find file ' + pugFileName;
+    }
+    
+    return result;
+  }
+  
+  async _getFAQItems(projectId, itemList) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+
+    query = 
+      'select hierarchy ' +
+      'from project ' +
+      'where projectid = ' + projectId;
+      
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var hierarchy = [];
+    if (queryResults.data[0].hierarchy) {
+      hierarchy = JSON.parse(decodeURIComponent(queryResults.data[0].hierarchy));
+    }
+    
+    var nodeList = [];
+    for (var i = 0; i < itemList.length; i++) {
+      var foundNode = this._FAQItem(itemList[i], hierarchy);
+      foundNode = this._cleanNode(foundNode);
+      nodeList.push({label: foundNode.tmContent.label, content: foundNode.tmContent.markdown});
+    }
+
+    result.data = nodeList;
+    result.success = true;
+    
+    return result;
+  }
+  
+  _FAQItem(idToFind, baseList) {
+    var foundNode;
+    
+    for (var i = 0; i < baseList.length && !foundNode; i++) {
+      var node = baseList[i];
+      if (idToFind == node.id) {
+        foundNode = node;
+      } else if (node.children) {
+        foundNode = this._FAQItem(idToFind, node.children);
+      }
+    }
+    
+    return foundNode;
+  }
+  
+  _cleanNode(node) {
+    var cleaned = node;
+    
+    cleaned.tmContent.label = cleaned.tmContent.label.replace(/&quot;/g, '"');
+    cleaned.tmContent.label = cleaned.tmContent.label.replace(/&apos;/g, '\'');
+    cleaned.tmContent.label = cleaned.tmContent.label.replace(/&newline;/g, '\n');
+
+    cleaned.tmContent.markdown = cleaned.tmContent.markdown.replace(/&quot;/g, '"');
+    cleaned.tmContent.markdown = cleaned.tmContent.markdown.replace(/&apos;/g, '\'');
+    cleaned.tmContent.markdown = cleaned.tmContent.markdown.replace(/&newline;/g, '\n');
+
+    return cleaned;
+  }
+  
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------       

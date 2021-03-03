@@ -16,6 +16,7 @@ const app = function () {
     navItemClass: 'use-handler',
     treeContainerClass: 'hierarchy-container',
 
+    baseShareURL: '/faq-composer/faq',
     helpURL: '/faq-composer/help',
     logoutURL: '/usermanagement/logout',
     
@@ -463,11 +464,30 @@ const app = function () {
   }
   
   function _handleProjectShareLink(e) {
-    console.log('_handleProjectShareLink');
+    var urlShare = _makeShareURL();
+    _copyToClipboard(urlShare);
+    alert('link copied to clipboard');
   }
   
   function _handleProjectShareEmbed(e) {
     console.log('_handleProjectShareEmbed');
+    var urlShare = _makeShareURL();
+    var elem = CreateElement.createIframe(null, null, urlShare, 650, 500);
+    elem.style.overflowY = 'hidden';
+    elem.style.border = 'none';
+    elem.scrolling = 'no';
+    
+    _copyToClipboard(elem.outerHTML);
+    alert('embed code copied to clipboard');
+  }
+  
+  function _makeShareURL() {
+    var url;
+    
+    if (settings.currentProjectId) {
+      url = window.location.origin + settings.baseShareURL + '/' + settings.currentProjectId;
+    }
+    return url;
   }
   
   async function _handleAccordionReorder(itemOrder) {
@@ -706,6 +726,23 @@ const app = function () {
     
     return dbResult;
   }
+  
+  //---------------------------------------
+  // clipboard functions
+  //----------------------------------------
+  function _copyToClipboard(txt) {
+    if (!page._clipboard) page._clipboard = new ClipboardCopy(page.body, 'plain');
+
+    page._clipboard.copyToClipboard(txt);
+	}	
+
+  function _copyRenderedToClipboard(txt) {
+    if (!page._renderedclipboard) page._renderedclipboard = new ClipboardCopy(page.body, 'rendered');
+
+    page._renderedclipboard.copyRenderedToClipboard(txt);
+	}	    
+    
+  
   
   //--------------------------------------------------------------------------
   // utility

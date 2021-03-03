@@ -1,0 +1,42 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title FAQs
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+
+  body()
+    - var accordionId = 'faqAccordion';
+    - var accordionSelector= '#' + accordionId;
+    
+    .accordion(id=accordionId)
+      - var i = 0;
+      each item in params
+        - var headingId = "heading" + i;
+        - var contentId = "collapse" + i;
+        - var contentSelector = "#" + contentId
+        - i++;
+        .accordion-item
+          h2(class="accordion-header" id=headingId)
+            button(
+              class="accordion-button collapsed"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target=contentSelector
+              aria-expanded="false"
+              aria-controls=contentId
+            )!= item.label
+            
+          div(
+            id=contentId
+            class="accordion-collapse collapse"
+            aria-labelledby=headingId
+            data-bs-parent=accordionSelector
+          )
+            .accordion-body!= item.content
