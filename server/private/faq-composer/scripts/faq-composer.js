@@ -2,6 +2,8 @@
 // FAQ composer
 //-----------------------------------------------------------------------
 // TODO: add DB for profile
+// TODO: add pic to user table in instructorinfo DB
+// TODO: limit lengths and sanitize Profile inputs
 // TODO: finish profile
 // TODO: finish help
 // TODO: add Rename option to mapper ?
@@ -25,7 +27,8 @@ const app = function () {
       navMapper: false,
       navProfile: false
     },
-    treeProcessingReplacement: {
+    
+    treeProcessingReplacement: {  // is this needed now?
       pack: [
         {seek: /"/g, replacement: '&quot;'},
         {seek: /'/g, replacement: '&apos;'},
@@ -63,6 +66,8 @@ const app = function () {
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
 
     _attachNavbarHandlers();
+    settings.userInfo.profilepic = 'https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/instructor.jpg';
+    _setProfilePic();
     _renderContents();
     
     var profileIcon = page.navbar.getElementsByClassName('icon-profile');
@@ -79,6 +84,25 @@ const app = function () {
     var navItems = page.navbar.getElementsByClassName(settings.navItemClass);
     for (var i = 0; i < navItems.length; i++) {
       navItems[i].addEventListener('click', handler);
+      console.log(navItems[i]);
+    }
+  }
+  
+  function _setProfilePic() {
+    console.log(settings.userInfo);
+    var elemIcon = page.navbar.getElementsByClassName('icon-profile')[0];
+    var elemPic = page.navbar.getElementsByClassName('pic-profile')[0];
+    
+    
+    var usePic = (settings.userInfo && settings.userInfo.profilepic);
+    if (usePic) elemPic.src = settings.userInfo.profilepic;
+    UtilityKTS.setClass(elemIcon, 'hide-me', usePic);
+    UtilityKTS.setClass(elemPic, 'hide-me', !usePic);
+    
+    if (settings.userInfo && settings.userInfo.profilepic) {
+      console.log('pic is set');
+    } else {
+      console.log('pic is not set');
     }
   }
 	  
@@ -151,7 +175,19 @@ const app = function () {
   }
   
   function _renderProfile() {
-    page.contentsProfile.getElementsByClassName('user-name')[0].innerHTML = settings.userInfo.userName;
+    var elemUserName = page.contentsProfile.getElementsByClassName('navProfile-username')[0];
+    var elemEmail = page.contentsProfile.getElementsByClassName('navProfile-email')[0];
+    var elemPicURL = page.contentsProfile.getElementsByClassName('navProfile-picURL')[0];
+    var elemPicImage = page.contentsProfile.getElementsByClassName('navProfile-pic')[0];
+    var elemPasswordNew = page.contentsProfile.getElementsByClassName('navProfile-passwordnew')[0];
+    var elemPasswordConfirm = page.contentsProfile.getElementsByClassName('navProfile-passwordconfirm')[0];
+    
+    elemUserName.value = settings.userInfo.userName;
+    elemEmail.value = settings.userInfo.email;
+    elemPicURL.value = settings.userInfo.profilepic ? settings.userInfo.profilepic : '';
+    elemPicImage.src = settings.userInfo.profilepic ? settings.userInfo.profilepic : '';
+    elemPasswordNew.value = '';
+    elemPasswordConfirm.value = '';
   }
   
   //-----------------------------------------------------------------------------
@@ -339,6 +375,7 @@ const app = function () {
       "navMapper": function() { _showContents('navMapper'); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
+      "navProfilePic": function() { _showContents('navProfile'); },
       "navSignout": function() { _doLogout();},
       "navSave": function() { _handleSave(e);},
       "navReload": function() { _handleReload(e);},

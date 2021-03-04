@@ -57,7 +57,8 @@ module.exports = internal.UserManagement = class {
       userShortName: userData.usershortname,
       userName: userData.username,
       privilegeLevel: userData.privilegename,
-      privilegeId: userData.privilegeid
+      privilegeId: userData.privilegeid,
+      email: userData.email
     };
     
     return true;
@@ -324,7 +325,7 @@ module.exports = internal.UserManagement = class {
     var result = this._dbManager.queryFailureResult();
     
     var query = 'select ' +
-                  'u.userid, u.usershortname, u.username, u.password, ' +
+                  'u.userid, u.usershortname, u.username, u.password, u.email, ' +
                   'p.privilegeid, p.privilegename ' +
                 'from user as u, privilege as p, userprivilege as up ' +
                 'where u.userid = up.userid ' +
@@ -337,6 +338,7 @@ module.exports = internal.UserManagement = class {
       result.success = true;
       result.details = 'query  succeeded';
       result.data = queryResults.data;
+      console.log(result.data);
     } else {
       result.details = queryResults.details;
     }

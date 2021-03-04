@@ -43,4 +43,5 @@ mixin makeNavbar(title, params)
           button(id=navButton.id class="btn btn-outline-success use-handler hide-me mx-1")=navButton.label
           
         if params.profile
-          i(id="navProfile" class="icon icon-profile use-handler fas fa-user-circle ml-1")
+          i(id="navProfile" class="icon icon-profile use-handler fas fa-user-circle ml-1 hide-me" title="profile")
+          img(id="navProfilePic" class="pic pic-profile use-handler hide-me" title="profile")

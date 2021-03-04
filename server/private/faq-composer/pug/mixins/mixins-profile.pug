@@ -1,4 +1,38 @@
 mixin profileContainer()
-  .row: .col-sm
-    .user-name
+  .row
+    .col-sm
+      .form-floating(class="mb-3")
+        input(type="text" class="form-control navProfile-username" id="navProfile-username")
+        label(for="navProfile-username") display name
+        
+    .col-sm
 
+  .row
+    .col-sm
+      .form-floating(class="mb-3")
+        input(type="email" class="form-control navProfile-email" id="navProfile-email" placeholder="name@example.com")
+        label(for="navProfile-email") email
+    
+    .col-sm
+    
+      
+  .row
+    .col-sm
+      .form-floating(class="mb-3")
+        input(type="text" class="form-control navProfile-picURL" id="navProfile-picURL")
+        label(for="navProfile-picURL") profile picture
+
+    .col-sm
+      .form-floating(class="mb-3")
+        img(class="navProfile-pic")
+
+  .row
+    .col-sm
+      .form-floating
+        input(type="password" class="form-control navProfile-passwordnew" id="navProfile-passwordnew" placeholder="" )
+        label(for="navProfile-passwordnew") new password
+
+    .col-sm
+      .form-floating
+        input(type="password" class="form-control navProfile-passwordconfirm" id="navProfile-passwordconfirm" placeholder="")
+        label(for="navProfile-passwordconfirm") confirm password

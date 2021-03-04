@@ -69,6 +69,13 @@ body {
   cursor: pointer;
 }
 
+.navbar .pic#navProfilePic {
+  width: 2.5em;
+  cursor: pointer;
+  border: none;
+  border-radius: 10%;
+}
+
 /*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/
@@ -114,8 +121,12 @@ body {
 /*------------------------------------------------------------------------------
  * contents - profile
  *------------------------------------------------------------------------------*/
-.contents .contents-navProfile {
-  border: 1px solid red;
+.contents .contents-navProfile {}
+
+.contents .contents-navProfile .navProfile-pic {
+  width: 3.5em;
+  border: none;
+  border-radius: 10%;
 }
 
 /*------------------------------------------------------------------------------
