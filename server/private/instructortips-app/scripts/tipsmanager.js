@@ -13,7 +13,7 @@ const app = function () {
   
 	const settings = {
     helpURL: '/instructortips-help',
-    logoutURL: '/usermanagement/logout',
+    logoutURL: '/usermanagement/logout/instructortips',
     
     navOptions: [
       'scheduling', 'share', 'notification', 'editing',

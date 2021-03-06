@@ -540,7 +540,9 @@ app.post('/usermanagement/login_attempt', async function (req, res) {
   }
 })
   
-app.get('/usermanagement/logout', function (req, res) {
+app.get('/usermanagement/logout/:app', function (req, res) {
+  userManagement.setAppInfoForSession(req.session, appLookup[req.params.app]);
+  
   userManagement.logout(req.session);
   res.redirect('/login');
 })
@@ -591,6 +593,7 @@ app.post('/usermanagement/passwordchange', async function (req, res) {
     if (result.success) {
       userManagement.logout(req.session);
       result.data = {};
+      result.details = 'password change succeeded';
       result.data.redirectURL = '/login';
     }
     
@@ -969,7 +972,7 @@ app.post('/:app/update/:queryName', async function (req, res) {
     
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {    
     var dbManager = dbManagerLookup[req.params.app];
-    res.send(await dbManager.doUpdate(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+    res.send(await dbManager.doUpdate(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel, req));
 
   } else {
     res.send(_failedRequest('post'));

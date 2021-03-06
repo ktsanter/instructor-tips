@@ -1,8 +1,5 @@
 //-------------------------------------------------------------------
 // Aardvark Studios Profile class
-// TODO: set element constraints - lengths, etc.
-// TODO: validity checks for passwords
-// TODO: actual DB connections
 //-------------------------------------------------------------------
 
 class ASProfile {
@@ -21,7 +18,10 @@ class ASProfile {
   // initializinz
   //--------------------------------------------------------------
   async init() {
-    this.elemUserName = this.root.getElementsByClassName('navProfile-username')[0];
+    this.userManagement = new UserManagement(this._config.sodium);
+    await this.userManagement.init();
+
+    this.elemDisplayName = this.root.getElementsByClassName('navProfile-displayname')[0];
     this.elemEmail = this.root.getElementsByClassName('navProfile-email')[0];
     this.elemPicIcon = this.root.getElementsByClassName('navProfile-icon')[0];
     this.elemPicImage = this.root.getElementsByClassName('navProfile-pic')[0];
@@ -42,8 +42,11 @@ class ASProfile {
   }
   
   _addHandlers() {
-    this.elemUserName.addEventListener('input', (e) => { this._handleBaseProfileInput(e); } );    
-    this.elemEmail.addEventListener('input', (e) => { this._handleBaseProfileInput(e); } );  
+    this.elemDisplayName.addEventListener('input', (e) => { this._handleBaseProfileInput(e); } );    
+    this.elemEmail.addEventListener('input', (e) => { this._handleBaseProfileInput(e); } );
+    UtilityKTS.denyDoubleQuotes(this.elemDisplayName);  
+    UtilityKTS.denyDoubleQuotes(this.elemEmail);  
+    
     this.elemPasswordNew.addEventListener('input', (e) => { this._handleBaseProfileInput(e); } );  
     this.elemPasswordConfirm.addEventListener('input', (e) => { this._handleBaseProfileInput(e); } );  
 
@@ -57,7 +60,7 @@ class ASProfile {
   }
   
   _setElementConstraints() {
-    this.elemUserName.maxLength = 40;
+    this.elemDisplayName.maxLength = 40;
     this.elemEmail.maxLength = 50;
     this.elemPasswordNew.maxLength = 20;
     this.elemPasswordConfirm.maxLength = 20;
@@ -73,7 +76,7 @@ class ASProfile {
     var result = await this._getUserInfo();
     if (!result.success) return;
     
-    this.elemUserName.value = this.userInfo.userName;
+    this.elemDisplayName.value = this.userInfo.displayname;
     this.elemEmail.value = this.userInfo.email;
 
     this._setProfilePic(this.userInfo.profilepic);    
@@ -135,24 +138,24 @@ class ASProfile {
     var entryData = null;
     var valid = false;
     
-    var userName = this.elemUserName.value;
+    var displayName = this.elemDisplayName.value;
     var email = this.elemEmail.value;
     var picImageURL = this.elemPicImage.getAttribute('as-current-background');
-    if (picImageURL.length == 0) picImageURL = null;
     
     if (!this._validatePlainEntry()) return null;
     if (!this._validatePassword()) return null;
     
     var baseInfoChanged = (
-      (userName != this.userInfo.userName) ||
+      (displayName != this.userInfo.displayname) ||
       (email != this.userInfo.email) ||
       (picImageURL != this.userInfo.profilepic)
     );
     
     var entryData = {
-      "userName": this.elemUserName.value,
+      "displayName": this.elemDisplayName.value,
       "email": this.elemEmail.value,
       "picURL": this.elemPicImage.getAttribute('as-current-background'),
+      "password": this.elemPasswordNew.value,
       "baseInfoChanged": baseInfoChanged,
       "passwordChanged": this._passwordChanged()
     }
@@ -163,8 +166,7 @@ class ASProfile {
   _validatePlainEntry() {
     var valid = false;
     
-    /* debug */ valid = true;
-    console.log('_validatePlainEntry: ' + valid);
+    /* thing else needed at this point */ valid = true;
     
     return valid;
   }
@@ -219,13 +221,13 @@ class ASProfile {
   // handlers
   //--------------------------------------------------------------   
   _handleBaseProfileInput(e) {
-    console.log('filter username and email fields to eliminate \' and "');
-    // filter characters for username
+    if (e.target.id == 'navProfile-displayname' || e.target.id == 'navProfile-email') {
+
     
-    if (e.target.id == 'navProfile-passwordnew' || e.target.id == 'navProfile-passwordconfirm') {
+    } else if (e.target.id == 'navProfile-passwordnew' || e.target.id == 'navProfile-passwordconfirm') {
       var pwdNew = this.elemPasswordNew.value;
       var errMsg = '';
-      if (pwdNew.length < 8) errMsg = 'passwords must be at least 8 characters long';
+      if (pwdNew.length > 0 && pwdNew.length < 8) errMsg = 'passwords must be at least 8 characters long';
       this._setPasswordError('new', errMsg);
       
       var pwdConfirm = this.elemPasswordConfirm.value;
@@ -251,6 +253,8 @@ class ASProfile {
       this._setDirty(false);
       this.reload();
     }
+    
+    return false; // to prevent propagation
   }
   
   async _handleReload(e) {
@@ -278,11 +282,10 @@ class ASProfile {
 	//----------------------------------------
   async _getUserInfo() {
     this.userInfo = null;
-    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
+    var dbResult = await SQLDBInterface.doGetQuery('tipmanager/query', 'profile');
     
     if (dbResult.success) {
-      this.userInfo = dbResult.userInfo;
-      /* for testing */ //this.userInfo.profilepic = 'https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/instructor.jpg';
+      this.userInfo = dbResult.data;
 
     } else {
       console.log('failed to get user info');
@@ -295,7 +298,12 @@ class ASProfile {
     var success = false;
     
     success = await this._saveBaseProfile(userInfo);
-    if (success) success = await this._savePassword(userInfo);
+    if (success) {
+      var result = await this._savePassword(userInfo);
+      if (result.success) {
+        window.open(result.data.redirectURL, '_self'); 
+      }        
+    }
     
     return success;
   }
@@ -304,22 +312,37 @@ class ASProfile {
     if (!userInfo.baseInfoChanged) return true;
     var success = false;
 
-    console.log('do _saveBaseProfile');
+    var profileInfo = {
+      "displayname": userInfo.displayName,
+      "email": userInfo.email,
+      "profilepic": userInfo.picURL.length > 0 ? userInfo.picURL : '**no pic**'
+    };
 
-    /* for debug */ success = true;
-    
-    return success;
+    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'profile', profileInfo);
+
+    return queryResults.success;
   }
   
   async _savePassword(userInfo) {
-    if (!userInfo.passwordChanged) return true;
-    var success = false;
+    if (!userInfo.passwordChanged) return {success: true};
     
     console.log('do _savePassword');
 
-    /* for debug */ success = true;
+    var hashedPassword = '';
+    var hashResult = this.userManagement.hashPassword(userInfo.password);
+    if (hashResult.success) {
+      hashedPassword = hashResult.hashedPassword;
+    } else {
+      return hashResult;
+    }
+    
+    var params = {
+      passwordHash: hashedPassword
+    }
+    
+    var queryResults = await SQLDBInterface.doPostQuery('usermanagement/passwordchange', '', params, this._notice);
 
-    return success;
+    return queryResults;
   }
   
 /*---

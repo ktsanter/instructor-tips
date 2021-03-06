@@ -16,7 +16,7 @@ const app = function () {
 
     baseShareURL: '/faq-composer/faq',
     helpURL: '/faq-composer/help',
-    logoutURL: '/usermanagement/logout',
+    logoutURL: '/usermanagement/logout/faq-composer',
     
     currentNodeInfo: null,
     labelTruncateLimit: 50,
@@ -43,9 +43,7 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	async function init (sodium) {
-    settings.sodium = sodium;
-    
+	async function init (sodium) {    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
@@ -63,6 +61,7 @@ const app = function () {
     
     settings.profile = new ASProfile({
       id: "myProfile",
+      "sodium": sodium,
       navbarElements: {
         "save": page.navbar.getElementsByClassName('navSave')[0],
         "reload": page.navbar.getElementsByClassName('navReload')[0],

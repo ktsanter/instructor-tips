@@ -75,7 +75,7 @@ module.exports = internal.TipManager = class {
     return dbResult;
   }
   
-  async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
+  async doUpdate(params, postData, userInfo, funcCheckPrivilege, req) {
     var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'schedule') {
@@ -109,7 +109,7 @@ module.exports = internal.TipManager = class {
       dbResult = await this._acceptSharedSchedule(params, postData, userInfo);
             
     } else if (params.queryName == 'profile') {
-      dbResult = await this._updateUserProfile(params, postData, userInfo);
+      dbResult = await this._updateUserProfile(params, postData, userInfo, req);
       
     } else if (params.queryName == 'notification') {
       dbResult = await this._updateNotificationInfo(params, postData, userInfo);            
@@ -207,7 +207,7 @@ module.exports = internal.TipManager = class {
     
     var queryList = {
       notificationoptions: 
-        'select username as displayname, email ' +
+        'select username as displayname, email, profilepic ' +
         'from user ' +
         'where userid = ' + userInfo.userId + ' '
     };
@@ -750,21 +750,37 @@ module.exports = internal.TipManager = class {
     return result;
   }  
   
-  async _updateUserProfile(params, postData, userInfo) {
+  async _updateUserProfile(params, postData, userInfo, req) {
     var result = this._dbManager.queryFailureResult();
-
+    
     var query, queryResults;
     var email = this._sanitizeText(postData.email).replace(/\s/g, '');
     var userName = this._sanitizeText(postData.displayname);
+    
+    var hasPic = postData.hasOwnProperty('profilepic');
+    var profilePic = null;
+    
+    if (hasPic) profilePic = postData.profilepic;
+    if (profilePic == '**no pic**') profilePic = '';
+    
+    var profilepicPhrase = '';
+    if (hasPic) profilepicPhrase = ', profilepic = "' + profilePic + '" ';
     
     query =
       'update user ' +
       'set ' + 
         'username = "' + userName + '", ' + 
         'email = "' + email + '" ' +
+        profilepicPhrase +
       'where userid = ' + userInfo.userId + ' ';
 
     queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      req.session.userInfo.userName = userName;
+      req.session.userInfo.email = email;
+      if (postData.hasOwnProperty('profilepic')) req.session.userInfo.profilepic = profilePic;
+    }
     
     if (queryResults.success) {
       result.success = true;

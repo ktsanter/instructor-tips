@@ -123,7 +123,9 @@ module.exports = internal.UserManagement = class {
                  'set password = "' + postData.passwordHash + '" ' +
                  'where userid = ' + sessionInfo.userInfo.userId;
     
+
     var queryResults = await this._dbManager.dbQuery(query);
+
     if (queryResults.success) {
       this.logout(sessionInfo);
       result.success = true;
@@ -339,7 +341,7 @@ module.exports = internal.UserManagement = class {
       result.success = true;
       result.details = 'query  succeeded';
       result.data = queryResults.data;
-      console.log(result.data);
+
     } else {
       result.details = queryResults.details;
     }
