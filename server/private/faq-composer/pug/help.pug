@@ -1,15 +1,21 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+
 doctype html
 html(lang="en")
   head
-    title help - TinyMCE test
+    title help for FAQ composer
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
 
-    script(src='https://cdn.tiny.cloud/1/ilhkd30p3n59d9tztl5424xgsewe5n8oex22x3uwg0ucxc0i/tinymce/5/tinymce.min.js' referrerpolicy="origin")
-    script(src="/scripts/faq-composer/tinyMCE-test.js")
+    +fontawesome()
+    +bootstrapstyle()
+    
+    style
+      include ../styles/help.css
 
     body()
-      h3 TinyMCE test
+      h4 FAQ composer help (tbd)
       
-      div(class='tinyMCE-container')
-        textarea(id="mytextarea" name="mytextarea") Hello, World!
+      div()
+        button(type="button" class="mybutton btn btn-primary") profile pic

@@ -58,7 +58,8 @@ module.exports = internal.UserManagement = class {
       userName: userData.username,
       privilegeLevel: userData.privilegename,
       privilegeId: userData.privilegeid,
-      email: userData.email
+      email: userData.email,
+      profilepic: userData.profilepic
     };
     
     return true;
@@ -325,7 +326,7 @@ module.exports = internal.UserManagement = class {
     var result = this._dbManager.queryFailureResult();
     
     var query = 'select ' +
-                  'u.userid, u.usershortname, u.username, u.password, u.email, ' +
+                  'u.userid, u.usershortname, u.username, u.password, u.email, u.profilepic, ' +
                   'p.privilegeid, p.privilegename ' +
                 'from user as u, privilege as p, userprivilege as up ' +
                 'where u.userid = up.userid ' +

@@ -19,6 +19,7 @@ CREATE TABLE user
   username          varchar(100) NOT NULL ,
   email             varchar(100) NULL,
   password          varchar(200) NULL,
+  profilepic        varchar(500) NULL,
 
   PRIMARY KEY (userid),
   CONSTRAINT UNIQUE(usershortname)

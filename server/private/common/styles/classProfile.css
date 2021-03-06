@@ -1,0 +1,27 @@
+/*------------------------------------------------------------------------------
+ * Aardvark Studios Profile class styles
+ *------------------------------------------------------------------------------*/
+
+.aardvark-profile {}
+
+.aardvark-profile .as-warning {
+  background-color: #fcfb9d;
+}
+
+.aardvark-profile .navProfile-icon {
+  font-size: 3.0em;
+}
+
+.aardvark-profile .navProfile-pic {
+  width: 3.5em;
+  height: 3.5em;
+  border: none;
+  border-radius: 10%;
+  color: white;
+  
+  /* background image set in JS */
+  background-size: 3.5em 3.5em; 
+  background-repeat: no-repeat; /* should be same as width and height */
+}
+
+

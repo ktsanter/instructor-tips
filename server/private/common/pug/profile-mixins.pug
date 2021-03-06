@@ -1,0 +1,45 @@
+mixin ASProfile(idName, selectClass, extraClasses)
+  - var ASClassList = 'aardvark-profile ' + selectClass
+  - if (extraClasses.length > 0) ASClassList += ' ' + extraClasses
+  
+  .container-fluid(id=idName class=ASClassList)
+    .row
+      .col-sm
+        .form-floating(class="mb-3")
+          input(type="text" class="form-control navProfile-username" id="navProfile-username")
+          label(for="navProfile-username") display name
+      
+      .col-sm
+        .form-floating(class="mb-3")
+          button(type="button" class="navProfile-pic btn p-0") profile pic
+          i(class="navProfile-icon far fa-user-circle ml-1 mt-1" title="profile picture")
+          
+    .row
+      .col-sm
+        .form-floating(class="mb-3")
+          input(type="email" class="form-control navProfile-email" id="navProfile-email" placeholder="name@example.com")
+          label(for="navProfile-email") email
+      
+      .col-sm
+      
+    .row
+      .col-sm
+        .form-floating
+          input(type="password" class="form-control navProfile-passwordnew" id="navProfile-passwordnew" placeholder="" autocomplete="off")
+          label(for="navProfile-passwordnew") new password
+
+      .col-sm
+        .profile-error(class="err-passwordnew")
+
+    .row
+      .col-sm
+        .form-floating
+          input(type="password" class="form-control navProfile-passwordconfirm" id="navProfile-passwordconfirm" placeholder="" autocomplete="off")
+          label(for="navProfile-passwordconfirm") confirm password
+
+      .col-sm
+        .profile-error(class="err-passwordconfirm")
+
+mixin ASProfileNavbar()
+  i(id="navProfile" class="icon icon-profile use-handler fas fa-user-circle ml-1 hide-me" title="profile")
+  img(id="navProfilePic" class="pic pic-profile use-handler hide-me" title="profile")

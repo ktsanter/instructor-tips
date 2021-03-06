@@ -1,9 +1,7 @@
 //-----------------------------------------------------------------------
 // FAQ composer
 //-----------------------------------------------------------------------
-// TODO: add DB for profile
-// TODO: add pic to user table in instructorinfo DB
-// TODO: limit lengths and sanitize Profile inputs
+// TODO: don't allow selection of navbar option if it's already the current one
 // TODO: finish profile
 // TODO: finish help
 // TODO: add Rename option to mapper ?
@@ -45,7 +43,9 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	async function init () {
+	async function init (sodium) {
+    settings.sodium = sodium;
+    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
@@ -59,20 +59,26 @@ const app = function () {
     page.contentsMapper = page.contents.getElementsByClassName('contents-navMapper')[0];
     page.contentsProfile = page.contents.getElementsByClassName('contents-navProfile')[0];
 
-    if ( !(await _getUserInfo()) ) return;
     if ( !(await _getFAQInfo()) ) return;
+    
+    settings.profile = new ASProfile({
+      id: "myProfile",
+      navbarElements: {
+        "save": page.navbar.getElementsByClassName('navSave')[0],
+        "reload": page.navbar.getElementsByClassName('navReload')[0],
+        "icon": page.navbar.getElementsByClassName('icon-profile')[0],
+        "pic": page.navbar.getElementsByClassName('pic-profile')[0]
+      },
+      hideClass: 'hide-me'
+    });
+    await settings.profile.init();
     
     page.notice.setNotice('');
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
 
     _attachNavbarHandlers();
-    settings.userInfo.profilepic = 'https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/instructor.jpg';
-    _setProfilePic();
     _renderContents();
-    
-    var profileIcon = page.navbar.getElementsByClassName('icon-profile');
-    if (profileIcon.length > 0) profileIcon[0].title = settings.userInfo.userName;
-    
+
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
   
@@ -84,28 +90,9 @@ const app = function () {
     var navItems = page.navbar.getElementsByClassName(settings.navItemClass);
     for (var i = 0; i < navItems.length; i++) {
       navItems[i].addEventListener('click', handler);
-      console.log(navItems[i]);
     }
   }
-  
-  function _setProfilePic() {
-    console.log(settings.userInfo);
-    var elemIcon = page.navbar.getElementsByClassName('icon-profile')[0];
-    var elemPic = page.navbar.getElementsByClassName('pic-profile')[0];
-    
-    
-    var usePic = (settings.userInfo && settings.userInfo.profilepic);
-    if (usePic) elemPic.src = settings.userInfo.profilepic;
-    UtilityKTS.setClass(elemIcon, 'hide-me', usePic);
-    UtilityKTS.setClass(elemPic, 'hide-me', !usePic);
-    
-    if (settings.userInfo && settings.userInfo.profilepic) {
-      console.log('pic is set');
-    } else {
-      console.log('pic is not set');
-    }
-  }
-	  
+  	  
   //-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------
@@ -117,7 +104,6 @@ const app = function () {
   function _finishRendering() {
     _renderEditor();
     _renderMapper();
-    _renderProfile();
   }
     
   function _renderEditor() {
@@ -173,27 +159,11 @@ const app = function () {
     var container = page.contentsMapper.getElementsByClassName('accordion-container')[0];
     container.appendChild(settings.mapperAccordion.render([]));
   }
-  
-  function _renderProfile() {
-    var elemUserName = page.contentsProfile.getElementsByClassName('navProfile-username')[0];
-    var elemEmail = page.contentsProfile.getElementsByClassName('navProfile-email')[0];
-    var elemPicURL = page.contentsProfile.getElementsByClassName('navProfile-picURL')[0];
-    var elemPicImage = page.contentsProfile.getElementsByClassName('navProfile-pic')[0];
-    var elemPasswordNew = page.contentsProfile.getElementsByClassName('navProfile-passwordnew')[0];
-    var elemPasswordConfirm = page.contentsProfile.getElementsByClassName('navProfile-passwordconfirm')[0];
-    
-    elemUserName.value = settings.userInfo.userName;
-    elemEmail.value = settings.userInfo.email;
-    elemPicURL.value = settings.userInfo.profilepic ? settings.userInfo.profilepic : '';
-    elemPicImage.src = settings.userInfo.profilepic ? settings.userInfo.profilepic : '';
-    elemPasswordNew.value = '';
-    elemPasswordConfirm.value = '';
-  }
-  
+
   //-----------------------------------------------------------------------------
 	// updating
 	//-----------------------------------------------------------------------------
-  function _showContents(contentsId) {
+  async function _showContents(contentsId) {
     settings.currentNavOption = contentsId;
     
     var containers = page.contents.getElementsByClassName('contents-container');
@@ -205,6 +175,7 @@ const app = function () {
     if (settings.editorTree) settings.editorTree.forceContextMenuClose();
     
     if (contentsId == 'navMapper') _showMapper();
+    if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
   }
@@ -236,7 +207,7 @@ const app = function () {
       page.buttonEmbed.disabled = !enable;
       
     } else if (opt == 'navProfile') {
-      var enable = settings.dirtyBit[settings.currentNavOption];
+      var enable = settings.profile.isDirty();
       _enableNavOption('navSave', true, enable);
       _enableNavOption('navReload', true, enable);
       _enableNavOption('navProjectAdd', false);
@@ -430,16 +401,19 @@ const app = function () {
   }  
   
   async function _handleSave(e) {
+    if (settings.currentNavOption == 'navProfile') return;
+
     if (settings.currentNavOption == 'navEditor') {
       if ( !(await _saveFAQInfo()) ) return;
+      await _handleReload(e, true);
     } 
-    
-    await _handleReload(e, true);
     
     _setDirtyBit(false);
   }
   
   async function _handleReload(e, skipConfirm) {
+    if (settings.currentNavOption == 'navProfile') return;
+    
     if (!skipConfirm) {
       var msg = 'Any changes will be lost.\nChoose "OK" to continue with reloading';
       if (!confirm(msg)) return;
@@ -549,22 +523,10 @@ const app = function () {
     if (!result.success) return;
     _loadProjectInfo(settings.currentProjectId);
   }
+  
   //---------------------------------------
 	// DB interface
-	//----------------------------------------
-  async function _getUserInfo() {
-    settings.userInfo = null;
-    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
-    
-    if (dbResult.success) {
-      settings.userInfo = dbResult.userInfo;
-    } else {
-      page.notice.setNotice('failed to get user info');
-    }
-    
-    return dbResult.success;
-  }  
-  
+	//----------------------------------------  
   async function _getFAQInfo() {
     settings.faqInfo = null
     

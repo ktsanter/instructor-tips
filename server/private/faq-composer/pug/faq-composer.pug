@@ -3,10 +3,10 @@ include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/tinyMCE-mixins.pug
+include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-editor.pug
 include ./mixins/mixins-mapper.pug
-include ./mixins/mixins-profile.pug
 
 doctype html
 html(lang="en")
@@ -24,6 +24,7 @@ html(lang="en")
     style
       include ../../common/styles/jqtree.css
       include ../../common/styles/classTreeManager.css
+      include ../../common/styles/classProfile.css
       include ../styles/classFaqAccordion.css
       include ../styles/faq-composer.css
     
@@ -62,5 +63,4 @@ html(lang="en")
       .container-fluid(class="contents-container contents-navMapper hide-me")
         +mapperContainer()
         
-      .container-fluid(class="contents-container contents-navProfile hide-me")
-        +profileContainer()
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")
