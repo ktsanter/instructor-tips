@@ -5,7 +5,6 @@ define(function (require) {
   require('/scripts/sqldbinterface');
   require('/scripts/tree.jquery');
   require('/scripts/classTreeManager');
-  require('/scripts/markdowntohtml');
   require('/scripts/mytinymce');
   require('/scripts/clipboard_copy');
   require('/scripts/classProfile');

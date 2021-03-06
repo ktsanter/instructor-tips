@@ -2,7 +2,6 @@
 // FAQ composer
 //-----------------------------------------------------------------------
 // TODO: don't allow selection of navbar option if it's already the current one
-// TODO: finish profile
 // TODO: finish help
 // TODO: add Rename option to mapper ?
 //-----------------------------------------------------------------------

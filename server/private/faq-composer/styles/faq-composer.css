@@ -16,67 +16,6 @@ body {
 }
 
 /*------------------------------------------------------------------------------
- * navbar overrides
- *------------------------------------------------------------------------------*/
-.navbar {}
-
-.navbar.my-primary{
-  color: white ;
-  background-color: var(--bgPrimary);
-}
-
-.navbar a.navbar-brand {
-  color: white;
-}
-
-.navbar .navbar-brand:hover{
-  color: white;
-}
-
-.navbar a:not(.dropdown-item) {
-  color: white;
-  transition-duration: 0s;
-}
-
-.navbar a:hover:not(.navbar-brand):not(.dropdown-item) {
-  color: var(--bgPrimary);
-  background-color: white;
-  transition-duration: 0s;
-}
-
-.navbar .navbar-toggler {
-  color: white;
-  background-color: var(--bgPrimary);
-}
-
-.navbar .btn {
-  color: white;
-  background-color: var(--bgPrimary);
-  border-color: white;
-}
-
-.navbar .btn:hover {
-  color: var(--bgPrimary);
-  background-color: white;
-  border-color: white;
-  transition-duration: 0s;
-}
-
-.navbar .btn#navSave {}
-
-.navbar .icon#navProfile {
-  font-size: 2.0em;
-  cursor: pointer;
-}
-
-.navbar .pic#navProfilePic {
-  width: 2.5em;
-  cursor: pointer;
-  border: none;
-  border-radius: 10%;
-}
-
-/*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/
 .contents {}

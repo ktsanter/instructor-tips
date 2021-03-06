@@ -374,7 +374,7 @@ var appLookup = {
 
   "image-flipper-generator" : {
     appDescriptor: 'image-flipper-generator',
-    appName: 'Image flipper generator',
+    appName: 'Image flipper',
     routePug: 'image-flipper/pug/generator.pug',
     loginReRoute: 'image-flipper/generator'
   }, 

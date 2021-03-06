@@ -11,18 +11,9 @@ const app = function () {
   };
 	
 	const settings = {
-    hideClass: 'hide-me',    
-    navItemClass: 'use-handler',
-    logoutURL: '/usermanagement/logout/image-flipper-generator',
-    dirtyBit: {
-      navLayout: false,
-      navPreview: false,
-      navShare: false,
-      navProfile: false
-    },    
-    
     currentProject: null,
     dirtyBit: false,
+    logoutURL: '/usermanagement/logout',
     previewURL: '/image-flipper/flipper?configkey=preview',
     baseShareURL: window.location.origin + '/image-flipper/flipper?configkey=',
     helpURL: '/image-flipper/help',
@@ -33,143 +24,20 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	async function init (sodium) {
+	async function init () {
     page.body = document.getElementsByTagName('body')[0];
-    page.errorContainer = page.body.getElementsByClassName('error-container')[0];
-    page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
-    page.notice.setNotice('loading...', true);
     
-    page.navbar = page.body.getElementsByClassName('navbar')[0];
-    UtilityKTS.setClass(page.navbar, 'hide-me', true);
-    
-    page.contents = page.body.getElementsByClassName('contents')[0];    
-
+    await _getUserInfo();
     await _getProjectInfo();
     
-    settings.profile = new ASProfile({
-      id: "myProfile",
-      "sodium": sodium,
-      navbarElements: {
-        "save": page.navbar.getElementsByClassName('navSave')[0],
-        "reload": page.navbar.getElementsByClassName('navReload')[0],
-        "icon": page.navbar.getElementsByClassName('icon-profile')[0],
-        "pic": page.navbar.getElementsByClassName('pic-profile')[0]
-      },
-      hideClass: 'hide-me'
-    });
-    await settings.profile.init();
-    
-    page.notice.setNotice('');
-    UtilityKTS.setClass(page.navbar, 'hide-me', false); 
-
-    _attachNavbarHandlers();
-    _renderContents();
-
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
-    /*
     _renderPage();
     _updateProjectInfoSelection();
     _setDirty(false);
-    */
   }
-
-  //-----------------------------------------------------------------------------
-	// navbar
-	//-----------------------------------------------------------------------------
-  function _attachNavbarHandlers() {
-    var handler = (e, me) => { _navDispatch(e); }
-    var navItems = page.navbar.getElementsByClassName(settings.navItemClass);
-    for (var i = 0; i < navItems.length; i++) {
-      navItems[i].addEventListener('click', handler);
-    }
-  }  
   	
 	//--------------------------------------------------------------
 	// page rendering
 	//--------------------------------------------------------------
-  function _renderContents() {
-    console.log('_renderContents');
-  }
-
-	//--------------------------------------------------------------
-	// updating
-	//--------------------------------------------------------------
-  async function _showContents(contentsId) {
-    console.log('_showContents: ' + contentsId);
-    settings.currentNavOption = contentsId;
-    
-    var containers = page.contents.getElementsByClassName('contents-container');
-    for (var i = 0; i < containers.length; i++) {
-      var hide = !containers[i].classList.contains('contents-' + contentsId);
-      UtilityKTS.setClass(containers[i], settings.hideClass, hide);
-    }
-    
-    if (contentsId == 'navProfile') {
-      console.log('yep');
-      await settings.profile.reload();    
-    }
-    
-    _setNavOptions();
-  }
-  
-  function _setNavOptions() {
-    console.log('_setNavOptions');
-  }
-   
-  function _setDirtyBit(dirty) {
-    settings.dirtyBit[settings.currentNavOption] = dirty;
-    _setNavOptions();
-  }
-  
-  function _doHelp() {
-    window.open(settings.helpURL, '_blank');
-  }
-  
-  function _doLogout() {
-    window.open(settings.logoutURL, '_self'); 
-  }
-  	
-	//--------------------------------------------------------------
-	// handlers
-	//--------------------------------------------------------------
-  function _navDispatch(e) {    
-    console.log('_navDispatch: ' + e.target.id);
-    var dispatchMap = {
-      "navLayout":     function() { _showContents('navLayout'); },
-      "navPreview":    function() { _showContents('navPreview'); },
-      "navShare":      function() { _showContents('navShare'); },
-      
-      "navProfile":    function() { _showContents('navProfile'); },
-      "navProfilePic": function() { _showContents('navProfile'); },
-
-      "navHelp":       function() { _doHelp(); },
-      "navSignout":    function() { _doLogout(); }
-    }
-    
-    dispatchMap[e.target.id]();
-  }
-
-  function _notImplemented(title) {
-    console.log(title + ' not implemented yet');
-  }    
-  
-	//---------------------------------------
-	// DB interface
-	//---------------------------------------
-  async function _getProjectInfo() {    
-    var dbResult = await SQLDBInterface.doGetQuery('imageflipper/query', 'projectinfo');
-
-    settings.projectInfo = null;
-    if (dbResult.success) {
-      for (var i = 0; i < dbResult.projects.length; i++) {
-        dbResult.projects[i].layoutimages = JSON.parse(dbResult.projects[i].layoutimages);
-      }
-
-      settings.projectInfo = dbResult.projects;
-    } 
-  }  
-
-  /*---- orig below ----------------------------
   function _renderPage() {
     page.contentsLayout = page.body.getElementsByClassName('contents-layout')[0];
     page.contentsPreview = page.body.getElementsByClassName('contents-preview')[0];
@@ -750,7 +618,6 @@ const app = function () {
       elem.innerHTML = '';
     }
   }
--------------------------------------------------------------------*/
 	
 	return {
 		init: init
