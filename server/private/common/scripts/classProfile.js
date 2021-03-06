@@ -89,6 +89,9 @@ class ASProfile {
     this.elemPasswordConfirm.setAttribute('as-state', 'clean');
     this.elemPasswordConfirm.setAttribute('as-valid', true);
     
+    this._setPasswordError('new', '');
+    this._setPasswordError('confirm', '');
+    
     this._setDirty(false);
 
     return true;
@@ -300,7 +303,7 @@ class ASProfile {
     success = await this._saveBaseProfile(userInfo);
     if (success) {
       var result = await this._savePassword(userInfo);
-      if (result.success) {
+      if (result.success  && result.hasOwnProperty('data')) {
         window.open(result.data.redirectURL, '_self'); 
       }        
     }
