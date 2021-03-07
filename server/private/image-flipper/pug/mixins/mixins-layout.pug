@@ -1,3 +1,64 @@
 mixin layoutContainer()
   .row
-    .col-sm layout container
+    .col-sm
+      .container-fluid
+        .row
+          .col-sm
+            .form-floating
+              select(class="form-select select-project" id="selectProject" aria-label="select project")
+                option(selected) choose a project
+              label(for="selectProject") project
+              
+          .col-sm
+            button(class="btn btn-primary button-add") add
+            button(class="btn btn-primary button-delete" disabled) delete
+              
+        .row(class="mt-2")
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-name" id="inputName" disabled)
+              label(for="inputName") project name        
+
+        .row(class="mt-2")
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-title" id="inputTitle" disabled)
+              label(for="inputTitle") title  
+
+        .row(class="mt-2")
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-subtitle" id="inputSubtitle" disabled)
+              label(for="inputSubtitle") subtitle 
+              
+        .row(class="mt-2")
+          .col-sm
+            .form-floating
+              select(class="form-select select-gridsize" id="selectGridSize" aria-label="select size" disabled)
+                option(value="3x3") 3 x 3
+                option(value="4x4") 4 x 4
+                option(value="4x5") 4 x 5
+                option(value="5x5") 5 x 5
+                option(value="6x5") 6 x 5
+              label(for="selectGridSize") grid size
+              
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-colorscheme" id="inputColorScheme" disabled)
+              label(for="inputColorScheme") color scheme
+              
+              .color-options(class="hide-me")
+                .flipper-colorscheme-000(class="color-sample") sample text
+                .flipper-colorscheme-001(class="color-sample") sample text
+                .flipper-colorscheme-002(class="color-sample") sample text
+                .flipper-colorscheme-003(class="color-sample") sample text
+                .flipper-colorscheme-004(class="color-sample") sample text
+                .flipper-colorscheme-005(class="color-sample") sample text
+          
+        .row(class="mt-2")
+          .col-sm-6
+            .container-fluid(class="layout-grid")
+
+    .row(class="hide-me")
+      .col
+        .swap-area

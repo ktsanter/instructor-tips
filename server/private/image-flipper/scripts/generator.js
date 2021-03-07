@@ -1,7 +1,13 @@
 //------------------------------------------------------------------------------
 // image flipper generator app
 //------------------------------------------------------------------------------
-// TODO: 
+// TODO: styling
+// TODO: handle dirty bit
+// TODO: handlers for name, title, subtitle
+// TODO: project reload and save
+// TODO: project add and delete
+// TODO: finish preview
+// TODO: finish share
 //------------------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -14,19 +20,19 @@ const app = function () {
     hideClass: 'hide-me',    
     navItemClass: 'use-handler',
     logoutURL: '/usermanagement/logout/image-flipper-generator',
+    helpURL: '/image-flipper/help',
     dirtyBit: {
       navLayout: false,
       navPreview: false,
       navShare: false,
       navProfile: false
-    },    
-    
+    },
+    maxCards: 36,
     currentProject: null,
+    
     dirtyBit: false,
     previewURL: '/image-flipper/flipper?configkey=preview',
     baseShareURL: window.location.origin + '/image-flipper/flipper?configkey=',
-    helpURL: '/image-flipper/help',
-    maxCards: 36,
     thumbnailErrorImg: 'https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png'
 	};
 	
@@ -37,14 +43,18 @@ const app = function () {
     page.body = document.getElementsByTagName('body')[0];
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
+    
+    page.contents = page.body.getElementsByClassName('contents')[0];
+    page.contentsLayout = page.contents.getElementsByClassName('contents-navLayout')[0];
+    page.contentsPreview = page.contents.getElementsByClassName('contents-navPreview')[0];
+    page.contentsShare = page.contents.getElementsByClassName('contents-navShare')[0];   
+    
     page.notice.setNotice('loading...', true);
     
     page.navbar = page.body.getElementsByClassName('navbar')[0];
-    UtilityKTS.setClass(page.navbar, 'hide-me', true);
+    UtilityKTS.setClass(page.navbar, settings.hideClass, true);
     
     page.contents = page.body.getElementsByClassName('contents')[0];    
-
-    await _getProjectInfo();
     
     settings.profile = new ASProfile({
       id: "myProfile",
@@ -55,22 +65,17 @@ const app = function () {
         "icon": page.navbar.getElementsByClassName('icon-profile')[0],
         "pic": page.navbar.getElementsByClassName('pic-profile')[0]
       },
-      hideClass: 'hide-me'
+      hideClass: settings.hideClass
     });
     await settings.profile.init();
     
     page.notice.setNotice('');
-    UtilityKTS.setClass(page.navbar, 'hide-me', false); 
+    UtilityKTS.setClass(page.navbar, settings.hideClass, false); 
 
     _attachNavbarHandlers();
-    _renderContents();
+    await _renderContents();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
-    /*
-    _renderPage();
-    _updateProjectInfoSelection();
-    _setDirty(false);
-    */
   }
 
   //-----------------------------------------------------------------------------
@@ -87,10 +92,50 @@ const app = function () {
 	//--------------------------------------------------------------
 	// page rendering
 	//--------------------------------------------------------------
-  function _renderContents() {
-    console.log('_renderContents');
+  async function _renderContents() {
+    page.elemProjectSelection = page.contentsLayout.getElementsByClassName('select-project')[0];
+    page.elemName = page.contentsLayout.getElementsByClassName('input-name')[0];
+    page.elemTitle = page.contentsLayout.getElementsByClassName('input-title')[0];
+    page.elemSubtitle = page.contentsLayout.getElementsByClassName('input-subtitle')[0];
+    page.elemGridSize = page.contentsLayout.getElementsByClassName('select-gridsize')[0];
+    page.elemColorScheme = page.contentsLayout.getElementsByClassName('input-colorscheme')[0];
+    page.elemColorSchemeOptions = page.contentsLayout.getElementsByClassName('color-options')[0];
+    page.elemLayoutGrid = page.contentsLayout.getElementsByClassName('layout-grid')[0];
+    page.elemSwapArea = page.contentsLayout.getElementsByClassName('swap-area')[0];
+    
+    _attachHandlers();
+    
+    _renderLayoutCards();
+    
+    await _updateProjectSelection();
+    _updateProjectInfo();
   }
-
+  
+  function _attachHandlers() {
+    page.elemProjectSelection.addEventListener('change', (e) => { _handleProjectSelection(e); });
+    page.elemGridSize.addEventListener('change', (e) => { _updateCardLayout(); });
+    
+    page.elemColorScheme.addEventListener('keypress', (e) => { _denyInput(e); });
+    page.elemColorScheme.addEventListener('click', (e) => { _handleColorSchemeToggle(e); });
+    var elemColorOptions = page.contentsLayout.getElementsByClassName('color-sample');
+    for (var i = 0; i < elemColorOptions.length; i++) {
+      elemColorOptions[i].addEventListener('click', (e) => { _handleColorSchemeSelection(e); });
+    }
+    
+    console.log('attach the rest of the handlers (name, title, subtitle)');
+  }
+  
+  function _renderLayoutCards() {
+    var handler = (e) => { _handleCardButton(e); };
+    for (var i = 0; i < settings.maxCards; i++) {
+      var card = CreateElement.createButton('btnCard' + i, 'cardbutton cardbutton' + i, i + 1, null, handler);
+      card.value = i;
+      card.imageURL = '';
+      card.title = 'specify image URL for card #' + (i + 1);      
+      page.elemSwapArea.appendChild(card);
+    }
+  }
+  
 	//--------------------------------------------------------------
 	// updating
 	//--------------------------------------------------------------
@@ -104,23 +149,147 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navProfile') {
-      console.log('yep');
-      await settings.profile.reload();    
-    }
+    if (contentsId == 'navProfile') await settings.profile.reload();    
     
     _setNavOptions();
   }
   
   function _setNavOptions() {
-    console.log('_setNavOptions');
+    var opt = settings.currentNavOption;
+    _enableNavOption('navSave', false);
+    _enableNavOption('navReload', false);
+    _enableNavOption('navProjectAdd', false);
+    _enableNavOption('navProjectRemove', false);
+      
+    if (opt == 'navLayout') {
+      var enable = settings.dirtyBit[settings.currentNavOption];
+      _enableNavOption('navSave', true, enable);
+      _enableNavOption('navReload', true, enable);
+      
+    } else if (opt == 'navPreview') {
+      
+    } else if (opt == 'navShare') {
+
+    } else if (opt == 'navProfile') {
+      var enable = settings.profile.isDirty();
+      _enableNavOption('navSave', true, enable);
+      _enableNavOption('navReload', true, enable);
+    }
   }
+  
+  function _enableNavOption(navOption, visible, enable) {
+    var elem = document.getElementById(navOption);
+    UtilityKTS.setClass(elem, settings.hideClass, !visible);
+    elem.disabled = !enable;    
+  }
+    
    
   function _setDirtyBit(dirty) {
     settings.dirtyBit[settings.currentNavOption] = dirty;
     _setNavOptions();
   }
   
+  async function _updateProjectSelection() {
+    UtilityKTS.removeChildren(page.elemProjectSelection);
+    
+    if (!(await _getProjectInfo())) return;
+    
+    var indexToSelect = -1;
+    
+    for (var i = 0; i < settings.projectInfo.length; i++) {
+      var project = settings.projectInfo[i];
+      var elem = CreateElement.createOption(null, 'project', project.projectid, project.projectname + ': ' + project.projecttitle);
+      elem.projectInfo = project;      
+      if (settings.currentProject && project.projectid == settings.currentProject.projectid) indexToSelect = i;
+      page.elemProjectSelection.appendChild(elem);
+    }
+    
+    page.elemProjectSelection.selectedIndex = indexToSelect;
+  }  
+  
+  function _updateProjectInfo(projectInfo) {
+    settings.currentProject = projectInfo;
+    
+    page.elemName.disabled = !projectInfo;
+    page.elemTitle.disabled = !projectInfo;
+    page.elemSubtitle.disabled = !projectInfo;
+    page.elemGridSize.disabled = !projectInfo;
+    page.elemColorScheme.disabled = !projectInfo;
+    
+    page.elemName.value = '';
+    page.elemTitle.value = '';
+    page.elemSubtitle.value = '';
+    page.elemGridSize.selectedIndex = -1;
+    page.elemColorScheme.selectedIndex = -1;
+    
+    if (projectInfo) {
+      page.elemName.value = projectInfo.projectname;
+      page.elemTitle.value = projectInfo.projecttitle;
+      page.elemSubtitle.value = projectInfo.projectsubtitle;
+      page.elemGridSize.value = projectInfo.layoutrows + 'x' + projectInfo.layoutcols;
+      _setColorScheme(page.elemColorScheme.parentNode, projectInfo.colorscheme);
+      page.elemColorScheme.value = 'sample text';
+    }
+    
+    _updateCardLayout();
+  }
+  
+  function _setColorScheme(elem, colorClass) {
+    var classNames = elem.classList;
+    classNames.forEach(name => {
+      if (name.match(/flipper-colorscheme-/)) {
+        elem.classList.remove(name);
+      }
+    });
+    elem.classList.add('use-colorscheme');
+    elem.classList.add(colorClass);    
+  }
+  
+  function _updateCardLayout(projectInfo) {
+    var projectInfo = settings.currentProject;
+    if (!projectInfo) return;
+    
+    for (var i = 0; i < settings.maxCards; i++) {
+      var card = page.contentsLayout.getElementsByClassName('cardbutton cardbutton' + i)[0];
+      _setCardImage(card, '');
+      page.elemSwapArea.appendChild(card); 
+    }
+
+    UtilityKTS.removeChildren(page.elemLayoutGrid);
+    var gridSize = _getLayoutSetting();
+    
+    var index = 0;
+    for (var r = 0; r < gridSize.rows; r++) {
+      var elemRow = CreateElement.createDiv(null, 'row mt-1')
+      page.elemLayoutGrid.appendChild(elemRow);
+      
+      for (var c = 0; c < gridSize.cols; c++) {
+        var card = page.contentsLayout.getElementsByClassName('cardbutton cardbutton' + index)[0];
+        var elemCol = CreateElement.createDiv(null, 'col-sm-2');
+        elemRow.appendChild(elemCol);
+        
+        elemCol.appendChild(card);
+        _setCardImage(card, projectInfo.layoutimages[index]);
+        index++;
+      }
+    }
+  }
+  
+  function _setCardImage(elem, imageURL) {
+    var origWidth = elem.offsetWidth;
+    var origHeight = elem.offsetHeight;
+
+    if (imageURL == null || imageURL == "") {
+      elem.style.background = '';
+      elem.imageURL = '';
+
+    } else {
+      elem.style.background = "url(" + imageURL + "), url('" + settings.thumbnailErrorImg + "') no-repeat right top";
+      elem.style.backgroundSize = origWidth + 'px ' + origHeight + 'px';
+      elem.imageURL = imageURL;
+    }
+  }
+
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
   }
@@ -139,6 +308,9 @@ const app = function () {
       "navPreview":    function() { _showContents('navPreview'); },
       "navShare":      function() { _showContents('navShare'); },
       
+      "navSave":       function() { _handleSave(e);},
+      "navReload":     function() { _handleReload(e);},
+      
       "navProfile":    function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
 
@@ -149,470 +321,56 @@ const app = function () {
     dispatchMap[e.target.id]();
   }
 
-  function _notImplemented(title) {
-    console.log(title + ' not implemented yet');
-  }    
-  
-	//---------------------------------------
-	// DB interface
-	//---------------------------------------
-  async function _getProjectInfo() {    
-    var dbResult = await SQLDBInterface.doGetQuery('imageflipper/query', 'projectinfo');
-
-    settings.projectInfo = null;
-    if (dbResult.success) {
-      for (var i = 0; i < dbResult.projects.length; i++) {
-        dbResult.projects[i].layoutimages = JSON.parse(dbResult.projects[i].layoutimages);
-      }
-
-      settings.projectInfo = dbResult.projects;
-    } 
-  }  
-
-  /*---- orig below ----------------------------
-  function _renderPage() {
-    page.contentsLayout = page.body.getElementsByClassName('contents-layout')[0];
-    page.contentsPreview = page.body.getElementsByClassName('contents-preview')[0];
-    page.previewFrame = page.contentsPreview.getElementsByClassName('preview-frame')[0];
-    page.contentsShare = page.body.getElementsByClassName('contents-share')[0];
-    
-    page.projectSelection = page.body.getElementsByClassName('control-selection')[0];
-    
-    page.keyvalueControl = page.body.getElementsByClassName('control-keyvalue')[0];
-    page.titleControl = page.body.getElementsByClassName('control-title')[0];
-    page.subtitleControl = page.body.getElementsByClassName('control-subtitle')[0];
-    page.colorControl = page.body.getElementsByClassName('control-color')[0];
-    page.layoutControl = page.body.getElementsByClassName('control-layout')[0];
-    page.colorOptions = page.body.getElementsByClassName('color-options')[0];
-    
-    page.layoutContainer = page.body.getElementsByClassName('layout')[0];
-    
-    page.body.getElementsByClassName('navbarcontainer')[0].appendChild(_renderNavbar());
-    var navbarItems = page.body.getElementsByClassName('navbar-main-item');
-    page.navitems = {};
-    for (var i = 0; i < navbarItems.length; i++) {
-      var item = navbarItems[i];
-      if (item.innerHTML.includes('Preview')) {
-        page.navitems.previewItem = item;
-        
-      } else if (item.innerHTML.includes('Share')) {
-        page.navitems.shareItem = item;
-      
-      } else if (item.innerHTML == settings.userInfo.userName) UtilityKTS.setClass(item, 'username', true);
-    }
-    
-    var dropdownItems = page.body.getElementsByClassName('dropdown-content hamburger')[0].children;
-    for (var i = 0; i < dropdownItems.length; i++) {
-      var item = dropdownItems[i];
-      if (item.innerHTML.includes('reload project')) {
-        page.navitems.reloadItem = item;
-
-      } else if (item.innerHTML.includes('add project')) {
-        page.navitems.addItem = item;
-
-      } else if (item.innerHTML.includes('delete project')) {
-        page.navitems.deleteItem = item;
-      }
-    }
-    
-    _attachHandlers();
-    _renderLayout();
-    _updateLayout();
-    
-    settings.navbar.selectOption('Layout');    
-  }
-  
-  function _renderNavbar() {
-    var navConfig = {
-      title: appInfo.appName,
-      
-      items: [
-        {label: 'Layout', callback: () => {return _navDispatch('layout');}, subitems: null, rightjustify: false},
-        {label: 'Preview', callback: () => {return _navDispatch('preview');}, subitems: null, rightjustify: false},
-        {label: 'Share', callback: () => {return _navDispatch('share');}, subitems: null, rightjustify: false},
-        {label: settings.userInfo.userName, callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
-      ],
-      
-      hamburgeritems: [           
-        {label: 'reload project', markselected: false, callback: _handleReloadProject},
-        {label: 'add project', markselected: false, callback: _handleAddProject},
-        {label: 'delete project', markselected: false, callback: _handleDeleteProject},
-        {label: 'help', markselected: false, callback: _showHelp},
-        {label: 'sign out', markselected: false, callback: _doLogout}
-      ]   
-    };
-
-    settings.navbar = new NavigationBar(navConfig);
-        
-    return settings.navbar.render();
-  } 
-  
-  function _attachHandlers() {
-    page.projectSelection.addEventListener('change', (e) => { _handleProjectSelection(e); });
-
-    page.body.getElementsByClassName('save-project')[0].addEventListener('click', (e) => { _handleProjectSave(e); });
-    
-    page.keyvalueControl.addEventListener('input', (e) => { _restrictInput(e); });
-    page.titleControl.addEventListener('input', (e) => { _restrictInput(e); });
-    page.subtitleControl.addEventListener('input', (e) => { _restrictInput(e); });
-   
-    page.layoutControl.addEventListener('change', (e) => { _setDirty(true); _updateLayout();});
-    page.colorControl.addEventListener('click', (e) => {_handleColorControl(e);});
-    
-    page.colorOptions.addEventListener('mouseleave', (e) => { UtilityKTS.setClass(page.colorOptions, 'hide-me', true); });
-    var samples = page.colorOptions.getElementsByClassName('color-sample');
-    for (var i = 0; i < samples.length; i++) {
-      samples[i].addEventListener('click', (e) => { _handleColorSelection(e); });
-    }
-    
-    page.contentsShare.getElementsByClassName('button-link')[0].addEventListener('click', (e) => { _handleLinkClick(e); });
-    page.contentsShare.getElementsByClassName('button-embed')[0].addEventListener('click', (e) => { _handleEmbedClick(e); });
-  }
-  
-  function _renderLayout() {
-    var layoutTable = page.layoutContainer.getElementsByTagName('table')[0];
-    
-    var tableRow = CreateElement._createElement('tr', null, null);
-    layoutTable.appendChild(tableRow);
-    var tableCell = CreateElement._createElement('td', null, null);
-    tableRow.appendChild(tableCell);
-    
-    for (var i = 0; i < settings.maxCards; i++) {
-      var handler = (e) => { _handleCardButton(e);};
-      var elem = CreateElement.createButton('btnCard' + i, 'cardbutton cardbutton' + i, i + 1, null, handler);
-      elem.value = i;
-      elem.disabled = true;
-      elem.imageURL = '';
-      elem.title = 'specify image URL for card #' + (i + 1);
-      tableCell.appendChild(elem);
-    }
-    
-    var elemURLInput = page.layoutContainer.getElementsByClassName('imageurl')[0];
-    page.ImageInputRow = CreateElement._createElement('tr', null, null);
-    page.ImageInputRow.appendChild(elemURLInput);
-  }
-	
-	//--------------------------------------------------------------
-	// updating
-	//--------------------------------------------------------------
-  function _navDispatch(dispatchOption) {
-    var dispatchMap = {
-      'layout': function() {_showContents('contents-layout'); },
-      'preview': _showPreview,
-      'share': _showShare,
-      'profile': function() {}
-    };
-    
-    var route = dispatchMap[dispatchOption];
-    route();
-  }
-  
-  function _showContents(contentsClass) {
-    var contents = page.body.getElementsByClassName('contents');
-    
-    for (var i = 0; i < contents.length; i++) {
-      if (contentsClass == 'contents-preview' || contentsClass == 'contents-share') {
-        _setDisarm(page.navitems.reloadItem, true);
-        _setDisarm(page.navitems.addItem, true);
-        _setDisarm(page.navitems.deleteItem, true);
-        
-      } else {
-        _setDisarm(page.navitems.reloadItem, !settings.dirtyBit);
-        _setDisarm(page.navitems.addItem, false);
-        _setDisarm(page.navitems.deleteItem, !settings.currentProject);
-      }
-      
-      UtilityKTS.setClass(contents[i], 'hide-me', true);
-    }
-    UtilityKTS.setClass(page.body.getElementsByClassName(contentsClass)[0], 'hide-me', false);
-  }
-  
-  function _updateProjectInfoSelection() {
-    UtilityKTS.removeChildren(page.projectSelection);
-    
-    var indexToSelect = -1;
-    
-    for (var i = 0; i < settings.projectInfo.length; i++) {
-      var project = settings.projectInfo[i];
-      var elem = CreateElement.createOption(null, 'project', project.projectid, project.projectname + ': ' + project.projecttitle);
-      elem.projectInfo = project;      
-      if (settings.currentProject && project.projectid == settings.currentProject.projectid) indexToSelect = i;
-      page.projectSelection.appendChild(elem);
-    }
-    
-    page.projectSelection.selectedIndex = indexToSelect;
-  }
-  
-  function _updateProjectInfo(projectInfo) {
-    settings.currentProject = projectInfo;
-    if (projectInfo) {
-      page.keyvalueControl.value = projectInfo.projectname;
-      page.titleControl.value = projectInfo.projecttitle;
-      page.subtitleControl.value = projectInfo.projectsubtitle;
-      
-      elemColor = page.colorOptions.getElementsByClassName('color-sample ' + projectInfo.colorscheme)[0].click();
-      
-      page.layoutControl.value = projectInfo.layoutrows + 'x' + projectInfo.layoutcols;
-      _updateLayout();
-      
-      for (var i = 0; i < settings.maxCards; i++) {
-        var imageURL = '';
-        if (i < projectInfo.layoutimages.length) imageURL = projectInfo.layoutimages[i];
-        _setCardImage(page.layoutContainer.getElementsByClassName('cardbutton cardbutton' + i)[0], imageURL)
-      }
-      
-      page.keyvalueControl.disabled = false;
-      page.titleControl.disabled = false;
-      page.subtitleControl.disabled = false;
-      UtilityKTS.setClass(page.colorControl, 'hide-me', false);
-      page.layoutControl.disabled = false;
-      
-      var cards = page.layoutContainer.getElementsByClassName('cardbutton');
-      for (var i = 0; i < cards.length; i++) {
-        cards[i].disabled = false;
-      }
-      
-    } else {
-      page.keyvalueControl.value = '';
-      page.titleControl.value = '';
-      page.subtitleControl.value = '';
-      
-      page.keyvalueControl.disabled = true;
-      page.titleControl.disabled = true;
-      page.subtitleControl.disabled = true;
-      UtilityKTS.setClass(page.colorControl, 'hide-me', true);
-      page.layoutControl.disabled = true;
-      
-      var cards = page.layoutContainer.getElementsByClassName('cardbutton');
-      for (var i = 0; i < cards.length; i++) {
-        cards[i].disabled = true;
-      }
-    }
-    
-    _setDirty(false);
-  }
-  
-  function _updateLayout() {
-    var layoutTable = page.layoutContainer.getElementsByTagName('table')[0];
-    var swapArea = page.layoutContainer.getElementsByClassName('swaparea')[0];
-
-    for (var i = 0; i < settings.maxCards; i++) {
-      var elemCard = page.layoutContainer.getElementsByClassName('cardbutton' + i)[0];
-      swapArea.appendChild(elemCard)
-    }
-    
-    UtilityKTS.removeChildren(layoutTable);
-
-    var layout = _getLayoutSetting();
-    var cardnum = 0;
-    for(var r = 0; r < layout.rows; r++) {
-      var elemRow = CreateElement._createElement('tr', null, null);
-      layoutTable.appendChild(elemRow);
-
-      for (var c = 0; c < layout.cols; c++) {
-        var elemCol = CreateElement._createElement('td', null, null);
-        elemRow.appendChild(elemCol);
-        
-        var elemCard = swapArea.getElementsByClassName('cardbutton' + cardnum)[0];
-        elemCol.appendChild(elemCard);
-        
-        cardnum++;
-      }
-    }
-  }
-
-  function _promptForImageURL(elem) {
-    var cardNum = elem.value;
-    var currentURL = elem.imageURL;
-    
-    return prompt('Please enter the URL for image #' + (cardNum + 1), currentURL);
-  }
-  
-  function _setCardImage(elem, imageURL) {
-    var origWidth = elem.offsetWidth;
-    var origHeight = elem.offsetHeight;
-
-    if (imageURL == null || imageURL == "") {
-      elem.style.background = '';
-      elem.imageURL = '';
-
-    } else {
-      elem.style.background = "url(" + imageURL + "), url('" + settings.thumbnailErrorImg + "') no-repeat right top";
-      elem.style.backgroundSize = origWidth + 'px ' + origHeight + 'px';
-      elem.imageURL = imageURL;
-    }
-  }
-  
-  function _setDirty(dirty) {
-    settings.dirtyBit = dirty;
-    
-    page.body.getElementsByClassName('save-project')[0].disabled = !dirty;
-    
-    _setDisarm(page.navitems.previewItem, !settings.currentProject);
-    _setDisarm(page.navitems.shareItem, !settings.currentProject || settings.dirtyBit);
-    _setDisarm(page.navitems.reloadItem, !dirty);
-    _setDisarm(page.navitems.deleteItem, !settings.currentProject);
-  }
-  
-  function _selectProject(projectId) {
-    var projectOptions = page.projectSelection.children;
-    for (var i = 0; i < projectOptions.length; i++) {
-      var opt = projectOptions[i];
-      if (opt.value == projectId) {
-        opt.selected = true;
-        _updateProjectInfo(opt.projectInfo);
-        break;
-      }
-    }
-  }
-
-  async function _showPreview() { 
-    var result = await _saveProjectToDB(true);
-    if (!result.success) {
-      console.log('failed to save preview');
-      return;
-    }
-    
-    page.previewFrame.src = settings.previewURL;
-    _showContents('contents-preview'); 
-  }
-
-  function _showShare() { 
-    var elemLink = page.contentsShare.getElementsByClassName('share-link')[0];
-    var elemEmbed = page.contentsShare.getElementsByClassName('share-embed')[0];
-    
-    var url = settings.baseShareURL + settings.currentProject.projectid;
-    elemLink.innerHTML = url;
-
-    var elem = CreateElement.createIframe(null, null, url, 650, 500);
-    elem.style.overflowY = 'hidden';
-    elem.style.border = 'none';
-    elem.scrolling = 'no';
-    elemEmbed.value = elem.outerHTML;
-    
-    _showShareCopiedMessage(null);
-    _showContents('contents-share'); 
-  }
-
-	//--------------------------------------------------------------
-	// handlers
-	//--------------------------------------------------------------    
-  function _handleReloadProject() {
-    if (!settings.currentProject) return;
-    if (settings.dirtyBit && !confirm('Current changes will be lost.\nContinue with reloading project?')) return;
-
-    _updateProjectInfo(settings.currentProject);
-  }
-  
-  async function _handleAddProject() {
-    if (settings.dirtyBit && !confirm('Current changes will be lost.\nContinue with adding project?')) return;
-    
-    var newProjectId = await _addNewProjectToDB();
-    
-    if (newProjectId) {
-      await _getProjectInfo();
-      _updateProjectInfoSelection();
-      _selectProject(newProjectId);
-      
-    } else {
-        console.log('failed to add new project');
-    }        
-  }
-  
-  async function _handleProjectSave(e) {
-    var result = await _saveProjectToDB();
-
-    if (result.success) {
-      await _getProjectInfo();
-      _updateProjectInfoSelection();
-      _selectProject(settings.currentProject.projectid);
-
-    } else {
-      console.log('failed to save project');
-    }
-  }
-  
-  async function _handleDeleteProject() {
-    if (!settings.currentProject) return;
-    
-    var projName = settings.currentProject.projectname;
-    if (!confirm('This project will be permanently removed.\nContinue with deleting "' + projName + '"?')) return; 
-    
-    var deleteSucceeded = await _deleteProjectFromDB();
-    if (deleteSucceeded) {
-      settings.currentProject = null;
-      await _getProjectInfo();
-      _updateProjectInfoSelection();
-      _updateProjectInfo(settings.currentProject);
-      
-    } else {
-      console.log('failed to delete project');
-    }
-  }
-  
   function _handleProjectSelection(e) {
-    if (settings.dirtyBit && !confirm('Current changes will be lost.\nContinue with selecting different project?')) {
-      e.target.value = settings.currentProject.projectid;
-      
-    } else {
-      _updateProjectInfo(e.target[e.target.selectedIndex].projectInfo);
-    }
+    _updateProjectInfo(e.target[e.target.selectedIndex].projectInfo);
   }
   
-  function _handleColorControl(e) {
-    UtilityKTS.setClass(page.colorOptions, 'hide-me', false);
+  function _handleColorSchemeToggle(e) {
+    UtilityKTS.toggleClass(page.elemColorSchemeOptions, settings.hideClass, false);
   }
   
-  function _handleColorSelection(e) {
-    UtilityKTS.setClass(page.colorOptions, 'hide-me', true);
+  function _handleColorSchemeSelection(e) {
+    UtilityKTS.setClass(page.elemColorSchemeOptions, 'hide-me', true);
 
-    var currentSchemeClass = _getColorScheme(page.colorControl);
+    var currentSchemeClass = _getColorScheme(page.elemColorScheme.parentNode);
     var newSchemeClass = _getColorScheme(e.target);
     
     if (currentSchemeClass.length > 0) {
-      UtilityKTS.setClass(page.colorControl, currentSchemeClass, false);
+      UtilityKTS.setClass(page.elemColorScheme.parentNode, currentSchemeClass, false);
     }
     
-    UtilityKTS.setClass(page.colorControl, newSchemeClass, true);
-   if (currentSchemeClass != newSchemeClass) _setDirty(true);
+    UtilityKTS.setClass(page.elemColorScheme.parentNode, newSchemeClass, true);    
   }
   
   function _handleCardButton(e) {
-    var cardNum = e.target.value;
-    var currentURL = e.target.imageURL;
+    var card = e.target;
+    var imageURL = _sanitizeURL(prompt('Please enter the URL for image #' + (card.value*1 + 1), card.imageURL));
+    if (imageURL == null) return;
     
-    var imageURL = _sanitizeURL(_promptForImageURL(e.target));
-    if (imageURL) {
-      _setCardImage(e.target, imageURL);
-      _setDirty(true);
-    }
-  }
-	
-  function _handleLinkClick(e) {
-    var elemLink = page.contentsShare.getElementsByClassName('share-link')[0];
-    var msg = elemLink.innerHTML;
-    _copyToClipboard(msg);
-    _showShareCopiedMessage('link');
+    _setCardImage(e.target, imageURL);
   }
   
-  function _handleEmbedClick(e) {
-    var elemEmbed = page.contentsShare.getElementsByClassName('share-embed')[0];
-    var msg = elemEmbed.value;
-    _copyToClipboard(msg);
-    _showShareCopiedMessage('embed');
+  function _handleSave(e) {
+    if (settings.currentNavOption == 'navProfile') return;
+    console.log('_handleSave');
   }
   
+  function _handleReload(e) {
+    if (settings.currentNavOption == 'navProfile') return;
+    console.log('_handleReload');
+  }
+  
+  function _denyInput(e) {
+    e.stopPropagation();
+    e.preventDefault();  
+    e.returnValue = false;
+    e.cancelBubble = true;
+    return false;
+  }
+
 	//---------------------------------------
 	// DB interface
 	//---------------------------------------
-  async function _getUserInfo() {
-    var dbResult = await SQLDBInterface.doGetQuery('usermanagement', 'getuser');
-    settings.userInfo = null;
-    if (dbResult.success) {
-      settings.userInfo = dbResult.userInfo;
-    }     
-  }
-  
   async function _getProjectInfo() {    
     var dbResult = await SQLDBInterface.doGetQuery('imageflipper/query', 'projectinfo');
 
@@ -624,79 +382,13 @@ const app = function () {
 
       settings.projectInfo = dbResult.projects;
     } 
+    
+    return dbResult.success;
   }  
 
-  async function _saveProjectToDB(preview) {
-    var layout = page.layoutControl.value.split('x');
-
-    var postData = {
-      projectid: settings.currentProject.projectid,
-      projectname: page.keyvalueControl.value,
-      projecttitle: page.titleControl.value,
-      projectsubtitle: page.subtitleControl.value,
-      colorscheme: _getColorScheme(page.colorControl),
-      layoutrows: layout[0],
-      layoutcols: layout[1],
-      layoutimages: _getLayoutImageArray()
-    };
-    
-    var command = 'project'
-    if (preview) command = 'preview';
-    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/update', command, postData);
-    
-    return dbResult;    
-  }
-  
-  async function _addNewProjectToDB() {
-    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/insert', 'defaultproject');
-      
-    var newProjectId = null;
-    if (dbResult.success) newProjectId = dbResult.data.projectid;
-    
-    return newProjectId;
-  }
-  
-  async function _deleteProjectFromDB() {
-    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/delete', 'project', {projectid: settings.currentProject.projectid});
-
-    return dbResult.success;
-  }
-  
-  //---------------------------------------
-  // clipboard functions
-  //----------------------------------------
-  function _copyToClipboard(txt) {
-    if (!page._clipboard) page._clipboard = new ClipboardCopy(page.body, 'plain');
-
-    page._clipboard.copyToClipboard(txt);
-	}	
-
-  function _copyRenderedToClipboard(txt) {
-    if (!page._renderedclipboard) page._renderedclipboard = new ClipboardCopy(page.body, 'rendered');
-
-    page._renderedclipboard.copyRenderedToClipboard(txt);
-	}	    
-    
 	//---------------------------------------
-	// utility functions
+	// utility
 	//---------------------------------------
-  function _restrictInput(e) {
-    if (e.inputType.includes('delete')) _setDirty(true);
-    if (!e.data) return;
-    
-    if (!e.data.match(/[0-9a-zA-Z\:_\-\. (),\!\?]/)) {
-      e.target.value = e.target.value.replace(/[^0-9a-zA-Z_\:\-\. (),\!\?]/g, '');
-    } else {
-      _setDirty(true);
-    }
-  }
-  
-  function _sanitizeURL(url) {
-    url = url.replace(/[\"]/g, '%22');
-    url = url.replace(/[\']/g, '%22');
-    return url;
-  }
-  
   function _getColorScheme(elem) {
     var currentSchemeClass = '';
     elem.classList.forEach(function(value, key) {
@@ -707,50 +399,20 @@ const app = function () {
   }
   
   function _getLayoutSetting() {
-    var layoutValues = page.layoutControl.value.split('x');
+    var layoutValues = page.elemGridSize.value.split('x');
     
     return {
       rows: layoutValues[0],
       cols: layoutValues[1]
     };
-  }
+  }  
   
-  function _getLayoutImageArray() {
-    var imageURLArray = [];
-    
-    var elemCards = page.body.getElementsByClassName('cardbutton');
-    for (var i = 0; i < settings.maxCards; i++) {
-      var card = page.body.getElementsByClassName('cardbutton cardbutton' + i)[0];
-      imageURLArray.push(card.imageURL);
-    }
-
-    return imageURLArray;
-  }
-  
-  function _setDisarm(elem, disarm) {
-    UtilityKTS.setClass(elem, 'disarm-me', disarm);
-  }
-
-  async function _doLogout() {
-    window.open(settings.logoutURL, '_self'); 
-  }
-
-  function _showHelp() {
-    window.open(settings.helpURL, '_blank');
-  }
-  
-  function _showShareCopiedMessage(category) {
-    var elem = page.contentsShare.getElementsByClassName('copy-message')[0];
-    
-    if (category == 'link') {
-      elem.innerHTML = 'copied link to clipboard';
-    } else if (category == 'embed') {
-      elem.innerHTML = 'copied embed code to clipboard';
-    } else {
-      elem.innerHTML = '';
-    }
-  }
--------------------------------------------------------------------*/
+  function _sanitizeURL(url) {
+    if (!url || url.length == 0) return url;
+    url = url.replace(/[\"]/g, '%22');
+    url = url.replace(/[\']/g, '%22');
+    return url;
+  }  
 	
 	return {
 		init: init

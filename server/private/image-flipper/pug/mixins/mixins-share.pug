@@ -1,3 +1,19 @@
 mixin shareContainer()
-  .row
-    .col-sm share container
+  .row(class="my-3")
+    .col-sm-6
+      .form-floating
+        input(type="text" class="form-control input-link" id="inputLink")
+        label(for="inputLink") link
+    .col-sm-1
+      .form-floating
+        button(class="btn btn-primary btnCopyLink") copy
+      
+  .row(class="my-3")
+    .col-sm-6
+      .form-floating
+        input(type="text" class="form-control input-embed" id="inputEmbed")
+        label(for="inputEmbed") embed
+    .col-sm-1
+      .form-floating
+        button(class="btn btn-primary btnCopyEmbed") copy
+

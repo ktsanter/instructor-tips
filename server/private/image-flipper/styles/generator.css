@@ -1,17 +1,6 @@
 /*-----------------------------------------------------*/
 /* styling for image flipper generator app             */
 /*-----------------------------------------------------*/
-/*
-.flipper-colorscheme {
-  --fgPrimary: black;
-  --bgPrimary: rgba(66, 98, 150, 1.0);
-  --bgSecondary: rgba(66, 98, 150, 0.2);
-  --bgTertiary: #eee;
-  --borderPrimary: #bbb;
-  --diminished: #999;
-}
-*/
-
 body {
   padding-top: 4.0em;
 }
@@ -25,6 +14,41 @@ body {
 /*---------------------------------------------*/
 .contents {}
 
+.contents .contents-navLayout .use-colorscheme input {
+  color: var(--flipper-color3);
+  background-color: var(--flipper-color2);
+  border-color: var(--flipper-color1);
+}
+
+.contents .contents-navLayout .use-colorscheme label{
+  color: var(--flipper-color3);
+}
+
+.contents .contents-navLayout .color-options {
+  position: absolute;
+  width: 100%;
+  z-index: 10;
+  border: 1px solid #777;
+  filter: drop-shadow(6px 5px 7px #777);
+}
+
+.contents .contents-navLayout .color-sample {
+  color: var(--flipper-color3);
+  background-color: var(--flipper-color2);
+  border-color: var(--flipper-color1);
+  cursor: pointer;
+  padding-left: 1.0em;
+}
+
+.contents .contents-navLayout .cardbutton {
+  color: white;
+  background-color: rgba(66, 98, 150, 1.0);
+  border: 1px solid #777;
+  border-radius: 3px;
+  font-size: 1.5em;
+  width: 3.5em;
+  height: 3.5em;
+}
 
 /*------------------------------------------------------------------
  * standard error and notice
