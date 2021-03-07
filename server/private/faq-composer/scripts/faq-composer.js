@@ -1,7 +1,6 @@
 //-----------------------------------------------------------------------
 // FAQ composer
 //-----------------------------------------------------------------------
-// TODO: don't allow selection of navbar option if it's already the current one
 // TODO: finish help
 // TODO: add Rename option to mapper ?
 //-----------------------------------------------------------------------
@@ -338,7 +337,11 @@ const app = function () {
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
-  function _navDispatch(e) {    
+  function _navDispatch(e) {
+    var dispatchTarget = e.target.id;
+    if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
+    if (dispatchTarget == settings.currentNavOption) return;
+    
     var dispatchMap = {
       "navEditor": function() { _showContents('navEditor'); },
       "navMapper": function() { _showContents('navMapper'); },
@@ -347,12 +350,12 @@ const app = function () {
       "navProfilePic": function() { _showContents('navProfile'); },
       "navSignout": function() { _doLogout();},
       "navSave": function() { _handleSave(e);},
-      "navReload": function() { _handleReload(e);},
+      "navReload": function() { _handleReload(e, false);},
       "navProjectAdd": function() { _handleProjectAdd(e);},
       "navProjectRemove": function() { _handleProjectRemove(e);}
     }
     
-    dispatchMap[e.target.id]();
+    dispatchMap[dispatchTarget]();
   }
   
   async function _handleTreeSelect(nodeInfo) {
@@ -399,19 +402,18 @@ const app = function () {
   }  
   
   async function _handleSave(e) {
-    if (settings.currentNavOption == 'navProfile') return;
-
     if (settings.currentNavOption == 'navEditor') {
       if ( !(await _saveFAQInfo()) ) return;
       await _handleReload(e, true);
-    } 
+      
+    } else if (settings.currentNavOption == 'navProfile') {
+      settings.profile.save();
+    }
     
     _setDirtyBit(false);
   }
   
   async function _handleReload(e, skipConfirm) {
-    if (settings.currentNavOption == 'navProfile') return;
-    
     if (!skipConfirm) {
       var msg = 'Any changes will be lost.\nChoose "OK" to continue with reloading';
       if (!confirm(msg)) return;
@@ -420,7 +422,9 @@ const app = function () {
     if (settings.currentNavOption == 'navEditor') {
       if ( !(await _getFAQInfo()) ) return;
       settings.editorTree.update(settings.faqInfo);
-
+      
+    } else if (settings.currentNavOption == 'navProfile') {
+      settings.profile.reload();
     }
     
     _setDirtyBit(false);

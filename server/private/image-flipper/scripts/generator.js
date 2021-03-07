@@ -2,12 +2,13 @@
 // image flipper generator app
 //------------------------------------------------------------------------------
 // TODO: styling
-// TODO: handle dirty bit
-// TODO: handlers for name, title, subtitle
-// TODO: project reload and save
 // TODO: project add and delete
 // TODO: finish preview
 // TODO: finish share
+// TODO: finish _updateShare
+// TODO: disable nav options for Preview and Share if no proj selected
+// TODO: add clipboard copy handlers for embed/link
+// TODO: add user message on embed/link copy
 //------------------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -30,7 +31,6 @@ const app = function () {
     maxCards: 36,
     currentProject: null,
     
-    dirtyBit: false,
     previewURL: '/image-flipper/flipper?configkey=preview',
     baseShareURL: window.location.origin + '/image-flipper/flipper?configkey=',
     thumbnailErrorImg: 'https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png'
@@ -54,7 +54,7 @@ const app = function () {
     page.navbar = page.body.getElementsByClassName('navbar')[0];
     UtilityKTS.setClass(page.navbar, settings.hideClass, true);
     
-    page.contents = page.body.getElementsByClassName('contents')[0];    
+    _attachNavbarHandlers(); // do these before making the profile object
     
     settings.profile = new ASProfile({
       id: "myProfile",
@@ -72,7 +72,6 @@ const app = function () {
     page.notice.setNotice('');
     UtilityKTS.setClass(page.navbar, settings.hideClass, false); 
 
-    _attachNavbarHandlers();
     await _renderContents();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
@@ -82,7 +81,7 @@ const app = function () {
 	// navbar
 	//-----------------------------------------------------------------------------
   function _attachNavbarHandlers() {
-    var handler = (e, me) => { _navDispatch(e); }
+    var handler = (e) => { _navDispatch(e); }
     var navItems = page.navbar.getElementsByClassName(settings.navItemClass);
     for (var i = 0; i < navItems.length; i++) {
       navItems[i].addEventListener('click', handler);
@@ -108,11 +107,15 @@ const app = function () {
     _renderLayoutCards();
     
     await _updateProjectSelection();
-    _updateProjectInfo();
   }
   
   function _attachHandlers() {
     page.elemProjectSelection.addEventListener('change', (e) => { _handleProjectSelection(e); });
+    
+    page.elemName.addEventListener('input', (e) => { _restrictInput(e); });
+    page.elemTitle.addEventListener('input', (e) => { _restrictInput(e); });
+    page.elemSubtitle.addEventListener('input', (e) => { _restrictInput(e); });
+    
     page.elemGridSize.addEventListener('change', (e) => { _updateCardLayout(); });
     
     page.elemColorScheme.addEventListener('keypress', (e) => { _denyInput(e); });
@@ -121,8 +124,6 @@ const app = function () {
     for (var i = 0; i < elemColorOptions.length; i++) {
       elemColorOptions[i].addEventListener('click', (e) => { _handleColorSchemeSelection(e); });
     }
-    
-    console.log('attach the rest of the handlers (name, title, subtitle)');
   }
   
   function _renderLayoutCards() {
@@ -140,7 +141,6 @@ const app = function () {
 	// updating
 	//--------------------------------------------------------------
   async function _showContents(contentsId) {
-    console.log('_showContents: ' + contentsId);
     settings.currentNavOption = contentsId;
     
     var containers = page.contents.getElementsByClassName('contents-container');
@@ -149,6 +149,7 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
+    if (contentsId == 'navShare') _updateShare();
     if (contentsId == 'navProfile') await settings.profile.reload();    
     
     _setNavOptions();
@@ -205,6 +206,9 @@ const app = function () {
     }
     
     page.elemProjectSelection.selectedIndex = indexToSelect;
+    var projectInfo = null;
+    if (indexToSelect >= 0) projectInfo = page.elemProjectSelection[indexToSelect].projectInfo;
+    _updateProjectInfo(projectInfo);
   }  
   
   function _updateProjectInfo(projectInfo) {
@@ -232,6 +236,7 @@ const app = function () {
     }
     
     _updateCardLayout();
+    _setDirtyBit(false);
   }
   
   function _setColorScheme(elem, colorClass) {
@@ -289,6 +294,41 @@ const app = function () {
       elem.imageURL = imageURL;
     }
   }
+  
+  function _updateShare() {
+    console.log('_updateShare');
+    var elemLink = page.contentsShare.getElementsByClassName('input-link')[0];
+    var elemEmbed = page.contentsShare.getElementsByClassName('input-embed')[0];
+    
+    console.log(elemLink);
+    console.log(elemEmbed);
+    
+    var url = settings.baseShareURL + settings.currentProject.projectid;
+    elemLink.value = url;
+
+    var elem = CreateElement.createIframe(null, null, url, 650, 500);
+    elem.style.overflowY = 'hidden';
+    elem.style.border = 'none';
+    elem.scrolling = 'no';
+    elemEmbed.value = elem.outerHTML;    
+/*
+
+    var elemLink = page.contentsShare.getElementsByClassName('share-link')[0];
+    var elemEmbed = page.contentsShare.getElementsByClassName('share-embed')[0];
+    
+    var url = settings.baseShareURL + settings.currentProject.projectid;
+    elemLink.innerHTML = url;
+
+    var elem = CreateElement.createIframe(null, null, url, 650, 500);
+    elem.style.overflowY = 'hidden';
+    elem.style.border = 'none';
+    elem.scrolling = 'no';
+    elemEmbed.value = elem.outerHTML;
+    
+    _showShareCopiedMessage(null);
+    _showContents('contents-share'); 
+*/
+  }
 
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
@@ -301,28 +341,41 @@ const app = function () {
 	//--------------------------------------------------------------
 	// handlers
 	//--------------------------------------------------------------
-  function _navDispatch(e) {    
-    console.log('_navDispatch: ' + e.target.id);
+  async function _navDispatch(e) {
+    var dispatchTarget = e.target.id;
+    if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
+    if (dispatchTarget == settings.currentNavOption) return;
+    
     var dispatchMap = {
-      "navLayout":     function() { _showContents('navLayout'); },
-      "navPreview":    function() { _showContents('navPreview'); },
-      "navShare":      function() { _showContents('navShare'); },
+      "navLayout":     async function() { await _showContents('navLayout'); },
+      "navPreview":    async function() { await _showContents('navPreview'); },
+      "navShare":      async function() { await _showContents('navShare'); },
       
-      "navSave":       function() { _handleSave(e);},
-      "navReload":     function() { _handleReload(e);},
+      "navSave":       async function() { await _handleSave(e);},
+      "navReload":     async function() { await _handleReload(e);},
       
-      "navProfile":    function() { _showContents('navProfile'); },
-      "navProfilePic": function() { _showContents('navProfile'); },
+      "navProfile":    async function() { await _showContents('navProfile'); },
 
       "navHelp":       function() { _doHelp(); },
       "navSignout":    function() { _doLogout(); }
     }
     
-    dispatchMap[e.target.id]();
+    dispatchMap[dispatchTarget]();
   }
 
   function _handleProjectSelection(e) {
     _updateProjectInfo(e.target[e.target.selectedIndex].projectInfo);
+  }
+  
+  function _restrictInput(e) {
+    if (e.inputType.includes('delete')) _setDirtyBit(true);
+    if (!e.data) return;
+    
+    if (!e.data.match(/[0-9a-zA-Z\:_\-\. (),\!\?]/)) {
+      e.target.value = e.target.value.replace(/[^0-9a-zA-Z_\:\-\. (),\!\?]/g, '');
+    } else {
+      _setDirtyBit(true);
+    }
   }
   
   function _handleColorSchemeToggle(e) {
@@ -340,6 +393,7 @@ const app = function () {
     }
     
     UtilityKTS.setClass(page.elemColorScheme.parentNode, newSchemeClass, true);    
+    _setDirtyBit(true);
   }
   
   function _handleCardButton(e) {
@@ -348,16 +402,34 @@ const app = function () {
     if (imageURL == null) return;
     
     _setCardImage(e.target, imageURL);
+    _setDirtyBit(true);
   }
   
-  function _handleSave(e) {
-    if (settings.currentNavOption == 'navProfile') return;
-    console.log('_handleSave');
+  async function _handleSave(e) {
+    if (settings.currentNavOption == 'navProfile') {
+      settings.profile.save();
+      
+    } else {
+      var result = await _saveProjectToDB();
+
+      if (result.success) {
+        await _updateProjectSelection();
+
+      } else {
+        console.log('failed to save project');
+      }      
+    }
   }
   
-  function _handleReload(e) {
-    if (settings.currentNavOption == 'navProfile') return;
-    console.log('_handleReload');
+  async function _handleReload(e) {
+    if (!confirm('Current changes will be lost.\nContinue with reloading project?')) return;
+    
+    if (settings.currentNavOption == 'navProfile') {
+      settings.profile.reload();
+      
+    } else {
+      await _updateProjectSelection();
+    }
   }
   
   function _denyInput(e) {
@@ -385,6 +457,30 @@ const app = function () {
     
     return dbResult.success;
   }  
+  
+  async function _saveProjectToDB(preview) {
+    var layout = _getLayoutSetting();
+    var colorScheme = _getColorScheme(page.elemColorScheme.parentNode);
+
+    var postData = {
+      projectid: settings.currentProject.projectid,
+      projectname: page.elemName.value,
+      projecttitle: page.elemTitle.value,
+      projectsubtitle: page.elemSubtitle.value,
+      colorscheme: colorScheme,
+      layoutrows: layout.rows,
+      layoutcols: layout.cols,
+      layoutimages: _getLayoutImageArray()
+    };
+
+    
+    var command = 'project'
+    if (preview) command = 'preview';
+    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/update', command, postData);
+    
+    return dbResult;    
+  }
+  
 
 	//---------------------------------------
 	// utility
@@ -395,7 +491,7 @@ const app = function () {
       if (value.includes('flipper-colorscheme-')) currentSchemeClass = value;
     });
     
-    return currentSchemeClass
+    return currentSchemeClass;
   }
   
   function _getLayoutSetting() {
@@ -406,6 +502,18 @@ const app = function () {
       cols: layoutValues[1]
     };
   }  
+  
+  function _getLayoutImageArray() {
+    var imageURLArray = [];
+    
+    for (var i = 0; i < settings.maxCards; i++) {
+      var card = page.body.getElementsByClassName('cardbutton cardbutton' + i)[0];
+      imageURLArray.push(card.imageURL);
+    }
+
+    return imageURLArray;
+  }
+  
   
   function _sanitizeURL(url) {
     if (!url || url.length == 0) return url;

@@ -2,8 +2,8 @@ mixin shareContainer()
   .row(class="my-3")
     .col-sm-6
       .form-floating
-        input(type="text" class="form-control input-link" id="inputLink")
-        label(for="inputLink") link
+        input(type="text" class="form-control input-link" id="shareLink" disabled)
+        label(for="shareLink") link
     .col-sm-1
       .form-floating
         button(class="btn btn-primary btnCopyLink") copy
@@ -11,8 +11,8 @@ mixin shareContainer()
   .row(class="my-3")
     .col-sm-6
       .form-floating
-        input(type="text" class="form-control input-embed" id="inputEmbed")
-        label(for="inputEmbed") embed
+        textarea(class="form-control input-embed" id="shareEmbed" disabled)
+        label(for="shareEmbed") embed
     .col-sm-1
       .form-floating
         button(class="btn btn-primary btnCopyEmbed") copy

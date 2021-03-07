@@ -52,11 +52,6 @@ class ASProfile {
 
     this.elemPicIcon.addEventListener('click', (e) => { this._handleProfilePic(e); });    
     this.elemPicImage.addEventListener('click', (e) => { this._handleProfilePic(e); });    
-    
-    if (this._config.navbarElements) {
-      this._config.navbarElements.save.addEventListener('click', (e) => {this._handleSave(e);});
-      this._config.navbarElements.reload.addEventListener('click', (e) => {this._handleReload(e);});
-    }
   }
   
   _setElementConstraints() {
@@ -96,6 +91,22 @@ class ASProfile {
 
     return true;
   }
+  
+  async save(e) {
+    var entryData = this._getEntryData();
+    if (!entryData) {
+      alert('One or more fields is invalid. Please try to correct them and resubmit');
+      return;
+    }
+    
+    var success = await this._saveUserInfo(entryData);
+    if (success) {
+      this._setDirty(false);
+      this.reload();
+    }
+    
+    return success; 
+  }  
   
   _setProfilePic(picURL) {
     var hasPic = (picURL && picURL.length > 0);
@@ -243,30 +254,7 @@ class ASProfile {
       
     this._setDirty(true);
   }  
-  
-  async _handleSave(e) {
-    var entryData = this._getEntryData();
-    if (!entryData) {
-      alert('One or more fields is invalid.  Please try to correct them and resubmit');
-      return;
-    }
     
-    var success = await this._saveUserInfo(entryData);
-    if (success) {
-      this._setDirty(false);
-      this.reload();
-    }
-    
-    return false; // to prevent propagation
-  }
-  
-  async _handleReload(e) {
-    var msg = 'Any changes will be lost.\nChoose "OK" to continue with reloading';
-    if (!confirm(msg)) return;
-    
-    await this.reload();
-  }
-  
   _handleProfilePic(e) {
     var currentImageURL = this.elemPicImage.getAttribute('as-current-background');
     
@@ -329,8 +317,6 @@ class ASProfile {
   async _savePassword(userInfo) {
     if (!userInfo.passwordChanged) return {success: true};
     
-    console.log('do _savePassword');
-
     var hashedPassword = '';
     var hashResult = this.userManagement.hashPassword(userInfo.password);
     if (hashResult.success) {
