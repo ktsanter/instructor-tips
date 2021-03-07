@@ -2,13 +2,7 @@
 // image flipper generator app
 //------------------------------------------------------------------------------
 // TODO: styling
-// TODO: project add and delete
-// TODO: finish preview
-// TODO: finish share
-// TODO: finish _updateShare
-// TODO: disable nav options for Preview and Share if no proj selected
-// TODO: add clipboard copy handlers for embed/link
-// TODO: add user message on embed/link copy
+// TODO: finish help
 //------------------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -29,8 +23,7 @@ const app = function () {
       navProfile: false
     },
     maxCards: 36,
-    currentProject: null,
-    
+    currentProject: null,    
     previewURL: '/image-flipper/flipper?configkey=preview',
     baseShareURL: window.location.origin + '/image-flipper/flipper?configkey=',
     thumbnailErrorImg: 'https://res.cloudinary.com/ktsanter/image/upload/v1612802166/image%20flipper%20resources/invalid_image.png'
@@ -93,6 +86,8 @@ const app = function () {
 	//--------------------------------------------------------------
   async function _renderContents() {
     page.elemProjectSelection = page.contentsLayout.getElementsByClassName('select-project')[0];
+    page.elemProjectAdd = page.contentsLayout.getElementsByClassName('button-add')[0];
+    page.elemProjectDelete = page.contentsLayout.getElementsByClassName('button-delete')[0];
     page.elemName = page.contentsLayout.getElementsByClassName('input-name')[0];
     page.elemTitle = page.contentsLayout.getElementsByClassName('input-title')[0];
     page.elemSubtitle = page.contentsLayout.getElementsByClassName('input-subtitle')[0];
@@ -101,6 +96,8 @@ const app = function () {
     page.elemColorSchemeOptions = page.contentsLayout.getElementsByClassName('color-options')[0];
     page.elemLayoutGrid = page.contentsLayout.getElementsByClassName('layout-grid')[0];
     page.elemSwapArea = page.contentsLayout.getElementsByClassName('swap-area')[0];
+    
+    page.elemPreviewFrame = page.contentsPreview.getElementsByClassName('preview-frame')[0];
     
     _attachHandlers();
     
@@ -111,12 +108,14 @@ const app = function () {
   
   function _attachHandlers() {
     page.elemProjectSelection.addEventListener('change', (e) => { _handleProjectSelection(e); });
+    page.elemProjectAdd.addEventListener('click', (e) => { _handleProjectAdd(e); });
+    page.elemProjectDelete.addEventListener('click', (e) => { _handleProjectDelete(e); });
     
     page.elemName.addEventListener('input', (e) => { _restrictInput(e); });
     page.elemTitle.addEventListener('input', (e) => { _restrictInput(e); });
     page.elemSubtitle.addEventListener('input', (e) => { _restrictInput(e); });
     
-    page.elemGridSize.addEventListener('change', (e) => { _updateCardLayout(); });
+    page.elemGridSize.addEventListener('change', (e) => { _updateCardLayout(); _setDirtyBit(true); });
     
     page.elemColorScheme.addEventListener('keypress', (e) => { _denyInput(e); });
     page.elemColorScheme.addEventListener('click', (e) => { _handleColorSchemeToggle(e); });
@@ -124,6 +123,9 @@ const app = function () {
     for (var i = 0; i < elemColorOptions.length; i++) {
       elemColorOptions[i].addEventListener('click', (e) => { _handleColorSchemeSelection(e); });
     }
+    
+    page.contentsShare.getElementsByClassName('btnCopyLink')[0].addEventListener('click', (e) => { _handleLinkClick(e); });
+    page.contentsShare.getElementsByClassName('btnCopyEmbed')[0].addEventListener('click', (e) => { _handleEmbedClick(e); });
   }
   
   function _renderLayoutCards() {
@@ -150,17 +152,21 @@ const app = function () {
     }
     
     if (contentsId == 'navShare') _updateShare();
-    if (contentsId == 'navProfile') await settings.profile.reload();    
+    if (contentsId == 'navProfile') await settings.profile.reload();
+    if (contentsId == 'navPreview') await _updatePreview();
     
     _setNavOptions();
   }
   
   function _setNavOptions() {
     var opt = settings.currentNavOption;
+    var validProject = (settings.currentProject != null);
+    
+    _enableNavOption('navPreview', true, validProject);
+    _enableNavOption('navShare', true, validProject);
+
     _enableNavOption('navSave', false);
     _enableNavOption('navReload', false);
-    _enableNavOption('navProjectAdd', false);
-    _enableNavOption('navProjectRemove', false);
       
     if (opt == 'navLayout') {
       var enable = settings.dirtyBit[settings.currentNavOption];
@@ -181,7 +187,11 @@ const app = function () {
   function _enableNavOption(navOption, visible, enable) {
     var elem = document.getElementById(navOption);
     UtilityKTS.setClass(elem, settings.hideClass, !visible);
-    elem.disabled = !enable;    
+    if (elem.classList.contains('btn')) {
+      elem.disabled = !enable;    
+    } else {
+      UtilityKTS.setClass(elem, 'disabled', !enable);
+    }
   }
     
    
@@ -214,11 +224,13 @@ const app = function () {
   function _updateProjectInfo(projectInfo) {
     settings.currentProject = projectInfo;
     
+    UtilityKTS.setClass(page.elemProjectDelete, 'disabled', !projectInfo);
     page.elemName.disabled = !projectInfo;
     page.elemTitle.disabled = !projectInfo;
     page.elemSubtitle.disabled = !projectInfo;
     page.elemGridSize.disabled = !projectInfo;
     page.elemColorScheme.disabled = !projectInfo;
+    UtilityKTS.setClass(page.elemLayoutGrid, settings.hideClass, !projectInfo);
     
     page.elemName.value = '';
     page.elemTitle.value = '';
@@ -295,13 +307,25 @@ const app = function () {
     }
   }
   
+  async function _updatePreview() {
+    page.notice.setNotice('loading...', true);
+    UtilityKTS.setClass(page.elemPreviewFrame, this.hideClass, true);
+
+    var result = await _saveProjectToDB(true);
+    page.notice.setNotice('');
+    if (!result.success) {
+      console.log('failed to save preview');
+      return;
+    }
+    
+    page.elemPreviewFrame.src = settings.previewURL;
+    UtilityKTS.setClass(page.elemPreviewFrame, this.hideClass, false);
+  }
+  
+  
   function _updateShare() {
-    console.log('_updateShare');
     var elemLink = page.contentsShare.getElementsByClassName('input-link')[0];
     var elemEmbed = page.contentsShare.getElementsByClassName('input-embed')[0];
-    
-    console.log(elemLink);
-    console.log(elemEmbed);
     
     var url = settings.baseShareURL + settings.currentProject.projectid;
     elemLink.value = url;
@@ -311,24 +335,14 @@ const app = function () {
     elem.style.border = 'none';
     elem.scrolling = 'no';
     elemEmbed.value = elem.outerHTML;    
-/*
-
-    var elemLink = page.contentsShare.getElementsByClassName('share-link')[0];
-    var elemEmbed = page.contentsShare.getElementsByClassName('share-embed')[0];
     
-    var url = settings.baseShareURL + settings.currentProject.projectid;
-    elemLink.innerHTML = url;
-
-    var elem = CreateElement.createIframe(null, null, url, 650, 500);
-    elem.style.overflowY = 'hidden';
-    elem.style.border = 'none';
-    elem.scrolling = 'no';
-    elemEmbed.value = elem.outerHTML;
-    
-    _showShareCopiedMessage(null);
-    _showContents('contents-share'); 
-*/
+    _showShareMessage('');
   }
+  
+  
+  function _showShareMessage(msg) {
+    page.contentsShare.getElementsByClassName('copy-message')[0].innerHTML = msg;
+  }  
 
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
@@ -432,6 +446,50 @@ const app = function () {
     }
   }
   
+  async function _handleProjectAdd(e) {
+    if (settings.dirtyBit.navLayout && !confirm('Current changes will be lost.\nContinue with adding project?')) return;
+
+    var newProjectId = await _addNewProjectToDB();
+
+    if (newProjectId) {
+      settings.currentProject = {projectid: newProjectId};
+      await _updateProjectSelection();
+      
+    } else {
+      console.log('failed to add new project');
+    }
+  }
+  
+  async function _handleProjectDelete(e) {
+    if (!settings.currentProject) return;
+    
+    var projName = settings.currentProject.projectname;
+    if (!confirm('This project will be permanently removed.\nContinue with deleting "' + projName + '"?')) return; 
+    
+    var deleteSucceeded = await _deleteProjectFromDB();
+    if (deleteSucceeded) {
+      settings.currentProject = null;
+      await _updateProjectSelection();
+      
+    } else {
+      console.log('failed to delete project');
+    }
+  }
+  
+  function _handleLinkClick(e) {
+    var elemLink = page.contentsShare.getElementsByClassName('input-link')[0];
+    var msg = elemLink.value;
+    _copyToClipboard(msg);
+    _showShareMessage('copied link to clipboard');
+  }
+  
+  function _handleEmbedClick(e) {
+    var elemEmbed = page.contentsShare.getElementsByClassName('input-embed')[0];
+    var msg = elemEmbed.value;
+    _copyToClipboard(msg);
+    _showShareMessage('copied embed code to clipboard');
+  }  
+  
   function _denyInput(e) {
     e.stopPropagation();
     e.preventDefault();  
@@ -481,6 +539,35 @@ const app = function () {
     return dbResult;    
   }
   
+  async function _addNewProjectToDB() {
+    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/insert', 'defaultproject');
+      
+    var newProjectId = null;
+    if (dbResult.success) newProjectId = dbResult.data.projectid;
+    
+    return newProjectId;
+  }
+  
+  async function _deleteProjectFromDB() {
+    var dbResult = await SQLDBInterface.doPostQuery('imageflipper/delete', 'project', {projectid: settings.currentProject.projectid});
+
+    return dbResult.success;
+  }  
+  
+  //---------------------------------------
+  // clipboard functions
+  //----------------------------------------
+  function _copyToClipboard(txt) {
+    if (!page._clipboard) page._clipboard = new ClipboardCopy(page.body, 'plain');
+
+    page._clipboard.copyToClipboard(txt);
+	}	
+
+  function _copyRenderedToClipboard(txt) {
+    if (!page._renderedclipboard) page._renderedclipboard = new ClipboardCopy(page.body, 'rendered');
+
+    page._renderedclipboard.copyRenderedToClipboard(txt);
+	}	    
 
 	//---------------------------------------
 	// utility

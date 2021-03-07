@@ -14,14 +14,37 @@ body {
 /*---------------------------------------------*/
 .contents {}
 
+.contents .btn.btn-secondary { /* override Bootstrap */
+  color: rgba(66, 98, 150, 1.0);
+  background-color: rgba(66, 98, 150, 0.2);
+  border-color: rgba(66, 98, 150, 1.0);
+  min-width: 4.5em;
+}
+
+.contents .btn.btn-secondary.disabled { /* override Bootstrap */
+  color: #777;
+  background-color: transparent;
+  border-color: rgba(66, 98, 150, 0.65);
+}
+
+/*---------------------------------------------*/
+/* contents - layout                           */
+/*---------------------------------------------*/
+.contents .contents-navLayout {}
+
 .contents .contents-navLayout .use-colorscheme input {
   color: var(--flipper-color3);
   background-color: var(--flipper-color2);
   border-color: var(--flipper-color1);
 }
 
-.contents .contents-navLayout .use-colorscheme label{
+.contents .contents-navLayout .use-colorscheme label {
   color: var(--flipper-color3);
+}
+
+.contents .contents-navLayout .use-colorscheme input:disabled {
+  color: #777;
+  background-color: #e9ecef;
 }
 
 .contents .contents-navLayout .color-options {
@@ -48,6 +71,24 @@ body {
   font-size: 1.5em;
   width: 3.5em;
   height: 3.5em;
+}
+
+/*---------------------------------------------*/
+/* contents - preview                          */
+/*---------------------------------------------*/
+.contents .contents-navPreview {}
+
+/*---------------------------------------------*/
+/* contents - share                            */
+/*---------------------------------------------*/
+.contents .contents-navShare {}
+
+.contents .contents-navShare .input-embed {
+  height: 6.0em;
+}
+
+.contents .contents-navShare .copy-message {
+  font-style: italic;
 }
 
 /*------------------------------------------------------------------
