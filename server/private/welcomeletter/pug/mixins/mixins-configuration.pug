@@ -1,0 +1,45 @@
+mixin configurationContainer()
+  .row
+    .col-sm
+      .container-fluid
+        .row
+          .col-sm
+            .form-floating
+              select(class="form-select select-course" id="selectCourse" aria-label="select course")
+              label(for="selectCourse") course
+
+        .row
+          .col-sm
+            .form-check(class="form-switch")
+              input(class="form-check-input" type="checkbox" id="checkAPCourse")
+              label(class="form-check-label" for="checkAPCourse") AP course
+
+        .row
+          .col-sm
+            .form-check(class="form-switch")
+              input(class="form-check-input" type="checkbox" id="checkHasPasswords")
+              label(class="form-check-label" for="checkHasPasswords") has password(s)
+
+        .row
+          .col-sm
+            .form-floating
+              select(class="form-select select-exams" id="selectExams" aria-label="select exams")
+              label(for="selectExams") exams
+
+        .row
+          .col-sm
+            .form-floating
+              select(class="form-select select-proctoring" id="selectProctoring" aria-label="select proctoring")
+              label(for="selectProctoring") proctoring
+
+        .row
+          .col-sm
+            .form-floating
+              select(class="form-select select-retakes" id="selectRetakes" aria-label="select retakes")
+              label(for="selectRetakes") retakes
+
+        .row
+          .col-sm
+            .form-floating
+              select(class="form-select select-resubmission" id="selectResubmission" aria-label="select resubmission")
+              label(for="selectResubmission") resubmission

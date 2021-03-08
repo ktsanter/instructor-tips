@@ -1,0 +1,58 @@
+- var coursename = params.coursename
+- var linkurl = params.letterURL
+- var apcourse = params.ap
+- var haspasswords = params.haspasswords
+- var appolicyURL = "https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy/"
+- var gradingpolicyURL = "https://michiganvirtual.org/about/support/knowledge-base/michigan-virtual-grading-policy-and-expectations/"
+
+include mailmessage-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title welcome letter mail message
+    meta(charset="utf-8")
+          
+  body
+    div Hello [FIRST_NAME],
+    div Welcome to your online course - 
+      em: strong= coursename
+      |&nbsp; provided by Michigan Virtual
+    
+    div &nbsp;
+    div
+      |My name is Kevin Santer and I'm the instructor for the class. 
+      |I've prepared this 
+      a(href=linkurl target="_blank") welcome letter
+      |&nbsp;explaining what you need to get started in the course. 
+      |I will also be sending a similar welcome email to your mentor.
+    
+    div &nbsp;
+    div
+      |While this is covered in more detail in the welcome letter, 
+      |there are some points I want to draw your attention to:
+      
+      ul
+        if (apcourse)
+          li
+            |Please note this is an Advanced Placement course.  There are firm due dates and Michigan Virtual's 
+            a(href=appolicyURL target="_blank") AP Course Policy 
+            |will apply.
+        else
+          li
+            |Details for grading policies can be found on our 
+            a(href=gradingpolicyURL target="_blank") Grading Policy and Expectations
+            |&nbsp; page
+        
+        if (haspasswords)
+          li
+            |There are one or more password-protected exams in this course. I will send any passwords
+            |to your mentor so he/she can follow your school's policies on passwords and proctoring.
+        else
+          li There are no exam passwords for this course.
+         
+    div
+      |I look forward to working with you and encourage you to contact me whenever you have questions.
+    
+    div &nbsp;
+    +signature

@@ -1,0 +1,93 @@
+include ../../common/pug/fontawesome-mixins.pug
+include configuration-mixins.pug
+
+- var examlist = params.exam
+- var proctoringlist = params.proctoring
+- var retakelist = params.retake
+- var resubmissionlist = params.resubmission
+- var allowOptions = params.allowoptionsediting
+
+doctype html
+html
+  head
+    title welcome letter configuration
+    meta(charset="utf-8")
+    
+    +fontawesome()
+
+    style
+      include ../../common/styles/colorscheme.css    
+      include ../../common/styles/navbar.css     
+      include ../../common/styles/sliderswitch.css
+      include ../../common/styles/select.css
+      include ../styles/configuration.css
+    
+    script(src="/scripts/clipboard.min.js")
+    script(data-main="/scripts/welcomeletter/require_configuration", src="/scripts/require.js")    
+      
+  body(class="instructortips-colorscheme")
+    .allowoptions(class="hide-me")= allowOptions
+    
+    .navbarcontainer
+    
+    .contents(class="contents-configuration hide-me")
+      .configitem
+        .itemlabel course
+        .itemcontent
+          select(class="course config-control select-css")      
+
+      .configitem
+        .itemlabel AP course
+        .itemcontent
+          +sliderswitch("apcourse config-param ", "yes", "no")       
+
+      .configitem
+        .itemlabel has password(s)
+        .itemcontent
+          +sliderswitch("haspasswords config-param ", "yes", "no")       
+
+      .configitem
+        .itemlabel exams
+        .itemcontent
+          select(class="exams config-param select-css wideselect", disabled=true)
+            each val in examlist
+              option(value=val.examid)= val.examdescription          
+  
+      .configitem
+        .itemlabel proctoring
+        .itemcontent
+          select(class="proctoring config-param select-css wideselect", disabled=true)
+            each val in proctoringlist
+              option(value=val.proctoringid)= val.proctoringdescription
+
+      .configitem
+        .itemlabel retakes
+        .itemcontent
+          select(class="retakes config-param select-css wideselect", disabled=true)
+            each val in retakelist
+              option(value=val.retakeid)= val.retakedescription
+              
+      .configitem
+        .itemlabel resubmission 
+        .itemcontent
+          select(class="resubmission config-param select-css wideselect", disabled=true)
+            each val in resubmissionlist
+              option(value=val.resubmissionid)= val.resubmissiondescription
+              
+
+    .contents(class="contents-preview hide-me")
+      +twochoiceswitch("audience", "mentor", "student")      
+
+      .frame-container
+        iframe(class="preview-frame")
+    
+    .contents(class="contents-share hide-me")
+        .share-item
+          .share-item-label student
+          button(class="share-button button-link button-link-student") link to letter
+          button(class="share-button button-message button-message-student") formatted message
+          
+        .share-item
+          .share-item-label mentor
+          button(class="share-button button-link button-link-mentor") link to letter
+          button(class="share-button button-message button-message-mentor") formatted message

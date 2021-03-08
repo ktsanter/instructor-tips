@@ -1,12 +1,14 @@
 define(function (require) {
   require('/scripts/utilitykts'); 
   require('/scripts/create_element.js');  
-  require('/scripts/navbar');
+  require('/scripts/navbar_for_bootstrap');
   require('/scripts/standard_notice'); 
-  require('/scripts/clipboard_copy.js');  
-  require('/scripts/sqldbinterface'); 
+  require('/scripts/sqldbinterface');
   
-  require('generator');
+  require('/scripts/markdowntohtml');
+  require('classTableEditor');
+  
+  require('options');
 
   document.addEventListener('DOMContentLoaded', app.init());
 });

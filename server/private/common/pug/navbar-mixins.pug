@@ -37,7 +37,7 @@ mixin makeNavbar(title, params)
                     if (subItem.type == "link")
                         li: a(id=subItem.id class="dropdown-item use-handler" href="#")= subItem.label
                     else if (subItem.type == "divider")
-                        li: hr(class="dropdown-divider")
+                        li: hr(id=subItem.id class="dropdown-divider")
 
         each navButton in params.buttons
           - var classList = "btn btn-outline-success use-handler hide-me mx-1 " + navButton.id;

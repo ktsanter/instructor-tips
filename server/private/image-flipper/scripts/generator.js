@@ -48,7 +48,16 @@ const app = function () {
     UtilityKTS.setClass(page.navbar, settings.hideClass, true);
     
     _attachNavbarHandlers(); // do these before making the profile object
+    _initProfile(sodium);
     
+    page.notice.setNotice('');
+    UtilityKTS.setClass(page.navbar, settings.hideClass, false); 
+
+    await _renderContents();
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+  }
+  
+  async function _initProfile(sodium) {
     settings.profile = new ASProfile({
       id: "myProfile",
       "sodium": sodium,
@@ -60,16 +69,9 @@ const app = function () {
       },
       hideClass: settings.hideClass
     });
-    await settings.profile.init();
     
-    page.notice.setNotice('');
-    UtilityKTS.setClass(page.navbar, settings.hideClass, false); 
-
-    await _renderContents();
-
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    await settings.profile.init();
   }
-
   //-----------------------------------------------------------------------------
 	// navbar
 	//-----------------------------------------------------------------------------
