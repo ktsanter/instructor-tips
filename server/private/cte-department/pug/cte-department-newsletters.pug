@@ -4,7 +4,9 @@ mixin newsletter(label, url)
     td
       if (url == "tbd")
         span: em tbd
-      else
+      else if (url == "n/a")
+        span: em no newsletter
+      else 
         a(href=url, target="_blank") newsletter
     
 //- -- department newsletters  --------------------------
