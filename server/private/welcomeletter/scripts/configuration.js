@@ -2,7 +2,6 @@
 // welcome letter configuration
 //-------------------------------------------------------------------
 // TODO: finish help
-// TODO: styling
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
@@ -238,14 +237,19 @@ const app = function () {
   
   function _loadCourse(courseInfo) {
     settings.currentCourse = courseInfo;
+    var elemList = Array.prototype.slice.call(page.contentsConfiguration.getElementsByTagName('select'));
+    elemList = elemList.concat(Array.prototype.slice.call(page.contentsConfiguration.getElementsByTagName('input')));
+    elemList = elemList.concat(Array.prototype.slice.call(page.contentsConfiguration.getElementsByTagName('button')));
+    elemList = elemList.concat(Array.prototype.slice.call(page.contentsConfiguration.getElementsByTagName('label')));
     
-    page.elemAPCourse.disabled = !courseInfo;
-    page.elemHasPasswords.disabled = !courseInfo;
-    page.elemExamsSelection.disabled = !courseInfo;
-    page.elemProctoringSelection.disabled = !courseInfo;
-    page.elemRetakesSelection.disabled = !courseInfo;
-    page.elemResubmissionSelect.disabled = !courseInfo;
-    
+    for (var i = 0; i < elemList.length; i++) {
+      var elem = elemList[i];
+      if (elem.id != 'selectCourse'  && elem.htmlFor != 'selectCourse') {
+        elem.disabled = !courseInfo;
+        UtilityKTS.setClass(elem, settings.hideClass, !courseInfo);
+      }
+    }
+
     page.elemAPCourse.checked = courseInfo && courseInfo.ap;
     page.elemHasPasswords.checked = courseInfo && courseInfo.haspasswords;
     page.elemExamsSelection.value = courseInfo ? courseInfo.examid: -1;
@@ -499,8 +503,6 @@ const app = function () {
 	}	
 
   function _copyRenderedToClipboard(txt) {
-    console.log(page._renderedclipboard);
-    console.log(page.body);
     if (!page._renderedclipboard) page._renderedclipboard = new ClipboardCopy(page.body, 'rendered');
 
     page._renderedclipboard.copyRenderedToClipboard(txt);
