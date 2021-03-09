@@ -1,8 +1,7 @@
 //-------------------------------------------------------------------
 // welcome letter configuration
 //-------------------------------------------------------------------
-// TODO: finish preview
-// TODO: finish share
+// TODO: finish help
 // TODO: styling
 //-------------------------------------------------------------------
 const app = function () {
@@ -115,7 +114,13 @@ const app = function () {
     page.elemAudience = page.contentsPreview.getElementsByClassName('check-audience')[0];
     page.elemAudience.leftLabel = page.elemAudience.parentNode.parentNode.getElementsByClassName('checkbox-label-left')[0];
     page.elemAudience.rightLabel = page.elemAudience.parentNode.getElementsByClassName('checkbox-label-right')[0];
+    page.elemPreviewFrame = page.contentsPreview.getElementsByClassName('preview-frame')[0];
     
+    // share
+    page.elemLinkStudent = page.contentsShare.getElementsByClassName('btnLinkStudent')[0];
+    page.elemMessageStudent = page.contentsShare.getElementsByClassName('btnMessageStudent')[0];
+    page.elemLinkMentor = page.contentsShare.getElementsByClassName('btnLinkMentor')[0];
+    page.elemMessageMentor = page.contentsShare.getElementsByClassName('btnMessageMentor')[0];
     _attachHandlers();
     
     await _updateCourseSelection();
@@ -138,6 +143,12 @@ const app = function () {
     page.elemAudience.addEventListener('click', (e) => { _handleAudienceChange(e); });
     page.elemAudience.leftLabel.addEventListener('click', () => { _handleDoubleSwitch(page.elemAudience, 'left'); });
     page.elemAudience.rightLabel.addEventListener('click', () => { _handleDoubleSwitch(page.elemAudience, 'right'); });
+    
+    // share
+    page.elemLinkStudent.addEventListener('click', () => { _handleLink('student'); });
+    page.elemMessageStudent.addEventListener('click', () => { _handleMessage('student'); });
+    page.elemLinkMentor.addEventListener('click', () => { _handleLink('mentor'); });
+    page.elemMessageMentor.addEventListener('click', () => { _handleMessage('mentor'); });
   }
   
   //---------------------------------------
@@ -246,11 +257,15 @@ const app = function () {
   }
   
   async function _updatePreview() {
-    console.log('_updatePreview');
+    var audience = 'student';
+    if (page.elemAudience.checked) audience = 'mentor';
+    
+    var previewURL = _landingPageURL(audience);
+    page.elemPreviewFrame.src = previewURL;
   }
   
   function _updateShare() {
-    console.log('_updateShare');
+    _showShareCopyMessage('');
   }
   
   async function _saveCourseInfo() {
@@ -349,7 +364,11 @@ const app = function () {
     settings.currentCourse = null;
     
     await _updateCourseSelection();
-  }  
+  }
+
+  function _showShareCopyMessage(msg) {
+    page.contentsShare.getElementsByClassName('copy-message')[0].innerHTML = msg;
+  }    
   
   //---------------------------------------
 	// handlers
@@ -388,9 +407,9 @@ const app = function () {
   }
   
   function _handleAudienceChange(e) {
-    console.log('_handleAudienceChange');
     UtilityKTS.setClass(e.target.leftLabel, 'diminished', e.target.checked);
     UtilityKTS.setClass(e.target.rightLabel, 'diminished', !e.target.checked);  
+    _updatePreview();
   }
   
   function _handleDoubleSwitch(elem, clickedLabel) {
@@ -401,6 +420,33 @@ const app = function () {
     }
   }
 
+  function _handleLink(audience) {
+    var msg = _landingPageURL(audience);
+    _copyToClipboard(msg);
+    
+    _showShareCopyMessage(audience + ' link copied');
+  }
+  
+  async function _handleMessage(audience) {
+    var msg = await _mailMessage(audience);
+    if (!msg) return;
+
+    //--- is this necessary? --------------------
+    // strip non-body material
+    msg = msg.replace(/<!DOCTYPE html>/g, '');
+    msg = msg.replace(/<html>/g, '');
+    msg = msg.replace(/<html lang=\"en\">/g, '');
+    msg = msg.replace(/<\/html>/g, '');
+    msg = msg.replace(/<head>.*<\/head>/g, '');
+    msg = msg.replace(/<body>/, '');
+    msg = msg.replace(/<\/body>/, '');
+    //-------------------------------------------
+    
+    _copyRenderedToClipboard(msg);
+
+    _showShareCopyMessage(audience + ' link copied');
+  }
+  
   function _doOptions() {
     window.open(settings.optionsURL, '_self');
   }  
@@ -453,6 +499,8 @@ const app = function () {
 	}	
 
   function _copyRenderedToClipboard(txt) {
+    console.log(page._renderedclipboard);
+    console.log(page.body);
     if (!page._renderedclipboard) page._renderedclipboard = new ClipboardCopy(page.body, 'rendered');
 
     page._renderedclipboard.copyRenderedToClipboard(txt);
@@ -468,6 +516,34 @@ const app = function () {
     valid = valid && (courseName.match(/[A-Za-z0-9&:\(\), ]+/) == courseName);
     
     return valid;
+  }  
+  
+  function _landingPageURL(audience) {
+    var audienceIndex = '000';
+    if (audience == 'mentor') audienceIndex = '100';
+    
+    var previewURL = window.location.origin + settings.previewURL_base;
+    previewURL += '/' + settings.currentCourse.courseid;
+    previewURL += '/' + audienceIndex;
+    
+    return previewURL;
+  }
+  
+  async function _mailMessage(audience) {
+    var result = null;
+    var params = settings.currentCourse;
+    params.audience = audience;
+    params.letterURL = _landingPageURL(audience);
+    
+    var queryResult = await _queryMailMessage(params);
+    if (queryResult.success) {
+      result = queryResult.data;
+      
+    } else {
+      page.notice.setNotice('failed to retrieve ' + audience + ' message');
+    }
+    
+    return result;
   }  
   
   //---------------------------------------

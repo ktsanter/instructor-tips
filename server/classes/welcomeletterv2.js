@@ -414,9 +414,9 @@ module.exports = internal.WelcomeLetterV2 = class {
     
     var pugFileName = '';
     if (postData.audience == 'student') {
-      pugFileName = this._pugPath + '/mailmessage/student_mailmessage.pug';
+      pugFileName = this._pugPath + '/mixins/mailmessage/student_mailmessage.pug';
     } else if (postData.audience == 'mentor') {
-      pugFileName = this._pugPath + '/mailmessage/mentor_mailmessage.pug';
+      pugFileName = this._pugPath + '/mixins/mailmessage/mentor_mailmessage.pug';
     } else {
       result.details = 'invalid audience';
       return result;

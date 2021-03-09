@@ -68,6 +68,14 @@ body {
   opacity: 0.5;
 }
 
+/*-----------------------------------------------------*/
+/* contents - share                                    */
+/*-----------------------------------------------------*/
+.contents .contents-navShare {}
+
+.contents .contents-navShare .copy-message {
+  font-style: italic;
+}
 
 /*------------------------------------------------------------------
  * standard error and notice

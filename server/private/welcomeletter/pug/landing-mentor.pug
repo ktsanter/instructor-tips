@@ -1,6 +1,6 @@
 include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
-include welcomeletter-mixins_v2.pug
+include ./mixins/welcomeletter-mixins_v2.pug
 
 - var coursekey = params.coursekey
 - var coursename = params.coursename
@@ -51,30 +51,30 @@ html(lang="en")
       .row
         .col-sm 
           .section-title general information
-          include boilerplate/mentor_generalinfo.pug
+          include ./mixins/boilerplate/mentor_generalinfo.pug
           
         .col-sm
           .container
             .row
               .col-sm
                 .section-title to help your student
-                include boilerplate/mentor_to_help_student.pug
+                include ./mixins/boilerplate/mentor_to_help_student.pug
             .row
               .col-sm
                 .section-title respone policies
-                include boilerplate/mentor_response_policies.pug
+                include ./mixins/boilerplate/mentor_response_policies.pug
 
       .row
         .col-sm 
           .section-title resources for mentors
-          include boilerplate/mentor_resources.pug
+          include ./mixins/boilerplate/mentor_resources.pug
                     
         .col-sm 
           .container
             .row
               .col-sm
                 .section-title special populations
-                include boilerplate/mentor_special_populations.pug
+                include ./mixins/boilerplate/mentor_special_populations.pug
                 
       .row
         .col-2

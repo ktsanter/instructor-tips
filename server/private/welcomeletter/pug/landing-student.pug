@@ -1,6 +1,6 @@
 include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
-include welcomeletter-mixins_v2.pug
+include ./mixins/welcomeletter-mixins_v2.pug
 
 - var coursekey = params.coursekey
 - var coursename = params.coursename
@@ -43,16 +43,16 @@ html(lang="en")
       .row
         .col-sm(class="overview")
           .section-title general information
-          include boilerplate/student_overview.pug
+          include ./mixins/boilerplate/student_overview.pug
         
       .row
         .col-sm 
           .section-title what I expect of you in this course
-          include boilerplate/student_expect_of_you.pug
+          include ./mixins/boilerplate/student_expect_of_you.pug
             
         .col-sm 
           .section-title what you can expect from me
-          include boilerplate/student_expect_from_me.pug
+          include ./mixins/boilerplate/student_expect_from_me.pug
 
       .row
         .col-2

@@ -473,8 +473,8 @@ app.get('/welcomeletterV2/:courseid/:audience', async function(req, res) {
   if (req.params.audience == '000' || req.params.audience == '100') {
     req.params.audience = (req.params.audience == '000') ? 'student' : 'mentor';
 
-    var fileNameMentor = path.join(__dirname, 'private', 'welcomeletter/pug/mentor.pug');
-    var fileNameStudent = path.join(__dirname, 'private', 'welcomeletter/pug/student.pug');
+    var fileNameMentor = path.join(__dirname, 'private', 'welcomeletter/pug/landing-mentor.pug');
+    var fileNameStudent = path.join(__dirname, 'private', 'welcomeletter/pug/landing-student.pug');
 
     var result = await dbWelcomeLetterV2.renderWelcomeLetter(req.params, {mentor: fileNameMentor, student: fileNameStudent});
 
