@@ -1,4 +1,9 @@
 mixin configurationContainer()
+  - var examlist = params.exam
+  - var proctoringlist = params.proctoring
+  - var retakelist = params.retake
+  - var resubmissionlist = params.resubmission
+
   .row
     .col-sm
       .container-fluid
@@ -8,38 +13,50 @@ mixin configurationContainer()
               select(class="form-select select-course" id="selectCourse" aria-label="select course")
               label(for="selectCourse") course
 
+          .col-sm
+            button(class="btn btn-secondary button-add mx-2 py-1" title="add new course") add
+            button(class="btn btn-secondary button-delete py-1 disabled" title="delete this course") delete              
+
         .row
           .col-sm
             .form-check(class="form-switch")
-              input(class="form-check-input" type="checkbox" id="checkAPCourse")
+              input(class="form-check-input check-apcourse" type="checkbox" id="checkAPCourse" disabled)
               label(class="form-check-label" for="checkAPCourse") AP course
 
         .row
           .col-sm
             .form-check(class="form-switch")
-              input(class="form-check-input" type="checkbox" id="checkHasPasswords")
+              input(class="form-check-input check-haspasswords" type="checkbox" id="checkHasPasswords" disabled)
               label(class="form-check-label" for="checkHasPasswords") has password(s)
 
         .row
           .col-sm
             .form-floating
-              select(class="form-select select-exams" id="selectExams" aria-label="select exams")
+              select(class="form-select select-exams" id="selectExams" aria-label="select exams" disabled)
+                each item in examlist
+                  option(value=item.examid)= item.examdescription
               label(for="selectExams") exams
 
         .row
           .col-sm
             .form-floating
-              select(class="form-select select-proctoring" id="selectProctoring" aria-label="select proctoring")
+              select(class="form-select select-proctoring" id="selectProctoring" aria-label="select proctoring" disabled)
+                each item in proctoringlist
+                  option(value=item.proctoringid)= item.proctoringdescription
               label(for="selectProctoring") proctoring
 
         .row
           .col-sm
             .form-floating
-              select(class="form-select select-retakes" id="selectRetakes" aria-label="select retakes")
+              select(class="form-select select-retakes" id="selectRetakes" aria-label="select retakes" disabled)
+                each item in retakelist
+                  option(value=item.retakeid)= item.retakedescription
               label(for="selectRetakes") retakes
 
         .row
           .col-sm
             .form-floating
-              select(class="form-select select-resubmission" id="selectResubmission" aria-label="select resubmission")
+              select(class="form-select select-resubmission" id="selectResubmission" aria-label="select resubmission" disabled)
+                each item in resubmissionlist
+                  option(value=item.resubmissionid)= item.resubmissiondescription
               label(for="selectResubmission") resubmission

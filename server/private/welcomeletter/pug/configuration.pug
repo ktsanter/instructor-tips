@@ -9,10 +9,6 @@ include ./mixins/mixins-configuration.pug
 include ./mixins/mixins-preview.pug
 include ./mixins/mixins-share.pug
 
-- var examlist = params.exam
-- var proctoringlist = params.proctoring
-- var retakelist = params.retake
-- var resubmissionlist = params.resubmission
 - var allowOptions = params.allowoptionsediting
 
 doctype html
@@ -44,8 +40,10 @@ html
           {id: "navPreview", type: "link", label: "preview"},
           {id: "navShare", type: "link", label: "share"},
           {type: "dropdown", label: "options", items: [
-            {id: "navEditOptions", type: "link", label: "edit options"},
+            {id: "navRename", type: "link", label: "rename course"},
             {id: "dividerNav1", type: "divider"},
+            {id: "navEditOptions", type: "link", label: "edit options"},
+            {id: "dividerNav2", type: "divider"},
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
           ]}

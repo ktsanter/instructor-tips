@@ -1,4 +1,13 @@
 mixin previewContainer()
   .row
-    .col-sm(class="ratio ratio-1x1")
-      iframe(class="preview-frame" scrolling="no" src="https://aardvark-studios.com/welcomeletterV2/1/000")    
+    .col-sm
+      .checkbox-label-left(class="checkAudience" aria-label="student") student
+      .form-check(class="form-switch allow-label-left")
+        input(class="form-check-input check-audience double-selection" type="checkbox" id="checkAudience")
+        .checkbox-label-right(class="diminished") mentor
+
+  .row
+    .col-sm preview frame goes here
+    //
+      .col-sm(class="ratio ratio-1x1") 
+        iframe(class="preview-frame" scrolling="no" src="")    
