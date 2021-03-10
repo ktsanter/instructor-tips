@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 // welcome letter options editor
 //-------------------------------------------------------------------
-// TODO: add profile editing ala InstructorTips?
+// TODO: hide/show table editors upon nav selections
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
@@ -11,67 +11,72 @@ const app = function () {
   };
   
   const settings = {
+    hideClass: 'hide-me',
+    navItemClass: 'use-handler',    
     configurationEditorURL: '/welcomeletter/configuration',
-    logoutURL: '/usermanagement/logout'
+    logoutURL: '/usermanagement/logout/welcomeV2',
+    helpURL: '/welcomeletter/help',
   };
 
   //---------------------------------------
   // get things going
   //----------------------------------------
-  async function init () {
+  
+  async function init (sodium) {
     page.body = document.getElementsByTagName('body')[0];
-    page.contents = page.body.getElementsByClassName('contents')[0];
-    
-    page.notice = new StandardNotice(page.body, page.body);
-    
-    page.notice.setNotice('loading...', true);
-    if (!(await _getUserInfo())) return;
+    page.errorContainer = page.body.getElementsByClassName('error-container')[0];
+    page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('');
     
-    _renderPage();
-  }
+    page.contents = page.body.getElementsByClassName('contents')[0];
+    
+    page.notice.setNotice('loading...', true);  
 
+    page.navbar = page.body.getElementsByClassName('navbar')[0];
+    UtilityKTS.setClass(page.navbar, settings.hideClass, true);
+    
+    _attachNavbarHandlers(); // do these before making the profile object
+    await _initProfile(sodium);
+    
+    UtilityKTS.setClass(page.navbar, settings.hideClass, false);
+    
+    await _renderContents();
+    page.notice.setNotice('');
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+  }
+  
+  async function _initProfile(sodium) {
+    settings.profile = new ASProfile({
+      id: "myProfile",
+      "sodium": sodium,
+      navbarElements: {
+        "save": page.navbar.getElementsByClassName('navSave')[0],
+        "reload": page.navbar.getElementsByClassName('navReload')[0],
+        "icon": page.navbar.getElementsByClassName('icon-profile')[0],
+        "pic": page.navbar.getElementsByClassName('pic-profile')[0]
+      },
+      hideClass: settings.hideClass
+    });
+    
+    await settings.profile.init();
+  }
+  
+  //-----------------------------------------------------------------------------
+	// navbar
+	//-----------------------------------------------------------------------------
+  function _attachNavbarHandlers() {
+    var handler = (e) => { _navDispatch(e); }
+    var navItems = page.navbar.getElementsByClassName(settings.navItemClass);
+    for (var i = 0; i < navItems.length; i++) {
+      navItems[i].addEventListener('click', handler);
+    }
+  }  
+  
   //-----------------------------------------------------------------------------
   // page rendering
   //-----------------------------------------------------------------------------  
-  function _renderPage() {
-    var navbarContainer = page.body.getElementsByClassName('navbarcontainer')[0]
-    page.navbar = _renderNavbar();
-    navbarContainer.appendChild(page.navbar); 
-    
-    // move standard notice
-    navbarContainer.appendChild(page.notice._errorNotice);
-    navbarContainer.appendChild(page.notice._normalNoticeContainer);
-    UtilityKTS.setClass(page.notice._errorNotice, 'navbar-notice', true);
-    UtilityKTS.setClass(page.notice._normalNoticeContainer, 'navbar-notice', true);
-    
-    _createTableEditors( ['exams', 'proctoring', 'retakes', 'resubmission', 'general'] );
-    
-    settings.navbar.selectOption('Exams');
-  }
-  
-  function _renderNavbar() {
-    var navConfig = {
-      title: appInfo.appName,
-      
-      items: [
-        {label: 'Exams', callback: () => {return _navDispatch('exams');}, subitems: null, rightjustify: false},
-        {label: 'Proctoring', callback: () => {return _navDispatch('proctoring');}, subitems: null, rightjustify: false},
-        {label: 'Retakes', callback: () => {return _navDispatch('retakes');}, subitems: null, rightjustify: false},
-        {label: 'Resubmission', callback: () => {return _navDispatch('resubmission');}, subitems: null, rightjustify: false},
-        {label: 'General', callback: () => {return _navDispatch('general');}, subitems: null, rightjustify: false},
-        {label: settings.userInfo.userName, callback: () => {return _navDispatch('profile');}, subitems: null, rightjustify: true}        
-      ],
-      
-      hamburgeritems: [           
-        {label: 'configurations', markselected: false, callback: () => {return _navDispatch('configurations');}},
-        {label: 'sign out', markselected: false, callback: _doLogout}
-      ]   
-    };
-
-    settings.navbar = new NavigationBar(navConfig);
-        
-    return settings.navbar.render();
+  async function _renderContents() {
+    await _createTableEditors( ['exams', 'proctoring', 'retakes', 'resubmission', 'general'] );
   }
 
   async function _createTableEditors(editorList) {
@@ -86,14 +91,65 @@ const app = function () {
     page.editor = {};
     for (var i = 0; i < editorList.length; i++) {
       var key = editorList[i];
-      page.editor[key] = new TableEditor({...params, title: _capitalize(key)});
-      page.contents.appendChild(await page.editor[key].render());
+      page.editor[key] = new TableEditor({...params, "key": key, title: _capitalize(key)});
+      await page.editor[key].init(key);
+      page.editor[key].render();
     }
   }
   
   //---------------------------------------
 	// update
-	//----------------------------------------          
+	//----------------------------------------  
+  async function _showContents(contentsId) {
+    settings.currentNavOption = contentsId;
+    
+    var containers = page.contents.getElementsByClassName('contents-container');
+    for (var i = 0; i < containers.length; i++) {
+      var hide = !containers[i].classList.contains('contents-' + contentsId);
+      UtilityKTS.setClass(containers[i], settings.hideClass, hide);
+    }
+    
+    var tableMap = {
+      "navExams": 'exams',
+      "navProctoring": 'proctoring', 
+      "navRetakes": 'retakes', 
+      "navResubmission": 'resubmission',
+      "navGeneral": 'general'
+    }
+    
+    if (tableMap.hasOwnProperty(contentsId)) {
+      await _displayEditor(tableMap[contentsId]);
+      
+    } else if (contentsId == 'navProfile') await settings.profile.reload();
+    
+    _setNavOptions();
+  }
+  
+  function _setNavOptions() {
+    var opt = settings.currentNavOption;
+    var validCourse = (settings.currentCourse != null);
+
+    _enableNavOption('navSave', false);
+    _enableNavOption('navReload', false);
+    
+    if (opt == 'navProfile') {
+      var enable = settings.profile.isDirty();
+      _enableNavOption('navSave', true, enable);
+      _enableNavOption('navReload', true, enable);
+    }    
+  }
+  
+  
+  function _enableNavOption(navOption, visible, enable) {
+    var elem = document.getElementById(navOption);
+    UtilityKTS.setClass(elem, settings.hideClass, !visible);
+    if (elem.classList.contains('btn')) {
+      elem.disabled = !enable;    
+    } else {
+      UtilityKTS.setClass(elem, 'disabled', !enable);
+    }
+  }  
+  
   async function _displayEditor(title) {
     for (var key in page.editor) {
       await page.editor[key].update();
@@ -105,24 +161,31 @@ const app = function () {
   //---------------------------------------
 	// handlers
 	//----------------------------------------
-  function _navDispatch(dispatchOption) {
-    var dispatchMap = {
-      'exams': function() { _displayEditor('exams'); },
-      'proctoring': function() { _displayEditor('proctoring'); },
-      'retakes': function() { _displayEditor('retakes'); },
-      'resubmission': function() { _displayEditor('resubmission'); },
-      'general': function() { _displayEditor('general'); },
-      'profile': function() {_dummy('profile'); },
-      'configurations': _openConfigurationEditor      
-    };
+  async function _navDispatch(e) {
+    var dispatchTarget = e.target.id;
+    if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
+    if (dispatchTarget == settings.currentNavOption) return;
     
-    var route = dispatchMap[dispatchOption];
-    route();
+    var dispatchMap = {
+      "navExams":         async function() { await _showContents(dispatchTarget); },
+      "navProctoring":    async function() { await _showContents(dispatchTarget); },
+      "navRetakes":       async function() { await _showContents(dispatchTarget); },
+      "navResubmission":  async function() { await _showContents(dispatchTarget); },
+      "navGeneral":       async function() { await _showContents(dispatchTarget); },
+      
+      
+      "navEditConfiguration":   function() { _doConfigurations(); },
+      
+      "navSave":          async function() { await _handleSave(e);},
+      "navReload":        async function() { await _handleReload(e);},
+      
+      "navProfile":       async function() { await _showContents('navProfile'); },
 
-  }
-  
-  function _dummy(param) {
-    console.log('dummy: ' + param);
+      "navHelp":          function() { _doHelp(); },
+      "navSignout":       function() { _doLogout(); }
+    }
+    
+    dispatchMap[dispatchTarget]();
   }
   
   
@@ -130,7 +193,23 @@ const app = function () {
     window.open(settings.configurationEditorURL, '_self');
   }
 
-  async function _doLogout() {
+  function _handleReload(e) {
+    if (!confirm('Current changes will be lost.\nContinue with reloading project?')) return;
+    
+    if (settings.currentNavOption == 'navProfile') {
+      settings.profile.reload();
+    } 
+  }
+  
+  function _doConfigurations() {
+    window.open(settings.configurationEditorURL, '_self');
+  }
+  
+  function _doHelp() {
+    window.open(settings.helpURL, '_blank');
+  }
+  
+  function _doLogout() {
     window.open(settings.logoutURL, '_self'); 
   }
   
@@ -153,12 +232,10 @@ const app = function () {
     var result = null;
     var editorKey = title.toLowerCase();
 
-    page.notice.setNotice('retrieving data for ' + title, true);
     var dbResult = await SQLDBInterface.doPostQuery('welcomeV2/query', 'optionvalues', {"editorKey": editorKey});
     
     if (dbResult.success) {
       result = dbResult.data;
-      page.notice.setNotice('');
     } else {
       result = null;
       page.notice.setNotice('failed to get ' + editorKey + ' data');
@@ -170,12 +247,10 @@ const app = function () {
   async function _handleUpdateCallback(params) {
     var result = false;
     
-    page.notice.setNotice('saving data', true);
     var dbResult = await SQLDBInterface.doPostQuery('welcomeV2/update', 'optionvalues', params);
     
     if (dbResult.success) {
       result = true;
-      page.notice.setNotice('');
     } else {
       page.notice.setNotice('failed to save data');
     }
@@ -186,13 +261,10 @@ const app = function () {
   async function _handleDeleteCallback(params) {
     var result = false;
     
-    page.notice.setNotice('deleting row', true);
-    console.log(params);
     var dbResult = await SQLDBInterface.doPostQuery('welcomeV2/delete', 'optionvalues', params);
     
     if (dbResult.success) {
       result = true;
-      page.notice.setNotice('');
     } else {
       page.notice.setNotice('failed to delete row');
     }
@@ -203,13 +275,10 @@ const app = function () {
   async function _handleAddCallback(params) {
     var result = false;
     
-    page.notice.setNotice('adding row', true);
-    console.log(params);
     var dbResult = await SQLDBInterface.doPostQuery('welcomeV2/insert', 'optionvalues', params);
     
     if (dbResult.success) {
       result = true;
-      page.notice.setNotice('');
     } else {
       if (dbResult.details.includes('duplicate')) {
         page.notice.setNotice('a row with these values already exists');

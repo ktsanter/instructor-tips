@@ -9,12 +9,12 @@
 .te-table-editor .te-table-container {}
 
 .te-table-editor .te-table-container .add-icon {
-  color: var(--bgPrimaryEmphasis);
+  color: rgba(66, 98, 150, 1.0);
   cursor: pointer;
 }
 
 .te-table-editor .te-table-container .trash-icon {
-  color: var(--bgPrimaryEmphasis);
+  color: rgba(66, 98, 150, 1.0);
   cursor: pointer;
 }
 
@@ -33,8 +33,8 @@
  
 .te-table-editor .te-edit-container .te-edit-label {
   color: white;
-  background-color: var(--bgPrimaryEmphasis);
-  border: 1px solid var(--bgPrimaryEmphasis);
+  background-color: rgba(66, 98, 150, 1.0);
+  border: 1px solid rgba(66, 98, 150, 1.0);
   border-radius: 3px;
   padding: 0 0.2em 0.1em 0.2em
 }
@@ -44,7 +44,7 @@
 }
 
 .te-table-editor .te-edit-container .btn-primary {
-  background-color: var(--bgPrimaryEmphasis);
-  border-color: var(--bgPrimaryEmphasis);
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: rgba(66, 98, 150, 1.0);
   margin-right: 0.3em;
 }

@@ -72,8 +72,8 @@ const app = function () {
     
     page.notice.setNotice('');
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
-
     _attachNavbarHandlers();
+    
     _renderContents();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
@@ -93,14 +93,13 @@ const app = function () {
   //-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------
-  function _renderContents() {
+  async function _renderContents() {
     settings.contentEditorId = {};
-    MyTinyMCE.initialize(_finishRendering, _handleEditorChange);
-  }
-  
-  function _finishRendering() {
+    page.tiny = new MyTinyMCE({id: 'contenteditor-navEditor', selector: '#contenteditor-navEditor', changeCallback: _handleEditorChange});
+    await page.tiny.init();
+    console.log('back from init');
     _renderEditor();
-    _renderMapper();
+    _renderMapper();    
   }
     
   function _renderEditor() {
@@ -222,7 +221,7 @@ const app = function () {
       var markdown = params.isLeaf ? params.tmContent.markdown : '';
 
       elemLabel.value = label;
-      MyTinyMCE.setContent(settings.contentEditorId.navEditor, markdown);
+      page.tiny.setContent(markdown);
       
       UtilityKTS.setClass(labelAndEditorContainer, 'hide-me', false);
       UtilityKTS.setClass(editorContainer, 'hide-me', !params.isLeaf);
@@ -386,7 +385,7 @@ const app = function () {
   
   function _handleEditorChange(e) {
     var editLabel = page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].value;
-    var editorContent = tinymce.get(settings.contentEditorId.navEditor).getContent();
+    var editorContent = page.tiny.getContent();
 
     var updatedNodeInfo = {
       id: settings.currentNodeInfo.id,

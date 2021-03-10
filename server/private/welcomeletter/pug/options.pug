@@ -1,18 +1,25 @@
 include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/profile-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
+include ./mixins/mixins-tableeditor.pug
 
 doctype html
 html
   head
     title welcome letter options
     meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no") 
     
     +fontawesome()
     +bootstrapstyle()
+    +tinyMCEscripts()
 
     style
-      include ../../common/styles/colorscheme.css    
-      include ../../common/styles/navbar_for_bootstrap.css  
+      include ../../common/styles/classProfile.css      
+      include ../../common/styles/navbar-overrides.css
       include ../styles/classTableEditor.css      
       include ../styles/options.css
     
@@ -20,7 +27,41 @@ html
     script(src="/scripts/clipboard.min.js")
     script(data-main="/scripts/welcomeletter/require_options", src="/scripts/require.js")    
       
-  body(class="instructortips-colorscheme")
-    .navbarcontainer
+  body
+    +makeNavbar("Welcome letter options", 
+      {
+        items: [
+          {id: "navExams", type: "link", label: "exams"},
+          {id: "navProctoring", type: "link", label: "proctoring"},
+          {id: "navRetakes", type: "link", label: "retakes"},
+          {id: "navResubmission", type: "link", label: "resubmission"},
+          {id: "navGeneral", type: "link", label: "general"},
+
+          {type: "dropdown", label: "other", items: [
+            {id: "navEditConfiguration", type: "link", label: "edit configurations"},
+            {id: "dividerNav1", type: "divider"},
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}
+        ],
+        
+        profile: true
+      }
+    )
     
     .contents
+      .error-container
+      
+      +tableEditor("exams")
+      +tableEditor("proctoring")
+      +tableEditor("retakes")
+      +tableEditor("resubmission")
+      +tableEditor("general")
+
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me") 
+

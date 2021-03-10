@@ -27,7 +27,7 @@ body {
   border-color: rgba(66, 98, 150, 0.65);
 }
 
-.contents .form-check-input:checked {
+.contents .form-check-input:checked { /* override Bootstrap */
   color: #fff;
   background-color: rgba(66, 98, 150, 1.0);
   border-color: rgba(66, 98, 150, 1.0);

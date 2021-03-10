@@ -1,0 +1,16 @@
+mixin tableEditor(key)
+  - var elemId = 'te-tableeditor-' + key
+  - editorId = 'mytiny' + key
+  - saveId = 'te-save-button-' + key
+  
+  div(id=elemId class="te-table-editor")
+    div(class="te-table-container container-fluid")
+    div(class="te-edit-container container-fluid hide-me")
+      .row
+        .col-sm
+          +makeTinyMCE(editorId)
+          
+      .row
+        .col-sm
+          button(id=saveId class="save-button btn btn-primary") save
+          button(class="cancel-button btn btn-primary") cancel

@@ -2,74 +2,50 @@
  * styling for welcome letter options editor
  *------------------------------------------------------------------*/
 body {
-	color: var(--fgPrimary);
-	background-color: var(--bgTertiary);
-	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-	font-size: 13px;
-  margin-right: 2.0em;
+  padding-top: 4.0em;
 }
 
 .hide-me {
   display: none;
 }
 
-/*---------------------------------------------*/
-/* navbar additions and overrides              */
-/*---------------------------------------------*/
-.navbar .dropdown-content div.disarm-me {
-  color: #bbb;
-}
-
-.navbar .dropdown-content div.disarm-me:hover {
-  background-color: transparent;
-}
-
-.navbar .navbar-main-item.disarm-me {
-  color: #bbb;
-}
-
-.navbar li.navbar-item:not(.navbar-selected):hover {
-  background-color: var(--bgTertiaryChoice);
-}
-
-.navbar li.navbar-item.disarm-me:hover {
-  background-color: var(--bgPrimaryEmphasis);
-}
-
-.navbar li.navbar-item.navbar-title:hover {
-  background-color: var(--bgPrimaryEmphasis);
-}
-
-.navbar li.navbar-item.username:hover {
-  background-color: var(--bgPrimaryEmphasis);
-}
-
-/*-----------------------------------------------------*/
-/* standard notice                                     */
-/*-----------------------------------------------------*/
-.standard-notice {
-  font-style: italic;
-}
-
-#noticeSpinner {
-  font-size: 1.0em;
-  margin-left: 0.2em;
-}
-
-.standard-notice.navbar-notice {
-  color: white;
-  background-color: var(--bgPrimaryEmphasis);
-  position: absolute;
-  z-index: 1;
-  top: 0.6em;
-  right: 13.0em;
-}
-
 /*-----------------------------------------------------*/
 /* contents                                            */
 /*-----------------------------------------------------*/
-.contents {
-  margin-top: 4.0em;
+.contents {}
+
+.contents .form-check-input:checked { /* override Bootstrap */
+  color: #fff;
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: rgba(66, 98, 150, 1.0);
+  outline: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
 }
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/
 
 

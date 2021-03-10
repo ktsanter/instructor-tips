@@ -1,23 +1,43 @@
 //-------------------------------------------------------------------
 // TableEditor class
 //-------------------------------------------------------------------
-// TODO:
+// TODO: 
 //-------------------------------------------------------------------
 class TableEditor {
   constructor(config) {
     this._config = config;
     this._config.tableContainerClass = 'te-table-container';
-    this._config.editContainerClass = 'te-edit-container';
+    this._config.editContainerClass = 'te-edit-container';    
+    this._container = document.getElementById('te-tableeditor-' + this._config.key);
+    this.tiny = null;
+  }
+  
+  //--------------------------------------------------------------
+  // initializing
+  //--------------------------------------------------------------
+  async init() {
+    var editorId = 'mytiny' + this._config.key;
+    this.tiny = new MyTinyMCE({
+      id: editorId,
+      selector: '#' + editorId,
+      changeCallback: this._handleEditorChange
+    });
+    await this.tiny.init();
   }
   
   //--------------------------------------------------------------
   // rendering
   //--------------------------------------------------------------
-  async render() {
+  async render() { 
     var containerClasses = 'te-table-editor' + ' ' + this._config.hideClass;
-    this._container = CreateElement.createDiv(null, containerClasses);
+
+    var saveHandler = (e) => { this._handleEditSave(e); };
+    var cancelHandler = (e) => { this._handleEditCancel(e); };
     
-    this.update();
+    this._getSaveButtonElement().addEventListener('click', saveHandler);
+    this._getCancelButtonElement().addEventListener('click', cancelHandler);
+
+    await this.update();
     
     return this._container;
   }
@@ -165,84 +185,18 @@ class TableEditor {
     
     return container;
   }
-  
-  _renderTableInfo(tableInfo) {  /*-- for debug --*/
-    var container = CreateElement.createDiv(null, 'te-table-info');
-    
-    container.appendChild(CreateElement._createElement('hr', null, null));
-    container.appendChild(CreateElement.createDiv(null, null, 'TABLE INFO'));
-    for (var key in tableInfo) {
-      var col = tableInfo[key];
-      var msg = 'tableName: ' + col.tableName + '<br>';
-      msg += 'columnName: ' + col.columnName + '<br>';
-      msg += 'primaryKey: ' + col.primaryKey + '<br>';
-      msg += 'dataType: ' + col.dataType + '<br>';
-      msg += 'columnType: ' + col.columnType + '<br>';
-      msg += 'maxColumnLength: ' + col.maxColumnLength + '<br>';
-      msg += 'nullable: ' + col.nullable + '<br>';
-      
-      container.appendChild(CreateElement.createDiv(null, null, msg));
-      container.appendChild(CreateElement._createElement('br', null, null));
-    }
-    
-    return container;
-  }
-  
-  _renderEditArea() {
-    var container = CreateElement.createDiv(null, this._config.editContainerClass + ' container-fluid');
-    
-    var row1 = CreateElement.createDiv(null, 'row');
-    var row2 = CreateElement.createDiv(null, 'row');
-    var row3 = CreateElement.createDiv(null, 'row');
-    
-    var row1col1 = CreateElement.createDiv(null, 'col-sm');
-    var row1col2 = CreateElement.createDiv(null, 'col-sm');
-    var row2col1 = CreateElement.createDiv(null, 'col-sm');
-    var row2col2 = CreateElement.createDiv(null, 'col-sm');
-    var row3col1 = CreateElement.createDiv(null, 'col-sm');
-    
-    container.appendChild(row1);
-    container.appendChild(row2);
-    container.appendChild(row3);
-    row1.appendChild(row1col1);
-    row1.appendChild(row1col2);
-    row2.appendChild(row2col1);
-    row2.appendChild(row2col2);
-    row3.appendChild(row3col1);
-    
-    // render row 1
-    row1col1.appendChild(CreateElement.createSpan(null, 'te-edit-label', 'markdown'));
-    row1col2.appendChild(CreateElement.createSpan(null, 'te-edit-label', 'rendered'));
-    
-    // render row 2
-    var elem = CreateElement.createTextArea(null, 'edit-markdown');
-    row2col1.appendChild(elem);
-    elem.rows = 20;
-    elem.cols = 80;
-    elem.addEventListener('input', (e) => {this._handleTextChange(e);});
-    
-    row2col2.appendChild(CreateElement.createDiv(null, 'edit-rendered'));
-    
-    // render row 3
-    var saveHandler = (e) => { this._handleEditSave(e); };
-    var cancelHandler = (e) => { this._handleEditCancel(e); };
-    var saveButton = CreateElement.createButton(null, 'save-button btn btn-primary', 'save',  null, saveHandler)
-    saveButton.disabled = true;
-    row3col1.appendChild(saveButton);
-    row3col1.appendChild(CreateElement.createButton(null, 'cancel-button btn btn-primary', 'cancel', null, cancelHandler));
-    
-    return container;
-  }
-  
+
   //--------------------------------------------------------------
   // updating
   //--------------------------------------------------------------
   async update() {
     var resultData = await this._config.selectCallback(this._config.title);
-    UtilityKTS.removeChildren(this._container);
-
-    this._container.appendChild(this._renderTableData(resultData));  
-    this._container.appendChild(this._renderEditArea());
+       
+    var tableContainer = this._getTableContainer();
+    if (tableContainer) tableContainer.parentNode.removeChild(tableContainer);
+    
+    this._container.appendChild(this._renderTableData(resultData));
+    this._getSaveButtonElement.disabled = true;
     
     this._showTableContainer(true);
     this._showEditContainer(false);
@@ -320,19 +274,24 @@ class TableEditor {
     var container = this._getEditContainer();
     container.columnStuff = columnStuff;
     
-    var elemMarkdown = this._getMarkdownElement();
-    var elemRendered = this._getRenderedElement();
-
-    elemMarkdown.value = columnStuff.columnData;
-    elemMarkdown.maxLength = columnStuff.columnInfo.maxColumnLength - 1;
-    this._updateRenderedText(elemMarkdown, elemRendered);
-    
+    this.tiny.setContent(columnStuff.columnData);
     this._getSaveButtonElement().disabled = true;
     
     this._showTableContainer(false);
-    this._showEditContainer(true);
+    this._showEditContainer(true); 
   }
-  
+    
+  _handleEditorChange(editor) {
+    // traverse up from target to get save button
+    var elem = document.getElementById(editor.id);
+    while (!elem.classList.contains('te-edit-container')) {
+      elem = elem.parentNode;
+    }
+    var elemSave = elem.getElementsByClassName('save-button')[0];
+    
+    elemSave.disabled = editor.isNotDirty;
+  }
+
   _handleTextChange(e) {
     this._updateRenderedText(this._getMarkdownElement(), this._getRenderedElement());
     this._getSaveButtonElement().disabled = false;
@@ -359,7 +318,8 @@ class TableEditor {
     var updateParams = this._packageUpdateParams(
       columnName,
       columnInfo,
-      '"' + this._sanitizeText(this._getMarkdownElement().value) + '"'
+      //'"' + this._sanitizeText(this._getMarkdownElement().value) + '"'
+      '"' + this._sanitizeText(this.tiny.getContent()) + '"'
     );
     
     await this._postUpdate(updateParams);
@@ -378,8 +338,6 @@ class TableEditor {
   }
 
   async _handleRowAdd(e) {
-    console.log('_handleRowAdd');
-    console.log(e.target.primaryKeyInfo);
     await this._postAdd({"tableName": e.target.primaryKeyInfo.tableName});
   }
   
@@ -388,7 +346,7 @@ class TableEditor {
   //--------------------------------------------------------------        
   _sanitizeText(str) {
     var cleaned = str.replace(/"/g, '\\"');  // escape double quotes
-    cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
+    //cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
     //cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
     
     return cleaned;
@@ -428,5 +386,9 @@ class TableEditor {
   
   _getSaveButtonElement() {
     return this._getEditContainer().getElementsByClassName('save-button')[0];
+  }
+  
+  _getCancelButtonElement() {
+    return this._getEditContainer().getElementsByClassName('cancel-button')[0];
   }
 }

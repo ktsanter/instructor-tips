@@ -7,7 +7,7 @@ const app = function () {
 	};
 
   const settings = {
-    mainimage: {id: "imgMain", classlist: ["main-image"], src: "/images/webdesign-formative/penguin.jpg"},
+    mainimage: {id: "imgMain", classlist: ["main-image"], src: "https://res.cloudinary.com/ktsanter/image/upload/v1612459622/BasicWebDesign_resources/penguin.jpg"},
     paragraphcount: 2,
     paragraphclasslist: ["paragraph"]
   };
