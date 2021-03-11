@@ -232,7 +232,11 @@ const app = function () {
     page.elemSubtitle.disabled = !projectInfo;
     page.elemGridSize.disabled = !projectInfo;
     page.elemColorScheme.disabled = !projectInfo;
-    UtilityKTS.setClass(page.elemLayoutGrid, settings.hideClass, !projectInfo);
+    
+    var secondaryControls = page.contentsLayout.getElementsByClassName('secondary-control-container');
+    for (var i = 0; i < secondaryControls.length; i++) {
+       UtilityKTS.setClass(secondaryControls[i], settings.hideClass, !projectInfo);
+    }
     
     page.elemName.value = '';
     page.elemTitle.value = '';

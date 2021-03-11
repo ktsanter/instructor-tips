@@ -13,25 +13,25 @@ mixin layoutContainer()
             button(class="btn btn-secondary button-add mx-2 py-1" title="add new project") add
             button(class="btn btn-secondary button-delete py-1 disabled" title="delete this project") delete
               
-        .row(class="mt-2")
+        .row(class="secondary-control-container mt-2")
           .col-sm
             .form-floating
               input(type="text" class="form-control input-name" id="inputName" disabled)
               label(for="inputName") project name        
 
-        .row(class="mt-2")
+        .row(class="secondary-control-container mt-2")
           .col-sm
             .form-floating
               input(type="text" class="form-control input-title" id="inputTitle" disabled)
               label(for="inputTitle") title  
 
-        .row(class="mt-2")
+        .row(class="secondary-control-container mt-2")
           .col-sm
             .form-floating
               input(type="text" class="form-control input-subtitle" id="inputSubtitle" disabled)
               label(for="inputSubtitle") subtitle 
               
-        .row(class="mt-2")
+        .row(class="secondary-control-container mt-2")
           .col-sm
             .form-floating
               select(class="form-select select-gridsize" id="selectGridSize" aria-label="select size" disabled)
@@ -42,7 +42,7 @@ mixin layoutContainer()
                 option(value="6x5") 6 x 5
               label(for="selectGridSize") grid size
               
-          .col-sm
+          .col-sm(class="secondary-control-container")
             .form-floating
               input(type="text" class="form-control input-colorscheme" id="inputColorScheme" disabled)
               label(for="inputColorScheme") color scheme
@@ -55,7 +55,7 @@ mixin layoutContainer()
                 .flipper-colorscheme-004(class="color-sample") sample text
                 .flipper-colorscheme-005(class="color-sample") sample text
           
-        .row(class="mt-2")
+        .row(class="secondary-control-container mt-2")
           .col-sm-6
             .container-fluid(class="layout-grid")
 

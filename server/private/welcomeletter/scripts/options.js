@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 // welcome letter options editor
 //-------------------------------------------------------------------
-// TODO: hide/show table editors upon nav selections
+// TODO: add profile/instructor info to params
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
