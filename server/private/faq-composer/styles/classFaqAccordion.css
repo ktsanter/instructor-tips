@@ -8,6 +8,10 @@
   position: relative;
 }
 
+.accordion-button.collapsed {
+  background-color: rgba(0,0,0, 0.05);
+}
+
 .accordion .accordion-header .reorder-icon {
   font-size: 0.5em;
   z-index: 10;

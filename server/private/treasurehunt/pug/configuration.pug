@@ -1,0 +1,70 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/profile-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
+
+include ./mixins/mixins-layout.pug
+include ./mixins/mixins-clues.pug
+include ./mixins/mixins-preview.pug
+include ./mixins/mixins-share.pug
+
+doctype html
+html
+  head
+    title Treasure Hunt configuration
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no") 
+    
+    +fontawesome()
+    +bootstrapstyle()
+    +tinyMCEscripts()
+
+    style
+      include ../../common/styles/classProfile.css      
+      include ../../common/styles/navbar-overrides.css  
+      include ../styles/configuration.css
+    
+    script(data-main="/scripts/treasurehunt/require_configuration", src="/scripts/require.js")    
+      
+  body
+    +makeNavbar("Treasure Hunt", 
+      {
+        items: [
+          {id: "navLayout", type: "link", label: "layout"},
+          {id: "navClues", type: "link", label: "clues"},
+          {id: "navPreview", type: "link", label: "preview"},
+          {id: "navShare", type: "link", label: "share"},
+
+          {type: "dropdown", label: "other", items: [
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}
+        ],
+        
+        profile: true
+      }
+    )
+    
+    .contents
+      .error-container
+
+      .container-fluid(class="contents-container contents-navLayout hide-me")
+        +layoutContainer()
+
+      .container-fluid(class="contents-container contents-navClues hide-me")
+        +cluesContainer()
+
+      .container-fluid(class="contents-container contents-navPreview hide-me")
+        +previewContainer()
+
+      .container-fluid(class="contents-container contents-navShare hide-me")    
+        +shareContainer()
+
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me") 

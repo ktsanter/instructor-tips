@@ -2,6 +2,7 @@
 // welcome letter options editor
 //-------------------------------------------------------------------
 // TODO: add profile/instructor info to params
+// TODO: add ability to edit boilerplate content (8 items)
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};

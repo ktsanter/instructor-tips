@@ -1,0 +1,72 @@
+/*------------------------------------------------------------
+ * style settings for TreasureHuntDialog class
+ *------------------------------------------------------------*/
+.treasurehuntdialog {}
+
+.treasurehuntdialog.treasurehuntdialog-hide {
+  display: none;
+}
+
+.treasurehuntdialog .dialog-title {
+  margin-bottom: 0.4em;  
+}
+
+.treasurehuntdialog .dialog-title .dialog-titletext {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1.1em;  
+}
+
+.treasurehuntdialog .dialog-message {}
+
+.treasurehuntdialog .dialog-sub {}
+
+.treasurehuntdialog .dialog-sub.confirmcancel {
+  margin-top: 0.4em;  
+}
+
+/*------------------------------------------------------------
+ * input fields
+ *------------------------------------------------------------*/
+.treasurehuntdialog .dialog-sub input.dialog-input {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 1.0em;
+	display: inline-block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 1.4em .5em .8em;
+  width: 20em;
+	box-sizing: border-box;
+	margin: 0.3em 0.2em 0 0 ;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	border-radius: .3em;
+	background-color: #fff;
+ }
+ 
+/*------------------------------------------------------------
+ * confirm/cancel buttons
+ *------------------------------------------------------------*/
+.treasurehuntdialog .dialog-sub.confirmcancel .confirmcancelcontrol {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  height: 2.6em;
+  width: 5em;
+  margin-top: 0.2em;
+  margin-right: 0.2em;
+  color: white;
+  background-color: var(--bgSecondaryChoice);
+  border: 1px solid #444;
+  border-radius: 0.3em;
+  outline: none;  
+}
+
+.treasurehuntdialog .dialog-sub.confirmcancel .confirmcancelcontrol:disabled {
+  color: black;
+  background-color: var(--bgTertiaryEmphasis);
+}
+
+.treasurehuntdialog .dialog-sub.confirmcancel .confirmcancelcontrol:active {
+  color: black;
+  background-color: var(--bgQuaternaryEmphasis);
+}
+

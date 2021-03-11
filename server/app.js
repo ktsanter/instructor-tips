@@ -352,9 +352,9 @@ var appLookup = {
   
   "treasurehunt" : {
     appDescriptor: 'treasurehunt',
-    appName: 'Treasure Hunt',
-    routeRedirect: '/treasurehunt-configuration',
-    loginReRoute: 'treasurehunt'
+    appName: 'Treasure Hunt configuration',
+    routePug: 'treasurehunt/pug/configuration.pug',
+    loginReRoute: 'treasurehunt/options'
   },
   
   "welcomeV2" : {
@@ -405,14 +405,8 @@ function routeIfLoggedIn(req, res, appDescriptor) {
 }
 
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
-app.get('/treasurehunt', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
-app.get('/treasurehunt-configuration', function (req, res) { 
-  if (userManagement.isLoggedIn(req.session)) {
-    res.sendFile(path.join(__dirname, 'private', 'treasurehunt-configuration/html/treasurehunt-configuration.html'));
-  } else {
-    res.redirect('/login'); 
-  }
-})
+app.get('/treasurehunt/configuration', function (req, res) { 
+routeIfLoggedIn(req, res, 'treasurehunt');})
 
 app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcomeV2'); })
 app.get('/welcomeletter/options', function (req, res) { routeIfLoggedIn(req, res, 'welcome-options'); })
