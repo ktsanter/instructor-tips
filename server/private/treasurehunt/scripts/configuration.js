@@ -1,8 +1,8 @@
 //-------------------------------------------------------------------
 // Treasure Hunt configuration
 //-------------------------------------------------------------------
-// TODO: move share under "other" as it's only a link?
-// TODO: fix help routing
+// TODO: add support for full background image?
+// TODO: styling
 // TODO: finish help
 //-------------------------------------------------------------------
 const app = function () {
@@ -21,6 +21,8 @@ const app = function () {
     logoutURL: '/usermanagement/logout/welcomeV2',
     helpURL: '/treasurehunt/help',
     previewURL_base: '/treasurehunt',
+    
+    invalidPic:  'https://res.cloudinary.com/ktsanter/image/upload/v1615493098/Treasure%20Hunt/invalid-image.png',
     
     dirtyBit: {
       navLayout: false,
@@ -43,7 +45,6 @@ const app = function () {
     page.contentsLayout = page.contents.getElementsByClassName('contents-navLayout')[0];
     page.contentsClues = page.contents.getElementsByClassName('contents-navClues')[0];
     page.contentsPreview = page.contents.getElementsByClassName('contents-navPreview')[0];
-    page.contentsShare = page.contents.getElementsByClassName('contents-navShare')[0];   
 
     page.notice.setNotice('loading...', true);
     
@@ -52,6 +53,8 @@ const app = function () {
     
     _attachNavbarHandlers(); // do these before making the profile object
     await _initProfile(sodium);
+    
+    await _initEditors();
     
     page.notice.setNotice('');
     UtilityKTS.setClass(page.navbar, settings.hideClass, false); 
@@ -75,6 +78,28 @@ const app = function () {
     
     await settings.profile.init();
   }
+  
+  async function _initEditors() {
+    var editorIdList = [
+      'tinyGreeting', 
+      'tinyResponsePositive', 
+      'tinyResponseNegative'
+    ];
+    this.tiny = {};
+    
+    for (var i = 0; i < editorIdList.length; i++) {
+      var editorId = editorIdList[i];
+      
+      this.tiny[editorId] = new MyTinyMCE({
+        id: editorId,
+        selector: '#' + editorId,
+        changeCallback: _handleEditorChange,
+        height: 200
+      });
+      
+      await this.tiny[editorId].init();
+    } 
+  }
 
   //-----------------------------------------------------------------------------
 	// navbar
@@ -92,59 +117,38 @@ const app = function () {
   //-----------------------------------------------------------------------------  
   async function _renderContents() {
     console.log('_renderContents');
-    return;
+
     
-    page.elemCourseSelection = page.contentsConfiguration.getElementsByClassName('select-course')[0];
-    page.elemProjectAdd = page.contentsConfiguration.getElementsByClassName('button-add')[0];
-    page.elemProjectDelete = page.contentsConfiguration.getElementsByClassName('button-delete')[0];    
+    // layout
+    page.elemProjectSelection = page.contentsLayout.getElementsByClassName('select-project')[0];
+    page.elemProjectAdd = page.contentsLayout.getElementsByClassName('button-add')[0];
+    page.elemProjectDelete = page.contentsLayout.getElementsByClassName('button-delete')[0];    
     
-    // configuration
-    page.elemAPCourse = page.contentsConfiguration.getElementsByClassName('check-apcourse')[0];
-    page.elemHasPasswords = page.contentsConfiguration.getElementsByClassName('check-haspasswords')[0];
-    page.elemExamsSelection = page.contentsConfiguration.getElementsByClassName('select-exams')[0];
-    page.elemProctoringSelection = page.contentsConfiguration.getElementsByClassName('select-proctoring')[0];
-    page.elemRetakesSelection = page.contentsConfiguration.getElementsByClassName('select-retakes')[0];
-    page.elemResubmissionSelect = page.contentsConfiguration.getElementsByClassName('select-resubmission')[0];
+    page.elemBannerPic = page.contentsLayout.getElementsByClassName('thBanner-pic')[0];
+    page.elemBannerIcon = page.contentsLayout.getElementsByClassName('thBanner-icon')[0];
+    page.elemGreeting = this.tiny.tinyGreeting
+    page.elemResponsePositive = this.tiny.tinyResponsePositive
+    page.elemResponseNegative = this.tiny.tinyResponseNegative;
+
+    // clues
     
     // preview
-    page.elemAudience = page.contentsPreview.getElementsByClassName('check-audience')[0];
-    page.elemAudience.leftLabel = page.elemAudience.parentNode.parentNode.getElementsByClassName('checkbox-label-left')[0];
-    page.elemAudience.rightLabel = page.elemAudience.parentNode.getElementsByClassName('checkbox-label-right')[0];
-    page.elemPreviewFrame = page.contentsPreview.getElementsByClassName('preview-frame')[0];
     
-    // share
-    page.elemLinkStudent = page.contentsShare.getElementsByClassName('btnLinkStudent')[0];
-    page.elemMessageStudent = page.contentsShare.getElementsByClassName('btnMessageStudent')[0];
-    page.elemLinkMentor = page.contentsShare.getElementsByClassName('btnLinkMentor')[0];
-    page.elemMessageMentor = page.contentsShare.getElementsByClassName('btnMessageMentor')[0];
     _attachHandlers();
     
-    await _updateCourseSelection();
+    await _updateProjectSelection();
   }
   
-  function _attachHandlers() {
-    // configuration
-    page.elemCourseSelection.addEventListener('change', (e) => { _handleCourseSelection(e); });
-    page.elemProjectAdd.addEventListener('click', () => { _addCourse(); });
-    page.elemProjectDelete.addEventListener('click', (e) => { _deleteCourse(e); });
-
-    page.elemAPCourse.addEventListener('click', (e) => { _handleConfigChange(e); });
-    page.elemHasPasswords.addEventListener('click', (e) => { _handleConfigChange(e); });
-    page.elemExamsSelection.addEventListener('change', (e) => { _handleConfigChange(e); });
-    page.elemProctoringSelection.addEventListener('change', (e) => { _handleConfigChange(e); });
-    page.elemRetakesSelection.addEventListener('change', (e) => { _handleConfigChange(e); });
-    page.elemResubmissionSelect.addEventListener('change', (e) => { _handleConfigChange(e); });
+  function _attachHandlers() {    
+    // layout
+    page.elemProjectSelection.addEventListener('change', (e) => { _handleProjectSelection(e); });
+    page.elemProjectAdd.addEventListener('click', () => { _addProject(); });
+    page.elemProjectDelete.addEventListener('click', (e) => { _deleteProject(e); });
+    
+    // clues
+    
     
     // preview
-    page.elemAudience.addEventListener('click', (e) => { _handleAudienceChange(e); });
-    page.elemAudience.leftLabel.addEventListener('click', () => { _handleDoubleSwitch(page.elemAudience, 'left'); });
-    page.elemAudience.rightLabel.addEventListener('click', () => { _handleDoubleSwitch(page.elemAudience, 'right'); });
-    
-    // share
-    page.elemLinkStudent.addEventListener('click', () => { _handleLink('student'); });
-    page.elemMessageStudent.addEventListener('click', () => { _handleMessage('student'); });
-    page.elemLinkMentor.addEventListener('click', () => { _handleLink('mentor'); });
-    page.elemMessageMentor.addEventListener('click', () => { _handleMessage('mentor'); });
   }
   
   //---------------------------------------
@@ -159,8 +163,8 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
+    if (contentsId == 'navClues') _updateClues();
     if (contentsId == 'navPreview') await _updatePreview();
-    if (contentsId == 'navShare') _updateShare();
     if (contentsId == 'navProfile') await settings.profile.reload();
     
     _setNavOptions();
@@ -171,24 +175,23 @@ const app = function () {
     
     var opt = settings.currentNavOption;
     
-/*
-    var validCourse = (settings.currentCourse != null);
+
+    var validProject = (settings.currentProject != null);
     
-    _enableNavOption('navPreview', true, validCourse);
-    _enableNavOption('navShare', true, validCourse);
-    _enableNavOption('navRename', true, false);
-    _enableNavOption('dividerNav1', true, false);
-*/
+    _enableNavOption('navClues', true, validProject);
+    _enableNavOption('navPreview', true, validProject);
+    _enableNavOption('navShare', true, validProject);
+    _enableNavOption('navRename', true, validProject);
+
     _enableNavOption('navSave', false);
     _enableNavOption('navReload', false);
     
     if (opt == 'navLayout') {
+      UtilityKTS.setClass(page.elemProjectDelete, 'disabled', !validProject);
       
     } else if (opt == 'navClues') {
       
     } else if (opt == 'navPreview') {
-      
-    } else if (opt == 'navShare') {
 
     } else if (opt == 'navProfile') {
       var enable = settings.profile.isDirty();
@@ -215,65 +218,78 @@ const app = function () {
     _setNavOptions();
   }  
   
-  async function _updateCourseSelection() {
-    UtilityKTS.removeChildren(page.elemCourseSelection);
+  async function _updateProjectSelection() {
+    console.log('_updateProjectSelection');
+    UtilityKTS.removeChildren(page.elemProjectSelection);
     
-    if (!(await _queryCourseList())) return;
-
+    if (!(await _queryProjectList())) return;
+    console.log(settings.projectInfo);
+    
     var indexToSelect = -1;
-    for (var i = 0; i < settings.courseInfo.length; i++) {
-      var course = settings.courseInfo[i];
-      var elem = CreateElement.createOption(null, 'course', course.courseid, course.coursename);
-      elem.courseInfo = course;
-      if (settings.currentCourse && course.courseid == settings.currentCourse.courseid) indexToSelect = i;
-      page.elemCourseSelection.appendChild(elem);
+    var projectList = settings.projectInfo.projects;
+    for (var i = 0; i < projectList.length; i++) {
+      var project = projectList[i];
+      var elem = CreateElement.createOption(null, 'project', project.projectid, project.projectname);
+      elem.projectInfo = project;
+      if (settings.currentProject && project.projectid == settings.currentProject.projectid) indexToSelect = i;
+      page.elemProjectSelection.appendChild(elem);
     }
     
-    page.elemCourseSelection.selectedIndex = indexToSelect;
-    var courseInfo = null;
-    if (indexToSelect >= 0) courseInfo = page.elemCourseSelection[indexToSelect].courseInfo;
-    _loadCourse(courseInfo);
+    page.elemProjectSelection.selectedIndex = indexToSelect;
+    var projectInfo = null;
+    if (indexToSelect >= 0) projectInfo = page.elemProjectSelection[indexToSelect].projectInfo;
+    _loadProject(projectInfo);
   }
   
-  function _loadCourse(courseInfo) {
-    settings.currentCourse = courseInfo;
-    var elemList = Array.prototype.slice.call(page.contentsConfiguration.getElementsByTagName('select'));
-    elemList = elemList.concat(Array.prototype.slice.call(page.contentsConfiguration.getElementsByTagName('input')));
-    elemList = elemList.concat(Array.prototype.slice.call(page.contentsConfiguration.getElementsByTagName('button')));
-    elemList = elemList.concat(Array.prototype.slice.call(page.contentsConfiguration.getElementsByTagName('label')));
+  function _loadProject(projectInfo) {
+    console.log('_loadProject');
+    console.log(projectInfo);
     
-    for (var i = 0; i < elemList.length; i++) {
-      var elem = elemList[i];
-      if (elem.id != 'selectCourse'  && elem.htmlFor != 'selectCourse') {
-        elem.disabled = !courseInfo;
-        UtilityKTS.setClass(elem, settings.hideClass, !courseInfo);
-      }
+    settings.currentProject = projectInfo;
+    
+    var secondaryControls = page.contentsLayout.getElementsByClassName('secondary-control-container');
+    for (var i = 0; i < secondaryControls.length; i++) {
+       UtilityKTS.setClass(secondaryControls[i], settings.hideClass, !projectInfo);
     }
-
-    page.elemAPCourse.checked = courseInfo && courseInfo.ap;
-    page.elemHasPasswords.checked = courseInfo && courseInfo.haspasswords;
-    page.elemExamsSelection.value = courseInfo ? courseInfo.examid: -1;
-    page.elemProctoringSelection.value = courseInfo ? courseInfo.proctoringid: -1;
-    page.elemRetakesSelection.value = courseInfo ? courseInfo.retakeid: -1;
-    page.elemResubmissionSelect.value = courseInfo ? courseInfo.resubmissionid: -1;
+    
+    if (projectInfo) {
+      page.elemGreeting.setContent(projectInfo.message);
+      page.elemResponsePositive.setContent(projectInfo.positiveresponse);
+      page.elemResponseNegative.setContent(projectInfo.negativeresponse);
+      _setBannerPic(projectInfo.imagename);
+    }
     
     _setDirtyBit(false);
+  }
+  
+  function _setBannerPic(picURL) {
+    var hasPic = (picURL && picURL.length > 0);
+    
+    if (hasPic) {
+      page.elemBannerPic.style.backgroundImage = "url(" + picURL + "), url('" + settings.invalidPic + "')";
+      page.elemBannerPic.setAttribute('as-current-background', picURL);
+
+    } else {
+      page.elemBannerPic.style.backgroundImage = '';
+      page.elemBannerPic.setAttribute('as-current-background', '');
+    }
+    
+    UtilityKTS.setClass(page.elemBannerIcon, settings.hideClass, hasPic);
+    UtilityKTS.setClass(page.elemBannerPic, settings.hideClass, !hasPic);
+  }    
+  
+  function _updateClues() {
+    console.log('_updateClues');
+    
+    var clueList = settings.projectInfo.clues[settings.currentProject.projectid];
   }
   
   async function _updatePreview() {
     console.log('_updatePreview');
     /*
-    var audience = 'student';
-    if (page.elemAudience.checked) audience = 'mentor';
-    
-    var previewURL = _landingPageURL(audience);
+    var previewURL = _landingPageURL();
     page.elemPreviewFrame.src = previewURL;
     */
-  }
-  
-  function _updateShare() {
-    console.log('_updateShare');
-    _showShareCopyMessage('');
   }
   
   async function _saveCourseInfo() {
@@ -304,8 +320,10 @@ const app = function () {
     
     await _updateCourseSelection();
   }
-  
-  async function _renameCourse() {
+    async function _renameProject() {
+    console.log('_renameProject');
+    return;
+    
     if (!settings.currentCourse) return;
 
     var courseNameOrig = settings.currentCourse.coursename;
@@ -327,7 +345,11 @@ const app = function () {
     await _saveCourseInfo();
   }  
   
-  async function _addCourse(e) {  
+  async function _addProject(e) {
+    console.log('_addProject');
+    return;
+
+    
     var msg = 'Enter the name of the new course';
     var courseName = prompt(msg);
     if (!courseName) return;
@@ -354,7 +376,10 @@ const app = function () {
     }
   }  
   
-  async function _deleteCourse() {
+  async function _deleteProject() {
+    console.log('_deleteProject');
+    return;
+    
     if (!settings.currentCourse) return;
 
     var msg = 'This course will be deleted:';
@@ -390,8 +415,9 @@ const app = function () {
       "navLayout":    async function() { await _showContents(dispatchTarget); },
       "navClues":     async function() { await _showContents(dispatchTarget); },
       "navPreview":   async function() { await _showContents(dispatchTarget); },
-      "navShare":     async function() { await _showContents(dispatchTarget); },
       
+      "navRename":     async function() { await _handleRename(e); },
+      "navShare":     async function() { await _handleShare(e); },
       "navSave":      async function() { await _handleSave(e);},
       "navReload":    async function() { await _handleReload(e);},
       
@@ -404,53 +430,26 @@ const app = function () {
     dispatchMap[dispatchTarget]();
   }
   
-  function _handleCourseSelection(e) {
-    _loadCourse(e.target[e.target.selectedIndex].courseInfo);
+  function _handleProjectSelection(e) {
+    _loadProject(e.target[e.target.selectedIndex].projectInfo);
   }
   
-  async function _handleConfigChange(e) {    
-    await _saveCourseInfo();
+  function _handleEditorChange(editor) {
+    console.log('_handleEditorChange: ' + editor.id);
+  }  
+
+  function _handleRename(e) {
+    console.log('_handleRename');
   }
   
-  function _handleAudienceChange(e) {
-    UtilityKTS.setClass(e.target.leftLabel, 'diminished', e.target.checked);
-    UtilityKTS.setClass(e.target.rightLabel, 'diminished', !e.target.checked);  
-    _updatePreview();
+  function _handleShare(e) {
+    console.log('_handleShare');
   }
   
-  function _handleDoubleSwitch(elem, clickedLabel) {
-    if (clickedLabel == 'left' && elem.checked) {
-      elem.click();
-    } else if (clickedLabel == 'right' && !elem.checked) {
-      elem.click();
+  async function _handleSave(e) {
+    if (settings.currentNavOption == 'navProfile') {
+      settings.profile.save();
     }
-  }
-
-  function _handleLink(audience) {
-    var msg = _landingPageURL(audience);
-    _copyToClipboard(msg);
-    
-    _showShareCopyMessage(audience + ' link copied');
-  }
-  
-  async function _handleMessage(audience) {
-    var msg = await _mailMessage(audience);
-    if (!msg) return;
-
-    //--- is this necessary? --------------------
-    // strip non-body material
-    msg = msg.replace(/<!DOCTYPE html>/g, '');
-    msg = msg.replace(/<html>/g, '');
-    msg = msg.replace(/<html lang=\"en\">/g, '');
-    msg = msg.replace(/<\/html>/g, '');
-    msg = msg.replace(/<head>.*<\/head>/g, '');
-    msg = msg.replace(/<body>/, '');
-    msg = msg.replace(/<\/body>/, '');
-    //-------------------------------------------
-    
-    _copyRenderedToClipboard(msg);
-
-    _showShareCopyMessage(audience + ' link copied');
   }
   
   function _handleReload(e) {
@@ -460,10 +459,6 @@ const app = function () {
       settings.profile.reload();
     }
   }
-  
-  function _doOptions() {
-    window.open(settings.optionsURL, '_self');
-  }  
   
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
@@ -476,12 +471,15 @@ const app = function () {
   //---------------------------------------
 	// DB interface
 	//----------------------------------------
-  async function _queryCourseList() {
-    var dbResult = await SQLDBInterface.doGetQuery('welcomeV2/query', 'courselist');
+  async function _queryProjectList() {
+    var dbResult = await SQLDBInterface.doGetQuery('treasurehunt/query', 'projectlist');
     
-    settings.courseInfo = null;
+    settings.projectInfoInfo = null;
     if (dbResult.success) {
-      settings.courseInfo = dbResult.data;
+      settings.projectInfo = {
+        projects: dbResult.projects,
+        clues: dbResult.clues
+      }
     }
     
     return dbResult.success;

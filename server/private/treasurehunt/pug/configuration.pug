@@ -8,7 +8,6 @@ include ../../common/pug/tinyMCE-mixins.pug
 include ./mixins/mixins-layout.pug
 include ./mixins/mixins-clues.pug
 include ./mixins/mixins-preview.pug
-include ./mixins/mixins-share.pug
 
 doctype html
 html
@@ -35,9 +34,11 @@ html
           {id: "navLayout", type: "link", label: "layout"},
           {id: "navClues", type: "link", label: "clues"},
           {id: "navPreview", type: "link", label: "preview"},
-          {id: "navShare", type: "link", label: "share"},
 
           {type: "dropdown", label: "other", items: [
+            {id: "navRename", type: "link", label: "rename project"},
+            {id: "navShare", type: "link", label: "share link"},
+            {id: "divider1", type: "divider"},
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
           ]}
@@ -53,7 +54,7 @@ html
     )
     
     .contents
-      .error-container
+      .error-container              
 
       .container-fluid(class="contents-container contents-navLayout hide-me")
         +layoutContainer()
@@ -63,8 +64,5 @@ html
 
       .container-fluid(class="contents-container contents-navPreview hide-me")
         +previewContainer()
-
-      .container-fluid(class="contents-container contents-navShare hide-me")    
-        +shareContainer()
 
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me") 

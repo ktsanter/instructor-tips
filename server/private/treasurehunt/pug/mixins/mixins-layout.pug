@@ -1,3 +1,30 @@
 mixin layoutContainer()
-  .row
-    .col-sm layout container
+  .row(class="mb-3")
+    .col-sm
+      .form-floating
+        select(class="form-select select-project" id="selectProject" aria-label="select project")
+        label(for="selectProject") project
+        
+    .col-sm
+      button(class="btn btn-secondary button-add mx-2 py-1" title="add new project") add
+      button(class="btn btn-secondary button-delete py-1 disabled" title="delete this project") delete
+        
+  .row(class="secondary-control-container mb-3")
+    .col-sm
+        span greeting message
+        +makeTinyMCE("tinyGreeting")
+        
+    .col-sm
+      span banner
+      .form-floating(class="mb-3")
+        button(id="btnBanner" type="button" class="thBanner-pic btn p-0") banner
+        i(class="thBanner-icon far fa-image ml-1 mt-1" title="banner picture")
+
+  .row(class="secondary-control-container mb-3")
+    .col-sm
+      span response for correct answer
+      +makeTinyMCE("tinyResponsePositive")
+      
+    .col-sm
+      span response for incorrect answer
+      +makeTinyMCE("tinyResponseNegative")

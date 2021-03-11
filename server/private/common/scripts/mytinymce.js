@@ -11,7 +11,8 @@ class MyTinyMCE {
     this._selector = params.selector;
     this._editorCallback = params.changeCallback;
     if (!this._editorCallback) this._editorCallback = function() {};
-    this._additionalClasses = params.additionalClasses;
+    this._height = params.height;
+    if (!this._height) this._height = 500;
   }
   
   //---------------------------------------------------------------------------------
@@ -19,9 +20,6 @@ class MyTinyMCE {
   //---------------------------------------------------------------------------------
   async init() {
     // note the textarea element must exist and be part of the DOM before this
-    var strClasses = 'mytinyMCE-textarea';
-    if (this._additionalClasses) strClasses += ' ' + this._additionalClasses;
-
     await this._initPromise();
   }
   
@@ -50,11 +48,11 @@ class MyTinyMCE {
 
   _init(promiseCallback) {
     var changeCallback = this._editorCallback;
-    var defaultHeight = 500;
 
+    console.log('calling tinymce.init...');
     tinymce.init({
       selector: this._selector,
-      height: defaultHeight,
+      height: this._height,
       
       plugins: 'advlist link image lists charmap code codesample formatpainter fullscreen table lists',
       menubar: 'edit view insert format tools',

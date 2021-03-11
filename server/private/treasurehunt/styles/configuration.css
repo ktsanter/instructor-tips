@@ -14,6 +14,38 @@ body {
 /*-----------------------------------------------------*/
 .contents {}
 
+/*---------------------------------------------*/
+/* contents - layout                           */
+/*---------------------------------------------*/
+.contents .contents-navLayout {}
+
+.contents .contents-navLayout .btn.btn-secondary { /* override Bootstrap */
+  color: rgba(66, 98, 150, 1.0);
+  background-color: rgba(66, 98, 150, 0.2);
+  border-color: rgba(66, 98, 150, 1.0);
+  min-width: 4.5em;
+}
+
+.contents .contents-navLayout .btn.btn-secondary.disabled { /* override Bootstrap */
+  color: #777;
+  background-color: transparent;
+  border-color: rgba(66, 98, 150, 0.65);
+}
+
+.contents .contents-navLayout .thBanner-icon {
+  font-size: 3.0em;
+}
+
+.contents .contents-navLayout .thBanner-pic {
+  width: 24.0em;
+  height: 4.0em;
+  border: rgba(0,0,0, 0.1);
+  color: white;
+  
+  background-size: 24.0em 4.0em; /* should be same as width and height */
+  background-repeat: no-repeat; 
+}
+
 /*------------------------------------------------------------------
  * standard error and notice
  *------------------------------------------------------------------*/

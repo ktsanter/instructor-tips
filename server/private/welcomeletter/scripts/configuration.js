@@ -451,6 +451,12 @@ const app = function () {
     _showShareCopyMessage(audience + ' link copied');
   }
   
+  async function _handleSave(e) {
+    if (settings.currentNavOption == 'navProfile') {
+      settings.profile.save();
+    }
+  }
+  
   function _handleReload(e) {
     if (!confirm('Current changes will be lost.\nContinue with reloading project?')) return;
     
