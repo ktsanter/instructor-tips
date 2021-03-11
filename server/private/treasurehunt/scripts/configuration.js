@@ -1,6 +1,8 @@
 //-------------------------------------------------------------------
 // Treasure Hunt configuration
 //-------------------------------------------------------------------
+// TODO: move share under "other" as it's only a link?
+// TODO: fix help routing
 // TODO: finish help
 //-------------------------------------------------------------------
 const app = function () {
