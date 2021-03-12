@@ -49,7 +49,6 @@ class MyTinyMCE {
   _init(promiseCallback) {
     var changeCallback = this._editorCallback;
 
-    console.log('calling tinymce.init...');
     tinymce.init({
       selector: this._selector,
       height: this._height,

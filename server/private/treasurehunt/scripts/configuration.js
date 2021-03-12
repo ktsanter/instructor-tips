@@ -1,7 +1,13 @@
 //-------------------------------------------------------------------
 // Treasure Hunt configuration
 //-------------------------------------------------------------------
-// TODO: add support for full background image?
+// TODO: layout: add support for full background image?
+// TODO: layout: add background color selection (or full color scheme?)
+// TODO: layout: finish save project - how to handle project and clues? 
+// TODO: finish clues
+// TODO: clues: add uniqueness check for response
+// TODO: finish preview
+// TODO: finish share link option (include embedded message option?)  
 // TODO: styling
 // TODO: finish help
 //-------------------------------------------------------------------
@@ -116,9 +122,6 @@ const app = function () {
   // page rendering
   //-----------------------------------------------------------------------------  
   async function _renderContents() {
-    console.log('_renderContents');
-
-    
     // layout
     page.elemProjectSelection = page.contentsLayout.getElementsByClassName('select-project')[0];
     page.elemProjectAdd = page.contentsLayout.getElementsByClassName('button-add')[0];
@@ -131,6 +134,11 @@ const app = function () {
     page.elemResponseNegative = this.tiny.tinyResponseNegative;
 
     // clues
+    settings.clueEditor = new ClueEditor({
+      hideClass: settings.hideClass
+    });
+    await settings.clueEditor.init();
+    settings.clueEditor.render();
     
     // preview
     
@@ -144,6 +152,8 @@ const app = function () {
     page.elemProjectSelection.addEventListener('change', (e) => { _handleProjectSelection(e); });
     page.elemProjectAdd.addEventListener('click', () => { _addProject(); });
     page.elemProjectDelete.addEventListener('click', (e) => { _deleteProject(e); });
+    page.elemBannerPic.addEventListener('click', (e) => { _handleBannerPic(e); });
+    page.elemBannerIcon.addEventListener('click', (e) => { _handleBannerPic(e); });
     
     // clues
     
@@ -171,22 +181,22 @@ const app = function () {
   }
   
   function _setNavOptions() {
-    console.log('_setNavOptions');
-    
     var opt = settings.currentNavOption;
-    
 
     var validProject = (settings.currentProject != null);
     
     _enableNavOption('navClues', true, validProject);
     _enableNavOption('navPreview', true, validProject);
     _enableNavOption('navShare', true, validProject);
-    _enableNavOption('navRename', true, validProject);
+    _enableNavOption('navRename', true, false);
 
     _enableNavOption('navSave', false);
     _enableNavOption('navReload', false);
     
     if (opt == 'navLayout') {
+      _enableNavOption('navSave', true, validProject && settings.dirtyBit.navLayout);
+      _enableNavOption('navReload', true, validProject && settings.dirtyBit.navLayout);
+      _enableNavOption('navRename', true, validProject);
       UtilityKTS.setClass(page.elemProjectDelete, 'disabled', !validProject);
       
     } else if (opt == 'navClues') {
@@ -219,11 +229,9 @@ const app = function () {
   }  
   
   async function _updateProjectSelection() {
-    console.log('_updateProjectSelection');
     UtilityKTS.removeChildren(page.elemProjectSelection);
     
     if (!(await _queryProjectList())) return;
-    console.log(settings.projectInfo);
     
     var indexToSelect = -1;
     var projectList = settings.projectInfo.projects;
@@ -242,9 +250,6 @@ const app = function () {
   }
   
   function _loadProject(projectInfo) {
-    console.log('_loadProject');
-    console.log(projectInfo);
-    
     settings.currentProject = projectInfo;
     
     var secondaryControls = page.contentsLayout.getElementsByClassName('secondary-control-container');
@@ -263,7 +268,7 @@ const app = function () {
   }
   
   function _setBannerPic(picURL) {
-    var hasPic = (picURL && picURL.length > 0);
+    var hasPic = (picURL && (picURL.length > 0) && (picURL != '**no pic**'));
     
     if (hasPic) {
       page.elemBannerPic.style.backgroundImage = "url(" + picURL + "), url('" + settings.invalidPic + "')";
@@ -282,6 +287,7 @@ const app = function () {
     console.log('_updateClues');
     
     var clueList = settings.projectInfo.clues[settings.currentProject.projectid];
+    settings.clueEditor.update(clueList);
   }
   
   async function _updatePreview() {
@@ -292,84 +298,83 @@ const app = function () {
     */
   }
   
-  async function _saveCourseInfo() {
-    if (!settings.currentCourse) return;
-
-    var course = settings.currentCourse;
+  async function _saveProjectInfo() {
+    if (!settings.currentProject) return;
+    console.log('_saveProjectInfo');
+    console.log('gather clue information to save too');
     
-    var configurationInfo = {
-      courseid: course.courseid,
-      coursename: course.coursename,
-      ap: page.elemAPCourse.checked,
-      haspasswords: page.elemHasPasswords.checked,
-      examid: page.elemExamsSelection.value,
-      proctoringid: page.elemProctoringSelection.value,
-      retakeid: page.elemRetakesSelection.value,
-      resubmissionid: page.elemResubmissionSelect.value,
-    };
+    var project = settings.currentProject;
     
-    var result = await _queryUpdateCourse(configurationInfo);
+    var bannerPicURL = page.elemBannerPic.getAttribute('as-current-background');
+    var bannerPicURL = bannerPicURL.length > 0 ? bannerPicURL : '**no pic**'
+    
+    var revisedProject = {
+      projectid: project.projectid,
+      projectname: project.projectname,
+      imagename: bannerPicURL,
+      imagefullpage: project.imagefullpage,
+      message: page.elemGreeting.getContent(),
+      positiveresponse: page.elemResponsePositive.getContent(),
+      negativeresponse: page.elemResponseNegative.getContent()
+    }
+    
+    var result = await _queryUpdateProject(revisedProject);
+    if (!result.sucess) 
     if (!result.success) {
       if (result.details.includes('duplicate')) {
-        alert('failed to rename course\n a configuration for "' + course.coursename + '" already exists');
+        alert('failed to rename project\n a project named "' + project.projectname + '" already exists');
         page.notice.setNotice('');
       } else {
         page.notice.setNotice(result.details);
       }
     }    
     
-    await _updateCourseSelection();
+    await _updateProjectSelection();
   }
-    async function _renameProject() {
-    console.log('_renameProject');
-    return;
-    
-    if (!settings.currentCourse) return;
+  
+  async function _renameProject() {
+    if (!settings.currentProject) return;
 
-    var courseNameOrig = settings.currentCourse.coursename;
+    var projectNameOrig = settings.currentProject.projectname;
 
-    var msg = 'Please enter the new name for the course.';
-    var newCourseName = prompt(msg, courseNameOrig);
-    if (!newCourseName || newCourseName == courseNameOrig) return;
+    var msg = 'Please enter the new name for the project.';
+    var newProjectName = prompt(msg, projectNameOrig);
+    if (!newProjectName || newProjectName == projectNameOrig) return;
 
-    if (!_validateCourseName(newCourseName)) {
-      var msg = "The course name\n" + newCourseName + '\nis not valid.';
+    if (!_validateProjectName(newProjectName)) {
+      var msg = "The project name\n" + newProjectName + '\nis not valid.';
       msg += '\n\nIt must have length between 1 and 200';
       msg += ' and include only letters, digits, spaces, parentheses and commas.';
       alert(msg);
       return;
     }
     
-    settings.currentCourse.coursename = newCourseName;
+    settings.currentProject.projectname = newProjectName;
     
-    await _saveCourseInfo();
+    await _saveProjectInfo();
   }  
   
   async function _addProject(e) {
-    console.log('_addProject');
-    return;
-
+    var msg = 'Enter the name of the new project';
+    var projectName = prompt(msg);
+    if (!projectName) return;
     
-    var msg = 'Enter the name of the new course';
-    var courseName = prompt(msg);
-    if (!courseName) return;
-    
-    if (!_validateCourseName(courseName)) {
-      var msg = "The course name\n" + courseName + '\nis not valid.';
+    if (!_validateProjectName(projectName)) {
+      var msg = "The project name\n" + projectName + '\nis not valid.';
       msg += '\n\nIt must have length between 1 and 200';
       msg += ' and include only letters, digits, spaces, parentheses and commas.';
       alert(msg);
       return;
     }
     
-    var result = await _queryInsertCourse({coursename: courseName});
+    var result = await _queryInsertProject({projectname: projectName});
     if (result.success) {
-      settings.currentCourse = {courseid: result.data.courseid};
-      await _updateCourseSelection();
+      settings.currentProject = {projectid: result.data.projectid};
+      await _updateProjectSelection();
       
     } else {
       if (result.details.includes('duplicate')) {
-        alert('failed to add course\n A configuration for "' + courseName + '" already exists');
+        alert('failed to add project\n A project named "' + projectName + '" already exists');
       } else {
         page.notice.setNotice(result.details);
       }
@@ -377,31 +382,24 @@ const app = function () {
   }  
   
   async function _deleteProject() {
-    console.log('_deleteProject');
-    return;
-    
-    if (!settings.currentCourse) return;
+    if (!settings.currentProject) return;
 
-    var msg = 'This course will be deleted:';
-    msg += '\n' + settings.currentCourse.coursename;
+    var msg = 'This project will be deleted:';
+    msg += '\n' + settings.currentProject.projectname;
     msg += '\n\nThis action cannot be undone.  Continue with deletion?';
     
     if (!confirm(msg)) return;
 
-    var result = await _queryDeleteCourse(settings.currentCourse);
+    var result = await _queryDeleteProject(settings.currentProject);
     if (!result.success) {
       page.notice.setNotice(result.details);
       return;
     }
 
-    settings.currentCourse = null;
+    settings.currentProject = null;
     
-    await _updateCourseSelection();
+    await _updateProjectSelection();
   }
-
-  function _showShareCopyMessage(msg) {
-    page.contentsShare.getElementsByClassName('copy-message')[0].innerHTML = msg;
-  }    
   
   //---------------------------------------
 	// handlers
@@ -435,11 +433,11 @@ const app = function () {
   }
   
   function _handleEditorChange(editor) {
-    console.log('_handleEditorChange: ' + editor.id);
+    _setDirtyBit(true);
   }  
 
   function _handleRename(e) {
-    console.log('_handleRename');
+    _renameProject();
   }
   
   function _handleShare(e) {
@@ -447,7 +445,15 @@ const app = function () {
   }
   
   async function _handleSave(e) {
-    if (settings.currentNavOption == 'navProfile') {
+    if (settings.currentNavOption == 'navLayout') {
+      await _saveProjectInfo();
+      await _updateProjectSelection();
+      
+    } if (settings.currentNavOption == 'navClues') {
+      await _saveProjectInfo();
+      await _updateProjectSelection();
+      
+    } else if (settings.currentNavOption == 'navProfile') {
       settings.profile.save();
     }
   }
@@ -455,8 +461,27 @@ const app = function () {
   function _handleReload(e) {
     if (!confirm('Current changes will be lost.\nContinue with reloading project?')) return;
     
-    if (settings.currentNavOption == 'navProfile') {
+    if (settings.currentNavOption == 'navLayout') {
+      _loadProject(settings.currentProject);
+            
+    } else if (settings.currentNavOption == 'navClues') {
+      _loadProject(settings.currentProject);
+            
+    } else if (settings.currentNavOption == 'navProfile') {
       settings.profile.reload();
+    }
+  }
+  
+  function _handleBannerPic(e) {
+    var currentImageURL = page.elemBannerPic.getAttribute('as-current-background');
+    
+    var imageURL = prompt('Please enter the URL for the profile picture', currentImageURL);
+    if (imageURL == null) return;
+  
+    var imageURL = _sanitizeURL(imageURL);    
+    if (imageURL != currentImageURL) {
+      _setBannerPic(imageURL);
+      _setDirtyBit(true);
     }
   }
   
@@ -485,20 +510,16 @@ const app = function () {
     return dbResult.success;
   }
   
-  async function _queryInsertCourse(courseInfo) {
-    return await SQLDBInterface.doPostQuery('welcomeV2/insert', 'course', courseInfo);
+  async function _queryInsertProject(courseInfo) {
+    return await SQLDBInterface.doPostQuery('treasurehunt/insert', 'project', courseInfo);
   }
   
-  async function _queryUpdateCourse(configurationInfo) {
-    return await SQLDBInterface.doPostQuery('welcomeV2/update', 'course', configurationInfo);
+  async function _queryUpdateProject(projectInfo) {
+    return await SQLDBInterface.doPostQuery('treasurehunt/update', 'project', projectInfo);
   }
 
-  async function _queryDeleteCourse(courseInfo) {
-    return await SQLDBInterface.doPostQuery('welcomeV2/delete', 'course', courseInfo);
-  }
-  
-  async function _queryMailMessage(params) {
-    return await SQLDBInterface.doPostQuery('welcomeV2/query', 'mailmessage', params);
+  async function _queryDeleteProject(courseInfo) {
+    return await SQLDBInterface.doPostQuery('treasurehunt/delete', 'project', courseInfo);
   }
   
   //---------------------------------------
@@ -519,11 +540,11 @@ const app = function () {
   //---------------------------------------
   // utility functions
   //----------------------------------------
-  function _validateCourseName(courseName) {
-    var valid = courseName.length < 200;
-    valid = valid && courseName.length > 0;
+  function _validateProjectName(projectName) {
+    var valid = projectName.length < 200;
+    valid = valid && projectName.length > 0;
     
-    valid = valid && (courseName.match(/[A-Za-z0-9&:\(\), ]+/) == courseName);
+    valid = valid && (projectName.match(/[A-Za-z0-9\&\:\(\),\- ]+/) == projectName);
     
     return valid;
   }  
@@ -539,21 +560,10 @@ const app = function () {
     return previewURL;
   }
   
-  async function _mailMessage(audience) {
-    var result = null;
-    var params = settings.currentCourse;
-    params.audience = audience;
-    params.letterURL = _landingPageURL(audience);
-    
-    var queryResult = await _queryMailMessage(params);
-    if (queryResult.success) {
-      result = queryResult.data;
-      
-    } else {
-      page.notice.setNotice('failed to retrieve ' + audience + ' message');
-    }
-    
-    return result;
+  function _sanitizeURL(url) {
+    url = url.replace(/[\"]/g, '%22');
+    url = url.replace(/[\']/g, '%22');
+    return url;
   }  
   
   //---------------------------------------

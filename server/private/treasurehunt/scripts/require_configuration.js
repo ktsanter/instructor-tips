@@ -11,6 +11,7 @@ define(function (require) {
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
   
+  require('classClueEditor');
   require('configuration');
   
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

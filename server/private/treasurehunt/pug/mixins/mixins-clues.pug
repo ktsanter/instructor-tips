@@ -1,3 +1,60 @@
 mixin cluesContainer()
   .row
-    .col-sm(class="clues-container") clues table goes here
+    .col-sm(class="clues-table-container") 
+      table(class="table table-striped table-hover table-sm")
+        thead(class="table-primary")
+          th
+            i(class="add-icon fas fa-plus" title="add row")
+          th prompt
+          th response
+          th confirmation
+          th action
+
+        tbody(class="clues-table-body")
+
+  .row(class='clues-editor-container')
+    .col-sm
+      .container-fluid      
+        .row
+          .col-sm
+            span prompt
+            +makeTinyMCE("tinyCluePrompt")
+
+          .col-sm
+            span correct response
+            +makeTinyMCE("tinyClueResponse")
+
+        .row
+          .col-sm
+            span action
+            .form-floating
+              select(class="form-select select-action" id="selectAction" aria-label="select action")
+                option(value="none") none
+                option(value="effect") special effect
+                option(value="google_search") suggest a Google search
+                option(value="url") suggest a URL
+              label(for="selectAction") choose the action
+                            
+            .form-floating
+              input(type="text" class="form-control input-searchfor" id="inputSearchFor")
+              label(for="inputSearchFor") search for...
+
+            .form-floating
+              input(type="text" class="form-control input-url" id="inputURL")
+              label(for="inputURL") enter the URL     
+
+            .form-floating
+              select(class="form-select select-effect" id="selectEffect" aria-label="select effect")
+                option(value="bouncing_text") bouncing text
+                option(value="cannon_text") cannon text
+                option(value="fireworks") fireworks
+              label(for="selectEffect") choose the effect type
+
+          .col-sm
+            span confirmation message
+            +makeTinyMCE("tinyClueConfirmation")
+
+        .row
+          .col-sm
+            button(class="btn btn-secondary button-clue-okay mx-2 py-1") okay
+            button(class="btn btn-secondary button-clue-cancel py-1") cancel

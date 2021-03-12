@@ -193,29 +193,23 @@ module.exports = internal.TreasureHunt = class {
     var query, queryResults;
     
     query = 
-      'insert into project(' +
-        'userid, ' +
-        'projectname, ' + 
-        'imagename, imagefullpage, ' +
-        'message, positiveresponse, negativeresponse ' +
-      ') values (' +
+      'call add_project(' + 
         userInfo.userId + ', ' +
-        '"' + postData.projectname + '", ' +
-        '"", ' +
-        '0, ' +
-        '"", ' +
-        '"", ' +
-        '""' +
-      ')';
+        '"' + postData.projectname + '" ' +
+      ') ';
     
     queryResults = await this._dbManager.dbQuery(query);
+    
     if (queryResults.success) {
       result.success = true;
       result.details = 'insert succeeded';
-      result.data = null;
+      result.data = queryResults.data[0][0];
 
     } else {
       result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate';
+      }
     }
 
     return result;

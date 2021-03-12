@@ -60,4 +60,58 @@ select "creating views" as comment;
 #-- stored procedures
 #--------------------------------------------------------------------------
 select "creating stored procedures" as comment;
-    
+
+DELIMITER //
+create procedure add_project(in user_Id int, in project_Name varchar(200))
+begin
+  insert into project(
+    userid, 
+    projectname, imagename, imagefullpage,
+    message,
+    positiveresponse, negativeresponse
+  ) values (
+    user_Id,
+    project_Name, 
+    '', 0,
+    '',
+    '', ''
+  );
+  
+  select LAST_INSERT_ID() as projectid;
+end;
+//
+DELIMITER ;
+
+DELIMITER //
+create procedure add_default_clue(in project_Id int)
+begin
+  select max(cluenumber)+1 into @maxcluenumber from clue where projectid = project_Id;
+  if @maxcluenumber is null then select 1 into @maxcluenumber; end if;
+  
+  insert into clue(
+    projectid,
+    cluenumber,
+    clueprompt, 
+    clueresponse,
+    clueactiontype,
+    clueactiontarget,
+    clueactioneffecttype,
+    clueactionmessage,
+    cluesearchfor,
+    clueconfirmation
+  ) values (
+    project_Id,
+    @maxcluenumber,
+    'default prompt', 'default response',
+    'none',
+    '',
+    '',
+    '',
+    '',
+    'default confirmation'
+  );
+  
+  select LAST_INSERT_ID() as clueid;
+end;
+//
+DELIMITER ;
