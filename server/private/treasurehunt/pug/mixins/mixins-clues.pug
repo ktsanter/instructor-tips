@@ -9,6 +9,7 @@ mixin cluesContainer()
           th response
           th confirmation
           th action
+          th
 
         tbody(class="clues-table-body")
 
@@ -49,6 +50,10 @@ mixin cluesContainer()
                 option(value="cannon_text") cannon text
                 option(value="fireworks") fireworks
               label(for="selectEffect") choose the effect type
+
+            .form-floating
+              input(type="text" class="form-control input-effectmessage" id="inputEffectMessage")
+              label(for="inputMessage") message for the effect     
 
           .col-sm
             span confirmation message

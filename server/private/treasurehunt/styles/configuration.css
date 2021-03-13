@@ -46,6 +46,23 @@ body {
   background-repeat: no-repeat; 
 }
 
+/*---------------------------------------------*/
+/* contents - clues                            */
+/*---------------------------------------------*/
+.contents .contents-navClues {}
+
+.contents .contents-navClues .clues-control {
+  color: rgba(66, 98, 150, 1.0);
+}
+
+.contents .contents-navClues .clues-control.reorder {
+  color: rgba(66, 98, 150, 0);
+}
+
+.contents .contents-navClues .clues-control.reorder:hover {
+  color: rgba(66, 98, 150, 1);
+}
+
 /*------------------------------------------------------------------
  * standard error and notice
  *------------------------------------------------------------------*/

@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 // ClueEditor class (for Treasure Hunt configuration)
 //-------------------------------------------------------------------
-// TODO: support reordering of clues
+// TODO: styling
 //-------------------------------------------------------------------
 class ClueEditor {
   constructor(config) {
@@ -26,7 +26,7 @@ class ClueEditor {
       var tiny = new MyTinyMCE({
         id: editorId,
         selector: '#' + editorId,
-        changeCallback: this._handleEditorChange,
+        changeCallback: (e) => { this._handleEditorChange(); },
         height: 200
       });
       await tiny.init();
@@ -47,41 +47,54 @@ class ClueEditor {
     this.elemActionSearchFor = this.elemEditContainer.getElementsByClassName('input-searchfor')[0];
     this.elemActionURL = this.elemEditContainer.getElementsByClassName('input-url')[0];
     this.elemActionEffectSelect = this.elemEditContainer.getElementsByClassName('select-effect')[0];
+    this.elemActionEffectMessage = this.elemEditContainer.getElementsByClassName('input-effectmessage')[0];
     
     this.elemTableContainer.getElementsByClassName('add-icon')[0].addEventListener('click', (e) => { this._handleRowAdd(e); });
     this.elemActionSelect.addEventListener('change', (e) => { this._handleActionChange(e); });
     
-    this.elemEditContainer.getElementsByClassName('button-clue-okay')[0].addEventListener('click', () => { this._handleEndEdit(true); });
-    this.elemEditContainer.getElementsByClassName('button-clue-cancel')[0].addEventListener('click', () => { this._handleEndEdit(false); });
+    this.elemEditContainer.getElementsByClassName('button-clue-okay')[0].addEventListener('click', () => { this._handleRowEditEnd(true); });
+    this.elemEditContainer.getElementsByClassName('button-clue-cancel')[0].addEventListener('click', () => { this._handleRowEditEnd(false); });
    }
     
   _renderTableRow(rowData) {
-    var elemRow = CreateElement._createElement('tr', null, null);
-    
+    var elemRow = CreateElement._createElement('tr', null, 'clues-table-row');
+
     elemRow.clue = rowData;
-    elemRow.appendChild(this._renderRowControlCell());
+    if (rowData.number == 1) {
+      elemRow.appendChild(this._renderRowControlCell('none'));
+    } else {
+      elemRow.appendChild(this._renderRowControlCell('move'));
+    }
     elemRow.appendChild(this._renderTableCell(rowData.prompt));
     elemRow.appendChild(this._renderTableCell(rowData.response));
     elemRow.appendChild(this._renderTableCell(rowData.confirmation));
     elemRow.appendChild(this._renderTableCell(rowData.action.type));
+    elemRow.appendChild(this._renderRowControlCell('delete'));
 
     return elemRow;
   }
   
-  _renderRowControlCell() {
+  _renderRowControlCell(controlType) {
     var elemCell = CreateElement._createElement('td', null, null);
     
-    elemCell.innerHTML = 'tbd';
+    if (controlType == 'move') {
+      var handler = (e) => { this._handleRowControl(e, 'move'); };
+      elemCell.appendChild(CreateElement.createIcon(null, 'clues-control reorder fas fa-arrow-circle-up', null, handler));
+
+    } else if (controlType == 'delete') {
+      var handler = (e) => { this._handleRowControl(e, 'delete'); };
+      elemCell.appendChild(CreateElement.createIcon(null, 'clues-control delete fas fa-trash-alt', null, handler));
+    }
     
     return elemCell;
   }
   
   _renderTableCell(columnData) {
-    var elemCell = CreateElement._createElement('td', null, null);
+    var elemCell = CreateElement._createElement('td', null, 'clues-table-cell');
     
     elemCell.innerHTML = columnData;
     
-    elemCell.addEventListener('click', (e) => { this._handleRowEdit(e); });
+    elemCell.addEventListener('click', (e) => { this._handleRowEditInitiation(e); });
     
     return elemCell;
   }
@@ -90,7 +103,7 @@ class ClueEditor {
   // updating
   //--------------------------------------------------------------
   update(clueList) {
-    console.log('ClueEditor update');
+    this.clueList = [...clueList];
     
     UtilityKTS.removeChildren(this.elemTableBody);
     
@@ -99,14 +112,19 @@ class ClueEditor {
       this.elemTableBody.appendChild(this._renderTableRow(clue));
     }
     
+    this._config.callbackShowSaveReload(true);
+
     UtilityKTS.setClass(this.elemTableContainer, this._config.hideClass, false);
     UtilityKTS.setClass(this.elemEditContainer, this._config.hideClass, true);  
   }
   
-  _initiateEdit(clue) {
-    console.log('_initiateEdit');
-    console.log(JSON.stringify(clue));
-    
+  getClueList() {
+    return this.clueList;
+  }
+  
+  _initiateRowEdit(clue) {
+    this.clueBeingEdited = clue;
+
     this.tiny.tinyCluePrompt.setContent(clue.prompt);
     this.tiny.tinyClueResponse.setContent(clue.response);
     this.tiny.tinyClueConfirmation.setContent(clue.confirmation);
@@ -115,33 +133,105 @@ class ClueEditor {
     this.elemActionSearchFor.value = clue.action.searchfor;
     this.elemActionURL.value = clue.action.target;
     this.elemActionEffectSelect.value = clue.action.effecttype;
+    this.elemActionEffectMessage.value = clue.action.message;
     
     this.elemActionSelect.dispatchEvent(new Event("change"));
 
+    this._config.callbackShowSaveReload(false);
     UtilityKTS.setClass(this.elemTableContainer, this._config.hideClass, true);
-    UtilityKTS.setClass(this.elemEditContainer, this._config.hideClass, false);  
+    UtilityKTS.setClass(this.elemEditContainer, this._config.hideClass, false);
   }
   
-  _endEdit(saveChanges) {
-    console.log('_endEdit: ' + saveChanges);
+  _endRowEdit(saveChanges) {
+    if (saveChanges) {
+      var updatedClue = {...this.clueBeingEdited};
+      updatedClue.prompt = this.tiny.tinyCluePrompt.getContent();
+      updatedClue.response = this.tiny.tinyClueResponse.getContent();
+      updatedClue.confirmation = this.tiny.tinyClueConfirmation.getContent();
+      updatedClue.action = {
+        type: this.elemActionSelect.value,
+        searchfor: this.elemActionSearchFor.value,
+        target: this.elemActionURL.value,
+        effecttype: this.elemActionEffectSelect.value,
+        message: this.elemActionEffectMessage.value
+      };
 
+      this._updateTableRow(updatedClue);
+      this._config.callbackClueChange();
+    }
+    
+    this._config.callbackShowSaveReload(true);
+    
     UtilityKTS.setClass(this.elemTableContainer, this._config.hideClass, false);
     UtilityKTS.setClass(this.elemEditContainer, this._config.hideClass, true);  
   }
   
-  async _postUpdate(params) {
-    var success = await this._config.updateCallback(params);
-    if (success) await this.update();
+  _updateTableRow(updatedClue) {
+    var foundClueIndex = null;
+    for (var i = 0; i < this.clueList.length && !foundClueIndex; i++) {
+      if (this.clueList[i].clueid == updatedClue.clueid) foundClueIndex = i; 
+    }
+
+    if (foundClueIndex != null) {
+      var updatedClueList = [...this.clueList];
+      updatedClueList[foundClueIndex] = updatedClue;
+      this.update(updatedClueList);
+    }  
   }
   
-  async _postDelete(params) {
-    var success = await this._config.deleteCallback(params);
-    if (success) await this.update();
+  _addClue() {
+    var updatedClueList = [...this.clueList];
+
+    var clueNumber = updatedClueList.length + 1;
+    var clueId = 'tempid' + clueNumber;
+
+    updatedClueList.push({
+      clueid: clueId,
+      number: clueNumber,
+      prompt: '<p>default prompt</p>',
+      response: '<p>default response</p>',
+      confirmation: '<p>default confirmation</p>',
+      action: {
+        type: 'none',
+        effecttype: '',
+        target: '',
+        message: '',
+        searchfor: ''
+      }
+    });
+      
+    this.update(updatedClueList);
+    this._config.callbackClueChange();    
+    this._config.callbackShowSaveReload(true);      
   }
   
-  async _postAdd(params) {
-    var success = await this._config.addCallback(params);
-    if (success) await this.update();
+  _deleteClue(clue) {
+    var clueIndex = clue.number - 1;
+    var updatedClueList = [...this.clueList];
+    updatedClueList.splice(clueIndex, 1);
+    
+    for (var i = 0; i < updatedClueList.length; i++) {
+      updatedClueList[i].number = (i + 1);
+    }
+    
+    this.update(updatedClueList);
+    this._config.callbackClueChange();    
+    this._config.callbackShowSaveReload(true);      
+  }
+  
+  _moveClueUp(clue) {
+    var clueIndex = clue.number - 1;
+    
+    this.clueList[clueIndex].number--;
+    this.clueList[clueIndex - 1].number++;
+    
+    this.clueList = this.clueList.sort( function(a, b) {
+      return (a.number - b.number);
+    });
+    
+    this.update(this.clueList);
+    this._config.callbackClueChange();    
+    this._config.callbackShowSaveReload(true);     
   }
   
   //--------------------------------------------------------------
@@ -165,32 +255,45 @@ class ClueEditor {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------  
-  _handleRowEdit(e) {
-    this._initiateEdit(e.target.parentNode.clue);
+  _handleEditorChange(edit) {}
+  
+  _handleRowEditInitiation(e) {
+    var target = e.target;
+    while (!target.classList.contains('clues-table-row')) {
+      target = target.parentNode;
+    }
+
+    this._initiateRowEdit({...target.clue});
   }
   
-  _handleEndEdit(saveChanges) {
-    this._endEdit(saveChanges);
+  _handleRowEditEnd(saveChanges) {
+    this._endRowEdit(saveChanges);
   }
   
   _handleActionChange(e) {
-    console.log('_handleActionChange');
     var action = this.elemActionSelect.value;
     UtilityKTS.setClass(this.elemActionSearchFor.parentNode, this._config.hideClass, action != 'google_search');
     UtilityKTS.setClass(this.elemActionURL.parentNode, this._config.hideClass, action != 'url');
     UtilityKTS.setClass(this.elemActionEffectSelect.parentNode, this._config.hideClass, action != 'effect');
-  }
-  
-  async _handleRowDelete(e) {
-    console.log('_handleRowDelete (callback?)');
-    //await this._postDelete(e.target.primaryKeyInfo);
+    UtilityKTS.setClass(this.elemActionEffectMessage.parentNode, this._config.hideClass, action != 'effect');
   }
 
-  async _handleRowAdd(e) {
-    console.log('_handleRowAdd (callback?)');
-    //await this._postAdd({"tableName": e.target.primaryKeyInfo.tableName});
+  _handleRowAdd(e) {
+    this._addClue();
   }
   
+  _handleRowControl(e, controlType) {
+    var target = e.target;
+    while (!target.classList.contains('clues-table-row')) {
+      target = target.parentNode;
+    }
+    if (controlType == 'move') {
+      this._moveClueUp(target.clue);
+    } else {
+      this._deleteClue(target.clue);
+    }
+  }
+
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------        

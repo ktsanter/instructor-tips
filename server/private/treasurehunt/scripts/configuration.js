@@ -3,9 +3,7 @@
 //-------------------------------------------------------------------
 // TODO: layout: add support for full background image?
 // TODO: layout: add background color selection (or full color scheme?)
-// TODO: layout: finish save project - how to handle project and clues? 
 // TODO: finish clues
-// TODO: clues: add uniqueness check for response
 // TODO: finish preview
 // TODO: finish share link option (include embedded message option?)  
 // TODO: styling
@@ -135,7 +133,9 @@ const app = function () {
 
     // clues
     settings.clueEditor = new ClueEditor({
-      hideClass: settings.hideClass
+      hideClass: settings.hideClass,
+      callbackShowSaveReload: _handleShowSaveReload,
+      callbackClueChange: _handleClueChange
     });
     await settings.clueEditor.init();
     settings.clueEditor.render();
@@ -200,6 +200,8 @@ const app = function () {
       UtilityKTS.setClass(page.elemProjectDelete, 'disabled', !validProject);
       
     } else if (opt == 'navClues') {
+      _enableNavOption('navSave', true, validProject && settings.dirtyBit.navLayout);
+      _enableNavOption('navReload', true, validProject && settings.dirtyBit.navLayout);
       
     } else if (opt == 'navPreview') {
 
@@ -262,6 +264,8 @@ const app = function () {
       page.elemResponsePositive.setContent(projectInfo.positiveresponse);
       page.elemResponseNegative.setContent(projectInfo.negativeresponse);
       _setBannerPic(projectInfo.imagename);
+      
+      _updateClues();
     }
     
     _setDirtyBit(false);
@@ -284,8 +288,6 @@ const app = function () {
   }    
   
   function _updateClues() {
-    console.log('_updateClues');
-    
     var clueList = settings.projectInfo.clues[settings.currentProject.projectid];
     settings.clueEditor.update(clueList);
   }
@@ -300,8 +302,6 @@ const app = function () {
   
   async function _saveProjectInfo() {
     if (!settings.currentProject) return;
-    console.log('_saveProjectInfo');
-    console.log('gather clue information to save too');
     
     var project = settings.currentProject;
     
@@ -318,7 +318,14 @@ const app = function () {
       negativeresponse: page.elemResponseNegative.getContent()
     }
     
-    var result = await _queryUpdateProject(revisedProject);
+    var revisedClueList = settings.clueEditor.getClueList();
+    
+    var params = {
+      project: revisedProject,
+      clues: revisedClueList
+    };
+    
+    var result = await _queryUpdateProject(params);
     if (!result.sucess) 
     if (!result.success) {
       if (result.details.includes('duplicate')) {
@@ -483,6 +490,16 @@ const app = function () {
       _setBannerPic(imageURL);
       _setDirtyBit(true);
     }
+  }
+  
+  function _handleShowSaveReload(show) {
+    _enableNavOption('navSave', show, settings.dirtyBit.navClues);
+    _enableNavOption('navReload', show, settings.dirtyBit.navClues);
+  }   
+  
+  function _handleClueChange(clue) {
+    settings.dirtyBit.navClues = true;
+    _setNavOptions();
   }
   
   function _doHelp() {

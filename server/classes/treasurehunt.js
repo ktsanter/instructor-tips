@@ -36,10 +36,7 @@ module.exports = internal.TreasureHunt = class {
     
     if (params.queryName == 'project') {
       dbResult = await this._insertProject(params, postData, userInfo);
-            
-    } else if (params.queryName == 'clue') {
-      dbResult = await this._insertClue(params, postData, userInfo);
-            
+                   
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -51,10 +48,7 @@ module.exports = internal.TreasureHunt = class {
     var dbResult = this._dbManager.queryFailureResult();
     
     if (params.queryName == 'project') {
-      dbResult = await this._updateProject(params, postData, userInfo);      
-    
-    } else if (params.queryName == 'clue') {
-      dbResult = await this._updateClue(params, postData, userInfo);        
+      dbResult = await this._updateProject(params, postData, userInfo);              
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -68,9 +62,6 @@ module.exports = internal.TreasureHunt = class {
     
     if (params.queryName == 'project') {
       dbResult = await this._deleteProject(params, postData, userInfo);
-            
-    } else if (params.queryName == 'clue') {
-      dbResult = await this._deleteClue(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -160,29 +151,6 @@ module.exports = internal.TreasureHunt = class {
     
     return result;
   }
- 
-  async _getProjectLandingURL(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult(); 
-    
-    var query, queryResults;
-    
-    query = 
-      'select projectid ' +
-      'from project ' +
-      'where projectid = ' + postData.projectid
-      
-    queryResults = await this._dbManager.dbQuery(query);
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = '/treasurehunt-landing/' + postData.projectid;
-
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
 
 //---------------------------------------------------------------
 // specific insert methods
@@ -215,67 +183,41 @@ module.exports = internal.TreasureHunt = class {
     return result;
   }  
 
-  async _insertClue(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult();  
-    
-    var query, queryResults;
-    
-    var actionTarget = postData.action.target ? postData.action.target : '';
-    var actionEffectType = postData.action.effecttype ? postData.action.effecttype : '';
-    var actionMessage = postData.action.message ? postData.action.message : '';
-    var actionSearchFor = postData.action.searchfor ? postData.action.searchfor : '';
-    
-    query =
-      'insert into clue (' +
-        'projectid, ' +
-        'cluenumber, clueprompt, clueresponse, clueconfirmation, ' +
-        'clueactiontype, clueactiontarget, clueactioneffecttype, clueactionmessage, cluesearchfor ' +
-      ') values (' +
-        postData.projectid + ', ' +
-        postData.number + ', ' +
-        '"' + postData.prompt + '", ' +
-        '"' + postData.response + '", ' +
-        '"' + postData.confirmation + '", ' +
-        '"' + postData.action.type + '", ' +
-        '"' + actionTarget + '", ' +
-        '"' + actionEffectType + '", ' +
-        '"' + actionMessage + '", ' +
-        '"' + actionSearchFor + '" ' +
-      ')';
-      
-    queryResults = await this._dbManager.dbQuery(query);
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'insert succeeded';
-      result.data = null;
-
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }  
-
 //---------------------------------------------------------------
 // specific update methods
 //---------------------------------------------------------------
   async _updateProject(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult();
     
-    var query, queryResults;
+    var projectData = postData.project;
+    var clueData = postData.clues;
     
-    query =
-      'update project ' +
-      'set ' +
-        'projectname = "' + postData.projectname + '", ' +
-        'imagename = "' + postData.imagename + '", ' +
-        'imagefullpage = ' + postData.imagefullpage + ', ' +
-        'message = "' + postData.message + '", ' +
-        'positiveresponse = "' + postData.positiveresponse + '", ' +
-        'negativeresponse = "' + postData.negativeresponse + '" ' +
-      'where projectid = ' + postData.projectid;
+    var queryList, queryResults;
+    
+    queryList = {
+      project:
+        'update project ' +
+        'set ' +
+          'projectname = "' + projectData.projectname + '", ' +
+          'imagename = "' + projectData.imagename + '", ' +
+          'imagefullpage = ' + projectData.imagefullpage + ', ' +
+          'message = "' + projectData.message + '", ' +
+          'positiveresponse = "' + projectData.positiveresponse + '", ' +
+          'negativeresponse = "' + projectData.negativeresponse + '" ' +
+        'where projectid = ' + projectData.projectid ,
+        
+      deleteClues:
+        'delete from clue ' + 
+        'where projectid = ' + projectData.projectid
+    };
+    
+    for (var i = 0; i < clueData.length; i++) {
+      var clueInsertQuery = this._makeClueInsertQuery(projectData.projectid, clueData[i]);
+      queryList['clue' + clueData[i].clueid] = clueInsertQuery
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList);
       
-    queryResults = await this._dbManager.dbQuery(query);
     if (queryResults.success) {
       result.success = true;
       result.details = 'update succeeded';
@@ -283,95 +225,44 @@ module.exports = internal.TreasureHunt = class {
 
     } else {
       result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate';
+      }
     }      
 
     return result;
   }  
   
-  async _updateClue(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult();
+  _makeClueInsertQuery(projectId, clue) {
+    var query;
+    var action = clue.action;
     
-    var query, queryResults;
-    
-    var actionTarget = postData.action.target ? postData.action.target : '';
-    var actionEffectType = postData.action.effecttype ? postData.action.effecttype : '';
-    var actionMessage = postData.action.message ? postData.action.message : '';
-    var actionSearchFor = postData.action.searchfor ? postData.action.searchfor : '';
+    var actionTarget = action.target ? action.target : '';
+    var actionEffectType = action.effecttype ? action.effecttype : '';
+    var actionMessage = action.message ? action.message : '';
+    var actionSearchFor = action.searchfor ? action.searchfor : '';
 
-    query = 
-      'update clue ' +
-      'set ' +
-        'cluenumber = ' + postData.number + ', ' +
-        'clueprompt = "' + postData.prompt + '", ' +
-        'clueresponse = "' + postData.response + '", ' +
-        'clueconfirmation = "' + postData.confirmation + '", ' +
-        'clueactiontype = "' + postData.action.type + '", ' +
-        'clueactiontarget = "' + actionTarget + '", ' +
-        'clueactioneffecttype = "' + actionEffectType + '", ' +
-        'clueactionmessage = "' + actionMessage + '", ' +
-        'cluesearchfor = "' + actionSearchFor + '" ' +
-      'where clueid = ' + postData.clueid;
-    
-    queryResults = await this._dbManager.dbQuery(query);
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }  
-  
-  async _repositionClue(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult();
-    
-    var queryList, queryResults;
-    
-    var finalClueNumber = postData.destcluenumber;
-    if (postData.sourcecluenumber > postData.destcluenumber) finalClueNumber++;
-    var growCutoff = postData.destcluenumber;
-    if (postData.sourcecluenumber < postData.destcluenumber) growCutoff--;
-    
-    queryList = {
-      removesource:
-        'update clue ' +
-        'set cluenumber = 0 ' +
-        'where clueid = ' + postData.sourceclueid,
-        
-      shrink:
-        'update clue ' +
-        'set cluenumber = cluenumber - 1 ' +
-        'where projectid = ' + postData.projectid + ' ' +
-          'and cluenumber > ' + postData.sourcecluenumber,
-        
-      grow:
-        'update clue ' +
-        'set cluenumber = cluenumber + 1 ' +
-        'where projectid = ' + postData.projectid + ' ' +
-          'and cluenumber > ' + growCutoff,
-        
-      reinsertsource:
-        'update clue ' +
-        'set cluenumber = ' + finalClueNumber + ' ' +
-        'where clueid = ' + postData.sourceclueid
-    };
-    
-    queryResults = await this._dbManager.dbQueries(queryList);
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'update succeeded';
-      result.data = null;
-
-    } else {
-      result.details = queryResults.details;
-    }
-
-    return result;
-  }  
-  
+    query =
+      'insert into clue (' +
+        'projectid, ' +
+        'cluenumber, clueprompt, clueresponse, clueconfirmation, ' +
+        'clueactiontype, clueactiontarget, clueactioneffecttype, clueactionmessage, cluesearchfor ' +
+      ') values (' +
+        projectId + ', ' +
+        clue.number + ', ' +
+        '"' + clue.prompt + '", ' +
+        '"' + clue.response + '", ' +
+        '"' + clue.confirmation + '", ' +
+        '"' + clue.action.type + '", ' +
+        '"' + actionTarget + '", ' +
+        '"' + actionEffectType + '", ' +
+        '"' + actionMessage + '", ' +
+        '"' + actionSearchFor + '" ' +
+      ')';
+      
+    return query;
+  }
+   
 //---------------------------------------------------------------
 // specific delete methods
 //---------------------------------------------------------------
@@ -397,80 +288,8 @@ module.exports = internal.TreasureHunt = class {
     return result;
   }  
 
-  async _deleteClue(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult();
-    
-    var query, queryList, queryResults;
-    
-    query = 
-      'select userid, projectid ' +
-      'from project ' +
-      'where projectid in (' +
-        'select projectid ' +
-        'from clue ' +
-        'where clueid = ' + postData.clueid + 
-      ')';
-        
-    queryResults = await this._dbManager.dbQuery(query);
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
-    
-    if (queryResults.data.length == 0 || queryResults.data[0].userid != userInfo.userId) {
-      result.details = 'invalid user for deletion';
-      return result;
-    }
-    
-    var projectId = queryResults.data[0].projectid;
-    
-    queryList = {
-      deletion: 
-        'delete from clue ' +
-        'where clueid = ' + postData.clueid,
-        
-      update: 
-        'update clue ' +
-        'set cluenumber = cluenumber - 1 ' +
-        'where projectid = ' + projectId + ' ' +
-          'and cluenumber > ' + postData.number
-    };
-      
-    var queryResults = await this._dbManager.dbQueries(queryList);
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'delete succeeded';
-      result.data = null;
-    } else {
-      result.details = queryResults.details;
-    }
-
-    return result;
-  }  
-
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------
-  _sanitizeText(str, skipAmpersandSanitizing) {
-    var cleaned = str.replace(/"/g, '\\"');  // escape double quotes
-    cleaned = cleaned.replace(/<(.*?)>/g, '');  // remove HTML tags
-    if (!skipAmpersandSanitizing) cleaned = cleaned.replace(/&(.*?);/g, '$1');  // replace ampersand characters
-    
-    return cleaned;
-  }
-  
-  _getDateStamp() {
-    var now = new Date();
-;
-    var yr = now.getFullYear();
-    var mo = ('00' + (now.getMonth() + 1)).slice(-2);
-    var da = ('00' + now.getDate()).slice(-2);
-    var hr = ('00' + now.getHours()).slice(-2);
-    var mi = ('00' + now.getMinutes()).slice(-2);
-    var se = ('00' + now.getSeconds()).slice(-2);
-    
-    var dateStamp = yr + '-' + mo + '-' + da + ' ' + hr + ':' + mi + ':' + se;
-    
-    return dateStamp;
-  }
+
 }
