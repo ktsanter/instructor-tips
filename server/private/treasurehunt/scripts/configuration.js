@@ -1,9 +1,9 @@
 //-------------------------------------------------------------------
 // Treasure Hunt configuration
 //-------------------------------------------------------------------
+// TODO: expand template variables?
 // TODO: layout: add support for full background image?
 // TODO: layout: add background color selection (or full color scheme?)
-// TODO: finish share link option (include embedded message option?)  
 // TODO: styling
 // TODO: finish help
 //-------------------------------------------------------------------
@@ -294,7 +294,6 @@ const app = function () {
   }
   
   async function _updatePreview() {
-    console.log('_updatePreview');
     UtilityKTS.setClass(page.elemPreviewFrame, this.hideClass, true);
 
     await _saveProjectInfo(true);
@@ -304,7 +303,6 @@ const app = function () {
   }
   
   async function _saveProjectInfo(preview) {
-    console.log('_saveProjectInfo: ' + preview);
     if (!settings.currentProject) return;
     
     var project = settings.currentProject;
@@ -330,7 +328,6 @@ const app = function () {
     };
     
     var result = await _queryUpdateProject(params, preview);
-    console.log(result);
     if (!result.success) {
       if (result.details.includes('duplicate')) {
         alert('failed to rename project\n a project named "' + project.projectname + '" already exists');
@@ -340,7 +337,7 @@ const app = function () {
       }
     }    
     
-    await _updateProjectSelection();
+    if (!preview) await _updateProjectSelection();
   }
   
   async function _renameProject() {
@@ -452,7 +449,8 @@ const app = function () {
   }
   
   function _handleShare(e) {
-    console.log('_handleShare');
+    _copyToClipboard(_landingPageURL());
+    alert('link copied to clipboard');
   }
   
   async function _handleSave(e) {

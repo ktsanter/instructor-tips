@@ -263,9 +263,14 @@ module.exports = internal.TreasureHunt = class {
   }
   
   async _updateProjectPreview(params, postData, userInfo) {
+    console.log('\n_updateProjectPreview');
     var result = this._dbManager.queryFailureResult();
     
     var queryList, queryResults;
+    
+    var snapshot = this._escapeProblems(JSON.stringify(postData));
+    console.log('snapshot');
+    console.log(snapshot);
     
     queryList = {
       project: 
@@ -274,11 +279,15 @@ module.exports = internal.TreasureHunt = class {
           'snapshot ' +
         ') values (' +        
           userInfo.userId + ', ' +
-          '\'' + this._escapeSingleQuote(JSON.stringify(postData)) + '\' ' +
+          '\'' + snapshot + '\' ' +
         ')'
     };
 
+    console.log('query');
+    console.log(queryList.project);
     queryResults = await this._dbManager.dbQueries(queryList);
+    console.log('results');
+    console.log(queryResults);
 
     if (queryResults.success) {
       result.success = true;
@@ -320,7 +329,8 @@ module.exports = internal.TreasureHunt = class {
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------
-  _escapeSingleQuote(str) {
-    return str.replace(/\\'/g, 'singlequotereplacement');
+  _escapeProblems(str) {
+    var escaped = str.replace(/\\'/g, 'singlequotereplacement');
+    return escaped;
   }
 }

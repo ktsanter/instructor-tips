@@ -1,11 +1,135 @@
 /*------------------------------------------------------------
- * style settings for Treasure Hunt landing page
+ * Treasure Hunt landing page
  *------------------------------------------------------------*/
-body {}
+.th-colorscheme {
+  --bgOverall: #eee; /*-- very light gray --*/
+  --bgPrimaryEmphasis: rgba(66, 98, 150, 1.0);   /*-- medium-dark blue --*/
+  --bgPrimaryEmphasis_trans: rgba(66, 98, 150, 0.6);
+  --bgSecondaryEmphasis: #daad86;  /*-- medium sand --*/
+  --bgTertiaryEmphasis: #c9c9c9;  /*-- medium gray --*/
+  --bgQuaternaryEmphasis: #f2f2f2; /*-- light gray --*/
+  --bgPrimaryChoice:  #111111; /* #bc986a;*/  /*-- dark sand --*/
+  --bgSecondaryChoice: var(--bgPrimaryEmphasis);
+  --bgTertiaryChoice: #6093e5;  /*-- light blue --*/
+}
 
-.treasurehunt-landing {}
+body {
+  color: black;
+  background-color: var(--bgOverall);
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 13px;
+  margin-left: 0.3em;
+}
+
+.contents {}
 
 .hide-me {
   display: none;
 }
 
+/*------------------
+ * image
+ *------------------*/
+.contents .image-container {}
+
+.contents .image-container .image {
+  max-width: 45em;
+}
+
+/*------------------
+ * message
+ *------------------*/
+.contents .message-container {}
+
+/*------------------
+ * user input
+ *------------------*/
+.contents .userinput-container {}
+
+.contents .userinput-container .userinput {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 1.0em;
+	display: inline-block;
+	color: #444;
+	line-height: 1.0;
+	padding: .6em 1.4em .5em .8em;
+  width: 20em;
+	box-sizing: border-box;
+	margin: 0.3em 0.2em 0 0 ;
+	border: 1px solid #aaa;
+	box-shadow: 0 1px 0 1px rgba(0,0,0,.04);
+	border-radius: .3em;
+	background-color: #fff;
+}
+
+.contents .userinput-container .userinputcheck {
+  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: 1.0em;
+  height: 2.5em;
+  width: 5em;
+  margin-top: 0.2em;
+  margin-right: 0.2em;
+  color: white;
+  background-color: var(--bgSecondaryChoice);
+  border: 1px solid #444;
+  border-radius: 0.3em;
+  outline: none;  
+}
+
+/*------------------
+ * response
+ *------------------*/
+.contents .response-container {}
+
+.contents .response-container .response-specific {}
+
+.contents .response-container .response-specific .standardbox {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimaryEmphasis);
+  border-radius: 0.3em;
+  margin-top: 1.0em;
+  padding: 0 0.4em 0.4em 0.4em;
+}
+
+.contents .response-container .response-specific .standardbox .standardbox-confirmation {
+  display: inline-block;
+  color: black;
+  background-color: white;
+  border-radius: 0.3em;
+  margin: auto;
+  width: 97%;
+  padding: 0.4em;
+  text-align: center;
+}
+
+/*------------------
+ * action
+ *------------------*/
+.contents .action-container {
+  margin-top: 1.0em;
+}
+
+.contents .action-container .action .icon {
+  font-size: 1.2em;
+  padding-right: 0.4em;
+}
+
+.contents .action-container .action.action-search .action-search-text {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.contents .action-container .action.action-effect .action-search-text {
+  background-color: white;
+  border: 1px solid red;
+}
+
+.effectcanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}

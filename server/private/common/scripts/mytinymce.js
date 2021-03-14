@@ -17,7 +17,6 @@ class MyTinyMCE {
     if (!this._height) this._height = 500;
     
     this._escapeQuotes = params.escapeQuotes;
-    console.log(this._escapeQuotes);
   }
   
   //---------------------------------------------------------------------------------
@@ -34,10 +33,13 @@ class MyTinyMCE {
   
   getContent() {
     var content = tinymce.get(this._id).getContent();
+
     if (this._escapeQuotes) {
       content = content.replace(/\'/g, '\\\'');
       content = content.replace(/\"/g, '\\"');
+      content = content.replace(/[\r\n]+/g, '');
     }
+
     return content;
   }
   
