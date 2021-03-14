@@ -16,7 +16,7 @@ mixin cluesContainer()
   .row(class='clues-editor-container')
     .col-sm
       .container-fluid      
-        .row
+        .row(class="mb-3")
           .col-sm
             .form-floating
               input(type="text" class="form-control input-prompt" id="inputPrompt")
@@ -27,9 +27,9 @@ mixin cluesContainer()
               input(type="text" class="form-control input-response" id="inputResponse")
               label(for="inputResponse") correct response
 
-        .row
+        .row(class="mb-3")
           .col-sm
-            .form-floating
+            .form-floating(class="mb-1")
               select(class="form-select select-action" id="selectAction" aria-label="select action")
                 option(value="none") none
                 option(value="effect") special effect
@@ -37,22 +37,22 @@ mixin cluesContainer()
                 option(value="url") suggest a URL
               label(for="selectAction") choose the action
                             
-            .form-floating
+            .form-floating(class="mb-1")
               input(type="text" class="form-control input-searchfor" id="inputSearchFor")
               label(for="inputSearchFor") search for...
 
-            .form-floating
+            .form-floating(class="mb-1")
               input(type="text" class="form-control input-url" id="inputURL")
               label(for="inputURL") enter the URL     
 
-            .form-floating
+            .form-floating(class="mb-1")
               select(class="form-select select-effect" id="selectEffect" aria-label="select effect")
                 option(value="bouncing_text") bouncing text
                 option(value="cannon_text") cannon text
                 option(value="fireworks") fireworks
               label(for="selectEffect") choose the effect type
 
-            .form-floating
+            .form-floating(class="mb-1")
               input(type="text" class="form-control input-effectmessage" id="inputEffectMessage")
               label(for="inputMessage") message for the effect     
 

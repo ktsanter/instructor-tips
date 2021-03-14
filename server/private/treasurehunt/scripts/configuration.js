@@ -4,7 +4,6 @@
 // TODO: expand template variables?
 // TODO: layout: add support for full background image?
 // TODO: layout: add background color selection (or full color scheme?)
-// TODO: styling
 // TODO: finish help
 //-------------------------------------------------------------------
 const app = function () {
