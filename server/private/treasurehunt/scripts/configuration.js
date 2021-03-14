@@ -3,8 +3,6 @@
 //-------------------------------------------------------------------
 // TODO: layout: add support for full background image?
 // TODO: layout: add background color selection (or full color scheme?)
-// TODO: finish clues
-// TODO: finish preview
 // TODO: finish share link option (include embedded message option?)  
 // TODO: styling
 // TODO: finish help
@@ -34,7 +32,9 @@ const app = function () {
       navPreview: false,
       navShare: false,
       navProfile: false
-    }
+    },
+    
+    baseShareURL: window.location.origin + '/treasurehunt/landing',    
   };
 
   //---------------------------------------
@@ -98,7 +98,8 @@ const app = function () {
         id: editorId,
         selector: '#' + editorId,
         changeCallback: _handleEditorChange,
-        height: 200
+        height: 200,
+        escapeQuotes: true
       });
       
       await this.tiny[editorId].init();
@@ -137,10 +138,10 @@ const app = function () {
       callbackShowSaveReload: _handleShowSaveReload,
       callbackClueChange: _handleClueChange
     });
-    await settings.clueEditor.init();
     settings.clueEditor.render();
     
     // preview
+    page.elemPreviewFrame = page.contentsPreview.getElementsByClassName('preview-frame')[0];
     
     _attachHandlers();
     
@@ -294,13 +295,16 @@ const app = function () {
   
   async function _updatePreview() {
     console.log('_updatePreview');
-    /*
-    var previewURL = _landingPageURL();
-    page.elemPreviewFrame.src = previewURL;
-    */
+    UtilityKTS.setClass(page.elemPreviewFrame, this.hideClass, true);
+
+    await _saveProjectInfo(true);
+    
+    page.elemPreviewFrame.src = _previewURL();
+    UtilityKTS.setClass(page.elemPreviewFrame, this.hideClass, false);  
   }
   
-  async function _saveProjectInfo() {
+  async function _saveProjectInfo(preview) {
+    console.log('_saveProjectInfo: ' + preview);
     if (!settings.currentProject) return;
     
     var project = settings.currentProject;
@@ -325,8 +329,8 @@ const app = function () {
       clues: revisedClueList
     };
     
-    var result = await _queryUpdateProject(params);
-    if (!result.sucess) 
+    var result = await _queryUpdateProject(params, preview);
+    console.log(result);
     if (!result.success) {
       if (result.details.includes('duplicate')) {
         alert('failed to rename project\n a project named "' + project.projectname + '" already exists');
@@ -358,7 +362,7 @@ const app = function () {
     
     settings.currentProject.projectname = newProjectName;
     
-    await _saveProjectInfo();
+    await _saveProjectInfo(false);
   }  
   
   async function _addProject(e) {
@@ -453,11 +457,11 @@ const app = function () {
   
   async function _handleSave(e) {
     if (settings.currentNavOption == 'navLayout') {
-      await _saveProjectInfo();
+      await _saveProjectInfo(false);
       await _updateProjectSelection();
       
     } if (settings.currentNavOption == 'navClues') {
-      await _saveProjectInfo();
+      await _saveProjectInfo(false);
       await _updateProjectSelection();
       
     } else if (settings.currentNavOption == 'navProfile') {
@@ -531,8 +535,10 @@ const app = function () {
     return await SQLDBInterface.doPostQuery('treasurehunt/insert', 'project', courseInfo);
   }
   
-  async function _queryUpdateProject(projectInfo) {
-    return await SQLDBInterface.doPostQuery('treasurehunt/update', 'project', projectInfo);
+  async function _queryUpdateProject(projectInfo, preview) {
+    var command = 'project';
+    if (preview) command = 'preview';
+    return await SQLDBInterface.doPostQuery('treasurehunt/update', command, projectInfo);
   }
 
   async function _queryDeleteProject(courseInfo) {
@@ -566,17 +572,14 @@ const app = function () {
     return valid;
   }  
   
-  function _landingPageURL(audience) {
-    var audienceIndex = '000';
-    if (audience == 'mentor') audienceIndex = '100';
-    
-    var previewURL = window.location.origin + settings.previewURL_base;
-    previewURL += '/' + settings.currentCourse.courseid;
-    previewURL += '/' + audienceIndex;
-    
-    return previewURL;
+  function _landingPageURL() {
+    return settings.baseShareURL + '/' + settings.currentProject.projectid;
   }
   
+  function _previewURL() {
+    return settings.baseShareURL + '/preview';
+  }
+
   function _sanitizeURL(url) {
     url = url.replace(/[\"]/g, '%22');
     url = url.replace(/[\']/g, '%22');

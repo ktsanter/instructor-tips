@@ -411,22 +411,18 @@ app.get('/treasurehunt/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'treasurehunt/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
-app.get('/treasurehunt-landing/:projectid', async function (req, res) {
-  var fileName = path.join(__dirname, 'private', 'treasurehunt-landing/pug/treasurehunt-landing.pug');
-  var result = await dbTreasureHuntLanding.renderLandingPage(req.params, fileName);
+app.get('/treasurehunt/landing/:projectid', async function (req, res) {
+  var fileName = path.join(__dirname, 'private', 'treasurehunt/pug/landing.pug');
+  var result = await dbTreasureHuntLanding.renderLandingPage(req.params, fileName, userManagement.getUserInfo(req.session));
   if (result.success) {
     res.send(result.data);    
   } else {
     sendFailedAccess(res, fileName);
   }
 })
-
 app.post('/treasurehunt/landing/check-answer', async function (req, res) {   
     res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
 })
-
-app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcomeV2'); })
-app.get('/welcomeletter/options', function (req, res) { routeIfLoggedIn(req, res, 'welcome-options'); })
 
 app.get('/faq-composer/compose', function (req, res) { routeIfLoggedIn(req, res, 'faq-composer'); })
 app.get('/faq-composer/help', function (req, res) {
@@ -446,6 +442,8 @@ app.get('/faq-composer/faq/:faqsetid', async function (req, res) {
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 
+app.get('/welcomeletter/configuration', function (req, res) { routeIfLoggedIn(req, res, 'welcomeV2'); })
+app.get('/welcomeletter/options', function (req, res) { routeIfLoggedIn(req, res, 'welcome-options'); })
 app.get('/welcomeletter/:coursekey/:audience', async function(req, res) { 
   if (req.params.audience == 'student' || req.params.audience == 'mentor') {
     var fileNameMentor = path.join(__dirname, 'private', 'welcomeletter/pug/welcomeletter-mentor.pug');

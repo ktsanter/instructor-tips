@@ -18,20 +18,25 @@ module.exports = internal.TreasureHuntLanding = class {
 //---------------------------------------------------------------
 // render landing page
 //---------------------------------------------------------------
-  async renderLandingPage(params, pugFileName) {
+  async renderLandingPage(params, pugFileName, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
     var queryList, queryResults;
     
-    queryList = { 
-      project:
-        'select ' +
-        '  projectid, projectname, imagename, imagefullpage, message, positiveresponse, negativeresponse ' +
-        'from project ' +
-        'where projectid = ' + params.projectid
-    };
+    if (params.projectid == 'preview') {
+      queryResults = await this._getProjectPreview(userInfo);
     
-    queryResults = await this._dbManager.dbQueries(queryList);
+    } else {
+      queryList = { 
+        project:
+          'select ' +
+          '  projectid, projectname, imagename, imagefullpage, message, positiveresponse, negativeresponse ' +
+          'from project ' +
+          'where projectid = ' + params.projectid
+      };
+      
+      queryResults = await this._dbManager.dbQueries(queryList);
+    }
     
     if (!queryResults.success) {
       result.details = queryResults.details;
@@ -43,16 +48,49 @@ module.exports = internal.TreasureHuntLanding = class {
     }
     
     var projectInfo = queryResults.data.project[0];
+    console.log(projectInfo);
+    /*
     projectInfo.message = this._convertToHTML(projectInfo.message);
     projectInfo.positiveresponse = this._convertToHTML(projectInfo.positiveresponse);
     projectInfo.negativeresponse = this._convertToHTML(projectInfo.negativeresponse);
-
+    */
     if (this._fileServices.existsSync(pugFileName)) {
       result.success = true;
       result.data = this._pug.renderFile(pugFileName, {"params": projectInfo});
     }
     
     return result;
+  }
+  
+  async _getProjectPreview(userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+      
+    queryList = {
+      project:
+        'select ' + 
+          'p.snapshot ' + 
+        'from projectpreview as p ' +
+        'where p.userid = ' + userInfo.userId + ' '
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      var unparsed = this._unescapeSingleQuote(queryResults.data.project[0].snapshot);
+      var parsed = JSON.parse(unparsed); 
+      result.data = {
+        project: [parsed.project]
+      };
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;    
   }
 
 //---------------------------------------------------------------
@@ -70,9 +108,10 @@ module.exports = internal.TreasureHuntLanding = class {
         'c.clueactiontype, c.clueactiontarget, c.clueactioneffecttype, c.clueactionmessage, c.cluesearchfor ' +
       'from clue as c ' +
       'where c.projectid = ' + postData.projectid + ' ' +
-      'order by c.cluenumber'
-      
+      'order by c.cluenumber';
+
     queryResults = await this._dbManager.dbQuery(query);
+
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -129,4 +168,9 @@ module.exports = internal.TreasureHuntLanding = class {
 
     return result;
   }
+  
+  _unescapeSingleQuote(str) {
+    return str.replace(/singlequotereplacement/g, '\'');
+  }
+  
 }

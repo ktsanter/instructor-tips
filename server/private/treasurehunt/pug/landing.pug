@@ -1,0 +1,68 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+
+
+doctype html
+html
+  head
+    title TreasureHunt
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no") 
+
+    +fontawesome()
+    +bootstrapstyle()
+
+    +fontawesome()
+    +bootstrapstyle()
+
+    style
+      include ../../common/styles/classProfile.css      
+      include ../../common/styles/navbar-overrides.css  
+      include ../styles/landing.css
+    
+    script(data-main="/scripts/treasurehunt/require_landing", src="/scripts/require.js")    
+      
+  body
+    - var projectId = params.projectid
+    - var projectName = params.projectname
+    - var imageName = params.imagename
+    - var imageFullPage = params.imagefullpage
+    - var message = params.message
+    - var positiveResponse = params.positiveresponse;
+    - var negativeResponse = params.negativeresponse;
+
+    .contents
+      .error-container
+      
+      .projectid(class="hide-me") #{projectId}
+      
+      .image-container
+          if imageName != "" && imageName != '**no pic**'
+            if (imageFullPage)
+              |make image full page
+            else
+              img(class="image" src=imageName)
+                
+      .message-container !{message}
+        
+      .userinput-container
+        input(class="userinput", type="text")
+        button(class="userinputcheck") check  
+        
+      .response-container
+        .response(class="positiveresponse hide-me") !{positiveResponse}
+        .response(class="negativeresponse hide-me") !{negativeResponse} 
+
+      .action-container(class="hide-me")
+        .action(class="action-search hide-me")
+          i(class="icon far fa-lightbulb" )
+          |Here's a little something fun to try: do a Google search for 
+          span(class="action-search-text")
+        
+        .action(class="action-url hide-me")
+          i(class="icon far fa-lightbulb" )
+          |Got a minute?  Try this link for 
+          a(class="action-url-link", target="_blank") something fun.
+          
+        .action(class="action-effect hide-me")        

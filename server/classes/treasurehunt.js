@@ -21,9 +21,6 @@ module.exports = internal.TreasureHunt = class {
     if (params.queryName == 'projectlist') {
       dbResult = await this._getProjectList(params, userInfo);
       
-    } else if (params.queryName == 'project-landing') {
-      dbResult = await this._getProjectLandingURL(params, postData, userInfo);
-      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -49,7 +46,9 @@ module.exports = internal.TreasureHunt = class {
     
     if (params.queryName == 'project') {
       dbResult = await this._updateProject(params, postData, userInfo);              
-    
+    } else if (params.queryName == 'preview') {
+      dbResult = await this._updateProjectPreview(params, postData, userInfo);    
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -262,6 +261,36 @@ module.exports = internal.TreasureHunt = class {
       
     return query;
   }
+  
+  async _updateProjectPreview(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      project: 
+        'replace into projectpreview( ' +
+          'userid, ' +
+          'snapshot ' +
+        ') values (' +        
+          userInfo.userId + ', ' +
+          '\'' + this._escapeSingleQuote(JSON.stringify(postData)) + '\' ' +
+        ')'
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = null;
+
+    } else {
+      result.details = queryResults.details;
+    }      
+
+    return result;
+  }   
    
 //---------------------------------------------------------------
 // specific delete methods
@@ -291,5 +320,7 @@ module.exports = internal.TreasureHunt = class {
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------
-
+  _escapeSingleQuote(str) {
+    return str.replace(/\\'/g, 'singlequotereplacement');
+  }
 }

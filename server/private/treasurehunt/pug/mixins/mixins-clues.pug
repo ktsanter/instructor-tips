@@ -18,16 +18,17 @@ mixin cluesContainer()
       .container-fluid      
         .row
           .col-sm
-            span prompt
-            +makeTinyMCE("tinyCluePrompt")
+            .form-floating
+              input(type="text" class="form-control input-prompt" id="inputPrompt")
+              label(for="inputPrompt") prompt
 
           .col-sm
-            span correct response
-            +makeTinyMCE("tinyClueResponse")
+            .form-floating
+              input(type="text" class="form-control input-response" id="inputResponse")
+              label(for="inputResponse") correct response
 
         .row
           .col-sm
-            span action
             .form-floating
               select(class="form-select select-action" id="selectAction" aria-label="select action")
                 option(value="none") none
@@ -56,8 +57,9 @@ mixin cluesContainer()
               label(for="inputMessage") message for the effect     
 
           .col-sm
-            span confirmation message
-            +makeTinyMCE("tinyClueConfirmation")
+            .form-floating
+              input(type="text" class="form-control input-confirmation" id="inputConfirmation")
+              label(for="inputResponse") confirmation message           
 
         .row
           .col-sm

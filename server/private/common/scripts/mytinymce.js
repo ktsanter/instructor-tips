@@ -9,10 +9,15 @@ class MyTinyMCE {
     this._version = '1.00';
     this._id = params.id;
     this._selector = params.selector;
+    
     this._editorCallback = params.changeCallback;
     if (!this._editorCallback) this._editorCallback = function() {};
+    
     this._height = params.height;
     if (!this._height) this._height = 500;
+    
+    this._escapeQuotes = params.escapeQuotes;
+    console.log(this._escapeQuotes);
   }
   
   //---------------------------------------------------------------------------------
@@ -28,7 +33,12 @@ class MyTinyMCE {
   }
   
   getContent() {
-    return tinymce.get(this._id).getContent();
+    var content = tinymce.get(this._id).getContent();
+    if (this._escapeQuotes) {
+      content = content.replace(/\'/g, '\\\'');
+      content = content.replace(/\"/g, '\\"');
+    }
+    return content;
   }
   
   isDirty() {

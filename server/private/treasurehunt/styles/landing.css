@@ -1,0 +1,11 @@
+/*------------------------------------------------------------
+ * style settings for Treasure Hunt landing page
+ *------------------------------------------------------------*/
+body {}
+
+.treasurehunt-landing {}
+
+.hide-me {
+  display: none;
+}
+

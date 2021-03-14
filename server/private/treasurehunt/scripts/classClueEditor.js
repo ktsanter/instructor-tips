@@ -9,30 +9,6 @@ class ClueEditor {
     this._config.tableContainerClass = 'clues-table-container';
     this._config.editContainerClass = 'clues-editor-container';
     this._config.tableBodyClass = 'clues-table-body';    
-    
-    this.tiny = null;
-  }
-  
-  //--------------------------------------------------------------
-  // initializing
-  //--------------------------------------------------------------
-  async init() {
-    this.tiny = {};
-    var editorList = ['tinyCluePrompt', 'tinyClueResponse', 'tinyClueConfirmation'];
-    
-    for (var i = 0; i < editorList.length; i++) {
-      var editorId = editorList[i];
-
-      var tiny = new MyTinyMCE({
-        id: editorId,
-        selector: '#' + editorId,
-        changeCallback: (e) => { this._handleEditorChange(); },
-        height: 200
-      });
-      await tiny.init();
-      
-      this.tiny[editorId] = tiny;
-    }
   }
   
   //--------------------------------------------------------------
@@ -43,6 +19,11 @@ class ClueEditor {
     this.elemTableBody = this.elemTableContainer.getElementsByClassName(this._config.tableBodyClass)[0];
     
     this.elemEditContainer = document.getElementsByClassName(this._config.editContainerClass)[0];
+    
+    this.elemPrompt = this.elemEditContainer.getElementsByClassName('input-prompt')[0];
+    this.elemResponse = this.elemEditContainer.getElementsByClassName('input-response')[0];
+    this.elemConfirmation = this.elemEditContainer.getElementsByClassName('input-confirmation')[0];
+    
     this.elemActionSelect = this.elemEditContainer.getElementsByClassName('select-action')[0];
     this.elemActionSearchFor = this.elemEditContainer.getElementsByClassName('input-searchfor')[0];
     this.elemActionURL = this.elemEditContainer.getElementsByClassName('input-url')[0];
@@ -124,10 +105,10 @@ class ClueEditor {
   
   _initiateRowEdit(clue) {
     this.clueBeingEdited = clue;
-
-    this.tiny.tinyCluePrompt.setContent(clue.prompt);
-    this.tiny.tinyClueResponse.setContent(clue.response);
-    this.tiny.tinyClueConfirmation.setContent(clue.confirmation);
+  
+    this.elemPrompt.value = clue.prompt;
+    this.elemResponse.value = clue.response;
+    this.elemConfirmation.value = clue.confirmation;
     
     this.elemActionSelect.value = clue.action.type;
     this.elemActionSearchFor.value = clue.action.searchfor;
@@ -145,9 +126,11 @@ class ClueEditor {
   _endRowEdit(saveChanges) {
     if (saveChanges) {
       var updatedClue = {...this.clueBeingEdited};
-      updatedClue.prompt = this.tiny.tinyCluePrompt.getContent();
-      updatedClue.response = this.tiny.tinyClueResponse.getContent();
-      updatedClue.confirmation = this.tiny.tinyClueConfirmation.getContent();
+
+      updatedClue.prompt = this.elemPrompt.value;
+      updatedClue.response = this.elemResponse.value;
+      updatedClue.confirmation = this.elemConfirmation.value;
+      
       updatedClue.action = {
         type: this.elemActionSelect.value,
         searchfor: this.elemActionSearchFor.value,
@@ -188,9 +171,9 @@ class ClueEditor {
     updatedClueList.push({
       clueid: clueId,
       number: clueNumber,
-      prompt: '<p>default prompt</p>',
-      response: '<p>default response</p>',
-      confirmation: '<p>default confirmation</p>',
+      prompt: 'default prompt',
+      response: 'default response',
+      confirmation: 'default confirmation',
       action: {
         type: 'none',
         effecttype: '',
