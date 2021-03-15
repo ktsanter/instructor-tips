@@ -17,6 +17,9 @@ class MyTinyMCE {
     if (!this._height) this._height = 500;
     
     this._escapeQuotes = params.escapeQuotes;
+    
+    this._initializationParams = {};
+    if (params.hasOwnProperty('initializationParams')) this._initializationParams = params.initializationParams;
   }
   
   //---------------------------------------------------------------------------------
@@ -46,6 +49,14 @@ class MyTinyMCE {
   isDirty() {
     return !tinymce.get(this._id).isNotDirty;
   }
+  
+  show(makeVisible) {
+    if (makeVisible) {
+      tinymce.show();
+    } else {
+      tinymce.hide();
+    }
+  }
 
   //---------------------------------------------------------------------------------
   // private methods
@@ -60,14 +71,25 @@ class MyTinyMCE {
 
   _init(promiseCallback) {
     var changeCallback = this._editorCallback;
+    
+    var paramReadOnly = false;
+    var paramPlugins = 'advlist link image lists charmap code codesample formatpainter fullscreen table lists';
+    var paramMenubar = 'edit view insert format tools';
+    var paramToolbar = 'formatpainter image link  table code fullscreen numlist bullist';
 
+    if (this._initializationParams.hasOwnProperty('readonly')) paramReadOnly = this._initializationParams.readonly;
+    if (this._initializationParams.hasOwnProperty('plugins')) paramPlugins = this._initializationParams.plugins;
+    if (this._initializationParams.hasOwnProperty('menubar')) paramMenubar = this._initializationParams.menubar;
+    if (this._initializationParams.hasOwnProperty('toolbar')) paramToolbar = this._initializationParams.toolbar;
+    
     tinymce.init({
       selector: this._selector,
       height: this._height,
-      
-      plugins: 'advlist link image lists charmap code codesample formatpainter fullscreen table lists',
-      menubar: 'edit view insert format tools',
-      toolbar: 'formatpainter image link  table code fullscreen numlist bullist',
+      readonly: paramReadOnly,
+
+      plugins: paramPlugins,
+      menubar: paramMenubar,
+      toolbar: paramToolbar,
       
       init_instance_callback : promiseCallback,
       setup: function (editor) {

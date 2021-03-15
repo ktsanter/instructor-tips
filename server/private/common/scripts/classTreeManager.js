@@ -295,14 +295,7 @@ class TreeManager {
     // for details about before/after move see http://mbraak.github.io/jqTree/#event-tree-move
   }
   
-  _handleTreeRefresh(e, me) {
-    /*
-    console.log('_handleTreeRefresh');
-    var thisTree = $(me._config.treeSelector);
-    var json = JSON.parse(thisTree.tree('toJson'));
-    console.log(JSON.stringify(json, null, 2));
-    */
-  }
+  _handleTreeRefresh(e, me) {}
   
   //--------------------------------------------------------------
   // utility

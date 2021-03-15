@@ -1,6 +1,8 @@
 //-----------------------------------------------------------------------
 // Walkthrough Buddy
 //-----------------------------------------------------------------------
+// TODO: add copy as buttons (rich and plain text)
+// TODO: Are both label and content needed?
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -92,9 +94,26 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   async function _renderContents() {
-    settings.contentEditorId = {};
-    page.tiny = new MyTinyMCE({id: 'contenteditor-navEditor', selector: '#contenteditor-navEditor', changeCallback: _handleEditorChange});
-    await page.tiny.init();
+    settings.tiny = {};
+    settings.tiny.navEditor = new MyTinyMCE({
+      id: 'contenteditor-navEditor', 
+      selector: '#contenteditor-navEditor', 
+      changeCallback: _handleEditorChange
+    });
+    await settings.tiny.navEditor.init();
+    
+    settings.tiny.navPicker = new MyTinyMCE({
+      id: 'picker-tiny', 
+      selector: '#picker-tiny', 
+      changeCallback: _handleEditorChange,
+      initializationParams: {
+        readonly: true,
+        plugins: '',
+        menubar: '',
+        toolbar: ''
+      }
+    });
+    await settings.tiny.navPicker.init();
 
     _renderEditor();
     _renderPicker();    
@@ -102,9 +121,8 @@ const app = function () {
     
   function _renderEditor() {
     var treeContainer = page.contentsEditor.getElementsByClassName(settings.treeContainerClass)[0];
-
-    settings.contentEditorId.navEditor = 'contenteditor-navEditor';
-
+    var editorContainer = page.contentsEditor.getElementsByClassName('navEditor-item-edit')[0];
+    
     settings.editorTree = new TreeManager({
       id: 'navEditorTreeControl',
       appendTo: treeContainer,
@@ -116,7 +134,10 @@ const app = function () {
       autoSelect: true
     });
     
-    settings.editorTree.render(settings.commentset);    
+    settings.editorTree.render(settings.commentset);
+    settings.editorTree.setTreeState({selectedList: []});
+    
+    UtilityKTS.setClass(editorContainer, settings.hideClass, true);
     
     page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].addEventListener('input', (e) => {_handleEditorChange(e);});    
   }
@@ -144,8 +165,23 @@ const app = function () {
       allowReordering: true,
       callbackOnReordering: _handleAccordionReorder
     });
-    page.elemPickerAccordion = page.contentsPicker.getElementsByClassName('accordion-container')[0];
-    page.elemPickerAccordion.appendChild(settings.pickerAccordion.render([]));
+    page.elemPickerAccordionContainer = page.contentsPicker.getElementsByClassName('accordion-container')[0];
+    page.elemPickerAccordion = settings.pickerAccordion.render([]);
+    page.elemPickerAccordionContainer.appendChild(page.elemPickerAccordion);
+    
+    page.elemPickerTiny = page.contentsPicker.getElementsByClassName('rendering-container')[0];
+    
+    page.elemRendering = page.contentsPicker.getElementsByClassName('check-rendering')[0];
+    page.elemRendering.leftLabel = page.elemRendering.parentNode.parentNode.getElementsByClassName('checkbox-label-left')[0];
+    page.elemRendering.rightLabel = page.elemRendering.parentNode.getElementsByClassName('checkbox-label-right')[0];    
+    page.elemRendering.addEventListener('click', (e) => { _handleRenderingChange(e); });
+    page.elemRendering.leftLabel.addEventListener('click', () => { _handleDoubleSwitch(page.elemRendering, 'left'); });
+    page.elemRendering.rightLabel.addEventListener('click', () => { _handleDoubleSwitch(page.elemRendering, 'right'); });
+    
+    page.contentsPicker.getElementsByClassName('btn-copyrich')[0].addEventListener('click', (e) => { _handleCopy(e, 'rich'); });
+    page.contentsPicker.getElementsByClassName('btn-copyplain')[0].addEventListener('click', (e) => { _handleCopy(e, 'plain'); });
+    
+    _setPickerRendering('rendering-container')
   }
 
   //-----------------------------------------------------------------------------
@@ -163,7 +199,6 @@ const app = function () {
     if (settings.editorTree) settings.editorTree.forceContextMenuClose();
     
     if (contentsId == 'navPicker') _showPicker();
-    if (contentsId == 'navEditor') _showEditor();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
@@ -193,7 +228,6 @@ const app = function () {
   }
   
   function _updatePickedComments() {
-    console.log('_updatePickedComments');
     if (!settings.pickerTree) return;
     
     var currentOrder = settings.pickedComments;
@@ -213,54 +247,60 @@ const app = function () {
     }
     
     newOrder = newOrder.concat(addedItems);
-    settings.pickedComments = newOrder;
+    settings.pickedComments = [];
+    for (var i = 0; i < newOrder.length; i++) {
+      var node = settings.pickerTree.getNode(newOrder[i]);
+      settings.pickedComments.push({
+        id: node.id,
+        label: node.tmContent.label,
+        content: node.tmContent.markdown
+      });
+    }
+    
     _showPickedComments();    
   }
     
   function _showPickedComments() {
-    console.log('_showPickedComments');
     if (!settings.pickerTree) return;
     if (!settings.pickerAccordion) return;
-    console.log(settings.pickedComments);
     
-    var commentData = [];
+    var accordionData = [];
+    var richtextData = '';
+    
+    var selectedList = [];
     for (var i = 0; i < settings.pickedComments.length; i++) {
-      var id = settings.pickedComments[i];
-      var node = settings.pickerTree.getNode(id);
+      var node = settings.pickerTree.getNode(settings.pickedComments[i].id);
+      
+      if (node) selectedList.push(node.id);
+      
       if (node && node.children.length == 0) {
-        commentData.push({
+        accordionData.push({
           id: node.id,
           label: node.tmContent.label,
           content: node.tmContent.markdown
         });
+        
+        richtextData += node.tmContent.markdown;
       }
     }
 
-    settings.pickerAccordion.update(commentData);
+    settings.pickerAccordion.update(accordionData);
+    settings.tiny.navPicker.setContent(richtextData);
+    
     settings.pickerTree.setTreeState({
-      selectedList: settings.pickedComments,
-      openedList: []
+      selectedList: selectedList
     });
   }    
-    
-  function dummy() {
-    var commentData = [];
-    var selectedItems = settings.pickerTree.getTreeState().selectedList;
 
-    for (var i = 0; i < selectedItems.length; i++) {
-      var id = selectedItems[i];
-      var node = settings.pickerTree.getNode(id);
-      if (node && node.children.length == 0) {
-        commentData.push({
-          id: node.id,
-          label: node.tmContent.label,
-          content: node.tmContent.markdown
-        });
-      }
-    }
-  }  
-  
-  function _showEditor() {}
+  function _setPickerRendering(displayFor) {
+    var classToChange = settings.hideClass
+    
+    UtilityKTS.setClass(page.elemPickerTiny, classToChange, true);
+    UtilityKTS.setClass(page.elemPickerAccordionContainer, classToChange, true);
+    
+    var elemToShow = page.contentsPicker.getElementsByClassName(displayFor)[0];
+    UtilityKTS.setClass(elemToShow, classToChange, false);
+  }    
     
   function _loadCommentIntoEditor(params) {
     var labelAndEditorContainer = page.contentsEditor.getElementsByClassName('navEditor-item-edit')[0];
@@ -272,7 +312,7 @@ const app = function () {
       var markdown = params.isLeaf ? params.tmContent.markdown : '';
 
       elemLabel.value = label;
-      page.tiny.setContent(markdown);
+      settings.tiny.navEditor.setContent(markdown);
       
       UtilityKTS.setClass(labelAndEditorContainer, 'hide-me', false);
       UtilityKTS.setClass(editorContainer, 'hide-me', !params.isLeaf);
@@ -342,8 +382,9 @@ const app = function () {
   }
   
   function _handleEditorChange(e) {
+    if (settings.currentNavOption == 'navEditor') {
     var editLabel = page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].value;
-    var editorContent = page.tiny.getContent();
+    var editorContent = settings.tiny.navEditor.getContent();
 
     var updatedNodeInfo = {
       id: settings.currentNodeInfo.id,
@@ -356,6 +397,8 @@ const app = function () {
 
     settings.editorTree.updateNode(updatedNodeInfo, false);
     _handleTreeChange();
+    
+    } 
   }  
   
   async function _handleSave(e) {
@@ -387,14 +430,53 @@ const app = function () {
     _setDirtyBit(false);
   }
   
-  async function _handleAccordionReorder(itemOrder) {
-    console.log('_handleAccordionReorder');
-    return;
-        
-    settings.projectData[settings.currentProjectId].orderedItems = itemOrder;
-    var result = await _updateProjectInDB(settings.currentProjectId);
-    if (!result.success) return;
-    _loadProjectInfo(settings.currentProjectId);
+  function _handleAccordionReorder(itemOrder) {
+    var updatedPickedComments = [];
+    for (var i = 0; i < itemOrder.length; i++) {
+      var indexInPicked = findPickedComment(itemOrder[i]);
+      updatedPickedComments.push(settings.pickedComments[indexInPicked]);
+    }
+    
+    settings.pickedComments = updatedPickedComments;
+    _showPickedComments();    
+  }
+  
+  function findPickedComment(id) {
+    var index = null;
+    for (var i = 0; i < settings.pickedComments.length && !index; i++) {
+      if (id == settings.pickedComments[i].id) index = i;
+    }
+    return index;
+  }
+  
+  function _handleRenderingChange(e) {    
+    UtilityKTS.setClass(e.target.leftLabel, 'diminished', e.target.checked);
+    UtilityKTS.setClass(e.target.rightLabel, 'diminished', !e.target.checked);
+
+    var displayFor = e.target.checked ? 'accordion-container' : 'rendering-container';    
+    _setPickerRendering(displayFor);
+  }
+  
+  function _handleDoubleSwitch(elem, clickedLabel) {    
+    if (clickedLabel == 'left' && elem.checked) {
+      elem.click();
+    } else if (clickedLabel == 'right' && !elem.checked) {
+      elem.click();
+    }
+  }
+  
+  function _handleCopy(e, copyType) {
+    var richText = settings.tiny.navPicker.getContent();
+    
+    if (copyType == 'rich') {
+      _copyRenderedToClipboard(richText);
+      alert('copied rendered to clipboard');
+      
+    } else if (copyType == 'plain') {
+      var plainText = _makePlaintext(richText);
+      _copyToClipboard(plainText);
+      alert('copied plain text to clipboard');
+    }
   }
   
   //---------------------------------------
@@ -504,106 +586,6 @@ const app = function () {
     return processed;
   }
   
-  async function _getProjectData() {
-    settings.projectData = null
-    
-    var dbResult = await SQLDBInterface.doGetQuery('faqcomposer/query', 'faqsetlist');
-    
-    if (dbResult.success) {
-      settings.projectData = _processProjectDataList(dbResult.data);
-
-    } else {
-      page.notice.setNotice('failed to get project list');
-    }
-    
-    return dbResult.success;
-  }  
-  
-  function _processProjectDataList(projectData) {
-    var processed = {
-      projectlist: []
-    };
-    
-    for (var i = 0; i < projectData.length; i++) {
-      var project = projectData[i];
-      processed.projectlist.push({
-        projectid: project.faqsetid, 
-        projectname: project.faqsetname
-      });
-      
-      var orderedItems = [];
-      var openedItems = [];
-      if (project.faqsetdata) {
-        var data = JSON.parse(project.faqsetdata);
-        orderedItems = data.orderedItems;
-        openedItems = data.openedItems;
-      }
-      
-      processed[project.faqsetid] = {
-        projectid: project.faqsetid,
-        projectname: project.faqsetname,
-        orderedItems: orderedItems,
-        openedItems: openedItems
-      }
-    }
-
-    return processed;
-  }
-  
-  async function _addProjectToDB(projectName) {    
-    var params = {
-      "faqsetname": projectName
-    };
-    
-    var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/insert', 'faqset', params);
-
-    if (!dbResult.success) {
-      if (dbResult.details.includes('duplicate')) {
-        alert('failed to add project\n another with the name (' + projectName + ') already exists');
-        page.notice.setNotice('');
-      } else {
-        page.notice.setNotice('failed to create project');
-      }
-    }
-    
-    return dbResult;
-  }  
-  
-  async function _deleteProjectFromDB(projectId) {    
-    var params = {
-      "faqsetid": projectId
-    };
-    
-    var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/delete', 'faqset', params);
-
-    if (!dbResult.success) {
-      page.notice.setNotice('failed to delete project');
-    }
-    
-    return dbResult;
-  }  
-  
-  async function _updateProjectInDB(projectId) {
-    if (!projectId) return;
-    
-    var projectData = settings.projectData[projectId];
-    var params = {
-      "faqsetid": projectId,
-      "faqsetdata": JSON.stringify({
-        "orderedItems": projectData.orderedItems,
-        "openedItems": projectData.openedItems
-      })
-    };
-    
-    var dbResult = await SQLDBInterface.doPostQuery('faqcomposer/update', 'faqset', params);
-
-    if (!dbResult.success) {
-      page.notice.setNotice('failed to update project info');
-    }
-    
-    return dbResult;
-  }
-  
   //---------------------------------------
   // clipboard functions
   //----------------------------------------
@@ -618,9 +600,7 @@ const app = function () {
 
     page._renderedclipboard.copyRenderedToClipboard(txt);
 	}	    
-    
-  
-  
+
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------
@@ -652,24 +632,6 @@ const app = function () {
     elem.disabled = !enable;    
   }
   
-  function _removeDefaultOption(elemSelect) {
-    for (var i = 0; i < elemSelect.childNodes.length; i++) {
-      var elemOption = elemSelect.childNodes[i];
-      if (elemOption.value == 'default') {
-        elemSelect.removeChild(elemOption);
-      }
-    }
-  }
-  
-  function _validateProjectName(projectName) {
-    var valid = projectName.length < 200;
-    valid = valid && projectName.length > 0;
-    
-    valid = valid && (projectName.match(/[A-Za-z0-9&:\-\(\), ]+/) == projectName);
-    
-    return valid;
-  }  
-  
   function _defaultTreeData() {
     return [{
       id: 1,
@@ -680,6 +642,25 @@ const app = function () {
       }
     }];
   }  
+  
+  function _makePlaintext(richtext) {
+    var plaintext = richtext;
+    console.log(richtext);
+
+    plaintext = plaintext.replace(/<p>(.*?)<\/p>/g, '$1\n');    // replace <p> elements with \n
+    plaintext = plaintext.replace(/<li>(.*?)<\/li>/g, '• $1');  // replace <li> elements with bulleted items
+    plaintext = plaintext.replace(/<a href="(.*?)"(.*?)>(.*?)<\/a>/g, '$3 (see $1)'); // replace link tag
+    
+    plaintext = plaintext.replace(/<br \/>/g, '\n');            // replace <br /> with \n
+    plaintext = plaintext.replace(/<.*?\>(.*?)/g, '$1');        // strip all other angle bracket tags
+    plaintext = plaintext.replace('&nbsp;', ' ');
+    
+    while (plaintext.includes('\n\n')) plaintext = plaintext.replace('\n\n', '\n'); 
+    console.log(plaintext);
+    
+    return plaintext;
+  }
+  
 	//-----------------------------------------------------------------------------------
 	// init:
 	//-----------------------------------------------------------------------------------

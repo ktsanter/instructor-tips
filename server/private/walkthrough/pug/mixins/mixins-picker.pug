@@ -5,5 +5,20 @@ mixin pickerContainer()
     
     .col-sm
       .container-fluid(class="p-0")
+        .row(class="my-2")
+          .col-sm
+            .checkbox-label-left(class="checkRendering" aria-label="richtext") rendered
+            .form-check(class="form-switch allow-label-left")
+              input(class="form-check-input check-rendering double-selection" type="checkbox" id="checkRendering")
+              .checkbox-label-right(class="diminished") ordering 
+
+          .col-sm
+            button(class="btn btn-outline-primary btn-copyrich") copy rendered
+            button(class="btn btn-outline-primary btn-copyplain") copy plain
+
         .row(class="p-0")
-          .col-sm(class="accordion-container")
+          .col-sm(class="accordion-container hide-me")
+          
+        .row(class="p-0")
+          .col-sm(class="rendering-container hide-me")
+            +makeTinyMCE("picker-tiny")
