@@ -1,0 +1,63 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
+include ../../common/pug/profile-mixins.pug
+
+include ./mixins/mixins-picker.pug
+include ./mixins/mixins-editor.pug
+
+doctype html
+html(lang="en")
+  head
+    title Walkthrough Buddy
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+    +tinyMCEscripts()
+    
+    style
+      include ../../common/styles/jqtree.css
+      include ../../common/styles/classTreeManager.css
+      include ../../common/styles/classProfile.css
+      include ../../common/styles/navbar-overrides.css
+      include ../styles/classFaqAccordion.css
+      include ../styles/walkthrough.css
+    
+    +addJQuery()
+    script(data-main="/scripts/walkthrough/require_walkthrough", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    +makeNavbar("Walkthrough Buddy", 
+      {
+        items: [
+          {id: "navPicker", type: "link", label: "picker"},
+          {id: "navEditor", type: "link", label: "editor"},
+          {type: "dropdown", label: "other", items: [
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}
+        ],
+        
+        profile: true
+      }
+    )
+    
+    .contents
+      .error-container
+        
+      .container-fluid(class="contents-container contents-navPicker hide-me")
+        +pickerContainer()
+
+      .container-fluid(class="contents-container contents-navEditor hide-me")
+        +editorContainer()
+          
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

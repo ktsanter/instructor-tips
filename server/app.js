@@ -14,6 +14,7 @@ const MARIA_DBNAME_WELCOME = getEnv('MARIA_DBNAME_WELCOME', true);
 const MARIA_DBNAME_WELCOMEV2 = getEnv('MARIA_DBNAME_WELCOMEV2', true);
 const MARIA_DBNAME_IMAGEFLIPPER = getEnv('MARIA_DBNAME_IMAGEFLIPPER', true);
 const MARIA_DBNAME_FAQCOMPOSER = getEnv('MARIA_DBNAME_FAQCOMPOSER', true);
+const MARIA_DBNAME_WALKTHROUGH = getEnv('MARIA_DBNAME_WALKTHROUGH', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -126,7 +127,16 @@ const mariadbParams_FAQComposer = {
     dbName: MARIA_DBNAME_FAQCOMPOSER /*, 
     connectionLimit: 5 */
 };
-    
+
+const mariadbParams_Walkthrough = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_WALKTHROUGH /*, 
+    connectionLimit: 5 */
+};
+
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
@@ -134,6 +144,7 @@ const mariaDBManager_WelcomeLetter = new mariaDBManagerClass(mariadbParams_Welco
 const mariaDBManager_WelcomeLetterV2 = new mariaDBManagerClass(mariadbParams_WelcomeLetterV2);
 const mariaDBManager_ImageFlipper = new mariaDBManagerClass(mariadbParams_ImageFlipper);
 const mariaDBManager_FAQComposer = new mariaDBManagerClass(mariadbParams_FAQComposer);
+const mariaDBManager_Walkthrough = new mariaDBManagerClass(mariadbParams_Walkthrough);
     
 //------------------------------------------
 // session management
@@ -329,6 +340,18 @@ const dbFAQComposer = new dbFAQComposerClass({
 });
 
 //------------------------------------------
+// Walkthrough general query objects
+//------------------------------------------
+const dbWalkthroughClass = require('./classes/walkthrough')
+
+const dbWalkthrough = new dbWalkthroughClass({
+  "dbManager": mariaDBManager_Walkthrough,
+  "userManagement": userManagement,
+  "fileServices": fileservices,
+  "pug": pug
+});
+
+//------------------------------------------
 // DB manager lookup, app info lookup
 //------------------------------------------
 var dbManagerLookup = {
@@ -339,7 +362,8 @@ var dbManagerLookup = {
   "welcome": dbWelcomeLetter,
   "welcomeV2": dbWelcomeLetterV2,
   "imageflipper": dbImageFlipper,
-  "faqcomposer": dbFAQComposer
+  "faqcomposer": dbFAQComposer,
+  "walkthrough": dbWalkthrough
 };
 
 var appLookup = {
@@ -384,6 +408,13 @@ var appLookup = {
     appName: 'FAQ composer',
     routePug: 'faq-composer/pug/faq-composer.pug',
     loginReRoute: 'faq-composer/compose'
+  }, 
+
+  "walkthrough" : {
+    appDescriptor: 'walkthrough',
+    appName: 'Walkthrough Buddy',
+    routePug: 'walkthrough/pug/walkthrough-buddy.pug',
+    loginReRoute: 'walkthrough/buddy'
   }  
 };
 
@@ -438,6 +469,12 @@ app.get('/faq-composer/faq/:faqsetid', async function (req, res) {
   } else {
     sendFailedAccess(res, pugFileName);
   }
+})
+
+app.get('/walkthrough/buddy', function (req, res) { routeIfLoggedIn(req, res, 'walkthrough'); })
+app.get('/walkthrough/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'walkthrough/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })

@@ -1,0 +1,86 @@
+/*------------------------------------------------------------------------------
+ * Walkthrough Buddy
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+}
+
+body {
+  padding-top: 4.0em;
+}
+
+.hide-me {
+  display: none;
+}
+
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {}
+
+/*------------------------------------------------------------------------------
+ * contents - tree context menu
+ *------------------------------------------------------------------------------*/
+.contents .hierarchy-container {}
+
+.contents .hierarchy-container .tm-tree {
+  font-family: inherit;
+  font-size: 0.9em;
+  /*
+  border: 1px solid var(--borderPrimary);
+  border-radius: 0.25em;  
+  */
+}
+
+.contents .hierarchy-container .contextmenu {
+  display: none;
+  position: absolute;
+  border: 1px solid #aaa;
+  background-color: white;
+  z-index: 10;
+  font-size: 0.9em;
+  box-shadow: 0 4px 5px 3px rgba(0, 0, 0, 0.2);
+  
+}
+
+.contents .hierarchy-container .contextmenu .contextmenu-list {
+  list-style-type:none;
+  padding: 0.5em 0.5em 0.2em 0.5em;
+  margin: 0;
+}
+
+.contents .hierarchy-container .contextmenu .contextmenu-list .contextmenu-item {
+  padding-bottom: 0.4em;
+}
+
+.contents .hierarchy-container .contextmenu .contextmenu-list .contextmenu-item:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/
+

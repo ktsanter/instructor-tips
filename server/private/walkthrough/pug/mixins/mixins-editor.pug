@@ -1,0 +1,17 @@
+mixin editorContainer()
+  .row
+    .col-sm-3(class="hierarchy-container" id="editorHierarchy")
+      label(for="editorHierarchy" class="col col-form-label col-form-label") edit omments
+    
+    .col-sm
+      .container-fluid(class="p-0")
+        .row(class="p-0"): col-sm(class="navEditor-item-edit")
+          .container-fluid(class="p-0")
+            .row(class="p-0"): .col-sm
+              div(class="input-group mb-3")
+                span(class="input-group-text" id="navEditor-itemlabel") item label
+                input(type="text" class="navEditor-itemlabel form-control" aria-label="label" aria-describedby="navEditor-itemlabel")
+                
+            .row(class="p-0"): .col-sm
+              .contenteditor-container(class="contenteditor-container-navEditor")
+                +makeTinyMCE("contenteditor-navEditor")

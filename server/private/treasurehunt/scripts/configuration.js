@@ -19,7 +19,7 @@ const app = function () {
     
     currentCourse: null,
     
-    logoutURL: '/usermanagement/logout/welcomeV2',
+    logoutURL: '/usermanagement/logout/treasurehunt',
     helpURL: '/treasurehunt/help',
     previewURL_base: '/treasurehunt',
     

@@ -263,14 +263,11 @@ module.exports = internal.TreasureHunt = class {
   }
   
   async _updateProjectPreview(params, postData, userInfo) {
-    console.log('\n_updateProjectPreview');
     var result = this._dbManager.queryFailureResult();
     
     var queryList, queryResults;
     
     var snapshot = this._escapeProblems(JSON.stringify(postData));
-    console.log('snapshot');
-    console.log(snapshot);
     
     queryList = {
       project: 
@@ -283,11 +280,7 @@ module.exports = internal.TreasureHunt = class {
         ')'
     };
 
-    console.log('query');
-    console.log(queryList.project);
     queryResults = await this._dbManager.dbQueries(queryList);
-    console.log('results');
-    console.log(queryResults);
 
     if (queryResults.success) {
       result.success = true;
