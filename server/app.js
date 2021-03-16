@@ -412,9 +412,9 @@ var appLookup = {
 
   "walkthrough" : {
     appDescriptor: 'walkthrough',
-    appName: 'Walkthrough Buddy',
-    routePug: 'walkthrough/pug/walkthrough-buddy.pug',
-    loginReRoute: 'walkthrough/buddy'
+    appName: 'Walkthrough helper',
+    routePug: 'walkthrough/pug/helper.pug',
+    loginReRoute: 'walkthrough/helper'
   }  
 };
 
@@ -471,7 +471,7 @@ app.get('/faq-composer/faq/:faqsetid', async function (req, res) {
   }
 })
 
-app.get('/walkthrough/buddy', function (req, res) { routeIfLoggedIn(req, res, 'walkthrough'); })
+app.get('/walkthrough/helper', function (req, res) { routeIfLoggedIn(req, res, 'walkthrough'); })
 app.get('/walkthrough/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'walkthrough/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});

@@ -39,9 +39,12 @@ mixin makeNavbar(title, params)
                     else if (subItem.type == "divider")
                         li: hr(id=subItem.id class="dropdown-divider")
 
+        if params.message
+          .navbar-message
+          
         each navButton in params.buttons
           - var classList = "btn btn-outline-success use-handler hide-me mx-1 " + navButton.id;
           button(id=navButton.id class=classList)=navButton.label
-          
+
         if params.profile
           +ASProfileNavbar()

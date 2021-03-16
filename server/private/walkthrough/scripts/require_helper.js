@@ -14,7 +14,7 @@ define(function (require) {
   const libsodiumWrappers = require('libsodium-wrappers');
    
   require('classAccordion');
-  require('walkthrough');
+  require('helper');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));
 });

@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 // TreeManager class
 //-------------------------------------------------------------------
-// TODO:
+// TODO: setTreeState doesn't seem to work for openedList
 //-------------------------------------------------------------------
 class TreeManager {
   constructor(config) {
@@ -40,7 +40,7 @@ class TreeManager {
     }
 
     $(this._config.treeSelector).tree({
-      autoOpen: true,
+      autoOpen: 0,
       dragAndDrop: this._config.allowDragAndDrop,
       slide: false , // slide animation
       buttonLeft: true ,
@@ -130,12 +130,12 @@ class TreeManager {
   }
   
   setTreeState(newTreeState) {
-    var thisTree = $(this._config.treeSelector);
-    
+    var thisTree = $(this._config.treeSelector);   
     var treeState = thisTree.tree('getState');
-    treeState.selected_node = newTreeState.selectedList;
     
+    treeState.selected_node = newTreeState.selectedList;
     if (newTreeState.openedList) treeState.open_nodes = newTreeState.openedList;
+    
     thisTree.tree('setState', treeState);
   }
   
@@ -148,7 +148,7 @@ class TreeManager {
       openedList: treeState.open_nodes
     }
   }
-  
+    
   forceContextMenuClose() {
     this._config.contextMenu.style.display = 'none';
   }

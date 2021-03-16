@@ -1,8 +1,7 @@
 //-----------------------------------------------------------------------
-// Walkthrough Buddy
+// Walkthrough helper
 //-----------------------------------------------------------------------
 // TODO: preserve open/close when refreshing picker tree
-// TODO: replace alert with navbar message
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -71,8 +70,11 @@ const app = function () {
     await settings.profile.init();
 
     page.notice.setNotice('');
-    UtilityKTS.setClass(page.navbar, 'hide-me', false);
+
+    page.elemNavbarMessage = page.navbar.getElementsByClassName('navbar-message')[0];
+    _setNavbarMessage('');
     _attachNavbarHandlers();
+    UtilityKTS.setClass(page.navbar, 'hide-me', false);
 
     _renderContents();
 
@@ -89,7 +91,11 @@ const app = function () {
       navItems[i].addEventListener('click', handler);
     }
   }
-  	  
+  
+  function _setNavbarMessage(msg) {
+    page.elemNavbarMessage.innerHTML = msg;
+  }
+  
   //-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------
@@ -143,7 +149,6 @@ const app = function () {
   }
   
   function _pickerHoverText(tmContent) {
-    console.log(tmContent.label);
     var titleText = tmContent.markdown;
     if (!titleText || titleText.length == 0) {
       titleText = '*empty*';
@@ -223,7 +228,12 @@ const app = function () {
     _enableNavOption('navSave', false);
     _enableNavOption('navReload', false);
 
-    if (opt == 'navEditor' || opt == 'navProfile') {
+    if (opt == 'navEditor') {
+      var enable = settings.dirtyBit.navEditor;
+      _enableNavOption('navSave', true, enable);
+      _enableNavOption('navReload', true, enable);
+      
+    } else if (opt == 'navProfile') {
       var enable = settings.profile.isDirty();
       _enableNavOption('navSave', true, enable);
       _enableNavOption('navReload', true, enable);
@@ -232,11 +242,19 @@ const app = function () {
   
   async function _showPicker() {
     if (!settings.pickerTree) return;
-    settings.pickedComments =settings.pickerAccordion.getItemList();
     
+    settings.pickedComments = settings.pickerAccordion.getItemList();
+    var selected = [];
+    for (var i = 0; i < settings.pickedComments.length; i++) {
+      selected.push(settings.pickedComments[i].id);
+    }
+    console.log(settings.pickedComments);
+    console.log(selected);
     if ( !(await _getCommentSet()) ) return;
     
     settings.pickerTree.update(settings.commentset);
+    settings.pickerTree.setTreeState({selectedList: selected});
+    
     _showPickedComments();
   }
   
@@ -280,11 +298,12 @@ const app = function () {
     var accordionData = [];
     var richtextData = '';
     
-    var selectedList = [];
+    var selected = [];
+    
     for (var i = 0; i < settings.pickedComments.length; i++) {
       var node = settings.pickerTree.getNode(settings.pickedComments[i].id);
       
-      if (node) selectedList.push(node.id);
+      if (node) selected.push(node.id);
       
       if (node && node.children.length == 0) {
         accordionData.push({
@@ -299,10 +318,6 @@ const app = function () {
 
     settings.pickerAccordion.update(accordionData);
     settings.tiny.navPicker.setContent(richtextData);
-    
-    settings.pickerTree.setTreeState({
-      selectedList: selectedList
-    });
   }    
 
   function _setPickerRendering(displayFor) {
@@ -370,10 +385,12 @@ const app = function () {
       "navReload": function() { _handleReload(e, false);}
     }
     
+    _setNavbarMessage('');
     dispatchMap[dispatchTarget]();
   }
   
   async function _handleTreeSelect(nodeInfo) {
+    _setNavbarMessage('');
     if (settings.currentNavOption == 'navEditor') {
       if (nodeInfo) {
          _loadCommentIntoEditor({
@@ -483,12 +500,12 @@ const app = function () {
     
     if (copyType == 'rich') {
       _copyRenderedToClipboard(richText);
-      alert('copied rendered to clipboard');
+      _setNavbarMessage('rendered message copied');
       
     } else if (copyType == 'plain') {
       var plainText = _makePlaintext(richText);
       _copyToClipboard(plainText);
-      alert('copied plain text to clipboard');
+      _setNavbarMessage('plain text message copied');
     }
   }
   
@@ -658,7 +675,6 @@ const app = function () {
   
   function _makePlaintext(richtext) {
     var plaintext = richtext;
-    console.log(richtext);
 
     plaintext = plaintext.replace(/<p>(.*?)<\/p>/g, '$1\n');    // replace <p> elements with \n
     plaintext = plaintext.replace(/<li>(.*?)<\/li>/g, '• $1');  // replace <li> elements with bulleted items
@@ -669,7 +685,6 @@ const app = function () {
     plaintext = plaintext.replace('&nbsp;', ' ');
     
     while (plaintext.includes('\n\n')) plaintext = plaintext.replace('\n\n', '\n'); 
-    console.log(plaintext);
     
     return plaintext;
   }
