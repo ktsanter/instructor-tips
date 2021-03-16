@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------
 // Walkthrough Buddy
 //-----------------------------------------------------------------------
-// TODO: add copy as buttons (rich and plain text)
-// TODO: Are both label and content needed?
+// TODO: preserve open/close when refreshing picker tree
+// TODO: replace alert with navbar message
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -142,6 +142,18 @@ const app = function () {
     page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].addEventListener('input', (e) => {_handleEditorChange(e);});    
   }
   
+  function _pickerHoverText(tmContent) {
+    console.log(tmContent.label);
+    var titleText = tmContent.markdown;
+    if (!titleText || titleText.length == 0) {
+      titleText = '*empty*';
+    } else {
+      titleText = _makePlaintext(titleText);
+    }
+    
+    return titleText;
+  }
+  
   function _renderPicker() {
     var treeContainer = page.contentsPicker.getElementsByClassName(settings.treeContainerClass)[0];
 
@@ -150,6 +162,7 @@ const app = function () {
       appendTo: treeContainer,
       selectCallback: _handleTreeSelect,
       changeCallback: _handleTreeChange,
+      nodehovertitleCallback: _pickerHoverText,
       useContextMenu: false,
       allowMultiSelect: true,
       allowDragAndDrop: false,

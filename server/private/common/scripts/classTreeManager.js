@@ -10,6 +10,10 @@ class TreeManager {
     this._config.treeClass = 'tm-tree';
     this._config.treeSelector = '#' + this._config.id;
     this._config.contextMenu = null;
+    
+    if (!this._config.hasOwnProperty('nodehovertitleCallback')) {
+      this._config.nodehovertitleCallback = function() {return null;};
+    }
   }
   
   //--------------------------------------------------------------
@@ -44,6 +48,20 @@ class TreeManager {
       closedIcon: '&#9670;'
     });
     this.update(treeData);    
+    
+    var thisTree = $(this._config.treeSelector);
+    $(this._config.treeSelector).on('mouseover', this._makeHoverTitleFunction(thisTree, this._config.nodehovertitleCallback));
+  }
+  
+  _makeHoverTitleFunction(selector, titleCallback) {
+    return function(e) {
+      var node = selector.tree('getNodeByHtmlElement', e.target);
+      if (!node) return;
+      if (node.children.length == 0) {;
+        var titleText = titleCallback(node.tmContent);
+        if (titleText != null) e.target.title = titleText;
+      }
+    }
   }
   
   _renderContextMenu(elemParent) {
