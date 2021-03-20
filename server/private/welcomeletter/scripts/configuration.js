@@ -1,6 +1,8 @@
 //-------------------------------------------------------------------
 // welcome letter configuration
 //-------------------------------------------------------------------
+// TODO: use profile pic in letter (option for a different one?)
+// TODO: add tiny editor for formatted message
 // TODO: finish help
 //-------------------------------------------------------------------
 const app = function () {

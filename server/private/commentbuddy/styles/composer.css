@@ -1,0 +1,66 @@
+/*------------------------------------------------------------------------------
+ * CommentBuddy composer styling
+ *------------------------------------------------------------------------------*/
+body {
+  padding-top: 4.0em;
+}
+
+.hide-me {
+  display: none;
+}
+
+/*------------------------------------------------------------------------------
+ * navbar
+ *------------------------------------------------------------------------------*/
+.navbar-message {
+  font-style: italic;
+}
+
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {}
+
+.contents .btn.btn-outline-primary { /*-- override Bootstrap --*/
+  color: rgba(66, 98, 150, 1.0);
+  background-color: transparent;
+  border-color: rgba(66, 98, 150, 1.0);
+}
+
+.contents .btn.btn-outline-primary:hover { /*-- override Bootstrap --*/
+  color: white;
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: white;
+}
+
+.contents .btn-check:checked+.btn-outline-primary {
+  color: white;
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: rgba(66, 98, 150, 1.0);
+}
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/
+

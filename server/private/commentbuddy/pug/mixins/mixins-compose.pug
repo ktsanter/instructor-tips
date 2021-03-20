@@ -1,0 +1,17 @@
+mixin composerContainer()
+  .row
+    .col-sm
+      .form-floating
+        input(type="text" class="form-control input-tags" id="inputTags")
+        label(for="inputTags") tags
+
+  .row
+    .col-sm
+      .form-floating
+        input(type="text" class="form-control input-hovertext" id="inputHoverText")
+        label(for="inputHoverText") hover text
+
+  .row
+    .col-sm
+      .contenteditor-container(class="contenteditor-container-navComposer")
+        +makeTinyMCE("contenteditor-navComposer")

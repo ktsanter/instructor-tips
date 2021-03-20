@@ -1,0 +1,53 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
+
+include ./mixins/mixins-compose.pug
+include ./mixins/mixins-configure.pug
+
+doctype html
+html(lang="en")
+  head
+    title CommentBuddy composer
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+    +tinyMCEscripts()
+    
+    style
+      include ../../common/styles/navbar-overrides.css
+      include ../styles/composer.css
+         
+    +addJQuery()
+    script(data-main="/scripts/commentbuddy/require_composer", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    +makeNavbar("CommentBuddy composer", 
+      {
+        items: [
+          {id: "navComposer", type: "link", label: "compose"},
+          {id: "navConfigure", type: "link", label: "configure"},
+          {id: "navHelp", type: "link", label: "help"}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'}
+        ],
+        
+        message: true,
+        profile: false
+      }
+    )
+    
+    .contents
+      .error-container
+
+      .container-fluid(class="contents-container contents-navComposer hide-me")
+        +composerContainer()
+
+      .container-fluid(class="contents-container contents-navConfigure hide-me")
+        +configureContainer()        

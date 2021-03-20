@@ -848,6 +848,16 @@ app.get('/cte-department/remind', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {});
 })
 
+app.get('/commentbuddy/composer', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/composer.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+app.get('/commentbuddy/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+
 app.get('/:app', function (req, res) {
   var appDescriptor = req.params.app;
   
