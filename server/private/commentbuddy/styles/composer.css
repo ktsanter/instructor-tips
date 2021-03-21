@@ -39,6 +39,87 @@ body {
   border-color: rgba(66, 98, 150, 1.0);
 }
 
+/*------------------------------------------------------------------------------
+ * contents - composer
+ *------------------------------------------------------------------------------*/
+.contents .contents-navComposer .wrapper {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+}
+
+.contents .contents-navComposer .sidebar-container.active {
+  margin-left: -430px;
+}
+
+.contents .contents-navComposer .sidebar-container .sidebar-header .btn-sidebartoggleright {
+  float: right;
+} 
+
+.contents .contents-navComposer .sidebar-container .sidebar-controls .btn-newcomment {
+  margin-right: 0.2em;
+}
+
+.contents .contents-navComposer .sidebar-container .sidebar-controls .input-search {
+  font-size: 0.9em;
+}
+
+.contents .contents-navComposer .sidebar-container .sidebar-controls .select-tag {
+  font-size: 0.9em;
+}
+
+.contents .contents-navComposer .sidebar-container .sidebar-items {
+  min-width: 430px;
+  max-width: 430px;
+  height: 90vh;    
+  overflow-y: scroll;
+}
+
+.contents .contents-navComposer .sidebar-container .sidebar-items::-webkit-scrollbar {
+  width: 16px;
+}
+
+.contents .contents-navComposer .sidebar-container .sidebar-items::-webkit-scrollbar-track {
+  background: rgba(0,0,0, 0.1);
+}
+.contents .contents-navComposer .sidebar-container .sidebar-items::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0, 0.2) ;
+  border-radius: 6px;
+  border: 1px solid rgba(0,0,0, 0.3);
+} 
+
+.contents .contents-navComposer .sidebar-container .sidebar-items::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: white;
+} 
+
+.contents .contents-navComposer .sidebar-container.active .sidebar-items::-webkit-scrollbar-track {
+  background: transparent
+}
+.contents .contents-navComposer .sidebar-container.active .sidebar-items::-webkit-scrollbar-thumb {
+  background: transparent ;
+  border-radius: 6px;
+  border-color: rgba(0,0,0, 0.0);
+} 
+
+.contents .contents-navComposer .sidebar-container .sidebar-singleitem {
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.contents .contents-navComposer .sidebar-container .sidebar-singleitem:nth-child(odd) {
+  background-color: rgba(0,0,0, 0.1);
+}
+
+.contents .contents-navComposer .sidebar-container .sidebar-singleitem.selected-item {
+  color: white;
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: rgba(66, 98, 150, 1.0);
+}
+
 /*------------------------------------------------------------------
  * standard error and notice
  *------------------------------------------------------------------*/

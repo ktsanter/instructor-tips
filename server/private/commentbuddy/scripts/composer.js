@@ -2,7 +2,7 @@
 // CommentBuddy composer
 //-----------------------------------------------------------------------
 // TODO: extend to add/edit/delete for all data in spreadsheet?
-// TODO: add "open source" option to configure
+// TODO: is the CB extension stripping some HTML, e.g. <span> and <code>
 // TODO: styling
 // TODO: finish help
 //-----------------------------------------------------------------------
@@ -77,6 +77,8 @@ const app = function () {
   }
   
   async function _renderComposer() {
+    settings.currentItemData = null;
+    
     settings.tiny = {};
     settings.tiny.navComposer = new MyTinyMCE({
       id: 'contenteditor-navComposer', 
@@ -86,11 +88,30 @@ const app = function () {
     
     await settings.tiny.navComposer.init();
     
+    page.elemSidebar = page.contentsComposer.getElementsByClassName('sidebar-container')[0];
+    page.elemSidebarButtonLeft = page.contentsComposer.getElementsByClassName('btn-sidebartoggleleft')[0];
+    page.elemSidebarButtonRight = page.contentsComposer.getElementsByClassName('btn-sidebartoggleright')[0];
+    page.elemSidebarButtonLeft.addEventListener('click', (e) => { _handleSidebarToggle('left'); });
+    page.elemSidebarButtonRight.addEventListener('click', (e) => { _handleSidebarToggle('right'); });
+    
+    page.elemSidebarAdd = page.elemSidebar.getElementsByClassName('btn-newcomment')[0];
+    page.elemSidebarDelete = page.elemSidebar.getElementsByClassName('btn-deletecomment')[0];
+    page.elemSidebarSearch = page.elemSidebar.getElementsByClassName('input-search')[0];
+    page.elemSidebarTag = page.elemSidebar.getElementsByClassName('select-tag')[0];
+    
     page.elemTags = page.contentsComposer.getElementsByClassName('form-control input-tags')[0];
     page.elemHoverText = page.contentsComposer.getElementsByClassName('form-control input-hovertext')[0];
     
+    page.elemSidebarAdd.addEventListener('click', (e) => { _handleAddComment(e); });
+    page.elemSidebarDelete.addEventListener('click', (e) => { _handleDeleteComment(e); });
+    page.elemSidebarSearch.addEventListener('input', (e) => { _handleCommentSearchChange(e); });
+    page.elemSidebarTag.addEventListener('change', (e) => { _handleCommentSearchChange(e); });
+    
     page.elemTags.addEventListener('input', (e) => { _handleTextInput(e); });
     page.elemHoverText.addEventListener('input', (e) => { _handleTextInput(e); });
+    
+    _loadCommentInfo(settings.commentData);
+    _loadTagSelect(settings.commentData);
   }
   
   function _renderConfigure() {
@@ -112,11 +133,89 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navConfigure') {
+    if (contentsId == 'navComposer') {
+      _showComposer();
+    } else if (contentsId == 'navConfigure') {
       _showConfigure();
     }
       
     _setNavOptions();
+  }
+  
+  function _showComposer() {}
+  
+  function _loadCommentInfo(commentData) {
+    console.log('_loadCommentInfo');    
+    var elemItems = page.elemSidebar.getElementsByClassName('sidebar-items')[0];
+    
+    UtilityKTS.removeChildren(elemItems);
+    for (var i = 0; i < commentData.length; i++) {
+      var item = commentData[i];
+      var elemSingleItem = CreateElement.createDiv(null, 'sidebar-singleitem', _makePlaintext(item.comment));
+      elemSingleItem.addEventListener('click', (e) => { _handleSidebarSelection(e); });
+      elemSingleItem.itemData = {...item, index: i};
+      elemItems.appendChild(elemSingleItem);      
+    }
+  }
+  
+  function _loadTagSelect(commentData) {
+    var elemItems = page.elemSidebar.getElementsByClassName('sidebar-items')[0];
+    
+    var tagSet = new Set();
+    for (var i = 0; i < commentData.length; i++) {
+      var item = commentData[i];
+      var tagList = _parseTags(item.tags);
+      for (var j = 0; j < tagList.length; j++) {
+        tagSet.add(tagList[j].trim());
+      }
+    }
+
+    var tagList = Array.from(tagSet);
+    tagList = tagList.sort();
+
+    UtilityKTS.removeChildren(page.elemSidebarTag);
+    page.elemSidebarTag.appendChild(CreateElement.createOption(null, null, '[any]', '[any]'));
+    for (var i = 0; i < tagList.length; i++) {
+      page.elemSidebarTag.appendChild(CreateElement.createOption(null, null, tagList[i], tagList[i]));
+    }    
+  }
+  
+  function _updateCommentItems() {
+    console.log('_updateCommentItems');
+    var filteredCommentList = settings.commentData;
+    
+    var searchVal = page.elemSidebarSearch.value.toLowerCase();
+    var tagVal = page.elemSidebarTag.value;
+    var useSearchVal = searchVal != '';
+    var useTagVal = tagVal != '[any]';
+    console.log('|' + searchVal + '| |' + tagVal + '|');
+    console.log(useSearchVal + ' ' + useTagVal);
+;
+    if (useSearchVal || useTagVal) {
+      filteredCommentList = [];
+
+      for (var i = 0; i < settings.commentData.length; i++) {
+        var item = settings.commentData[i];
+        var searchMatches = true;
+        var tagMatches = true;
+        
+        if (useSearchVal) {
+          searchMatches = item.comment.toLowerCase().includes(searchVal);
+        }
+        
+        if (useTagVal) {
+          var tagList = _parseTags(item.tags);
+          var tagMatches = false;
+          for (var j = 0; j < tagList.length && !tagMatches; j++) {
+            tagMatches = (tagVal == tagList[j]);
+          }
+        }
+        
+        if (searchMatches && tagMatches) filteredCommentList.push(item);
+      }
+    }
+
+    _loadCommentInfo(filteredCommentList);
   }
   
   function _showConfigure() {
@@ -137,14 +236,24 @@ const app = function () {
     }
   }
   
+  function _loadCommentItem(itemData) {
+    console.log('_loadCommentItem');
+    console.log('check for dirty bit first');
+    page.elemTags.value = itemData.tags;
+    page.elemHoverText.value = itemData.hovertext;
+    settings.tiny.navComposer.setContent(itemData.comment);
+    settings.currentItemData = itemData;
+  }
+  
   async function _saveComment() {
+    _setNavbarMessage('saving comment...');
     var success = await settings.dbCommentBuddy.saveNewComment({
       "tags": page.elemTags.value,
       "hovertext": page.elemHoverText.value,
       "comment": settings.tiny.navComposer.getContent()
     });
     
-    console.log('_saveComment: ' + success);
+    _setNavbarMessage(success ? '' : 'failed to save comment');
   }
   
   async function _reconfigureDataSource(proposedURL) {
@@ -194,6 +303,8 @@ const app = function () {
   
   async function _handleSave(e) {
     console.log('_handleSave');
+    console.log('disabled');
+    return;
     
     if (settings.currentNavOption == 'navComposer') {
       if ( !(await _saveComment()) ) return;
@@ -208,6 +319,35 @@ const app = function () {
   
   function _handleTextInput(e) {
     _setDirtyBit(true);
+  }
+  
+  function _handleSidebarToggle(side) {
+    UtilityKTS.toggleClass(page.elemSidebar, 'active');
+    
+    var isActive = page.elemSidebar.classList.contains('active');
+    UtilityKTS.setClass(page.elemSidebarButtonLeft, 'hide-me', !isActive);
+    UtilityKTS.setClass(page.elemSidebarButtonRight, 'hide-me', isActive);
+  }
+  
+  function _handleCommentSearchChange(e) {
+    console.log('_handleCommentSearchChange');
+    _updateCommentItems();
+  }
+  
+  function _handleAddComment(e) {
+    console.log('_handleAddComment');
+  }
+  
+  function _handleDeleteComment(e) {
+    console.log('_handleDeleteComment');
+  }
+  
+  function _handleSidebarSelection(e) {
+    if (settings.currentItem) UtilityKTS.setClass(settings.currentItem, 'selected-item', false);
+    settings.currentItem = e.target;
+    UtilityKTS.setClass(settings.currentItem, 'selected-item', true);
+    
+    _loadCommentItem(settings.currentItem.itemData);
   }
   
   function _handleOpenSource() {
@@ -248,6 +388,33 @@ const app = function () {
       UtilityKTS.setClass(elem, 'disabled', !enable);
     }
   }
+  
+  function _makePlaintext(richtext) {
+    var plaintext = richtext;
+
+    plaintext = plaintext.replace(/<p>(.*?)<\/p>/g, '$1\n');    // replace <p> elements with \n
+    plaintext = plaintext.replace(/<li>(.*?)<\/li>/g, '• $1');  // replace <li> elements with bulleted items
+    plaintext = plaintext.replace(/<a href="(.*?)"(.*?)>(.*?)<\/a>/g, '$3 (see $1)'); // replace link tag
+    
+    plaintext = plaintext.replace(/<br \/>/g, '\n');            // replace <br /> with \n
+    plaintext = plaintext.replace(/<.*?\>(.*?)/g, '$1');        // strip all other angle bracket tags
+    plaintext = plaintext.replace('&nbsp;', ' ');
+    
+    while (plaintext.includes('\n\n')) plaintext = plaintext.replace('\n\n', '\n'); 
+    
+    return plaintext;
+  }
+  
+  function _parseTags(tagString) {
+    var tagSet = new Set();
+    var tagList = tagString.split(',');
+    for (var j = 0; j < tagList.length; j++) {
+      tagSet.add(tagList[j].trim());
+    }
+
+    return Array.from(tagSet);
+  }
+    
 	//-----------------------------------------------------------------------------------
 	// init:
 	//-----------------------------------------------------------------------------------

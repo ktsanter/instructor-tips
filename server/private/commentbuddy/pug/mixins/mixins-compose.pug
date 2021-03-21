@@ -1,17 +1,57 @@
 mixin composerContainer()
-  .row
-    .col-sm
-      .form-floating
-        input(type="text" class="form-control input-tags" id="inputTags")
-        label(for="inputTags") tags
+    .wrapper
+      nav(id="sidebar" class="sidebar-container")
+        .sidebar-header 
+          button(type="button" id="sidebarCollapse" class="btn btn-outline-primary btn-sidebartoggleright" title="close comments")
+            i(class="icon-sidebartoggleright fas fa-caret-left")
+          
+        .sidebar-contents 
+          .sidebar-controls
+            .container-fluid(class="p-0")
+              .row
+                .col-sm(class="p-0")
+                  .form-floating
+                    button(type="button" class="btn btn-outline-primary btn-newcomment" title="make new comment")
+                      i(class="icon-newcomment far fa-plus-square")
+                    button(type="button" class="btn btn-outline-primary btn-deletecomment" title="delete selected comment")
+                      i(class="icon-deletecomment far fa-trash-alt")             
+                
+              .row
+                col-sm
+                  .form-floating(class="my-1")
+                    input(type="text" class="form-control input-search" id="inputSearch")
+                    label(for="inputSearch") search
 
-  .row
-    .col-sm
-      .form-floating
-        input(type="text" class="form-control input-hovertext" id="inputHoverText")
-        label(for="inputHoverText") hover text
+              .row
+                .col-sm
+                  .form-floating(class="mb-2")
+                    select(class="form-select select-tag" id="selectTag" aria-label="select tag")
+                      option(selected) [any]
+                    label(for="selectTag") tag                 
+                  
+          .sidebar-items
+          
+      .content(class="container-fluid")
+        .row
+          .col-sm
+            nav
+              .container-fluid(class="p-0")
+                button(type="button" id="sidebarCollapse" class="btn btn-outline-primary btn-sidebartoggleleft hide-me" title="open comments")
+                  i(class="icon-sidebartoggleleft fas fa-caret-right")
+                  
+        .row
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-tags active" id="inputTags")
+              label(for="inputTags") tags
 
-  .row
-    .col-sm
-      .contenteditor-container(class="contenteditor-container-navComposer")
-        +makeTinyMCE("contenteditor-navComposer")
+        .row
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-hovertext" id="inputHoverText")
+              label(for="inputHoverText") hover text
+
+        .row
+          .col-sm
+            .contenteditor-container(class="contenteditor-container-navComposer")
+              +makeTinyMCE("contenteditor-navComposer")
