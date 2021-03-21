@@ -3,9 +3,9 @@ include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/tinyMCE-mixins.pug
+include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-compose.pug
-include ./mixins/mixins-configure.pug
 
 doctype html
 html(lang="en")
@@ -20,6 +20,7 @@ html(lang="en")
     
     style
       include ../../common/styles/navbar-overrides.css
+      include ../../common/styles/classProfile.css      
       include ../styles/composer.css
          
     +addJQuery()
@@ -30,16 +31,19 @@ html(lang="en")
       {
         items: [
           {id: "navComposer", type: "link", label: "compose"},
-          {id: "navConfigure", type: "link", label: "configure"},
-          {id: "navHelp", type: "link", label: "help"}
+          {type: "dropdown", label: "other", items: [
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
         ],
         
         buttons: [
-          {id: 'navSave', label: 'save'}
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}
         ],
         
         message: true,
-        profile: false
+        profile: true
       }
     )
     
@@ -49,5 +53,5 @@ html(lang="en")
       .container-fluid(class="contents-container contents-navComposer hide-me")
         +composerContainer()
 
-      .container-fluid(class="contents-container contents-navConfigure hide-me")
-        +configureContainer()        
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")
+      

@@ -14,9 +14,11 @@ const app = function () {
     navItemClass: 'use-handler',
 
     helpURL: '/commentbuddy/help',
+    logoutURL: '/usermanagement/logout/commentbuddy',
     
     dirtyBit: {
-      navComposer: false
+      navComposer: false,
+      navProfile: false
     },    
     
     sourceId: '12AipxdTnkm9P00HUUVMGxN1dsJXeUbCpR4DtSv4bwl0'
@@ -25,7 +27,7 @@ const app = function () {
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
-	async function init () {    
+	async function init (sodium) {    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
@@ -37,10 +39,21 @@ const app = function () {
     _setNavbarMessage('');
     _attachNavbarHandlers();
     
-    settings.dbCommentBuddy = new CommentBuddyDB({});
-    var validSettings = settings.dbCommentBuddy.settingsValid();
+    settings.profile = new ASProfile({
+      id: "myProfile",
+      "sodium": sodium,
+      navbarElements: {
+        "save": page.navbar.getElementsByClassName('navSave')[0],
+        "reload": page.navbar.getElementsByClassName('navReload')[0],
+        "icon": page.navbar.getElementsByClassName('icon-profile')[0],
+        "pic": page.navbar.getElementsByClassName('pic-profile')[0]
+      },
+      hideClass: 'hide-me'
+    });
+    await settings.profile.init();    
     
-    if (validSettings) await _getCommentData(true);
+    settings.dbCommentBuddy = new CommentBuddyDB({});
+    if ( !(await _getCommentData(true)) ) return;
 
     await _renderContents();
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
@@ -70,10 +83,8 @@ const app = function () {
   async function _renderContents() {
     page.contents = page.body.getElementsByClassName('contents')[0];        
     page.contentsComposer = page.contents.getElementsByClassName('contents-navComposer')[0];
-    page.contentsConfigure = page.contents.getElementsByClassName('contents-navConfigure')[0];
 
     await _renderComposer();
-    _renderConfigure();
   }
   
   async function _renderComposer() {
@@ -114,17 +125,10 @@ const app = function () {
     _loadTagSelect(settings.commentData);
   }
   
-  function _renderConfigure() {
-    page.elemConfigureURL = page.contentsConfigure.getElementsByClassName('form-control input-link')[0];
-    page.elemShowSource = page.contentsConfigure.getElementsByClassName('btn-opensource')[0];
-    page.elemShowSource.addEventListener('click', (e) => { _handleOpenSource(e); });
-    page.contentsConfigure.getElementsByClassName('btn-storelink')[0].addEventListener('click', (e) => { _handleConfigureURL(e); });
-  }
-
   //-----------------------------------------------------------------------------
 	// updating
 	//-----------------------------------------------------------------------------
-  function _showContents(contentsId) {
+  async function _showContents(contentsId) {
     settings.currentNavOption = contentsId;
     
     var containers = page.contents.getElementsByClassName('contents-container');
@@ -133,16 +137,23 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navComposer') {
-      _showComposer();
-    } else if (contentsId == 'navConfigure') {
-      _showConfigure();
-    }
-      
+    if (contentsId == 'navProfile') await settings.profile.reload();
+    
     _setNavOptions();
   }
   
-  function _showComposer() {}
+  async function _updateCommentInfo() {
+    console.log('_updateCommentInfo');
+    if ( !(await _getCommentData(false)) ) return;
+    
+    _loadCommentInfo(settings.commentData);
+    _loadTagSelect(settings.commentData);
+    _updateCommentItems();
+    
+    if (settings.currentItem != null) {
+      _selectItem(settings.currentItem);
+    }
+  }
   
   function _loadCommentInfo(commentData) {
     console.log('_loadCommentInfo');    
@@ -218,21 +229,27 @@ const app = function () {
     _loadCommentInfo(filteredCommentList);
   }
   
-  function _showConfigure() {
-    page.elemConfigureURL.value = settings.dbCommentBuddy.getSpreadsheetURL();
-    
-    page.elemShowSource.disabled = !settings.dbCommentBuddy.settingsValid();
+  function _selectItem() {
+    console.log('_selectItem');
+    if (settings.currentItem == null) return;
+    console.log(settings.currentItem.itemInfo);
   }
-    
+  
   function _setNavOptions() {
     var opt = settings.currentNavOption;
 
     _enableNavOption('navSave', false);
+    _enableNavOption('navReload', false);
     _enableNavOption('navComposer', true, settings.dbCommentBuddy.settingsValid());
 
     if (opt == 'navComposer') {
-      var enable = settings.dirtyBit.navComposer;
-      _enableNavOption('navSave', true, enable); 
+      _enableNavOption('navSave', true, settings.dirtyBit.navComposer); 
+      page.elemSidebarDelete.disabled = (settings.currentItem == null);
+      
+    } else if (opt == 'navProfile') {
+      var enable = settings.profile.isDirty();
+      _enableNavOption('navSave', true, enable);
+      _enableNavOption('navReload', true, enable);      
     }
   }
   
@@ -245,34 +262,53 @@ const app = function () {
     settings.currentItemData = itemData;
   }
   
-  async function _saveComment() {
+  async function _saveComment(itemData) {
     _setNavbarMessage('saving comment...');
-    var success = await settings.dbCommentBuddy.saveNewComment({
-      "tags": page.elemTags.value,
-      "hovertext": page.elemHoverText.value,
-      "comment": settings.tiny.navComposer.getContent()
-    });
+    console.log('_saveComment');
+    console.log(itemData);
+    var success = true;
+    
+    // use dbCommentBuddy method
+    await _updateCommentInfo();
     
     _setNavbarMessage(success ? '' : 'failed to save comment');
   }
   
-  async function _reconfigureDataSource(proposedURL) {
-    _setNavbarMessage('testing data source...');
-
-    if (await settings.dbCommentBuddy.storeConfiguration(proposedURL)) {
-      _setNavbarMessage('loading data...')
-      await _getCommentData(false);
-      _setNavbarMessage('');
-      
-    } else {
-      _setNavbarMessage('could not open data source');
-    }
+  async function _deleteComment(itemData) {
+    _setNavbarMessage('deleting comment...');
+    console.log('_deleteComment (disabled)')
+    console.log(itemData);
+    var success = true;
     
-    page.elemShowSource.disabled = !settings.dbCommentBuddy.settingsValid();    
-
-    _setNavOptions();
+    // use dbCommentBuddy method
+    settings.currentItem = null;
+    await _updateCommentInfo();
+    
+    _setNavbarMessage(success ? '' : 'failed to delete comment');
+  }
+  
+  async function _addDefaultComment() {
+    _setNavbarMessage('adding new comment...');
+    console.log('_addDefaultComment (disabled)')
+    var success = true;
+    var itemData = {
+      "tags": '',
+      "hovertext": '',
+      "comment": 'default comment'
+    };
+    console.log(itemData);
+    
+    // use dbCommentBuddy method
+    // use return value to set settings.currentItem
+    await _updateCommentInfo();
+    
+    _setNavbarMessage(success ? '' : 'failed to add new comment');
   }
 
+  function _doLogout() {
+    window.open(settings.logoutURL, '_self'); 
+  }
+  
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
   }
@@ -292,9 +328,12 @@ const app = function () {
     
     var dispatchMap = {
       "navComposer": function() { _showContents('navComposer'); },
-      "navConfigure": function() { _showContents('navConfigure'); },
       "navHelp": _doHelp,
-      "navSave": function() { _handleSave(e);}
+      "navProfile": function() { _showContents('navProfile'); },
+      "navProfilePic": function() { _showContents('navProfile'); },
+      "navSignout": function() { _doLogout();},
+      "navSave": function() { _handleSave(e);},
+      "navReload": function() { _handleReload(e, false);}
     }
     
     _setNavbarMessage('');
@@ -303,15 +342,32 @@ const app = function () {
   
   async function _handleSave(e) {
     console.log('_handleSave');
-    console.log('disabled');
-    return;
     
     if (settings.currentNavOption == 'navComposer') {
-      if ( !(await _saveComment()) ) return;
+      if (settings.currentItem == null) return;
+      var itemData = settings.currentItem.itemData;
+      itemData.tags = page.elemTags.value;
+      itemData.hovertext = page.elemHoverText.value;
+      itemData.comment = settings.tiny.navComposer.getContent();
+
+      if ( !(await _saveComment(itemData)) ) return;
       _setDirtyBit(false);
       console.log('reload data set?');
     }
   }
+  
+  async function _handleReload(e, skipConfirm) {
+    if (!skipConfirm) {
+      var msg = 'Any changes will be lost.\nChoose "OK" to continue with reloading';
+      if (!confirm(msg)) return;
+    }
+    
+    if (settings.currentNavOption == 'navProfile') {
+      settings.profile.reload();
+    }
+    
+    _setDirtyBit(false);
+  }  
   
   function _handleEditorChange(e) {
     _setDirtyBit(true);
@@ -334,12 +390,21 @@ const app = function () {
     _updateCommentItems();
   }
   
-  function _handleAddComment(e) {
+  async function _handleAddComment(e) {
     console.log('_handleAddComment');
+    console.log('check dirty bit?');
+    await _addDefaultComment();
   }
   
-  function _handleDeleteComment(e) {
+  async function _handleDeleteComment(e) {
     console.log('_handleDeleteComment');
+    if (settings.currentItem == null) return;
+    
+    var msg = 'This comment will be permanently deleted.';
+    msg += '\nContinue with deleting?';
+    if (!confirm(msg)) return;
+    
+    await _deleteComment(settings.currentItem.itemData);
   }
   
   function _handleSidebarSelection(e) {
@@ -348,16 +413,13 @@ const app = function () {
     UtilityKTS.setClass(settings.currentItem, 'selected-item', true);
     
     _loadCommentItem(settings.currentItem.itemData);
+    _setNavOptions();
   }
   
   function _handleOpenSource() {
     settings.dbCommentBuddy.openSource();
   }
   
-  async function _handleConfigureURL(e) {
-    await _reconfigureDataSource(page.elemConfigureURL.value);
-  }
-
   //---------------------------------------
 	// DB interface
 	//----------------------------------------  
@@ -366,6 +428,7 @@ const app = function () {
     
     settings.commentData = null;
     var result = await settings.dbCommentBuddy.getCommentData();
+    console.log(result);
     if (result.success) {
       settings.commentData = result.data;
       page.notice.setNotice('');
@@ -380,6 +443,7 @@ const app = function () {
   // utility
 	//--------------------------------------------------------------------------
   function _enableNavOption(navOption, visible, enable) {
+    console.log('navOption: ' + navOption);
     var elem = document.getElementById(navOption);
     UtilityKTS.setClass(elem, 'hide-me', !visible);
     if (elem.classList.contains('btn')) {

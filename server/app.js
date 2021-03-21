@@ -15,6 +15,7 @@ const MARIA_DBNAME_WELCOMEV2 = getEnv('MARIA_DBNAME_WELCOMEV2', true);
 const MARIA_DBNAME_IMAGEFLIPPER = getEnv('MARIA_DBNAME_IMAGEFLIPPER', true);
 const MARIA_DBNAME_FAQCOMPOSER = getEnv('MARIA_DBNAME_FAQCOMPOSER', true);
 const MARIA_DBNAME_WALKTHROUGH = getEnv('MARIA_DBNAME_WALKTHROUGH', true);
+const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -137,6 +138,15 @@ const mariadbParams_Walkthrough = {
     connectionLimit: 5 */
 };
 
+const mariadbParams_CommentBuddy = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_COMMENTBUDDY /*, 
+    connectionLimit: 5 */
+};
+
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
@@ -145,6 +155,7 @@ const mariaDBManager_WelcomeLetterV2 = new mariaDBManagerClass(mariadbParams_Wel
 const mariaDBManager_ImageFlipper = new mariaDBManagerClass(mariadbParams_ImageFlipper);
 const mariaDBManager_FAQComposer = new mariaDBManagerClass(mariadbParams_FAQComposer);
 const mariaDBManager_Walkthrough = new mariaDBManagerClass(mariadbParams_Walkthrough);
+const mariaDBManager_CommentBuddy = new mariaDBManagerClass(mariadbParams_CommentBuddy);
     
 //------------------------------------------
 // session management
@@ -352,6 +363,18 @@ const dbWalkthrough = new dbWalkthroughClass({
 });
 
 //------------------------------------------
+// CommentBuddy general query objects
+//------------------------------------------
+const dbCommentBuddyClass = require('./classes/commentbuddy')
+
+const dbCommentBuddy = new dbCommentBuddyClass({
+  "dbManager": mariaDBManager_CommentBuddy,
+  "userManagement": userManagement,
+  "fileServices": fileservices,
+  "pug": pug
+});
+
+//------------------------------------------
 // DB manager lookup, app info lookup
 //------------------------------------------
 var dbManagerLookup = {
@@ -363,7 +386,8 @@ var dbManagerLookup = {
   "welcomeV2": dbWelcomeLetterV2,
   "imageflipper": dbImageFlipper,
   "faqcomposer": dbFAQComposer,
-  "walkthrough": dbWalkthrough
+  "walkthrough": dbWalkthrough,
+  "commentbuddy": dbCommentBuddy
 };
 
 var appLookup = {
@@ -415,6 +439,13 @@ var appLookup = {
     appName: 'Walkthrough helper',
     routePug: 'walkthrough/pug/helper.pug',
     loginReRoute: 'walkthrough/helper'
+  }, 
+
+  "commentbuddy" : {
+    appDescriptor: 'commentbuddy',
+    appName: 'CommentBuddy composer',
+    routePug: 'commentbuddy/pug/composer.pug',
+    loginReRoute: 'commentbuddy/composer'
   }  
 };
 
@@ -474,6 +505,13 @@ app.get('/faq-composer/faq/:faqsetid', async function (req, res) {
 app.get('/walkthrough/helper', function (req, res) { routeIfLoggedIn(req, res, 'walkthrough'); })
 app.get('/walkthrough/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'walkthrough/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+
+app.get('/commentbuddy/composer', function (req, res) { routeIfLoggedIn(req, res, 'commentbuddy'); })
+app.get('/commentbuddy/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
@@ -847,16 +885,6 @@ app.get('/cte-department/remind', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'cte-department/pug/remind-for-embed.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {});
 })
-
-app.get('/commentbuddy/composer', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/composer.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
-})
-app.get('/commentbuddy/help', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/help.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
-})
-
 
 app.get('/:app', function (req, res) {
   var appDescriptor = req.params.app;
