@@ -12,20 +12,28 @@ class CommentBuddyDB {
   // DB interaction
   //--------------------------------------------------------------
   async getCommentData() {
-    console.log('CommentBuddyDB.getCommentData');
-    
-    var result = {
-      success: false,
-      details: 'debugging...',
-      data: null
-    };
-       
-    return result;
-  }
+    var dbResult = await SQLDBInterface.doGetQuery('commentbuddy/query', 'comments');
 
-  //--------------------------------------------------------------
-  // handlers
-  //--------------------------------------------------------------   
+    return dbResult;
+  }
+  
+  async saveComment(itemData) {
+    var dbResult = await SQLDBInterface.doPostQuery('commentbuddy/update', 'comment', itemData);
+
+    return dbResult.success;
+  }
+  
+  async addDefaultComment() {
+    var dbResult = await SQLDBInterface.doPostQuery('commentbuddy/insert', 'default-comment', {});
+
+    return dbResult;
+  }
+  
+  async deleteComment(itemData) {
+    var dbResult = await SQLDBInterface.doPostQuery('commentbuddy/delete', 'comment', itemData);
+
+    return dbResult.success;
+  }
   
   //--------------------------------------------------------------
   // utility

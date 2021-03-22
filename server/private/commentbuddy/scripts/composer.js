@@ -1,8 +1,10 @@
 //-----------------------------------------------------------------------
 // CommentBuddy composer
 //-----------------------------------------------------------------------
-// TODO: extend to add/edit/delete for all data in spreadsheet?
-// TODO: is the CB extension stripping some HTML, e.g. <span> and <code>
+// TODO: sanitize user input, especially " and '
+// TODO: review use of dirty bit
+// TODO: hide editing fields when no comment selected
+// TODO: height is too big in composer
 // TODO: styling
 // TODO: finish help
 //-----------------------------------------------------------------------
@@ -58,8 +60,7 @@ const app = function () {
     await _renderContents();
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
 
-    var startingOption = validSettings ? 0 : 1;
-    page.navbar.getElementsByClassName(settings.navItemClass)[startingOption].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
   
   //-----------------------------------------------------------------------------
@@ -88,7 +89,7 @@ const app = function () {
   }
   
   async function _renderComposer() {
-    settings.currentItemData = null;
+    settings.currentItem = null;
     
     settings.tiny = {};
     settings.tiny.navComposer = new MyTinyMCE({
@@ -143,9 +144,9 @@ const app = function () {
   }
   
   async function _updateCommentInfo() {
-    console.log('_updateCommentInfo');
     if ( !(await _getCommentData(false)) ) return;
     
+    _deselectCurrentItem();
     _loadCommentInfo(settings.commentData);
     _loadTagSelect(settings.commentData);
     _updateCommentItems();
@@ -156,16 +157,27 @@ const app = function () {
   }
   
   function _loadCommentInfo(commentData) {
-    console.log('_loadCommentInfo');    
     var elemItems = page.elemSidebar.getElementsByClassName('sidebar-items')[0];
+    var currentId = null;
+    var selectedItem = null;
+    
+    if (settings.currentItem) currentId = settings.currentItem.itemData.commentid;
     
     UtilityKTS.removeChildren(elemItems);
     for (var i = 0; i < commentData.length; i++) {
       var item = commentData[i];
       var elemSingleItem = CreateElement.createDiv(null, 'sidebar-singleitem', _makePlaintext(item.comment));
       elemSingleItem.addEventListener('click', (e) => { _handleSidebarSelection(e); });
-      elemSingleItem.itemData = {...item, index: i};
+      elemSingleItem.itemData = item;
+
+      if (currentId && currentId == item.commentid) selectedItem = elemSingleItem;
+      
       elemItems.appendChild(elemSingleItem);      
+    }
+    
+    if (selectedItem) {
+      _deselectCurrentItem();
+      _selectItem(selectedItem);
     }
   }
   
@@ -192,15 +204,12 @@ const app = function () {
   }
   
   function _updateCommentItems() {
-    console.log('_updateCommentItems');
     var filteredCommentList = settings.commentData;
     
     var searchVal = page.elemSidebarSearch.value.toLowerCase();
     var tagVal = page.elemSidebarTag.value;
     var useSearchVal = searchVal != '';
     var useTagVal = tagVal != '[any]';
-    console.log('|' + searchVal + '| |' + tagVal + '|');
-    console.log(useSearchVal + ' ' + useTagVal);
 ;
     if (useSearchVal || useTagVal) {
       filteredCommentList = [];
@@ -229,10 +238,21 @@ const app = function () {
     _loadCommentInfo(filteredCommentList);
   }
   
-  function _selectItem() {
-    console.log('_selectItem');
-    if (settings.currentItem == null) return;
-    console.log(settings.currentItem.itemInfo);
+  function _selectItem(elemItem) {
+    if (settings.currentItem && settings.currentItem == elemItem) return;
+    _deselectCurrentItem();
+    
+    settings.currentItem = elemItem;
+    UtilityKTS.setClass(settings.currentItem, 'selected-item', true);
+    
+    _loadCommentItem(settings.currentItem.itemData);
+    _setNavOptions();
+    
+  }
+  
+  function _deselectCurrentItem() {
+    if (settings.currentItem) UtilityKTS.setClass(settings.currentItem, 'selected-item', false);
+    _clearCommentItem();
   }
   
   function _setNavOptions() {
@@ -240,7 +260,6 @@ const app = function () {
 
     _enableNavOption('navSave', false);
     _enableNavOption('navReload', false);
-    _enableNavOption('navComposer', true, settings.dbCommentBuddy.settingsValid());
 
     if (opt == 'navComposer') {
       _enableNavOption('navSave', true, settings.dirtyBit.navComposer); 
@@ -254,55 +273,54 @@ const app = function () {
   }
   
   function _loadCommentItem(itemData) {
-    console.log('_loadCommentItem');
-    console.log('check for dirty bit first');
     page.elemTags.value = itemData.tags;
     page.elemHoverText.value = itemData.hovertext;
     settings.tiny.navComposer.setContent(itemData.comment);
-    settings.currentItemData = itemData;
+  }
+  
+  function _clearCommentItem() {
+    page.elemTags.value = '';
+    page.elemHoverText.value = '';
+    settings.tiny.navComposer.setContent('');
   }
   
   async function _saveComment(itemData) {
     _setNavbarMessage('saving comment...');
-    console.log('_saveComment');
-    console.log(itemData);
-    var success = true;
     
-    // use dbCommentBuddy method
-    await _updateCommentInfo();
+    var success = await settings.dbCommentBuddy.saveComment(itemData);
     
     _setNavbarMessage(success ? '' : 'failed to save comment');
+    if (success) {
+      _setDirtyBit(false);
+      _updateCommentInfo();
+    }
   }
   
   async function _deleteComment(itemData) {
     _setNavbarMessage('deleting comment...');
-    console.log('_deleteComment (disabled)')
-    console.log(itemData);
-    var success = true;
+    var success = await settings.dbCommentBuddy.deleteComment(itemData);
     
-    // use dbCommentBuddy method
-    settings.currentItem = null;
-    await _updateCommentInfo();
-    
-    _setNavbarMessage(success ? '' : 'failed to delete comment');
+    _setNavbarMessage(success ? '' : 'failed to save comment');
+    if (success) {
+      settings.currentItem = null;
+      _setDirtyBit(false);
+      _updateCommentInfo();
+    }
   }
   
   async function _addDefaultComment() {
     _setNavbarMessage('adding new comment...');
-    console.log('_addDefaultComment (disabled)')
-    var success = true;
-    var itemData = {
-      "tags": '',
-      "hovertext": '',
-      "comment": 'default comment'
-    };
-    console.log(itemData);
     
-    // use dbCommentBuddy method
-    // use return value to set settings.currentItem
-    await _updateCommentInfo();
+    var result = await settings.dbCommentBuddy.addDefaultComment();
     
-    _setNavbarMessage(success ? '' : 'failed to add new comment');
+    _setNavbarMessage(result.success ? '' : 'failed to add new comment');
+    if (result.success) {
+      var elemDummy = CreateElement.createDiv(null, null);
+      elemDummy.itemData = result.data;
+      settings.currentItem = elemDummy;
+      _setDirtyBit(false);
+      _updateCommentInfo();
+    }
   }
 
   function _doLogout() {
@@ -341,18 +359,16 @@ const app = function () {
   }
   
   async function _handleSave(e) {
-    console.log('_handleSave');
-    
     if (settings.currentNavOption == 'navComposer') {
       if (settings.currentItem == null) return;
       var itemData = settings.currentItem.itemData;
       itemData.tags = page.elemTags.value;
       itemData.hovertext = page.elemHoverText.value;
       itemData.comment = settings.tiny.navComposer.getContent();
-
       if ( !(await _saveComment(itemData)) ) return;
-      _setDirtyBit(false);
-      console.log('reload data set?');
+      
+    } else if (settings.currentNavOption == 'navProfile') {
+      settings.profile.save();
     }
   }
   
@@ -386,18 +402,14 @@ const app = function () {
   }
   
   function _handleCommentSearchChange(e) {
-    console.log('_handleCommentSearchChange');
     _updateCommentItems();
   }
   
   async function _handleAddComment(e) {
-    console.log('_handleAddComment');
-    console.log('check dirty bit?');
     await _addDefaultComment();
   }
   
   async function _handleDeleteComment(e) {
-    console.log('_handleDeleteComment');
     if (settings.currentItem == null) return;
     
     var msg = 'This comment will be permanently deleted.';
@@ -408,12 +420,7 @@ const app = function () {
   }
   
   function _handleSidebarSelection(e) {
-    if (settings.currentItem) UtilityKTS.setClass(settings.currentItem, 'selected-item', false);
-    settings.currentItem = e.target;
-    UtilityKTS.setClass(settings.currentItem, 'selected-item', true);
-    
-    _loadCommentItem(settings.currentItem.itemData);
-    _setNavOptions();
+    _selectItem(e.target);
   }
   
   function _handleOpenSource() {
@@ -428,12 +435,12 @@ const app = function () {
     
     settings.commentData = null;
     var result = await settings.dbCommentBuddy.getCommentData();
-    console.log(result);
     if (result.success) {
       settings.commentData = result.data;
       page.notice.setNotice('');
+      
     } else {
-      page.notice.setNotice(result.details);
+      page.notice.setNotice('failed to load comments');
     }
     
     return result.success;
@@ -443,7 +450,6 @@ const app = function () {
   // utility
 	//--------------------------------------------------------------------------
   function _enableNavOption(navOption, visible, enable) {
-    console.log('navOption: ' + navOption);
     var elem = document.getElementById(navOption);
     UtilityKTS.setClass(elem, 'hide-me', !visible);
     if (elem.classList.contains('btn')) {

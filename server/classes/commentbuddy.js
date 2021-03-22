@@ -18,15 +18,10 @@ module.exports = internal.CommentBuddy = class {
 // dispatchers
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
-    console.log('doQuery');
-    console.log(params);
-    console.log(postData);
-    console.log(userInfo);
-    
     var dbResult = this._dbManager.queryFailureResult();
 
-    if (params.queryName == 'commentset') {
-      dbResult = await this._getCommentSet(params, postData, userInfo);
+    if (params.queryName == 'comments') {
+      dbResult = await this._getComments(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -36,14 +31,10 @@ module.exports = internal.CommentBuddy = class {
   }
 
   async doInsert(params, postData, userInfo, funcCheckPrivilege) {
-    console.log('doInsert');
-    console.log(params);
-    console.log(postData);
-    console.log(userInfo);
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._insertDummy(params, postData, userInfo);
+    if (params.queryName == 'default-comment') {
+      dbResult = await this._insertDefaultComment(params, postData, userInfo);
   
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -53,14 +44,10 @@ module.exports = internal.CommentBuddy = class {
   }
   
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
-    console.log('doUpdate');
-    console.log(params);
-    console.log(postData);
-    console.log(userInfo);
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'commentset') {
-      dbResult = await this._updateCommentSet(params, postData, userInfo);
+    if (params.queryName == 'comment') {
+      dbResult = await this._updateComment(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -70,14 +57,10 @@ module.exports = internal.CommentBuddy = class {
   }  
 
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
-    console.log('doDelete');
-    console.log(params);
-    console.log(postData);
-    console.log(userInfo);
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._deleteDummy(params, postData, userInfo);
+    if (params.queryName == 'comment') {
+      dbResult = await this._deleteComment(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -89,39 +72,23 @@ module.exports = internal.CommentBuddy = class {
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
-  async _getCommentSet(params, postData, userInfo) {
+  async _getComments(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
     var query, queryResults;
     
     query = 
       'select ' +
-        'a.commentsetid, a.hierarchy ' +
-      'from commentset as a ' +
+        'a.commentid, a.tags, a.hovertext, a.commenttext as "comment" ' +
+      'from comment as a ' +
       'where userid = ' + userInfo.userId;
       
     queryResults = await this._dbManager.dbQuery(query);   
 
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
-    
-    if (queryResults.data.length == 0) {
-      query = 
-        'call add_default_commentset(' +
-          userInfo.userId + 
-        ')';
-      queryResults = await this._dbManager.dbQuery(query);
-    }      
-
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.data = {
-        commentsetid: queryResults.data[0].commentsetid,
-        hierarchy: queryResults.data[0].hierarchy
-      }
+      result.data = queryResults.data;
       
     } else {
       result.details = queryResults.details;
@@ -130,7 +97,7 @@ module.exports = internal.CommentBuddy = class {
     return result;
   }
 
-  async _updateCommentSet(params, postData, userInfo) {
+  async _updateComment(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
     var query, queryResults;
@@ -138,10 +105,12 @@ module.exports = internal.CommentBuddy = class {
     var hierarchyData = postData.hierarchy;
     
     query = 
-      'update commentset ' +
+      'update comment ' +
       'set ' +
-        'hierarchy = \'' + hierarchyData + '\' ' +
-      'where userid = ' + userInfo.userId;
+        'tags = "' + postData.tags + '", ' +
+        'hovertext = "' + postData.hovertext + '", ' +
+        'commenttext = "' + postData.comment + '" ' +
+      'where commentid = ' + postData.commentid;
 
     queryResults = await this._dbManager.dbQuery(query);    
     
@@ -156,6 +125,52 @@ module.exports = internal.CommentBuddy = class {
 
     return result;
   }
+  
+  async _insertDefaultComment(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();  
+    
+    var query, queryResults;
+    
+    query = 
+      'call add_default_comment(' + 
+        userInfo.userId + ' ' +
+      ') ';
+    
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = queryResults.data[0][0];
+
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+  
+  async _deleteComment(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();
+    
+    var query, queryResults;
+    
+    query = 
+      'delete from comment ' +
+      'where commentid = ' + postData.commentid + ' ' +
+        'and userid = ' + userInfo.userId;
+         
+    var queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }    
   
 //---------------------------------------------------------------
 // other support methods
