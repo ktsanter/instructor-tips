@@ -1,10 +1,8 @@
 //-----------------------------------------------------------------------
 // CommentBuddy composer
 //-----------------------------------------------------------------------
-// TODO: sanitize user input, especially " and '
 // TODO: review use of dirty bit
-// TODO: hide editing fields when no comment selected
-// TODO: height is too big in composer
+// TODO: approach for data migration
 // TODO: styling
 // TODO: finish help
 //-----------------------------------------------------------------------
@@ -21,9 +19,7 @@ const app = function () {
     dirtyBit: {
       navComposer: false,
       navProfile: false
-    },    
-    
-    sourceId: '12AipxdTnkm9P00HUUVMGxN1dsJXeUbCpR4DtSv4bwl0'
+    }
   };
       
 	//---------------------------------------
@@ -111,6 +107,7 @@ const app = function () {
     page.elemSidebarSearch = page.elemSidebar.getElementsByClassName('input-search')[0];
     page.elemSidebarTag = page.elemSidebar.getElementsByClassName('select-tag')[0];
     
+    page.elemEditingContent = page.contentsComposer.getElementsByClassName('content')[0];
     page.elemTags = page.contentsComposer.getElementsByClassName('form-control input-tags')[0];
     page.elemHoverText = page.contentsComposer.getElementsByClassName('form-control input-hovertext')[0];
     
@@ -276,12 +273,14 @@ const app = function () {
     page.elemTags.value = itemData.tags;
     page.elemHoverText.value = itemData.hovertext;
     settings.tiny.navComposer.setContent(itemData.comment);
+    UtilityKTS.setClass(page.elemEditingContent, 'hide-me', false);
   }
   
   function _clearCommentItem() {
     page.elemTags.value = '';
     page.elemHoverText.value = '';
     settings.tiny.navComposer.setContent('');
+    UtilityKTS.setClass(page.elemEditingContent, 'hide-me', true);
   }
   
   async function _saveComment(itemData) {

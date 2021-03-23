@@ -71,7 +71,7 @@ body {
 .contents .contents-navComposer .sidebar-container .sidebar-items {
   min-width: 430px;
   max-width: 430px;
-  height: 90vh;    
+  height: 67vh;    
   overflow-y: scroll;
 }
 

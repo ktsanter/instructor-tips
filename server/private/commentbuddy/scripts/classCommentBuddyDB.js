@@ -18,7 +18,14 @@ class CommentBuddyDB {
   }
   
   async saveComment(itemData) {
-    var dbResult = await SQLDBInterface.doPostQuery('commentbuddy/update', 'comment', itemData);
+    var postData = {
+      "commentid": itemData.commentid,
+      "tags": this._sanitizeText(itemData.tags),
+      "hovertext": this._sanitizeText(itemData.hovertext),
+      "comment": this._sanitizeText(itemData.comment)
+    };
+    
+    var dbResult = await SQLDBInterface.doPostQuery('commentbuddy/update', 'comment', postData);
 
     return dbResult.success;
   }
@@ -30,6 +37,10 @@ class CommentBuddyDB {
   }
   
   async deleteComment(itemData) {
+    var postData = {
+      "commentid": itemData.commentid,
+    };
+    
     var dbResult = await SQLDBInterface.doPostQuery('commentbuddy/delete', 'comment', itemData);
 
     return dbResult.success;
@@ -38,5 +49,11 @@ class CommentBuddyDB {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  
+  _sanitizeText(str) {
+    var sanitized = str;
+    
+    sanitized = sanitized.replace(/"/g, '\\"');
+    
+    return sanitized;
+  }
 }

@@ -19,9 +19,14 @@ module.exports = internal.CommentBuddy = class {
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
+    console.log(params);
+    console.log(postData);
 
     if (params.queryName == 'comments') {
       dbResult = await this._getComments(params, postData, userInfo);
+            
+    } else if (params.queryName == 'client-comments') {
+      dbResult = await this._getComments(params, postData, {userId: postData.userId});
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;

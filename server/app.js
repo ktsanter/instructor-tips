@@ -514,6 +514,11 @@ app.get('/commentbuddy/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
+app.get('/commentbuddy-client/query/:queryName', async function (req, res) {
+  var dbManager = dbManagerLookup['commentbuddy'];
+  res.send(await dbManager.doQuery({queryName: 'client-comments'}, req.body));
+})
+
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 
