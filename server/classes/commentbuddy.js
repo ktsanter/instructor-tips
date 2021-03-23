@@ -19,8 +19,6 @@ module.exports = internal.CommentBuddy = class {
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
-    console.log(params);
-    console.log(postData);
 
     if (params.queryName == 'comments') {
       dbResult = await this._getComments(params, postData, userInfo);

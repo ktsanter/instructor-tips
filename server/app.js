@@ -40,12 +40,18 @@ function getEnv(varName, required) {
 }
     
 //------------------------------------------
-// configure express for the app
+// configure express and cors for the app
 //------------------------------------------
 const express = require('express')
 var path = require('path')
 
 const app = express()
+
+const cors = require('cors');
+var corsOptions = {
+  origin: '*'
+}
+app.use(cors(corsOptions));
 
 //------------------------------------------
 // configure favicon
@@ -514,7 +520,7 @@ app.get('/commentbuddy/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
-app.get('/commentbuddy-client/query/:queryName', async function (req, res) {
+app.post('/commentbuddy-client/query/:queryName', async function (req, res) {
   var dbManager = dbManagerLookup['commentbuddy'];
   res.send(await dbManager.doQuery({queryName: 'client-comments'}, req.body));
 })
