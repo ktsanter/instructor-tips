@@ -18,10 +18,21 @@ create table comment
   userid        int unsigned not null,
   tags          varchar(200) not null,
   hovertext     varchar(300) not null,
-  commenttext   varchar(1000) not null,
+  commenttext   varchar(4000) not null,
   
   primary key (commentid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
+);
+
+create table accesskey
+(
+  accesskeyid    int unsigned not null AUTO_INCREMENT,
+  userid         int unsigned not null,
+  accesskey      varchar(200) not null,
+  
+  primary key (accesskeyid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid)
 );
 
 #--------------------------------------------------------------------------

@@ -19,7 +19,10 @@ const app = function () {
     dirtyBit: {
       navComposer: false,
       navProfile: false
-    }
+    },
+    
+    commentData: null,
+    accessKey: null
   };
       
 	//---------------------------------------
@@ -51,6 +54,7 @@ const app = function () {
     await settings.profile.init();    
     
     settings.dbCommentBuddy = new CommentBuddyDB({});
+    if ( !(await _getAccessKey()) ) return;
     if ( !(await _getCommentData(true)) ) return;
 
     await _renderContents();
@@ -80,8 +84,10 @@ const app = function () {
   async function _renderContents() {
     page.contents = page.body.getElementsByClassName('contents')[0];        
     page.contentsComposer = page.contents.getElementsByClassName('contents-navComposer')[0];
+    page.contentsAccessKey = page.contents.getElementsByClassName('contents-navAccessKey')[0];
 
     await _renderComposer();
+    _renderAccessKey();
   }
   
   async function _renderComposer() {
@@ -121,6 +127,13 @@ const app = function () {
     
     _loadCommentInfo(settings.commentData);
     _loadTagSelect(settings.commentData);
+  }
+  
+  function _renderAccessKey() {
+    page.elemAccessKey = page.contentsAccessKey.getElementsByClassName('text-accesskey')[0];
+    page.contentsAccessKey.getElementsByClassName('button-accesskey')[0].addEventListener('click', (e) => { _handleAccessKeyCopy(e); });
+
+    page.elemAccessKey.value = settings.accessKey;
   }
   
   //-----------------------------------------------------------------------------
@@ -345,6 +358,7 @@ const app = function () {
     
     var dispatchMap = {
       "navComposer": function() { _showContents('navComposer'); },
+      "navAccessKey": function() { _showContents('navAccessKey'); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
@@ -426,9 +440,30 @@ const app = function () {
     settings.dbCommentBuddy.openSource();
   }
   
+  function _handleAccessKeyCopy(e) {
+    _copyToClipboard(page.elemAccessKey.value);
+    _setNavbarMessage('access key copied');
+  }
+  
   //---------------------------------------
 	// DB interface
 	//----------------------------------------  
+  async function _getAccessKey() {
+    page.notice.setNotice('loading access key...', true);
+    
+    settings.accessKey = null;
+    var result = await settings.dbCommentBuddy.getAccessKey();
+    if (result.success) {
+      settings.accessKey = result.data.accesskey;
+      page.notice.setNotice('');
+      
+    } else {
+      page.notice.setNotice('failed to load access key');
+    }
+    
+    return result.success;
+  }
+
   async function _getCommentData(showNotice) {
     if (showNotice) page.notice.setNotice('loading comments...', true);
     
@@ -436,7 +471,7 @@ const app = function () {
     var result = await settings.dbCommentBuddy.getCommentData();
     if (result.success) {
       settings.commentData = result.data;
-      page.notice.setNotice('');
+      if (showNotice) page.notice.setNotice('');
       
     } else {
       page.notice.setNotice('failed to load comments');
@@ -444,6 +479,15 @@ const app = function () {
     
     return result.success;
   }
+
+  //---------------------------------------
+  // clipboard functions
+  //----------------------------------------
+  function _copyToClipboard(txt) {
+    if (!page._clipboard) page._clipboard = new ClipboardCopy(page.body, 'plain');
+
+    page._clipboard.copyToClipboard(txt);
+	}	
   
   //--------------------------------------------------------------------------
   // utility

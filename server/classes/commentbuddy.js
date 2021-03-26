@@ -2,7 +2,7 @@
 //---------------------------------------------------------------
 // CommentBuddy
 //---------------------------------------------------------------
-// TODO: 
+// TODO: look up comment data based on access key
 //---------------------------------------------------------------
 const internal = {};
 
@@ -24,7 +24,10 @@ module.exports = internal.CommentBuddy = class {
       dbResult = await this._getComments(params, postData, userInfo);
             
     } else if (params.queryName == 'client-comments') {
-      dbResult = await this._getComments(params, postData, {userId: postData.userId});
+      dbResult = await this._getClientComments(params, postData);
+            
+    } else if (params.queryName == 'accesskey') {
+      dbResult = await this._getAccessKey(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -98,6 +101,111 @@ module.exports = internal.CommentBuddy = class {
     }
 
     return result;
+  }
+
+  async _getClientComments(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    var query =
+      'select ' + 
+        'a.userid ' +
+      'from accesskey as a ' +
+      'where a.accesskey = "' + postData.accesskey + '"';
+       
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (!queryResults.success  || queryResults.data.length != 1) {
+      result.details = 'invalid access key';
+      return result;
+    }
+    
+    var userId = queryResults.data[0].userid;
+    
+    query = 
+      'select ' +
+        'a.commentid, a.tags, a.hovertext, a.commenttext as "comment" ' +
+      'from comment as a ' +
+      'where userid = ' + userId;
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
+  async _getAccessKey(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select ' +
+        'a.accesskey ' +
+      'from accesskey as a ' +
+      'where userid = ' + userInfo.userId;
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    if (queryResults.data.length == 0) {
+      if ( !(await this._generateAccessKey(userInfo.userId)) ) {
+        result.success = false;
+        result.details = 'failed to generate access key';
+        
+      } else {
+        queryResults = await this._dbManager.dbQuery(query);
+      }
+    }
+    
+    if (queryResults.success && queryResults.data.length > 0) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data[0];
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+  
+  async _generateAccessKey(userId) {
+    var charList = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    var key = '';
+    for (var i = 0; i < 24; i++) {
+      if (i != 0 && i % 4 == 0) key += '-';
+      var randIndex = Math.floor(Math.random() * charList.length);
+      key += charList.charAt(randIndex);
+    }
+
+    var query, queryResults;
+    
+    query = 
+      'insert ' +
+      'into accesskey (accesskey, userid) ' +
+      'values (' +
+        '"' + key + '", ' +
+        userId +
+      ') ';
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+    
+    return queryResults.success;
   }
 
   async _updateComment(params, postData, userInfo) {

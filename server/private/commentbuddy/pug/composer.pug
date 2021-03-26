@@ -6,6 +6,7 @@ include ../../common/pug/tinyMCE-mixins.pug
 include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-compose.pug
+include ./mixins/mixins-accesskey.pug
 
 doctype html
 html(lang="en")
@@ -32,6 +33,7 @@ html(lang="en")
         items: [
           {id: "navComposer", type: "link", label: "compose"},
           {type: "dropdown", label: "other", items: [
+            {id: "navAccessKey", type: "link", label: "get access key"},
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
           ]}
@@ -52,6 +54,9 @@ html(lang="en")
 
       .container-fluid(class="contents-container contents-navComposer hide-me")
         +composerContainer()
+
+      .container-fluid(class="contents-container contents-navAccessKey hide-me")
+        +accesskeyContainer()
 
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")
       

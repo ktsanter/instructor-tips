@@ -7,6 +7,7 @@ define(function (require) {
   require('/scripts/mytinymce');
   require('/scripts/classProfile');
   require('/scripts/usermanagement');  
+  require('/scripts/clipboard_copy');  
   
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');  

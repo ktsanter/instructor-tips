@@ -11,6 +11,12 @@ class CommentBuddyDB {
   //--------------------------------------------------------------
   // DB interaction
   //--------------------------------------------------------------
+  async getAccessKey() {
+    var dbResult = await SQLDBInterface.doGetQuery('commentbuddy/query', 'accesskey');
+
+    return dbResult;
+  }
+  
   async getCommentData() {
     var dbResult = await SQLDBInterface.doGetQuery('commentbuddy/query', 'comments');
 
