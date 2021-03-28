@@ -73,9 +73,9 @@ class MyTinyMCE {
     var changeCallback = this._editorCallback;
     
     var paramReadOnly = false;
-    var paramPlugins = 'advlist link image lists charmap code codesample formatpainter fullscreen table lists';
+    var paramPlugins = 'advlist link image lists charmap code codesample fullscreen table lists';
     var paramMenubar = 'edit view insert format tools';
-    var paramToolbar = 'formatpainter image link  table code fullscreen numlist bullist';
+    var paramToolbar = 'image link  table code fullscreen numlist bullist';
 
     if (this._initializationParams.hasOwnProperty('readonly')) paramReadOnly = this._initializationParams.readonly;
     if (this._initializationParams.hasOwnProperty('plugins')) paramPlugins = this._initializationParams.plugins;
