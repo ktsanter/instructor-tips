@@ -20,7 +20,7 @@ module.exports = internal.GMailer = class {
         pass: params.password     
       }
     });
-    
+
     this._defaultSender = params.user;
     this._fileServices = params.fileServices;
   }
