@@ -44,15 +44,22 @@ services:
       - MARIA_PASSWORD=swordfish
       - MARIA_DBNAME_INSTRUCTORTIPS=instructortips
       - MARIA_DBNAME_TREASUREHUNT=treasurehunt
+      - MARIA_DBNAME_PGVIEWER=pacingguide
+      - MARIA_DBNAME_WELCOME=welcomeletter
+      - MARIA_DBNAME_WELCOMEV2=welcomeletterv2
+      - MARIA_DBNAME_IMAGEFLIPPER=imageflipper
+      - MARIA_DBNAME_FAQCOMPOSER=faqcomposer
+      - MARIA_DBNAME_WALKTHROUGH=walkthrough
+      - MARIA_DBNAME_COMMENTBUDDY=commentbuddy
       - SESSION_HOST=db
       - SESSION_USER=root
       - SESSION_PASSWORD=swordfish
       - SESSION_DBNAME=sessionstore
       - SESSION_SECRET=hotpants
-      - INSTRUCTORTIPS_URL=/instructortips/instructortips.html
+      - INSTRUCTORTIPS_URL=aardvark.com/instructortips
       - PASSWORD_SALT=quei0Oot
-      - EMAIL_USER=hoopla
-      - EMAIL_PASSWORD=madeupstuff
+      - EMAIL_USER=ktsanter4@gmail.com
+      - EMAIL_PASSWORD=JG8_395kc_48LMta
     command: "npm start"
     volumes:
       - ./server:/home/node/app
@@ -62,16 +69,17 @@ services:
       - backend
 
 
-#  certbot:
-#    image: certbot/certbot
-#    container_name: certbot
-#    volumes:
-#      - certbot-etc:/etc/letsencrypt
-#      - certbot-var:/var/lib/letsencrypt
-#      - ./html:/var/www/html
-#    depends_on:
-#      - web
-#    command: certonly --dry-run --staging --webroot --webroot-path=/var/www/html --email aardvark-studios@protonmail.com --agree-tos -d aardvark-studios.com -d www.aardvark-studios.com
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - ./html:/var/www/html
+    depends_on:
+      - web
+#    command: certonly --force-renewal --webroot --webroot-path=/var/www/html --email aardvark-studios@protonmail.com --agree-tos -d aardvark-studios.com -d www.aardvark-studios.com
+    command: certonly --webroot --webroot-path=/var/www/html --email aardvark-studios@protonmail.com --agree-tos -d aardvark-studios.com -d www.aardvark-studios.com
 
 volumes:
   certbot-etc:
