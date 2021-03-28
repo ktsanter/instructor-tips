@@ -13,3 +13,6 @@ sql/*.bat
 # server stuff
 /dhparam/*
 /db-data/*
+
+# has passwords
+/docker-compose.yml
