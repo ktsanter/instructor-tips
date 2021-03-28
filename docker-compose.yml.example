@@ -1,0 +1,92 @@
+version: '3'
+services:
+  web:
+    image: nginx:mainline-alpine
+    container_name: web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./html:/var/www/html
+      - ./nginx:/etc/nginx/conf.d
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letencrypt
+      - ./dhparam:/etc/ssl/certs
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+  db:
+    image: mariadb:10.4
+    container_name: db
+    networks:
+      - backend
+    volumes:
+      - ./db-data:/var/lib/mysql
+      - ./init:/docker-entrypoint-initdb.d/:ro
+      - ./sql:/sql/:ro
+    environment:
+      - MYSQL_ROOT_PASSWORD=swordfish
+      - MYSQL_DATABASE=sessionstore
+
+  app:
+    image: node
+    container_name: app
+    user: "node"
+    working_dir: /home/node/app
+    environment:
+      - NODE_ENV=production
+      - THIS_PORT=3000
+      - MARIA_HOST=db
+      - MARIA_USER=root
+      - MARIA_PASSWORD=swordfish
+      - MARIA_DBNAME_INSTRUCTORTIPS=instructortips
+      - MARIA_DBNAME_TREASUREHUNT=treasurehunt
+      - MARIA_DBNAME_PGVIEWER=pacingguide
+      - MARIA_DBNAME_WELCOME=welcomeletter
+      - MARIA_DBNAME_WELCOMEV2=welcomeletterv2
+      - MARIA_DBNAME_IMAGEFLIPPER=imageflipper
+      - MARIA_DBNAME_FAQCOMPOSER=faqcomposer
+      - MARIA_DBNAME_WALKTHROUGH=walkthrough
+      - MARIA_DBNAME_COMMENTBUDDY=commentbuddy
+      - SESSION_HOST=db
+      - SESSION_USER=root
+      - SESSION_PASSWORD=swordfish
+      - SESSION_DBNAME=sessionstore
+      - SESSION_SECRET=hotpants
+      - INSTRUCTORTIPS_URL=aardvark.com/instructortips
+      - PASSWORD_SALT=quie0Oot
+      - EMAIL_USER=ktsanter4@gmail.com
+      - EMAIL_PASSWORD=JG8_395kc_48LMta
+    command: "npm start"
+    volumes:
+      - ./server:/home/node/app
+    restart: unless-stopped
+    networks:
+      - app-network
+      - backend
+
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - ./html:/var/www/html
+    depends_on:
+      - web
+#    command: certonly --force-renewal --webroot --webroot-path=/var/www/html --email aardvark-studios@protonmail.com --agree-tos -d aardvark-studios.com -d www.aardvark-studios.com
+    command: certonly --webroot --webroot-path=/var/www/html --email aardvark-studios@protonmail.com --agree-tos -d aardvark-studios.com -d www.aardvark-studios.com
+
+volumes:
+  certbot-etc:
+  certbot-var:
+
+networks:
+  app-network:
+    driver: bridge
+  backend:
+    driver: bridge
