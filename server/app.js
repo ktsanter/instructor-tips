@@ -42,10 +42,10 @@ function getEnv(varName, required) {
 //------------------------------------------
 // configure express and cors for the app
 //------------------------------------------
-const express = require('express')
-var path = require('path')
+const express = require('express');
+var path = require('path');
 
-const app = express()
+const app = express();
 
 const cors = require('cors');
 var corsOptions = {
@@ -56,8 +56,8 @@ app.use(cors(corsOptions));
 //------------------------------------------
 // configure favicon
 //------------------------------------------
-var favicon = require('serve-favicon')
-app.use(favicon('favicon.ico'))
+var favicon = require('serve-favicon');
+app.use(favicon('favicon.ico'));
 
 //------------------------------------------
 // body parsers
@@ -524,7 +524,6 @@ app.post('/commentbuddy-client/query/:queryName', async function (req, res) {
   var dbManager = dbManagerLookup['commentbuddy'];
   res.send(await dbManager.doQuery({queryName: 'client-comments'}, req.body));
 })
-
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 
