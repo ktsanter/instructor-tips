@@ -57,9 +57,9 @@ services:
       - SESSION_DBNAME=sessionstore
       - SESSION_SECRET=hotpants
       - INSTRUCTORTIPS_URL=aardvark.com/instructortips
-      - PASSWORD_SALT=quei0Oot
+      - PASSWORD_SALT=
       - EMAIL_USER=ktsanter4@gmail.com
-      - EMAIL_PASSWORD=JG8_395kc_48LMta
+      - EMAIL_PASSWORD=
     command: "npm start"
     volumes:
       - ./server:/home/node/app
