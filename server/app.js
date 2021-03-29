@@ -47,11 +47,14 @@ var path = require('path');
 
 const app = express();
 
-const cors = require('cors');
-var corsOptions = {
-  origin: '*'
+
+if ((process.env.NODE_ENV || 'development') == 'development') {
+	const cors = require('cors');
+	var corsOptions = {
+	  origin: '*'
+	}
+	app.use(cors(corsOptions));
 }
-app.use(cors(corsOptions));
 
 //------------------------------------------
 // configure favicon
