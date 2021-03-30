@@ -380,7 +380,9 @@ const dbCommentBuddy = new dbCommentBuddyClass({
   "dbManager": mariaDBManager_CommentBuddy,
   "userManagement": userManagement,
   "fileServices": fileservices,
-  "pug": pug
+  "pug": pug,
+  "tempFileManager": tmp, 
+  "formManager": formidable
 });
 
 //------------------------------------------
@@ -517,16 +519,38 @@ app.get('/walkthrough/help', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-
 app.get('/commentbuddy/composer', function (req, res) { routeIfLoggedIn(req, res, 'commentbuddy'); })
 app.get('/commentbuddy/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
+app.post('/commentbuddy/processform/:formname', function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+  dbCommentBuddy.processForm(req, res, processCommentBuddyResult, userInfo); 
+})
+async function processCommentBuddyResult(req, res, result) {
+  if (result.success) {
+    console.log('success');
+    /*
+    var fileName = result.targetfilename;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+    await result.workbook.xlsx.write(res);
+    */
+    res.end();
+    
+  } else {
+    var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/error.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {formname: result.formname, description: result.description}});
+  }
+}
 app.post('/commentbuddy-client/query/:queryName', async function (req, res) {
   var dbManager = dbManagerLookup['commentbuddy'];
   res.send(await dbManager.doQuery({queryName: 'client-comments'}, req.body));
 })
+
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 

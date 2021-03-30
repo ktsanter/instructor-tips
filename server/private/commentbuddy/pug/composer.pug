@@ -7,6 +7,7 @@ include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-compose.pug
 include ./mixins/mixins-accesskey.pug
+include ./mixins/mixins-updownload.pug
 
 doctype html
 html(lang="en")
@@ -55,6 +56,9 @@ html(lang="en")
 
       .container-fluid(class="contents-container contents-navComposer hide-me")
         +composerContainer()
+
+      .container-fluid(class="contents-container contents-navUpDownload hide-me")
+        +updownloadContainer()
 
       .container-fluid(class="contents-container contents-navAccessKey hide-me")
         +accesskeyContainer()

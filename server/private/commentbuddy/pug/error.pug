@@ -1,0 +1,25 @@
+- var formname = params.formname
+- var description = params.description
+
+doctype html
+html(lang="en")
+  head
+    title Comment Buddy composer error
+    meta(charset="utf-8")
+
+    style
+      include ../styles/composer.css
+      
+  body 
+    .titlecontainer
+        .titletext CommentBuddy composer - processing error
+            
+    .error-formname 
+      |request type: #{formname}
+      
+    .error-description=description
+    
+    br
+    .return-link
+      |return to 
+      a(href='/commentbuddy/composer') CommentBuddy composer

@@ -12,6 +12,10 @@ module.exports = internal.CommentBuddy = class {
     this._userManagement = params.userManagement;
     this._fileServices = params.fileServices;
     this._pug = params.pug;
+    this._tempFileManager = params.tempFileManager;
+    this._formManager = params.formManager;
+    
+    this._tempDir = 'temp';
   }
     
 //---------------------------------------------------------------
@@ -283,6 +287,76 @@ module.exports = internal.CommentBuddy = class {
     return result;
   }    
   
+//---------------------------------------------------------------
+// form processing
+//---------------------------------------------------------------       
+  async processForm(req, res, callback, userInfo) {
+    var thisObj = this;
+    var formName = req.params.formname;
+    
+    var form = new this._formManager.IncomingForm();
+    form.parse(req, async function(err, fields, files) {
+      if (err) {
+        thisObj._failureCallback(req, res, 'error in form.parse: ' + JSON.stringify(err), callback);
+        return;        
+      }
+      
+      if (formName == 'download') {
+        thisObj._processDownloadForm(req, res, callback, userInfo);
+
+      } else if (formName == 'upload-standard') {
+        thisObj._failureCallback(req, res, 'stub request: ' + formName, callback);
+        return;
+        
+      } else if (formName == 'upload-classic') {
+        thisObj._failureCallback(req, res, 'stub request: ' + formName, callback);
+        return;
+        
+      } else {
+        thisObj._failureCallback(req, res, 'unrecognized request: ' + formName, callback);
+        return;
+      }
+    });
+  }  
+  
+  _failureCallback(req, res, errorDescription, callback) {
+    var result = {
+      sucess: false,
+      formname: req.params.formname,
+      description: errorDescription,
+      workbook: null,
+      targetfilename: ''
+    };
+    
+    callback(req, res, result);
+  }
+  
+  _successCallback(req, res, message, workbookToSend, targetFileName, callback) {
+    var result = {
+      success: true,
+      formname: req.params.formname,
+      description: message,
+      workbook: workbookToSend,
+      targetfilename: targetFileName
+    };
+    
+    callback(req, res, result);
+  }  
+  
+  async _processDownloadForm(req, res, callback, userInfo) {
+    var thisObj = this;     
+    
+    var result = await this._getComments(null, null, userInfo);
+    if (!result.success) {
+      thisObj._failureCallback(req, res, 'failed to retrieve data', callback);
+      return;
+    }
+    
+    var commentData = result.data;
+    console.log(commentData);
+    thisObj._failureCallback(req, res, 'download - got data', callback);
+  }
+
 //---------------------------------------------------------------
 // other support methods
 //---------------------------------------------------------------       

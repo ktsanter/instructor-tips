@@ -1,7 +1,6 @@
 //-----------------------------------------------------------------------
 // CommentBuddy composer
 //-----------------------------------------------------------------------
-// TODO: review use of dirty bit
 // TODO: approach for data migration
 // TODO: styling
 // TODO: finish help
@@ -85,9 +84,11 @@ const app = function () {
     page.contents = page.body.getElementsByClassName('contents')[0];        
     page.contentsComposer = page.contents.getElementsByClassName('contents-navComposer')[0];
     page.contentsAccessKey = page.contents.getElementsByClassName('contents-navAccessKey')[0];
+    page.contentsUpDownload = page.contents.getElementsByClassName('contents-navUpDownload')[0];
 
     await _renderComposer();
     _renderAccessKey();
+    _renderUpDownload();
   }
   
   async function _renderComposer() {
@@ -134,6 +135,13 @@ const app = function () {
     page.contentsAccessKey.getElementsByClassName('button-accesskey')[0].addEventListener('click', (e) => { _handleAccessKeyCopy(e); });
 
     page.elemAccessKey.value = settings.accessKey;
+  }
+  
+  function _renderUpDownload() {
+    var accessKeyElements = page.contentsUpDownload.getElementsByClassName('form-accesskey');
+    for (var i = 0; i < accessKeyElements.length; i++) {
+      accessKeyElements[i].value = settings.accessKey;
+    }
   }
   
   //-----------------------------------------------------------------------------
@@ -358,6 +366,7 @@ const app = function () {
     
     var dispatchMap = {
       "navComposer": function() { _showContents('navComposer'); },
+      "navUpDownload": function() { _showContents('navUpDownload'); },
       "navAccessKey": function() { _showContents('navAccessKey'); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
@@ -415,6 +424,9 @@ const app = function () {
   }
   
   function _handleCommentSearchChange(e) {
+    if (settings.dirtyBit.navComposer && _confirmSaveChanges()) _handleSave();
+
+    _setDirtyBit(false);
     _updateCommentItems();
   }
   
@@ -433,6 +445,9 @@ const app = function () {
   }
   
   function _handleSidebarSelection(e) {
+    if (settings.dirtyBit.navComposer && _confirmSaveChanges()) _handleSave();
+
+    _setDirtyBit(false);
     _selectItem(e.target);
   }
   
@@ -526,6 +541,12 @@ const app = function () {
     }
 
     return Array.from(tagSet);
+  }
+  
+  function _confirmSaveChanges() {
+    var result = confirm('Save the current changes to this comment?');
+
+    return result;
   }
     
 	//-----------------------------------------------------------------------------------

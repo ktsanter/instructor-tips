@@ -1,0 +1,44 @@
+mixin updownloadContainer()
+  .row: .col-sm
+    form(class="userform" action="/commentbuddy/processform/download" enctype="multipart/form-data" method="post")
+    
+      .container-fluid
+        .row
+          .col-sm download comment data to Excel
+
+        .row(class="mb-4")
+          .col-sm
+            input(class="form-submit btn btn-outline-primary" type="submit" value="download")
+            input(type="text" name="accesskey" class="form-accesskey hide-me")
+
+  .row: .col-sm
+    form(class="userform" action="/commentbuddy/processform/upload-standard" enctype="multipart/form-data" method="post")
+    
+      .container-fluid
+        .row
+          .col-sm upload comment data
+
+        .row(class="mb-4")
+          .col-sm 
+            div(class="mb-3")
+              input( type="file" id="uploadStandardFile" name="uploadStandardFile" class="form-control file-select" accept=".xlsx" required)
+
+          .col-sm 
+            input(class="form-submit btn btn-outline-primary" type="submit" value="upload")
+            input(type="text" name="accesskey" class="form-accesskey hide-me")
+
+  .row: .col-sm
+    form(class="userform" action="/commentbuddy/processform/upload-classic" enctype="multipart/form-data" method="post")
+    
+      .container-fluid
+        .row
+          .col-sm upload CommentBuddy Classic data
+
+        .row
+          .col-sm 
+            div(class="mb-3")
+              input( type="file" id="uploadClassicFile" name="uploadClassicFile" class="form-control file-select" accept=".xlsx" required)
+
+          .col-sm 
+            input(class="form-submit btn btn-outline-primary" type="submit" value="upload")
+            input(type="text" name="accesskey" class="form-accesskey hide-me")
