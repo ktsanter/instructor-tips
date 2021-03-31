@@ -1,24 +1,31 @@
 - var formname = params.formname
 - var description = params.description
+- var singleRowError = (typeof description == 'object')
+- var error = params.error
+- var spreadsheetrow = params.spreadsheetrow
 
 doctype html
 html(lang="en")
   head
     title Comment Buddy composer error
     meta(charset="utf-8")
-
-    style
-      include ../styles/composer.css
       
   body 
-    .titlecontainer
+    .titlecontainer(style="font-weight: bold;")
         .titletext CommentBuddy composer - processing error
             
     .error-formname 
       |request type: #{formname}
       
-    .error-description=description
-    
+    if (singleRowError)
+      |spreadsheet row: #{spreadsheetrow}
+      br
+      |error: #{error}
+    else
+      .error-description
+        |error: #{description}
+        
+    br
     br
     .return-link
       |return to 

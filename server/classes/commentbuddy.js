@@ -2,7 +2,7 @@
 //---------------------------------------------------------------
 // CommentBuddy
 //---------------------------------------------------------------
-// TODO: look up comment data based on access key
+// TODO: 
 //---------------------------------------------------------------
 const internal = {};
 
@@ -305,12 +305,10 @@ module.exports = internal.CommentBuddy = class {
         thisObj._processDownloadForm(req, res, callback, userInfo);
 
       } else if (formName == 'upload-standard') {
-        thisObj._failureCallback(req, res, 'stub request: ' + formName, callback);
-        return;
+        thisObj._processUploadStandardForm(req, res, callback, userInfo, files);
         
       } else if (formName == 'upload-classic') {
-        thisObj._failureCallback(req, res, 'stub request: ' + formName, callback);
-        return;
+        thisObj._processUploadClassicForm(req, res, callback, userInfo, files);
         
       } else {
         thisObj._failureCallback(req, res, 'unrecognized request: ' + formName, callback);
@@ -323,38 +321,211 @@ module.exports = internal.CommentBuddy = class {
     var result = {
       sucess: false,
       formname: req.params.formname,
-      description: errorDescription,
-      workbook: null,
-      targetfilename: ''
+      description: errorDescription
     };
     
     callback(req, res, result);
   }
   
-  _successCallback(req, res, message, workbookToSend, targetFileName, callback) {
-    var result = {
-      success: true,
-      formname: req.params.formname,
-      description: message,
-      workbook: workbookToSend,
-      targetfilename: targetFileName
-    };
-    
-    callback(req, res, result);
-  }  
-  
   async _processDownloadForm(req, res, callback, userInfo) {
-    var thisObj = this;     
-    
     var result = await this._getComments(null, null, userInfo);
     if (!result.success) {
-      thisObj._failureCallback(req, res, 'failed to retrieve data', callback);
+      this._failureCallback(req, res, 'failed to retrieve data', callback);
       return;
     }
     
     var commentData = result.data;
-    console.log(commentData);
-    thisObj._failureCallback(req, res, 'download - got data', callback);
+    const exceljs = require('exceljs');
+    var workbook = new exceljs.Workbook();
+    workbook.clearThemes();
+    
+    var sheet = workbook.addWorksheet('commentbuddy-data');
+    sheet.addRow(['tags', 'hovertext', 'comment']);
+    for (var i = 0; i < commentData.length; i++) {
+      var rowData = commentData[i];
+      sheet.addRow([rowData.tags, rowData.hovertext, rowData.comment]);
+    }
+
+    var fileName = 'commentbuddy-data.xlsx';
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+    await workbook.xlsx.write(res);
+
+    res.end();      
+  }
+  
+  async _processUploadStandardForm(req, res, callback, userInfo, files) {
+    const exceljs = require('exceljs');
+    
+    var filePath = files.uploadStandardFile.path;
+    var workbook = new exceljs.Workbook();
+    await workbook.xlsx.readFile(filePath);
+    var sheet = workbook.worksheets[0];
+    
+    // validate column names
+    var row1 = sheet.getRow(1);    
+    if ( 
+      (row1.getCell(1).value != 'tags') || 
+      (row1.getCell(2).value != 'hovertext') ||
+      (row1.getCell(3).value != 'comment') ) {
+      this._failureCallback(req, res, 'unexpected column name(s)', callback);
+      return;
+    }
+    
+    // get comment data and insert into DB
+    var queryList = {};
+    for (var i = 2; i <= sheet.actualRowCount; i++) {
+      var row = sheet.getRow(i);
+      queryList[i] = this._makeSQLForCommentInsert({
+        tags: row.getCell(1).value,
+        hovertext: row.getCell(2).value,
+        comment: row.getCell(3).value,
+        userid: userInfo.userId
+      })
+    }
+    
+    var queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      this._failureCallback(req, res, 'insert failed: ' + queryResults.details, callback);
+      return;      
+    }
+    
+    // write summary results
+    var sheet = workbook.addWorksheet('upload summary');
+    workbook.clearThemes();
+    var addedCommentCount = Object.keys(queryResults.data).length;
+    var timeNow = new Date();
+    var timeStamp = timeNow.toLocaleDateString('en-US') + ' ' + timeNow.toLocaleTimeString('en-US');
+    sheet.columns = [ {width: 18}, {width: 24} ];
+    sheet.addRow(['comments added', addedCommentCount]);
+    sheet.addRow(['time/date', timeStamp]);
+
+    // return summary workbook
+    var resultFileName = 'commentbuddy-upload-summary.xlsx';
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + resultFileName);
+
+    await workbook.xlsx.write(res);
+
+    res.end();
+  }
+
+  async _processUploadClassicForm(req, res, callback, userInfo, files) {
+    const exceljs = require('exceljs');
+    
+    var MarkdownIt = require('markdown-it');
+    var md = new MarkdownIt();
+    
+    var filePath = files.uploadClassicFile.path;
+    var workbook = new exceljs.Workbook();
+    await workbook.xlsx.readFile(filePath);
+    var sheet = workbook.worksheets[0];
+    
+    // note we're assuming the columns are: tags, comment, hovertext
+    
+    // get comment data and insert into DB
+    var query = 
+      'begin not atomic ' +
+        'declare exit handler for SQLEXCEPTION ' +
+          'begin ' +
+          'rollback; ' +
+          'get diagnostics condition 1 @sqlstate = RETURNED_SQLSTATE, ' +
+            '@errno = MYSQL_ERRNO, @text = MESSAGE_TEXT; ' +
+            'set @full_error = CONCAT("ERROR ", @errno, " (", @sqlstate, "): ", @text); ' +
+          'select false as success, @full_error as errdetails, @spreadsheet_row as ssrow; ' +          
+        'end; ' +
+        'start transaction; ';
+
+    for (var i = 2; i <= sheet.actualRowCount; i++) {
+      var row = sheet.getRow(i);
+      var comment = row.getCell(2).value;
+
+      if (typeof comment != 'string') {
+        if (comment.hasOwnProperty('result')) {
+          if (comment.result.hasOwnProperty('error')) {
+            comment = '*error in formula*';
+            
+          } else {
+            comment = comment.result;
+          }
+          
+        } else {
+          comment = '*unable to reproduce*';
+        }
+      }
+
+      var renderedComment = md.render(comment);
+      renderedComment = renderedComment.replace(/"/g, '\\\"');
+      
+      query += 'set @spreadsheet_row = ' + i + '; ';
+      query += this._makeSQLForCommentInsert({
+        tags: row.getCell(1).value,
+        comment: renderedComment,
+        hovertext: row.getCell(3).value,
+        userid: userInfo.userId
+      }) + '; ';
+    }
+
+    query += 
+        'commit; ' +
+        'select true as success; ' +
+      'end'
+    
+    var queryResults = await this._dbManager.dbQuery(query);
+    if (!queryResults.success) {
+      this._failureCallback(req, res, 'insert failed: ' + queryResults.details, callback);
+      return;      
+    }
+
+    var data = queryResults.data[0][0];
+    if (!data.success == 1) {
+      this._failureCallback(req, res, {errdetails: data.errdetails, ssrow: data.ssrow}, callback);
+      return;
+    }
+    
+    var addedCommentCount = sheet.actualRowCount - 1;
+
+    // write summary results
+    var sheet = workbook.addWorksheet('upload summary');
+    workbook.clearThemes();
+    var timeNow = new Date();
+    var timeStamp = timeNow.toLocaleDateString('en-US') + ' ' + timeNow.toLocaleTimeString('en-US');
+    sheet.columns = [ {width: 18}, {width: 24} ];
+    sheet.addRow(['comments added', addedCommentCount]);
+    sheet.addRow(['time/date', timeStamp]);
+
+    // return summary workbook
+    var resultFileName = 'commentbuddy-upload-summary.xlsx';
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + resultFileName);
+
+    await workbook.xlsx.write(res);
+
+    res.end();
+  }
+  
+  _makeSQLForCommentInsert(commentData) {
+    var tags = commentData.tags;
+    var hovertext = commentData.hovertext;
+    var comment = commentData.comment;
+    
+    if (tags == null) tags = '';
+    if (hovertext == null) hovertext = '';
+    if (comment == null) comment = '';
+    
+    var sql = 
+      'insert into comment (' +
+        'userid, tags, hovertext, commenttext ' +
+      ') values (' +
+        commentData.userid + ', ' +
+        '"' + tags + '", ' +
+        '"' + hovertext + '", ' +
+        '"' + comment + '"' + 
+      ')';
+        
+      return sql;
   }
 
 //---------------------------------------------------------------

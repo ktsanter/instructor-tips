@@ -125,7 +125,7 @@ const app = function () {
     
     page.elemTags.addEventListener('input', (e) => { _handleTextInput(e); });
     page.elemHoverText.addEventListener('input', (e) => { _handleTextInput(e); });
-    
+
     _loadCommentInfo(settings.commentData);
     _loadTagSelect(settings.commentData);
   }
@@ -138,10 +138,12 @@ const app = function () {
   }
   
   function _renderUpDownload() {
+    /*
     var accessKeyElements = page.contentsUpDownload.getElementsByClassName('form-accesskey');
     for (var i = 0; i < accessKeyElements.length; i++) {
       accessKeyElements[i].value = settings.accessKey;
     }
+    */
   }
   
   //-----------------------------------------------------------------------------
@@ -156,6 +158,7 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
+    if (contentsId == 'navComposer') await _updateCommentInfo();
     if (contentsId == 'navProfile') await settings.profile.reload();
     
     _setNavOptions();

@@ -529,28 +529,26 @@ app.post('/commentbuddy/processform/:formname', function (req, res) {
   dbCommentBuddy.processForm(req, res, processCommentBuddyResult, userInfo); 
 })
 async function processCommentBuddyResult(req, res, result) {
-  if (result.success) {
-    console.log('success');
-    /*
-    var fileName = result.targetfilename;
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-
-    await result.workbook.xlsx.write(res);
-    */
-    res.end();
+  if (!result.success) {
+    var errdetails = '';
+    var ssrow = '';
+    if (result.description.hasOwnProperty('errdetails')) errdetails = result.description.errdetails;
+    if (result.description.hasOwnProperty('ssrow')) ssrow = result.description.ssrow;
     
-  } else {
     var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/error.pug');
-    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {formname: result.formname, description: result.description}});
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {
+      formname: result.formname, 
+      description: result.description,
+      error: errdetails,
+      spreadsheetrow: ssrow
+    }});
   }
 }
+
 app.post('/commentbuddy-client/query/:queryName', async function (req, res) {
   var dbManager = dbManagerLookup['commentbuddy'];
   res.send(await dbManager.doQuery({queryName: 'client-comments'}, req.body));
 })
-
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })
 

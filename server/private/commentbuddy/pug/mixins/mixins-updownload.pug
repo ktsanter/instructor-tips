@@ -9,10 +9,9 @@ mixin updownloadContainer()
         .row(class="mb-4")
           .col-sm
             input(class="form-submit btn btn-outline-primary" type="submit" value="download")
-            input(type="text" name="accesskey" class="form-accesskey hide-me")
 
   .row: .col-sm
-    form(class="userform" action="/commentbuddy/processform/upload-standard" enctype="multipart/form-data" method="post")
+    form(id="formUploadStandard" class="userform" action="/commentbuddy/processform/upload-standard" enctype="multipart/form-data" method="post")
     
       .container-fluid
         .row
@@ -25,7 +24,6 @@ mixin updownloadContainer()
 
           .col-sm 
             input(class="form-submit btn btn-outline-primary" type="submit" value="upload")
-            input(type="text" name="accesskey" class="form-accesskey hide-me")
 
   .row: .col-sm
     form(class="userform" action="/commentbuddy/processform/upload-classic" enctype="multipart/form-data" method="post")
@@ -41,4 +39,3 @@ mixin updownloadContainer()
 
           .col-sm 
             input(class="form-submit btn btn-outline-primary" type="submit" value="upload")
-            input(type="text" name="accesskey" class="form-accesskey hide-me")
