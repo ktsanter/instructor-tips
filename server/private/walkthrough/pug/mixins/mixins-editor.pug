@@ -1,6 +1,6 @@
 mixin editorContainer()
   .row
-    .col-sm-4(class="hierarchy-container" id="editorHierarchy")
+    .col-sm-3(class="hierarchy-container" id="editorHierarchy")
       label(for="editorHierarchy" class="col col-form-label col-form-label") edit omments
     
     .col-sm
@@ -8,9 +8,18 @@ mixin editorContainer()
         .row(class="p-0"): col-sm(class="navEditor-item-edit")
           .container-fluid(class="p-0")
             .row(class="p-0"): .col-sm
-              div(class="input-group mb-3")
+              .input-group(class="mb-3")
                 span(class="input-group-text" id="navEditor-itemlabel") item label
                 input(type="text" class="navEditor-itemlabel form-control" aria-label="label" aria-describedby="navEditor-itemlabel")
+                
+            .row(class="p-0 contenteditor-container-category"): .col-sm-4
+              .input-group(class="mb-3")
+                span(class="input-group-text" id="navEditor-categorylabel") category
+                select(class="form-select form-select-sm select-category" aria-label=".form-select-category")
+                  option(value="inherit" selected) inherit
+                  option(value="strength") strength
+                  option(value="growth") growth
+                  option(value="additional") additional feedback
                 
             .row(class="p-0"): .col-sm
               .contenteditor-container(class="contenteditor-container-navEditor")

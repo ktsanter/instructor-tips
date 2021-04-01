@@ -11,6 +11,9 @@ class TreeManager {
     this._config.treeSelector = '#' + this._config.id;
     this._config.contextMenu = null;
     
+    if (!this._config.hasOwnProperty('useCategories')) {
+      this._config.useCategories = false;
+    }
     if (!this._config.hasOwnProperty('nodehovertitleCallback')) {
       this._config.nodehovertitleCallback = function() {return null;};
     }
@@ -51,6 +54,8 @@ class TreeManager {
     
     var thisTree = $(this._config.treeSelector);
     $(this._config.treeSelector).on('mouseover', this._makeHoverTitleFunction(thisTree, this._config.nodehovertitleCallback));
+   
+    if (this._config.useCategories) this._applyCategories(thisTree.tree('getTree'), null);
   }
   
   _makeHoverTitleFunction(selector, titleCallback) {
@@ -97,6 +102,20 @@ class TreeManager {
     return thisTree.tree('toJson');
   }
   
+  getNodeCategory(id) {
+    var currentId = id;
+    
+    var category = 'inherit';
+    for (var currentId = id; category == 'inherit' && currentId != null; currentId = node.parent.id) {
+      var node = this.getNode(currentId);
+      category = node.tmContent.category;
+      if (!category) category = 'inherit';
+      currentId = node.parent.id;
+    }
+
+    return category;
+  }
+  
   //--------------------------------------------------------------
   // updating
   //--------------------------------------------------------------
@@ -117,6 +136,8 @@ class TreeManager {
         thisTree.tree('selectNode', root.children[0]);
       }
     }
+
+    if (this._config.useCategories) this._applyCategories(thisTree.tree('getTree'), null);
   }
   
   updateNode(nodeInfo, useSelectCallback) {
@@ -175,7 +196,8 @@ class TreeManager {
       id: newId,
       tmContent: {
         label: newName,
-        markdown: ''
+        markdown: '',
+        category: ''
       }
     }
 
@@ -226,6 +248,38 @@ class TreeManager {
 			me._propagateSelection(me, children[i], makeSelected);
 		}
 	}
+  
+  _applyCategories(branch, currentCategory) {
+    var isRoot = (branch.parent == null);
+    var isLeaf = (branch.children.length == 0);
+    
+    var appliedCategory = currentCategory;
+    
+    if (isRoot) {
+      currentCategory = 'none';
+      
+    } else if (!isRoot) {
+      var elemBranch = branch.element.getElementsByClassName('jqtree-title')[0];
+
+      var branchCategory = branch.tmContent.category ? branch.tmContent.category : 'inherit';
+      if (branchCategory === null || branchCategory.length == 0) branchCategory = 'inherit';
+      
+      if (branchCategory != 'inherit') appliedCategory = branchCategory;
+
+      for (var key in this._config.categoryClasses) {
+        UtilityKTS.setClass(elemBranch, this._config.categoryClasses[key], false);
+      }
+      
+      if (!isLeaf && (currentCategory != appliedCategory)) {
+        UtilityKTS.setClass(elemBranch, this._config.categoryClasses[appliedCategory], true);
+        currentCategory = appliedCategory;
+      }
+    }
+    
+    for (var i = 0; i < branch.children.length; i++) {
+      this._applyCategories(branch.children[i], currentCategory);
+    }
+  }
   
   //--------------------------------------------------------------
   // show/hide

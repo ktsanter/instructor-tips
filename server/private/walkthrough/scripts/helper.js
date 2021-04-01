@@ -108,9 +108,10 @@ const app = function () {
     });
     await settings.tiny.navEditor.init();
     
-    settings.tiny.navPicker = new MyTinyMCE({
-      id: 'picker-tiny', 
-      selector: '#picker-tiny', 
+    settings.tiny.navPickerStrength = new MyTinyMCE({
+      id: 'picker-tiny-strength', 
+      selector: '#picker-tiny-strength', 
+      height: 400,
       changeCallback: _handleEditorChange,
       initializationParams: {
         readonly: true,
@@ -119,7 +120,35 @@ const app = function () {
         toolbar: ''
       }
     });
-    await settings.tiny.navPicker.init();
+    await settings.tiny.navPickerStrength.init();
+
+    settings.tiny.navPickerGrowth = new MyTinyMCE({
+      id: 'picker-tiny-growth', 
+      selector: '#picker-tiny-growth', 
+      height: 400,
+      changeCallback: _handleEditorChange,
+      initializationParams: {
+        readonly: true,
+        plugins: '',
+        menubar: '',
+        toolbar: ''
+      }
+    });
+    await settings.tiny.navPickerGrowth.init();
+
+    settings.tiny.navPickerAdditional = new MyTinyMCE({
+      id: 'picker-tiny-additional', 
+      selector: '#picker-tiny-additional', 
+      height: 400,
+      changeCallback: _handleEditorChange,
+      initializationParams: {
+        readonly: true,
+        plugins: '',
+        menubar: '',
+        toolbar: ''
+      }
+    });
+    await settings.tiny.navPickerAdditional.init();
 
     _renderEditor();
     _renderPicker();    
@@ -137,15 +166,23 @@ const app = function () {
       useContextMenu: true,
       allowMultiSelect: false,
       allowDragAndDrop: true,
-      autoSelect: true
+      autoSelect: true,
+      useCategories: true,
+      categoryClasses: {
+        'growth': 'tmcategory-growth',
+        'strength': 'tmcategory-strength',
+        'additional': 'tmcategory-additional'
+      }
     });
     
     settings.editorTree.render(settings.commentset);
     settings.editorTree.setTreeState({selectedList: []});
+    settings.editorTree.render(settings.commentset);
     
     UtilityKTS.setClass(editorContainer, settings.hideClass, true);
     
-    page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].addEventListener('input', (e) => {_handleEditorChange(e);});    
+    page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].addEventListener('input', (e) => {_handleEditorChange(e);});
+    page.contentsEditor.getElementsByClassName('select-category')[0].addEventListener('change', (e) => {_handleEditorChange(e);});
   }
   
   function _pickerHoverText(tmContent) {
@@ -171,7 +208,13 @@ const app = function () {
       useContextMenu: false,
       allowMultiSelect: true,
       allowDragAndDrop: false,
-      autoSelect: false
+      autoSelect: false,
+      useCategories: true,
+      categoryClasses: {
+        'growth': 'tmcategory-growth',
+        'strength': 'tmcategory-strength',
+        'additional': 'tmcategory-additional'
+      }      
     });
     
     settings.pickerTree.render(settings.commentset);
@@ -187,7 +230,8 @@ const app = function () {
     page.elemPickerAccordion = settings.pickerAccordion.render([]);
     page.elemPickerAccordionContainer.appendChild(page.elemPickerAccordion);
     
-    page.elemPickerTiny = page.contentsPicker.getElementsByClassName('rendering-container')[0];
+    page.elemPickerTinyStrength = page.contentsPicker.getElementsByClassName('rendering-container strength')[0];
+    page.elemPickerTinyGrowth = page.contentsPicker.getElementsByClassName('rendering-container growth')[0];
     
     page.elemRendering = page.contentsPicker.getElementsByClassName('check-rendering')[0];
     page.elemRendering.leftLabel = page.elemRendering.parentNode.parentNode.getElementsByClassName('checkbox-label-left')[0];
@@ -248,12 +292,10 @@ const app = function () {
     for (var i = 0; i < settings.pickedComments.length; i++) {
       selected.push(settings.pickedComments[i].id);
     }
-    console.log(settings.pickedComments);
-    console.log(selected);
     if ( !(await _getCommentSet()) ) return;
     
-    settings.pickerTree.update(settings.commentset);
     settings.pickerTree.setTreeState({selectedList: selected});
+    settings.pickerTree.update(settings.commentset);
     
     _showPickedComments();
   }
@@ -281,10 +323,13 @@ const app = function () {
     settings.pickedComments = [];
     for (var i = 0; i < newOrder.length; i++) {
       var node = settings.pickerTree.getNode(newOrder[i]);
+      var nodeCategory = settings.pickerTree.getNodeCategory(node.id);
+      
       settings.pickedComments.push({
         id: node.id,
         label: node.tmContent.label,
-        content: node.tmContent.markdown
+        content: node.tmContent.markdown,
+        category: nodeCategory
       });
     }
     
@@ -296,12 +341,16 @@ const app = function () {
     if (!settings.pickerAccordion) return;
     
     var accordionData = [];
-    var richtextData = '';
+    //var richtextData = '';
+    var richtextStrength = '';
+    var richtextGrowth = '';
+    var richtextAdditional = '';
     
     var selected = [];
     
     for (var i = 0; i < settings.pickedComments.length; i++) {
       var node = settings.pickerTree.getNode(settings.pickedComments[i].id);
+      var category = settings.pickedComments[i].category;
       
       if (node) selected.push(node.id);
       
@@ -312,37 +361,51 @@ const app = function () {
           content: node.tmContent.markdown
         });
         
-        richtextData += node.tmContent.markdown;
+        var content = node.tmContent.markdown;
+        //richtextData += content;
+        if (category == 'strength') richtextStrength += content;
+        if (category == 'growth') richtextGrowth += content;
+        if (category == 'additional') richtextAdditional += content;
       }
     }
 
     settings.pickerAccordion.update(accordionData);
-    settings.tiny.navPicker.setContent(richtextData);
+    settings.tiny.navPickerStrength.setContent(richtextStrength);
+    settings.tiny.navPickerGrowth.setContent(richtextGrowth);
+    settings.tiny.navPickerAdditional.setContent(richtextAdditional);
   }    
 
   function _setPickerRendering(displayFor) {
     var classToChange = settings.hideClass
     
-    UtilityKTS.setClass(page.elemPickerTiny, classToChange, true);
+    UtilityKTS.setClass(page.elemPickerTinyStrength, classToChange, true);
+    UtilityKTS.setClass(page.elemPickerTinyGrowth, classToChange, true);
     UtilityKTS.setClass(page.elemPickerAccordionContainer, classToChange, true);
     
-    var elemToShow = page.contentsPicker.getElementsByClassName(displayFor)[0];
-    UtilityKTS.setClass(elemToShow, classToChange, false);
+    var elemsToShow = page.contentsPicker.getElementsByClassName(displayFor);
+    for (var i = 0; i < elemsToShow.length; i++) {
+      UtilityKTS.setClass(elemsToShow[i], classToChange, false);
+    }
   }    
     
   function _loadCommentIntoEditor(params) {
     var labelAndEditorContainer = page.contentsEditor.getElementsByClassName('navEditor-item-edit')[0];
     var elemLabel = labelAndEditorContainer.getElementsByClassName('navEditor-itemlabel')[0];
+    var categoryContainer = labelAndEditorContainer.getElementsByClassName('contenteditor-container-category')[0];
+    var elemCategory = categoryContainer.getElementsByClassName('select-category')[0];
     var editorContainer = labelAndEditorContainer.getElementsByClassName('contenteditor-container-navEditor')[0];
 
     if (params) {
       var label = params.tmContent.label;
+      var category = params.tmContent.category ? params.tmContent.category : 'inherit';
       var markdown = params.isLeaf ? params.tmContent.markdown : '';
 
       elemLabel.value = label;
+      elemCategory.value = category;
       settings.tiny.navEditor.setContent(markdown);
       
       UtilityKTS.setClass(labelAndEditorContainer, 'hide-me', false);
+      UtilityKTS.setClass(categoryContainer, 'hide-me', params.isLeaf);
       UtilityKTS.setClass(editorContainer, 'hide-me', !params.isLeaf);
       
     } else {
@@ -413,21 +476,28 @@ const app = function () {
   
   function _handleEditorChange(e) {
     if (settings.currentNavOption == 'navEditor') {
-    var editLabel = page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].value;
-    var editorContent = settings.tiny.navEditor.getContent();
+      var isLeaf = settings.editorTree.getNode(settings.currentNodeInfo.id).children.length == 0;
+      
+      var editLabel = page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].value;
+      
+      var editorContent = '';
+      if (isLeaf) editorContent = settings.tiny.navEditor.getContent();
 
-    var updatedNodeInfo = {
-      id: settings.currentNodeInfo.id,
-      name: _truncateNodeName(editLabel),
-      tmContent: {
-        label: editLabel,
-        markdown: editorContent
-      }
-    };
+      var editCategory = '';
+      if (!isLeaf) editCategory = page.contentsEditor.getElementsByClassName('select-category')[0].value;
 
-    settings.editorTree.updateNode(updatedNodeInfo, false);
-    _handleTreeChange();
-    
+      var updatedNodeInfo = {
+        id: settings.currentNodeInfo.id,
+        name: _truncateNodeName(editLabel),
+        tmContent: {
+          label: editLabel,
+          markdown: editorContent,
+          category: editCategory
+        }
+      };
+
+      settings.editorTree.updateNode(updatedNodeInfo, false);
+      _handleTreeChange();
     } 
   }  
   
@@ -496,7 +566,7 @@ const app = function () {
   }
   
   function _handleCopy(e, copyType) {
-    var richText = settings.tiny.navPicker.getContent();
+    var richText = settings.tiny.navPickerStrength.getContent();
     
     if (copyType == 'rich') {
       _copyRenderedToClipboard(richText);

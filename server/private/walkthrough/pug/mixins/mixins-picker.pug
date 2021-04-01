@@ -1,24 +1,36 @@
 mixin pickerContainer()
   .row
-    .col-sm-4(class="hierarchy-container" id="pickerHierarchy")
+    .col-sm-3(class="hierarchy-container" id="pickerHierarchy")
       label(for="pickerHierarchy" class="col col-form-label col-form-label") pick comments
     
     .col-sm
       .container-fluid(class="p-0")
-        .row(class="my-2")
+        .row(class="my-2 hide-me")
           .col-sm
             .checkbox-label-left(class="checkRendering" aria-label="richtext") rendered
             .form-check(class="form-switch allow-label-left")
               input(class="form-check-input check-rendering double-selection" type="checkbox" id="checkRendering")
               .checkbox-label-right(class="diminished") ordering 
 
-          .col-sm
-            button(class="btn btn-outline-primary btn-copyrich") copy rendered
-            button(class="btn btn-outline-primary btn-copyplain") copy plain
-
         .row(class="p-0")
           .col-sm(class="accordion-container hide-me")
           
         .row(class="p-0")
-          .col-sm(class="rendering-container hide-me")
-            +makeTinyMCE("picker-tiny")
+          .col-sm(class="rendering-container strength hide-me")
+            span(class="render-label") strength
+            button(class="btn btn-outline-primary btn-copyrich") copy rendered
+            button(class="btn btn-outline-primary btn-copyplain") copy plain
+            +makeTinyMCE("picker-tiny-strength")
+            
+          .col-sm(class="rendering-container growth hide-me")
+            span(class="render-label") growth
+            button(class="btn btn-outline-primary btn-copyrich") copy rendered
+            button(class="btn btn-outline-primary btn-copyplain") copy plain
+            +makeTinyMCE("picker-tiny-growth")
+            
+        .row(class="p-0 mt-2")
+          .col-sm(class="rendering-container additional hide-me")
+            span(class="render-label") additional
+            button(class="btn btn-outline-primary btn-copyrich") copy rendered
+            button(class="btn btn-outline-primary btn-copyplain") copy plain
+            +makeTinyMCE("picker-tiny-additional")

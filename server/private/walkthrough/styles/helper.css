@@ -58,6 +58,22 @@ body {
   font-size: 0.9em;
 }
 
+.contents .hierarchy-container .tm-tree .jqtree-title.tmcategory-strength::after {
+  padding-left: 0.2em;
+  content: "👍";
+}
+
+.contents .hierarchy-container .tm-tree .jqtree-title.tmcategory-growth::after {
+  padding-left: 0.2em;
+  content: "👎";
+}
+
+.contents .hierarchy-container .tm-tree .jqtree-title.tmcategory-additional::after {
+  padding-left: 0.2em;
+  content: "📝";
+}
+
+
 .contents .hierarchy-container .contextmenu {
   display: none;
   position: absolute;
@@ -109,12 +125,25 @@ body {
   cursor: pointer;
 }
 
+.contents .contents-navPicker .render-label {
+  color: white;
+  background-color: var(--bgPrimary);
+  border-radius: 4px 0 0 0;
+  vertical-align: middle;
+  padding: 0.45em 0.6em 0.7em 0.3em;
+  margin-right: 0.1em;
+}
+
 .contents .contents-navPicker .diminished {
   opacity: 0.5;
 }
 
 .contents .contents-navPicker .btn-copyplain {
-  margin-left: 0.2em;
+  margin-left: 0.1em;
+}
+
+.contents .contents-navPicker .mytinyMCE-textarea {
+  border: 1px solid red;
 }
 
 /*------------------------------------------------------------------
