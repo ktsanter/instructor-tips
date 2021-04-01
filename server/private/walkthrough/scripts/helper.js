@@ -1,6 +1,7 @@
 //-----------------------------------------------------------------------
 // Walkthrough helper
 //-----------------------------------------------------------------------
+// TODO: add separate button handlers for rich and plain text copy
 // TODO: preserve open/close when refreshing picker tree
 // TODO: finish help
 //-----------------------------------------------------------------------
@@ -240,8 +241,14 @@ const app = function () {
     page.elemRendering.leftLabel.addEventListener('click', () => { _handleDoubleSwitch(page.elemRendering, 'left'); });
     page.elemRendering.rightLabel.addEventListener('click', () => { _handleDoubleSwitch(page.elemRendering, 'right'); });
     
-    page.contentsPicker.getElementsByClassName('btn-copyrich')[0].addEventListener('click', (e) => { _handleCopy(e, 'rich'); });
-    page.contentsPicker.getElementsByClassName('btn-copyplain')[0].addEventListener('click', (e) => { _handleCopy(e, 'plain'); });
+    var copyRichElements = page.contentsPicker.getElementsByClassName('btn-copyrich');
+    for (var i = 0; i < copyRichElements.length; i++) {
+      copyRichElements[i].addEventListener('click', (e) => { _handleCopy(e, 'rich'); });
+    }
+    var copyPlainElements = page.contentsPicker.getElementsByClassName('btn-copyplain');
+    for (var i = 0; i < copyPlainElements.length; i++) {
+      copyPlainElements[i].addEventListener('click', (e) => { _handleCopy(e, 'plain'); });
+    }
     
     _setPickerRendering('rendering-container')
   }
@@ -566,16 +573,32 @@ const app = function () {
   }
   
   function _handleCopy(e, copyType) {
-    var richText = settings.tiny.navPickerStrength.getContent();
+    var richText;
+    var category;
+    console.log(e.target.classList);
+    
+    if (e.target.classList.contains('copy-strength')) {
+      richText = settings.tiny.navPickerStrength.getContent();
+      category = 'strength';
+    } else if (e.target.classList.contains('copy-growth')) {
+      richText = settings.tiny.navPickerGrowth.getContent();
+      category = 'growth';
+    } else if (e.target.classList.contains('copy-additional')) {
+      richText = settings.tiny.navPickerAdditional.getContent();
+      category = 'additional';
+    }
+    console.log(richText);
+    console.log(category);
+    if (!category) return;
     
     if (copyType == 'rich') {
       _copyRenderedToClipboard(richText);
-      _setNavbarMessage('rendered message copied');
+      _setNavbarMessage('"' + category + '" message copied');
       
     } else if (copyType == 'plain') {
       var plainText = _makePlaintext(richText);
       _copyToClipboard(plainText);
-      _setNavbarMessage('plain text message copied');
+      _setNavbarMessage('"' + category + '" message copied');
     }
   }
   

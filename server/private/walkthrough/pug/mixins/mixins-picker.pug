@@ -18,19 +18,19 @@ mixin pickerContainer()
         .row(class="p-0")
           .col-sm(class="rendering-container strength hide-me")
             span(class="render-label") strength
-            button(class="btn btn-outline-primary btn-copyrich") copy rendered
-            button(class="btn btn-outline-primary btn-copyplain") copy plain
+            button(class="btn btn-outline-primary btn-copyrich copy-strength hide-me") copy rendered
+            button(class="btn btn-outline-primary btn-copyplain copy-strength") copy
             +makeTinyMCE("picker-tiny-strength")
             
           .col-sm(class="rendering-container growth hide-me")
             span(class="render-label") growth
-            button(class="btn btn-outline-primary btn-copyrich") copy rendered
-            button(class="btn btn-outline-primary btn-copyplain") copy plain
+            button(class="btn btn-outline-primary btn-copyrich copy-growth hide-me") copy rendered
+            button(class="btn btn-outline-primary btn-copyplain copy-growth") copy
             +makeTinyMCE("picker-tiny-growth")
             
         .row(class="p-0 mt-2")
           .col-sm(class="rendering-container additional hide-me")
             span(class="render-label") additional
-            button(class="btn btn-outline-primary btn-copyrich") copy rendered
-            button(class="btn btn-outline-primary btn-copyplain") copy plain
+            button(class="btn btn-outline-primary btn-copyrich copy-additional hide-me") copy rendered
+            button(class="btn btn-outline-primary btn-copyplain copy-additional") copy
             +makeTinyMCE("picker-tiny-additional")
