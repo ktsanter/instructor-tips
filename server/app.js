@@ -47,14 +47,14 @@ var path = require('path');
 
 const app = express();
 
-
 if ((process.env.NODE_ENV || 'development') == 'development') {
-	const cors = require('cors');
-	var corsOptions = {
-	  origin: '*'
-	}
-	app.use(cors(corsOptions));
+    const cors = require('cors');
+    var corsOptions = {
+      origin: '*'
+    }
+    app.use(cors(corsOptions));
 }
+
 
 //------------------------------------------
 // configure favicon
@@ -78,6 +78,12 @@ const url = require('url');
 // file services
 //------------------------------------------
 const fileservices = require('fs');
+
+// default options for sendFile
+const sendFileDefaultOptions = {
+  root: path.join(__dirname, 'private'),
+  dotfiles: 'deny'
+};
 
 //------------------------------------------
 // mariadb management
@@ -477,6 +483,14 @@ function routeIfLoggedIn(req, res, appDescriptor) {
   }
 }
 
+app.get('/', function (req, res) {
+    res.sendStatus(200);
+});
+
+app.get('/marco', function (req, res) {
+    res.send('polo');
+});
+
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
 
 app.get('/treasurehunt/configuration', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
@@ -627,9 +641,11 @@ app.get('/usermanagement/routeToApp/:app', async function (req, res) {
   }
 });
 
+/*
 app.get('/login', function (req, res) {
   res.sendFile(path.join(__dirname, 'private', '/login/html/login.html'))
 })
+*/
 
 app.post('/usermanagement/login_attempt', async function (req, res) {
   var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.hashedPassword);
@@ -751,12 +767,12 @@ app.get('/usermanagement/refreshuser', async function (req, res) {
 // common scripts and CSS
 //------------------------------------------------------
 app.get('/styles/:stylesheet', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', 'common/styles/' + req.params.stylesheet))
+  res.sendFile(path.join('common/styles/' + req.params.stylesheet), sendFileDefaultOptions);
 })
 
 app.get('/scripts/:scriptfile', function (req, res) {
   if (req.params.scriptfile.slice(-3) != '.js') req.params.scriptfile += '.js';
-  res.sendFile(path.join(__dirname, 'private', 'common/scripts/' + req.params.scriptfile))
+  res.sendFile(path.join('common/scripts/' + req.params.scriptfile), sendFileDefaultOptions);
 })
 
 //------------------------------------------------------
@@ -837,6 +853,7 @@ app.get('/basic-web-design/:app', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+/*
 app.get('/countdown/scripts/:script', function (req, res) {
   var scriptFileName = path.join(__dirname, 'private', 'countdown/scripts/' + req.params.script);
   res.sendFile(scriptFileName);
@@ -846,6 +863,7 @@ app.get('/countdown/styles/:style', function (req, res) {
   var styleFileName = path.join(__dirname, 'private', 'countdown/styles/' + req.params.style);
   res.sendFile(styleFileName);
 })
+*/
 
 app.get('/countdown/:app', function (req, res) {
   const appParams = {params: url.parse(req.url,true).query};
@@ -921,26 +939,26 @@ app.get('/cte-department/remind', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {});
 })
 
-app.get('/:app', function (req, res) {
+app.get('/:app', function (req, res, next) {
   var appDescriptor = req.params.app;
-  
-  res.sendFile(path.join(__dirname, 'private', req.params.app + '/html/' + req.params.app + '.html'))
+ 
+  res.sendFile(path.join(req.params.app + '/html/' + req.params.app + '.html'), sendFileDefaultOptions);
 })
 
 app.get('/styles/:app/:stylesheet', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', req.params.app + '/styles/' + req.params.stylesheet))
+  res.sendFile(path.join(req.params.app + '/styles/' + req.params.stylesheet), sendFileDefaultOptions);
 })
 
 app.get('/scripts/:app/:scriptfile', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', req.params.app + '/scripts/' + req.params.scriptfile))
+  res.sendFile(path.join(req.params.app + '/scripts/' + req.params.scriptfile), sendFileDefaultOptions);
 })
 
 app.get('/pug/:app/:pugfile', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', req.params.app + '/pug/' + req.params.pugfile))
+  res.sendFile(path.join(req.params.app + '/pug/' + req.params.pugfile), sendFileDefaultOptions);
 })
 
 app.get('/images/:app/:imagefile', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', req.params.app + '/images/' + req.params.imagefile))
+  res.sendFile(path.join(req.params.app + '/images/' + req.params.imagefile), sendFileDefaultOptions);
 })
 
 app.get('/subpage/:app/:helptype', function (req, res) {
@@ -1126,9 +1144,18 @@ function _failedRequest(requestType) {
 //------------------------------------------
 // boilerplate responses for failed requests
 //------------------------------------------
-app.get('/*', function(req, res) {
-  console.log('\nfailed to GET: ' + req.params[0]);
-  res.send('cannot GET: ' + req.params[0]);
+/*
+app.get('*', function (req, res, next) {
+  next(req);
+});
+*/
+
+app.use(function(err, req, res, next) {
+  console.error(err.stack);
+  console.log('\nerror: ' + req.originalUrl);
+//  res.send('cannot GET: ' + req.params[0]);
+    res.status(err.status || 500).send('Error ' + (err.status || 500) + ': ' + req.originalUrl);
+//  next(err);
 });
 
 //------------------------------------------------------
