@@ -1,7 +1,6 @@
 //-----------------------------------------------------------------------
 // Walkthrough helper
 //-----------------------------------------------------------------------
-// TODO: add separate button handlers for rich and plain text copy
 // TODO: preserve open/close when refreshing picker tree
 // TODO: finish help
 //-----------------------------------------------------------------------
@@ -17,7 +16,7 @@ const app = function () {
     logoutURL: '/usermanagement/logout/walkthrough',
     
     currentNodeInfo: null,
-    labelTruncateLimit: 50,
+    labelTruncateLimit: 40,
     dirtyBit: {
       navPicker: false,
       navEditor: false,
