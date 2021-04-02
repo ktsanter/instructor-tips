@@ -6,7 +6,7 @@
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
-	const page = {};
+  const page = {};
   
   const settings = {
     hideClass: 'hide-me',
@@ -23,12 +23,12 @@ const app = function () {
     commentData: null,
     accessKey: null
   };
-      
-	//---------------------------------------
-	// get things going
-	//----------------------------------------
-	async function init (sodium) {    
-		page.body = document.getElementsByTagName('body')[0]; 
+
+  //---------------------------------------
+  // get things going
+  //----------------------------------------
+  async function init (sodium) {    
+    page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('');
@@ -65,8 +65,8 @@ const app = function () {
   }
   
   //-----------------------------------------------------------------------------
-	// navbar
-	//-----------------------------------------------------------------------------
+  // navbar
+  //-----------------------------------------------------------------------------
   function _attachNavbarHandlers() {
     var handler = (e, me) => { _navDispatch(e); }
     var navItems = page.navbar.getElementsByClassName(settings.navItemClass);
@@ -80,8 +80,8 @@ const app = function () {
   }
   
   //-----------------------------------------------------------------------------
-	// page rendering
-	//-----------------------------------------------------------------------------
+  // page rendering
+  //-----------------------------------------------------------------------------
   async function _renderContents() {
     page.contents = page.body.getElementsByClassName('contents')[0];        
     page.contentsComposer = page.contents.getElementsByClassName('contents-navComposer')[0];
@@ -152,8 +152,8 @@ const app = function () {
   }
   
   //-----------------------------------------------------------------------------
-	// updating
-	//-----------------------------------------------------------------------------
+  // updating
+  //-----------------------------------------------------------------------------
   async function _showContents(contentsId) {
     settings.currentNavOption = contentsId;
     

@@ -37,16 +37,21 @@ class ParamStorage {
   // private methods
   //---------------------------------------------------------------------------------
   static _loadLocal(paramList) {
+    console.log('_loadLocal');
     var results = {};
     for (var i = 0; i < paramList.length; i++) {
       var param = paramList[i];
       var val = localStorage.getItem(param.paramkey);
       results[param.resultkey] = val ? val : param.defaultval;
+      console.log(param);
+      console.log(val);
+      console.log(results[param.resultkey]);
     }
     return results;
   }
   
   static _storeLocal(paramList) {
+    console.log('_storeLocal');
     for (var i = 0; i < paramList.length; i++) {
       var param = paramList[i];
       localStorage.setItem(param.paramkey, param.value);
