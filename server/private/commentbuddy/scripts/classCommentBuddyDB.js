@@ -42,6 +42,16 @@ class CommentBuddyDB {
     return dbResult;
   }
   
+  async addComment(commentText) {
+    var postData = {
+      "comment": commentText
+    };
+    
+    var dbResult = await SQLDBInterface.doPostQuery('commentbuddy/insert', 'comment', postData);
+
+    return dbResult;
+  }
+  
   async deleteComment(itemData) {
     var postData = {
       "commentid": itemData.commentid,

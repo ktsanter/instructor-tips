@@ -55,6 +55,8 @@ const app = function () {
     settings.dbCommentBuddy = new CommentBuddyDB({});
     if ( !(await _getAccessKey()) ) return;
     if ( !(await _getCommentData(true)) ) return;
+    
+    settings.presetText = await _getPresetText();
 
     await _renderContents();
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
@@ -98,7 +100,8 @@ const app = function () {
     settings.tiny.navComposer = new MyTinyMCE({
       id: 'contenteditor-navComposer', 
       selector: '#contenteditor-navComposer', 
-      changeCallback: _handleEditorChange
+      changeCallback: _handleEditorChange,
+      height: 450
     });
     
     await settings.tiny.navComposer.init();
@@ -128,6 +131,11 @@ const app = function () {
 
     _loadCommentInfo(settings.commentData);
     _loadTagSelect(settings.commentData);
+    
+    if (settings.presetText) {
+      await _addComment(settings.presetText);
+      await _clearPresetText();
+    }
   }
   
   function _renderAccessKey() {
@@ -137,13 +145,10 @@ const app = function () {
     page.elemAccessKey.value = settings.accessKey;
   }
   
-  function _renderUpDownload() {
-    /*
-    var accessKeyElements = page.contentsUpDownload.getElementsByClassName('form-accesskey');
-    for (var i = 0; i < accessKeyElements.length; i++) {
-      accessKeyElements[i].value = settings.accessKey;
-    }
-    */
+  function _renderUpDownload() {}
+  
+  async function _createNewComment(commentText) {
+    console.log('create new comment: ' + commentText);
   }
   
   //-----------------------------------------------------------------------------
@@ -164,7 +169,7 @@ const app = function () {
     _setNavOptions();
   }
   
-  async function _updateCommentInfo() {
+  async function _updateCommentInfo(scrollTo) {
     if ( !(await _getCommentData(false)) ) return;
     
     _deselectCurrentItem();
@@ -174,6 +179,9 @@ const app = function () {
     
     if (settings.currentItem != null) {
       _selectItem(settings.currentItem);
+      if (scrollTo) {
+        settings.currentItem.scrollIntoView();
+      }
     }
   }
   
@@ -345,6 +353,21 @@ const app = function () {
       _updateCommentInfo();
     }
   }
+  
+  async function _addComment(commentText) {
+    _setNavbarMessage('adding new comment...');
+    
+    var result = await settings.dbCommentBuddy.addComment(commentText);
+    
+    _setNavbarMessage(result.success ? '' : 'failed to add new comment');
+    if (result.success) {
+      var elemDummy = CreateElement.createDiv(null, null);
+      elemDummy.itemData = result.data;
+      settings.currentItem = elemDummy;
+      _setDirtyBit(false);
+      _updateCommentInfo(true);
+    }
+  }  
 
   function _doLogout() {
     window.open(settings.logoutURL, '_self'); 
@@ -506,6 +529,47 @@ const app = function () {
 
     page._clipboard.copyToClipboard(txt);
 	}	
+  
+  //---------------------------------------
+  // local storage
+  //---------------------------------------
+  async function _getPresetText() {
+    page.notice.setNotice('checking for preset text...', true);
+    var paramList = [
+      {paramkey: 'cbv3-savecommenttext', resultkey: 'presetText', defaultval: null}
+    ];
+        
+    var result = await ParamStorage.load(paramList);
+    page.notice.setNotice('');
+    
+    if (result.presetText == 'null') result.presetText = null;
+    
+    return result.presetText;
+  }
+  
+  async function _clearPresetText() {
+    var paramList = [
+      {paramkey: 'cbv3-savecommenttext', value: null},
+    ];
+    
+    await ParamStorage.store(paramList);
+  }
+  
+  async function _saveUserSettings() {
+    userSettings.searchtext = page.searchText.value;
+    userSettings.tags = page.tagText.value;
+    userSettings.commentid = settings.selectedCommentId;
+    
+    var paramList = [
+      {paramkey: 'cbv3-accesskey', value: userSettings.accesskey},
+      {paramkey: 'cbv3-searchtext', value: userSettings.searchtext},
+      {paramkey: 'cbv3-tags', value: userSettings.tags},
+      {paramkey: 'cbv3-commentid', value: userSettings.commentid},    
+    ];
+    
+    await ParamStorage.store(paramList);
+  }
+  
   
   //--------------------------------------------------------------------------
   // utility

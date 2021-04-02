@@ -3,11 +3,11 @@ define(function (require) {
   require('/scripts/create_element');
   require('/scripts/standard_notice');
   require('/scripts/sqldbinterface');  
-  require('/scripts/google_webapp_interface');
   require('/scripts/mytinymce');
   require('/scripts/classProfile');
   require('/scripts/usermanagement');  
   require('/scripts/clipboard_copy');  
+  require('/scripts/paramstorage');
   
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');  

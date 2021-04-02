@@ -46,6 +46,9 @@ module.exports = internal.CommentBuddy = class {
     if (params.queryName == 'default-comment') {
       dbResult = await this._insertDefaultComment(params, postData, userInfo);
   
+    } else if (params.queryName == 'comment') {
+      dbResult = await this._insertComment(params, postData, userInfo);
+  
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -249,6 +252,34 @@ module.exports = internal.CommentBuddy = class {
     query = 
       'call add_default_comment(' + 
         userInfo.userId + ' ' +
+      ') ';
+    
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = queryResults.data[0][0];
+
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+  
+  async _insertComment(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();  
+    
+    var query, queryResults;
+    
+    var commentText = postData.comment;
+    commentText = commentText.replace(/"/g, '\\\"');
+    
+    query = 
+      'call add_comment(' + 
+        userInfo.userId + ', ' +
+        '"' + commentText + '" ' +
       ') ';
     
     queryResults = await this._dbManager.dbQuery(query);
