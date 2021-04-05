@@ -1,8 +1,8 @@
 //-----------------------------------------------------------------------
 // CommentBuddy composer
 //-----------------------------------------------------------------------
-// TODO: approach for data migration
-// TODO: styling
+// TODO: manage presetText
+// TODO: sorting comment list (alphabetically with plain text?)
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -146,11 +146,7 @@ const app = function () {
   }
   
   function _renderUpDownload() {}
-  
-  async function _createNewComment(commentText) {
-    console.log('create new comment: ' + commentText);
-  }
-  
+    
   //-----------------------------------------------------------------------------
   // updating
   //-----------------------------------------------------------------------------
@@ -180,6 +176,7 @@ const app = function () {
     if (settings.currentItem != null) {
       _selectItem(settings.currentItem);
       if (scrollTo) {
+        console.log('scrollTo');
         settings.currentItem.scrollIntoView();
       }
     }
@@ -195,7 +192,7 @@ const app = function () {
     UtilityKTS.removeChildren(elemItems);
     for (var i = 0; i < commentData.length; i++) {
       var item = commentData[i];
-      var elemSingleItem = CreateElement.createDiv(null, 'sidebar-singleitem', _makePlaintext(item.comment));
+      var elemSingleItem = CreateElement.createDiv(null, 'sidebar-singleitem', _makePlaintext(item.comment, false));
       elemSingleItem.addEventListener('click', (e) => { _handleSidebarSelection(e); });
       elemSingleItem.itemData = item;
 
@@ -512,12 +509,33 @@ const app = function () {
     var result = await settings.dbCommentBuddy.getCommentData();
     if (result.success) {
       settings.commentData = result.data;
+      settings.commentData = settings.commentData.sort(function(a,b) {
+        var al = _makePlaintext(a.comment.toLowerCase(), true);
+        var bl = _makePlaintext(b.comment.toLowerCase(), true);
+        return al.localeCompare(bl);
+      });
+      
       if (showNotice) page.notice.setNotice('');
       
     } else {
       page.notice.setNotice('failed to load comments');
     }
     
+    return result.success;
+  }
+
+  async function _getPresetText() {
+    var presetText = null;
+    var result = await settings.dbCommentBuddy.getPresetComment();
+    if (result.success && result.data.length > 0) {
+      presetText = result.data[0].comment;
+    }
+    
+    return presetText;
+  }
+  
+  async function _clearPresetText() {
+    var result = await settings.dbCommentBuddy.clearPresetComment();
     return result.success;
   }
 
@@ -529,47 +547,6 @@ const app = function () {
 
     page._clipboard.copyToClipboard(txt);
 	}	
-  
-  //---------------------------------------
-  // local storage
-  //---------------------------------------
-  async function _getPresetText() {
-    page.notice.setNotice('checking for preset text...', true);
-    var paramList = [
-      {paramkey: 'cbv3-savecommenttext', resultkey: 'presetText', defaultval: null}
-    ];
-        
-    var result = await ParamStorage.load(paramList);
-    page.notice.setNotice('');
-    
-    if (result.presetText == 'null') result.presetText = null;
-    
-    return result.presetText;
-  }
-  
-  async function _clearPresetText() {
-    var paramList = [
-      {paramkey: 'cbv3-savecommenttext', value: null},
-    ];
-    
-    await ParamStorage.store(paramList);
-  }
-  
-  async function _saveUserSettings() {
-    userSettings.searchtext = page.searchText.value;
-    userSettings.tags = page.tagText.value;
-    userSettings.commentid = settings.selectedCommentId;
-    
-    var paramList = [
-      {paramkey: 'cbv3-accesskey', value: userSettings.accesskey},
-      {paramkey: 'cbv3-searchtext', value: userSettings.searchtext},
-      {paramkey: 'cbv3-tags', value: userSettings.tags},
-      {paramkey: 'cbv3-commentid', value: userSettings.commentid},    
-    ];
-    
-    await ParamStorage.store(paramList);
-  }
-  
   
   //--------------------------------------------------------------------------
   // utility
@@ -584,7 +561,7 @@ const app = function () {
     }
   }
   
-  function _makePlaintext(richtext) {
+  function _makePlaintext(richtext, extraChecks) {
     var plaintext = richtext;
 
     plaintext = plaintext.replace(/<p>(.*?)<\/p>/g, '$1\n');    // replace <p> elements with \n
@@ -596,6 +573,11 @@ const app = function () {
     plaintext = plaintext.replace('&nbsp;', ' ');
     
     while (plaintext.includes('\n\n')) plaintext = plaintext.replace('\n\n', '\n'); 
+    if (extraChecks) {
+      while (plaintext.includes('\n')) plaintext = plaintext.replace('\n', ''); 
+      plaintext = plaintext.replace('•', '');
+      plaintext = plaintext.trim();
+    }
     
     return plaintext;
   }
@@ -616,8 +598,8 @@ const app = function () {
     return result;
   }
     
-	//-----------------------------------------------------------------------------------
-	// init:
+  //-----------------------------------------------------------------------------------
+  // init:
 	//-----------------------------------------------------------------------------------
 	return {
 		init: init

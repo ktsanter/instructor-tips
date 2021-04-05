@@ -27,11 +27,14 @@ module.exports = internal.CommentBuddy = class {
     if (params.queryName == 'comments') {
       dbResult = await this._getComments(params, postData, userInfo);
             
-    } else if (params.queryName == 'client-comments') {
-      dbResult = await this._getClientComments(params, postData);
-            
     } else if (params.queryName == 'accesskey') {
       dbResult = await this._getAccessKey(params, postData, userInfo);
+            
+    } else if (params.queryName == 'preset-comment') {
+      dbResult = await this._getPresetComment(params, postData, userInfo);
+            
+    } else if (params.queryName == 'client-comments') {
+      dbResult = await this._getClientComments(params, postData);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -48,6 +51,9 @@ module.exports = internal.CommentBuddy = class {
   
     } else if (params.queryName == 'comment') {
       dbResult = await this._insertComment(params, postData, userInfo);
+  
+    } else if (params.queryName == 'preset-comment') {
+      dbResult = await this._setPresetComment(params, postData);
   
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -74,6 +80,9 @@ module.exports = internal.CommentBuddy = class {
     
     if (params.queryName == 'comment') {
       dbResult = await this._deleteComment(params, postData, userInfo);
+    
+    } else if (params.queryName == 'preset-comment') {
+      dbResult = await this._deletePresetComment(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -110,6 +119,31 @@ module.exports = internal.CommentBuddy = class {
     return result;
   }
 
+  async _getPresetComment(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select ' +
+        'a.commenttext as "comment" ' +
+      'from presetcomment as a ' +
+      'where userid = ' + userInfo.userId;
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
   async _getClientComments(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
@@ -129,7 +163,7 @@ module.exports = internal.CommentBuddy = class {
     }
     
     var userId = queryResults.data[0].userid;
-    
+
     query = 
       'select ' +
         'a.commentid, a.tags, a.hovertext, a.commenttext as "comment" ' +
@@ -296,6 +330,48 @@ module.exports = internal.CommentBuddy = class {
     return result;
   }  
   
+  async _setPresetComment(params, postData) {
+    var result = this._dbManager.queryFailureResult();  
+    var query, queryResults;
+    
+    var query =
+      'select ' + 
+        'a.userid ' +
+      'from accesskey as a ' +
+      'where a.accesskey = "' + postData.accesskey + '"';
+       
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (!queryResults.success  || queryResults.data.length != 1) {
+      result.details = 'invalid access key';
+      return result;
+    }
+    
+    var userId = queryResults.data[0].userid;
+    var commentText = postData.preset;
+    commentText = commentText.replace(/"/g, '\\\"');
+    
+    query = 
+      'replace into presetcomment (' + 
+        'userid, commenttext ' +
+      ') values (' +
+        userId + ', ' +
+        '"' + commentText + '" ' +
+      ') ';
+    
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+  
   async _deleteComment(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult();
     
@@ -318,6 +394,26 @@ module.exports = internal.CommentBuddy = class {
     return result;
   }    
   
+  async _deletePresetComment(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult();
+    
+    var query, queryResults;
+    
+    query = 
+      'delete from presetcomment ' +
+      'where userid = ' + userInfo.userId;
+         
+    var queryResults = await this._dbManager.dbQuery(query);
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'delete succeeded';
+      result.data = null;
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }    
 //---------------------------------------------------------------
 // form processing
 //---------------------------------------------------------------       

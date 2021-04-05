@@ -23,6 +23,18 @@ class CommentBuddyDB {
     return dbResult;
   }
   
+  async getPresetComment() {
+    var dbResult = await SQLDBInterface.doGetQuery('commentbuddy/query', 'preset-comment');
+
+    return dbResult;
+  }
+  
+  async clearPresetComment() {
+    var dbResult = await SQLDBInterface.doPostQuery('commentbuddy/delete', 'preset-comment');
+
+    return dbResult;
+  }
+  
   async saveComment(itemData) {
     var postData = {
       "commentid": itemData.commentid,

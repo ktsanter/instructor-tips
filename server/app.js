@@ -559,9 +559,13 @@ async function processCommentBuddyResult(req, res, result) {
   }
 }
 
-app.post('/commentbuddy-client/query/:queryName', async function (req, res) {
+app.post('/commentbuddy-client/:queryType/:queryName', async function (req, res) {
   var dbManager = dbManagerLookup['commentbuddy'];
-  res.send(await dbManager.doQuery({queryName: 'client-comments'}, req.body));
+  if (req.params.queryType == 'query') {
+    res.send(await dbManager.doQuery(req.params, req.body));
+  } else if (req.params.queryType == 'insert') {
+    res.send(await dbManager.doInsert(req.params, req.body));
+  }
 })
 
 app.get('/image-flipper/generator', function (req, res) { routeIfLoggedIn(req, res, 'image-flipper-generator'); })

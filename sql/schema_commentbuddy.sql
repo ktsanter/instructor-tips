@@ -35,6 +35,17 @@ create table accesskey
   constraint unique(userid)
 );
 
+create table presetComment
+(
+  presetcommentid   int unsigned not null AUTO_INCREMENT,
+  userid            int unsigned not null,
+  commenttext       varchar(4000) not null,
+  
+  primary key (presetcommentid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid)
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------
