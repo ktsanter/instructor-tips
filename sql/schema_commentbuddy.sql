@@ -35,7 +35,7 @@ create table accesskey
   constraint unique(userid)
 );
 
-create table presetComment
+create table presetcomment
 (
   presetcommentid   int unsigned not null AUTO_INCREMENT,
   userid            int unsigned not null,
