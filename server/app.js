@@ -906,6 +906,12 @@ app.post('/roster-manager/:formname', function (req, res) {
   rosterManager.processUploadedFile(req, res, processRosterManagerResult); 
 })
 
+app.get('/roster-manager/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+
 async function processRosterManagerResult(req, res, result) {
   if (result.success) {
     var fileName = result.targetfilename;

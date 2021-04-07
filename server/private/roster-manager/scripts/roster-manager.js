@@ -5,6 +5,10 @@
 //-------------------------------------------------------------------
 const app = function () {
   const page = {};
+  
+  const settings = {
+    helpURL: '/roster-manager/help',
+  }
 
   //---------------------------------------
   // get things going
@@ -22,6 +26,7 @@ const app = function () {
   }
   
   function _attachHandlers() {
+    page.body.getElementsByClassName('help-link')[0].addEventListener('click', (e) => { _handleHelp(e); });
     page.body.getElementsByClassName('check-mentor-compare')[0].addEventListener('click', (e)=>{_handleMentorCompareClick(e);});
     page.body.getElementsByClassName('check-enrollment-compare')[0].addEventListener('click', (e)=>{_handleEnrollmentCompareClick(e);});
   }
@@ -44,6 +49,10 @@ const app = function () {
   //---------------------------------------
 	// handlers
 	//----------------------------------------
+  function _handleHelp(e) {
+    window.open(settings.helpURL, '_blank');
+  }
+  
   function _handleMentorCompareClick(e) {
     _setFileControl('label-mentor-compare', 'check-mentor-compare', 'mentor-report-file2');
   }
