@@ -48,3 +48,6 @@ mixin makeNavbar(title, params)
 
         if params.profile
           +ASProfileNavbar()
+          
+        if params.helpbutton
+          i(class="far fa-question-circle help-link")

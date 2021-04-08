@@ -25,6 +25,17 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navEditor {}
 
+.contents .contents-navEditor .editor-plusicon {
+  margin-left: 0.4em;
+  cursor: pointer;
+}
+
+.contents .contents-navEditor .editor-plusicon:hover {
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--bgPrimary);
+}
+
 .contents .contents-navEditor .navEditor-itemcontent {}
 
 .contents .contents-navEditor .navEditor-itemcontent.navEditor-markdown-content {

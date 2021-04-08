@@ -150,6 +150,10 @@ class TreeManager {
     if (useSelectCallback) this._config.selectCallback(selectedNode);
   }
   
+  appendDefaultNode() {
+    this._addNodeAfter();
+  }
+  
   setTreeState(newTreeState) {
     var thisTree = $(this._config.treeSelector);   
     var treeState = thisTree.tree('getState');
@@ -190,7 +194,8 @@ class TreeManager {
   _addNodeAfter(nodeInfo) {
     var thisTree = $(this._config.treeSelector);    
     var newId = this._makeUniqueTreeId();
-    var newName = nodeInfo ? 'new item' : 'default item';
+    //var newName = nodeInfo ? 'new item' : 'default item';
+    var newName = 'new item';
     var newNodeInfo =         {
       name: newName, 
       id: newId,

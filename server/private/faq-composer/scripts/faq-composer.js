@@ -95,9 +95,10 @@ const app = function () {
 	//-----------------------------------------------------------------------------
   async function _renderContents() {
     settings.contentEditorId = {};
+    
     page.tiny = new MyTinyMCE({id: 'contenteditor-navEditor', selector: '#contenteditor-navEditor', changeCallback: _handleEditorChange});
     await page.tiny.init();
-    console.log('back from init');
+    
     _renderEditor();
     _renderMapper();    
   }
@@ -121,6 +122,7 @@ const app = function () {
     settings.editorTree.render(settings.faqInfo);    
     
     page.contentsEditor.getElementsByClassName('navEditor-itemlabel')[0].addEventListener('input', (e) => {_handleEditorChange(e);});    
+    page.contentsEditor.getElementsByClassName('editor-plusicon')[0].addEventListener('click', (e) => { _handleAddItemClick(e); });
   }
   
   function _renderMapper() {
@@ -399,6 +401,10 @@ const app = function () {
     settings.editorTree.updateNode(updatedNodeInfo, false);
     _handleTreeChange();
   }  
+  
+  async function _handleAddItemClick(e) {
+    settings.editorTree.appendDefaultNode();
+  }
   
   async function _handleSave(e) {
     if (settings.currentNavOption == 'navEditor') {

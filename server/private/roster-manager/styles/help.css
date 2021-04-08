@@ -2,22 +2,47 @@
  * styling for Roster Manager help
  *------------------------------------------------------------------*/
 .colorscheme {
-  --fgPrimary: black;
   --bgPrimary: rgba(66, 98, 150, 1.0);
-  --bgSecondary: rgba(66, 98, 150, 0.2);
-  --bgTertiary: #eee;
-  --borderPrimary: #bbb;
-  --diminished: #999;
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
 }
 
 body {
-	color: var(--fgPrimary);
-	background-color: var(--bgTertiary);
-	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-	font-size: 13px;
-	margin-right: 2.0em;
+  padding-top: 4.0em;
+  margin-bottom: 10.0em;
 }
 
 .hide-me {
-  visibility: hidden;
+  display: none;
+}
+
+/*-------------------------------------------------------------------
+ * sections
+ *------------------------------------------------------------------*/
+.helpsection {
+  padding-top: 4.0em;
+}
+
+.helpsection .helpsection-title {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.helpsection .helpsection-content {
+  margin-top: 0.4em;
+}
+
+.helpsection .helpsection-content.shrink {
+  max-width: 50%;
+}
+
+.helpsection .helpsection-imagelink { 
+  display: inline-block;
+  margin-left: 0.4em;
+  margin-right: 0.6em;
+}
+
+.helpsection .helpsection-imagecontainer img {
+  border: 1px solid var(--borderPrimary);  
+  width: 22.0em;
 }

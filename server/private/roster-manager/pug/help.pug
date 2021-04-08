@@ -1,10 +1,11 @@
 include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
 
 doctype html
 html(lang="en")
   head
-    title Roster Manager help
+    title roster manager help
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
 
@@ -12,7 +13,179 @@ html(lang="en")
     +bootstrapstyle()
     
     style
+      include ../../common/styles/navbar-overrides.css    
       include ../styles/help.css
 
-    body()
-      h4 Roster Manager help (tbd)
+  body(class="colorscheme")
+    +makeNavbar("Roster Manager help", 
+      {
+        items: [
+          {id: "navOverview", type: "link", label: "overview"},
+          {id: "navSLP", type: "link", label: "generate SLP data"},
+          {id: "navRosterManager", type: "link", label: "use Roster Manager"},
+          {id: "navInterpret", type: "link", label: "interpret results"},
+          {id: "navError", type: "link", label: "errors"}
+        ],
+        
+        buttons: [],        
+        profile: false
+      }
+    )    
+
+    .container-fluid
+      .row: .col-sm 
+        .helpsection(id="anchorOverview") 
+          .helpsection-title overview
+          .helpsection-content 
+            |The Roster Manager is a tool to help with tracking student and mentor information from the SLP.
+            | It does a few things
+            ul
+              li formats student info to make it easier for importing into other tools like the 
+                a(href="https://chrome.google.com/webstore/detail/student-infodeck/boeopbggbaddapmhdeoggjlakphocokf" title="get Student infoDeck Chrome extension") Student infoDeck
+              li groups mentor and guardian information both by student and by section
+              li optionally compares newer reports to older ones, flagging where student, mentor or guardian info has changed  
+              
+          .helpsection-content
+            |The basic steps are
+            ol
+              li generate the enrollments and mentor/guardian reports in the SLP and download them as Excel
+              li (optional) if making a comparison between new and old, download the latest Roster Manager output reports
+              li use the Roster Manager to select the downloaded reports (and optionally the comparison reports)
+              li submit the files in the Roster Manager
+              li examine the reports output by the Roster Manager   
+
+          .helpsection-content(class="shrink")
+            div(class="ratio ratio-16x9")
+              iframe(src="https://www.youtube.com/embed/6dn5ojftGVo" allowfullscreen)
+        
+      .row: .col-sm 
+        .helpsection(id="anchorSLP") 
+          hr
+          .helpsection-title generating reports from the SLP
+          .helpsection-content 
+            |The Roster Manager uses two sets of data from the SLP - the Enrollment information and the 
+            em List of Students Mentor and Guardian 
+            |report. You can use tHe Roster Manager with either or both data sets.
+            
+          .helpsection-content
+            |Each should be generated and then downloaded as an Excel file to use with the Roster Manager
+            
+            br
+            a(class="helpsection-imagelink"
+              href="https://res.cloudinary.com/ktsanter/image/upload/v1617812803/Roster%20Manager/enrollment_report_-_snapshot.png" 
+              target="_blank") getting the Enrollment report
+            a(class="helpsection-imagelink"
+              href="https://res.cloudinary.com/ktsanter/image/upload/v1617813299/Roster%20Manager/mentor-guardian_report_-_snapshot.png" 
+              target="_blank") getting the Mentor/Guardian report
+          
+          br
+          .helpsection-content
+            |Note:
+            ul
+              li specific columns are expected in the Enrollment report: 
+                em Student, Section, StudentEmail, StartDate, EndDate, Affiliation, LMSTerm 
+                |. You can use the 
+                a(
+                  href="https://res.cloudinary.com/ktsanter/image/upload/v1617895590/Roster%20Manager/enrollment_report_-_customize_columns.png" 
+                  target="_blank") Customize columns 
+                |option to select them
+              li to help keep things straight, you might choose to rename the downloaded Excel files to something other than the generic names given by the SLP
+              li if you'll be comparing the new reports to older ones, download the older Excel files at this point
+            |Here's an example of how the files might look 
+            a(href="https://res.cloudinary.com/ktsanter/image/upload/v1617894011/Roster%20Manager/downloads_directory_snapshot_1.png" target="_blank") in your Downloads folder
+            
+        
+      .row: .col-sm 
+        .helpsection(id="anchorRosterManager") 
+          hr
+          .helpsection-title using the Roster Manager
+          .helpsection-content 
+            |Using the Roster Manager is fairly straightforward (
+            a(
+            href="https://res.cloudinary.com/ktsanter/image/upload/v1617896460/Roster%20Manager/roster_manager_-_enrollment_basic.png"
+            target="_blank") see example
+            |): 
+            ul
+              li choose the new enrollment file
+              li click on the 
+                em Process 
+                | button
+                
+            |The steps are 
+            a(
+              href="https://res.cloudinary.com/ktsanter/image/upload/v1617896557/Roster%20Manager/roster_manager_-_mentor-guardian_basic.png" 
+              target="_blank") virtually the same 
+            | for the mentor/guardian report
+            
+            .helpsection-content
+              |To include a comparison with an older file (
+              a(
+                href="https://res.cloudinary.com/ktsanter/image/upload/v1617897337/Roster%20Manager/roster_manager_-_enrollment_compare.png"
+                target="_blank") see example
+              |), before clicking the 
+              em Process 
+              | button: 
+              ul
+                li check the relevant 
+                  em compare to... 
+                  | box
+                li select the older comparison file
+
+      .row: .col-sm 
+        .helpsection(id="anchorInterpret") 
+          hr
+          .helpsection-title interpreting the results
+          .helpsection-content 
+            |If all goes well, two Excel files will be made by the Roster Manager and downloaded to your computer: 
+            br
+            strong: em collated-enrollment-report.xlsx 
+            |and/or 
+            strong: em collated-mentor-guardian-report.xlsx
+            
+          .helpsection-content
+            |The first sheet in each workbook will hold the original SLP data
+            |The remaining sheets will hold organized data compiled from the originally (and from the optional comparison files)
+          
+          br
+          
+          .helpsection-comment
+            |addional sheets in the collated enrollment file
+            ul
+              li
+                em enrollments 
+                |- each student enrollment, formatted for copying into the Student infoDeck
+              li
+                em new-old comparison 
+                |- (optional) students added or removed in comparision to the older data file
+          
+          .helpsection-comment
+            |additional sheets in the collated mentor/guardian file
+            ul
+              li
+                em mentors by student 
+                |- contains a single row for each student with all mentors assigned to the student
+              li
+                em guardians by section 
+                |- contains a single row for each student with all guardians assigned to the student
+              li
+                em mentors by section 
+                |- each mentor assigned to a section (without duplicates)
+              li
+                em new-old comparison 
+                |- (optional) students added or removed, and mentors added or removed in comparision to the older data file
+
+      .row: .col-sm 
+        .helpsection(id="anchorError") 
+          hr
+          .helpsection-title potential errors
+          .helpsection-content 
+            |If you specify a file with the wrong contents (such as inadvertently swapping the enrollment and mentor/guardian files, or using an enrollment file that doesn't have the expected columns) you'll receive an error message something like this
+            .helpsection-imagecontainer
+              img(class="img-fluid" src="https://res.cloudinary.com/ktsanter/image/upload/v1617899072/Roster%20Manager/roster_manager_error_result.png")
+              
+          br
+          .helpsection-content
+            |The submitted file(s) won't be changed in any way and you can simply retry.
+            
+    script
+      include ../scripts/help.js

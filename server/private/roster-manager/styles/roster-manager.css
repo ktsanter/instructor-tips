@@ -11,38 +11,11 @@
 }
 
 body {
-	color: var(--fgPrimary);
-	background-color: var(--bgTertiary);
-	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-	font-size: 13px;
-	margin-right: 2.0em;
+  padding-top: 4.0em;
 }
 
 .hide-me {
   visibility: hidden;
-}
-
-/*-------------------------------------------------------------------
- * title bar
- *------------------------------------------------------------------*/
-.titlecontainer {
-  color: white;
-  background-color: var(--bgPrimary);
-  border-radius: 3px;
-  padding: 0.2em 0;
-  margin-bottom: 0.4em;
-}
-
-.titlecontainer .titletext {
-  display: inline-block;
-  font-size: 1.2em;
-  padding-left: 0.2em;
-  padding-right: 0.4em;
-}
-
-.titlecontainer .titlelink {
-  display: inline-block;
-  margin-left: 0.2em;
 }
 
 /*-------------------------------------------------------------------
@@ -55,12 +28,8 @@ body {
   margin-bottom: 0.6em;
 }
 
-.userform .form-title {
-  font-size: 1.1em;
-  font-weight: bold;
-}
-
 .userform .form-row {
+  margin-top: 0.1em;
   margin-bottom: 0.2em;
 }
 
@@ -71,6 +40,12 @@ body {
 
 .userform .form-row .form-col1 {
   display: inline-block;
+}
+
+.userform .form-row .form-col2 {
+  display: inline-block;
+  float: right;
+  margin-right: 0.2em;
 }
 
 .userform .form-row .check-compare {
@@ -90,4 +65,22 @@ body {
 
 .userform .form-row.submit-region {
   margin-top: 0.4em;
+}
+
+.btn.btn-outline-primary { /*-- override Bootstrap --*/
+  color: rgba(66, 98, 150, 1.0);
+  background-color: transparent;
+  border-color: rgba(66, 98, 150, 1.0);
+}
+
+.btn.btn-outline-primary:hover { /*-- override Bootstrap --*/
+  color: white;
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: white;
+}
+
+.btn-check:checked+.btn-outline-primary {
+  color: white;
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: rgba(66, 98, 150, 1.0);
 }
