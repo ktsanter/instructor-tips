@@ -1,0 +1,55 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title CommentBuddy help
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+
+    +fontawesome()
+    +bootstrapstyle()
+    
+    style
+      include ../../common/styles/navbar-overrides.css    
+      include ../styles/extension-help.css
+
+  body(class="colorscheme")
+    +makeNavbar("CommentBuddy help", 
+      {
+        items: [
+          {id: "navOverview", type: "link", label: "overview"},
+          {id: "navSetup", type: "link", label: "setup"},
+          {id: "navSearch", type: "link", label: "searching"}
+        ],
+        
+        buttons: [],        
+        profile: false
+      }
+    )    
+
+    .container-fluid
+      .row: .col-sm 
+        .helpsection(id="anchorOverview") 
+          .helpsection-title overview
+          .helpsection-content 
+            |TBD
+        
+      .row: .col-sm 
+        .helpsection(id="anchorSetup") 
+          hr
+          .helpsection-title setup
+          .helpsection-content 
+            |TBD
+        
+      .row: .col-sm 
+        .helpsection(id="anchorSearch") 
+          hr
+          .helpsection-title searching
+          .helpsection-content 
+            |TBD
+            
+    script
+      include ../scripts/extension-help.js

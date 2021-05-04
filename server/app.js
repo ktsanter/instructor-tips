@@ -538,6 +538,10 @@ app.get('/commentbuddy/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
+app.get('/commentbuddy/extension-help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'commentbuddy/pug/extension-help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
 app.post('/commentbuddy/processform/:formname', function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
   dbCommentBuddy.processForm(req, res, processCommentBuddyResult, userInfo); 
