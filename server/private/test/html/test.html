@@ -66,7 +66,11 @@
         if (isSignedIn) {
           authorizeButton.style.display = 'none';
           signoutButton.style.display = 'block';
+          
           listUpcomingEvents();
+          listCalendars();
+          //execute();
+          
         } else {
           authorizeButton.style.display = 'block';
           signoutButton.style.display = 'none';
@@ -130,6 +134,24 @@
           }
         });
       }
+      
+      function listCalendars() {
+        return gapi.client.calendar.calendarList.list({})
+            .then(function(response) {
+                    // Handle the results here (response.result has the parsed body).
+                    appendPre('Calendars:');
+                    var calendarItems = response.result.items;
+                    for (var i = 0; i < calendarItems.length; i++) {
+                     var item = calendarItems[i];
+                     console.log(item.summary + ' | ' + item.id + ' | ' + item.accessRole);
+                     appendPre(item.summary + ' | ' + item.id + ' | ' + item.accessRole);
+                      console.log(item);
+                    }
+                    appendPre('\n');
+                    
+                  },
+                  function(err) { console.error("Execute error", err); });
+      }      
 
     </script>
 

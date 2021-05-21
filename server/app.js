@@ -458,6 +458,13 @@ var appLookup = {
     loginReRoute: 'walkthrough/helper'
   }, 
 
+  "enddate-manager" : {
+    appDescriptor: 'enddate-manager',
+    appName: 'End date manager',
+    routePug: 'enddate-manager/pug/enddate-manager.pug',
+    loginReRoute: 'endate-manager/manager'
+  }, 
+
   "commentbuddy" : {
     appDescriptor: 'commentbuddy',
     appName: 'CommentBuddy composer',
@@ -470,6 +477,7 @@ var appLookup = {
 // app specific routing and queries
 //------------------------------------------------------
 function routeIfLoggedIn(req, res, appDescriptor) {
+  console.log(appDescriptor);
   var loggedin = userManagement.isLoggedIn(req.session);
   var appInfo = appLookup[appDescriptor];
   
@@ -530,6 +538,12 @@ app.get('/faq-composer/faq/:faqsetid', async function (req, res) {
 app.get('/walkthrough/helper', function (req, res) { routeIfLoggedIn(req, res, 'walkthrough'); })
 app.get('/walkthrough/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'walkthrough/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/enddate-manager/manager', function (req, res) { routeIfLoggedIn(req, res, 'enddate-manager'); })
+app.get('/enddate-manager/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'enddate-manager/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 

@@ -1,0 +1,51 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
+include ../../common/pug/profile-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title End date manager
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+    
+    script(src="/scripts/commonmark_min.js")   
+    
+    style
+      include ../../common/styles/classProfile.css
+      include ../../common/styles/navbar-overrides.css
+      include ../styles/enddate-manager.css
+    
+    +addJQuery()
+    script(data-main="/scripts/enddate-manager/require_enddate-manager", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    +makeNavbar("End date manager", 
+      {
+        items: [
+          {id: "navMain", type: "link", label: "main"},
+          {type: "dropdown", label: "other", items: [
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}        
+        ],
+        
+        profile: true
+      }
+    )
+    
+    .contents
+      .error-container
+        
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

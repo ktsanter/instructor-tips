@@ -1,0 +1,23 @@
+mixin mapperContainer()
+  .row
+    .col-sm-4(class="hierarchy-container" id="mapperHierarchy")
+      label(for="mapperHierarchy" class="col col-form-label col-form-label") FAQ items
+    
+    .col-sm
+      .container-fluid(class="p-0")
+        .row(class="p-0"): col-sm(class="navMapper-item-edit")
+          div(class="d-flex course-selection-container") 
+            div(class="input-group mb-3")
+              div(class="input-group-prepend")
+                label(class="input-group-text" for="inputGroupSelect-mapper") project
+              
+              select(class="custom-select project-selection w-50" id="inputGroupSelect-mapper")
+              
+              button(class="mapper-button button-link" title="get link" disabled)
+                i(class="fas fa-link mapper-button-icon mapper-link")
+              button(class="mapper-button button-embed" title="get embed code" disabled)
+                i(class="fas fa-less-than mapper-button-icon mapper-embed mapper-embed-left")
+                i(class="fas fa-greater-than mapper-button-icon mapper-embed")
+            
+        .row(class="p-0")
+          .col-sm(class="accordion-container")
