@@ -2,8 +2,10 @@ include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
-include ../../common/pug/tinyMCE-mixins.pug
 include ../../common/pug/profile-mixins.pug
+
+include ./mixins/mixins-manager.pug
+include ./mixins/mixins-options.pug
 
 doctype html
 html(lang="en")
@@ -15,7 +17,8 @@ html(lang="en")
     +fontawesome()
     +bootstrapstyle()
     
-    script(src="/scripts/commonmark_min.js")   
+    script(src="/scripts/commonmark_min.js")
+    script(src="https://apis.google.com/js/api.js")
     
     style
       include ../../common/styles/classProfile.css
@@ -29,7 +32,8 @@ html(lang="en")
     +makeNavbar("End date manager", 
       {
         items: [
-          {id: "navMain", type: "link", label: "main"},
+          {id: "navManage", type: "link", label: "manage"},
+          {id: "navOptions", type: "link", label: "options"},
           {type: "dropdown", label: "other", items: [
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
@@ -37,6 +41,7 @@ html(lang="en")
         ],
         
         buttons: [
+          {id: 'navGoogle', label: 'authorize'},
           {id: 'navSave', label: 'save'},
           {id: 'navReload', label: 'reload'}        
         ],
@@ -47,5 +52,11 @@ html(lang="en")
     
     .contents
       .error-container
+      
+      .container-fluid(class="contents-container contents-navManage hide-me")
+        +managerContainer()
+
+      .container-fluid(class="contents-container contents-navOptions hide-me")
+        +optionsContainer()     
         
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

@@ -2,7 +2,6 @@
 // End date manager
 //-----------------------------------------------------------------------
 // TODO: finish help
-// TODO: add Rename option to mapper ?
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -15,9 +14,16 @@ const app = function () {
     logoutURL: '/usermanagement/logout/enddate-manager',
     
     dirtyBit: {
-      navEditor: false,
-      navMapper: false,
-      navProfile: false
+      "navManage": false,
+      "navOptions": false
+    },
+    
+    google: {
+      obj: null,
+      clientId:  '780404244540-nug55q7bnd7daf3dpj5k5g8qob9uqv41.apps.googleusercontent.com',
+      apiKey: 'AIzaSyDOa6Dc0pWvBBCmsQYShBaWuYsBEEFMIlI',
+      scopes: 'https://www.googleapis.com/auth/calendar.readonly',
+      isSignedIn: false
     }
   };
     
@@ -35,7 +41,6 @@ const app = function () {
     
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
-    /**/
     settings.profile = new ASProfile({
       id: "myProfile",
       "sodium": sodium,
@@ -48,13 +53,19 @@ const app = function () {
       hideClass: 'hide-me'
     });
     await settings.profile.init();
-    /**/
 
     page.notice.setNotice('');
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     
     _renderContents();
+    
+    settings.google.obj = new GoogleManagement({
+      "clientId": settings.google.clientId,
+      "apiKey": settings.google.apiKey,
+      "scopes": settings.google.scopes,
+      "signInChange": _signInChangeForGoogle
+    });
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
@@ -73,8 +84,19 @@ const app = function () {
   //-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------
-  async function _renderContents() {
-    return;
+  function _renderContents() {
+    _enableNavOption('navGoogle', false, false);
+    
+    _renderManage();
+    _renderOptions();
+  }
+  
+  function _renderManage() {
+    console.log('_renderManage');
+  }
+  
+  function _renderOptions() {
+    console.log('_renderOptions');
   }
     
   //-----------------------------------------------------------------------------
@@ -89,34 +111,33 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (settings.editorTree) settings.editorTree.forceContextMenuClose();
-    
-    if (contentsId == 'navMapper') _showMapper();
+    if (contentsId == 'navManage') _showManage();
+    if (contentsId == 'navOptions') _showOptions();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
   }
   
-  async function _showMapper() {
-    if ( !(await _getProjectData()) ) return;
-    
-    if (settings.mapperTree) settings.mapperTree.update(settings.faqInfo); 
-    _loadProjectList(settings.projectData.projectlist);
+  function _showManage() {
+    console.log('_showManage');
+  }
+  
+  function _showOptions() {
+    console.log('_showOptions');
   }
   
   function _setNavOptions() {
     var opt = settings.currentNavOption;
     
-    if (opt == 'navEditor') {
+    if (opt == 'navManage') {
+      /*
       var enable = settings.dirtyBit[settings.currentNavOption];
       _enableNavOption('navSave', true, enable);
       _enableNavOption('navReload', true, enable);
+      */
       
-    } else if (opt == 'navMapper') {
-      enable = settings.currentProjectId;
-      _enableNavOption('navSave', false);
-      _enableNavOption('navReload', false);
-      
+    } else if (opt == 'navOptions') {
+
     } else if (opt == 'navProfile') {
       var enable = settings.profile.isDirty();
       _enableNavOption('navSave', true, enable);
@@ -146,7 +167,9 @@ const app = function () {
     if (dispatchTarget == settings.currentNavOption) return;
     
     var dispatchMap = {
-      "navMain": function() { console.log('_navDispatch for navMain'); },
+      "navManage": function() { _showContents('navManage');},
+      "navOptions": function() { _showContents('navOptions'); },
+      "navGoogle": function() { _handleGoogleSignIn(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
@@ -158,9 +181,11 @@ const app = function () {
   }
   
   async function _handleSave(e) {
-    if (settings.currentNavOption == 'navEditor') {
-      if ( !(await _saveFAQInfo()) ) return;
-      await _handleReload(e, true);
+    if (settings.currentNavOption == 'navManage') {
+      console.log('_handleSave: navManage');
+      
+    } else if (settings.currentNavOption == 'navOptions') {
+      console.log('_handleSave: navOptions');
       
     } else if (settings.currentNavOption == 'navProfile') {
       settings.profile.save();
@@ -175,9 +200,11 @@ const app = function () {
       if (!confirm(msg)) return;
     }
     
-    if (settings.currentNavOption == 'navEditor') {
-      if ( !(await _getFAQInfo()) ) return;
-      settings.editorTree.update(settings.faqInfo);
+    if (settings.currentNavOption == 'navManage') {
+      console.log('_handlReload: navManage');
+      
+    } else if (settings.currentNavOption == 'navOptions') {
+      console.log('_handleReload: navOptions');
       
     } else if (settings.currentNavOption == 'navProfile') {
       settings.profile.reload();
@@ -185,7 +212,19 @@ const app = function () {
     
     _setDirtyBit(false);
   }
+  
+  function _signInChangeForGoogle(isSignedIn) {
+    settings.google.isSignedIn = isSignedIn;
+
+    var enable = !isSignedIn;
+    _enableNavOption('navGoogle', enable, enable);
+  }
       
+  function _handleGoogleSignIn() {
+    console.log('_handleGoogleSignIn');
+    settings.google.obj.trySignIn();
+  }
+  
   //---------------------------------------
 	// DB interface
 	//----------------------------------------  
@@ -195,8 +234,6 @@ const app = function () {
 	//--------------------------------------------------------------------------  
   function _enableNavOption(navOption, visible, enable) {
     var elem = document.getElementById(navOption);
-    console.log('_enableNavOption: ' + navOption + ' ' + visible + ' ' + enable);
-    console.log(elem);
     UtilityKTS.setClass(elem, 'hide-me', !visible);
     elem.disabled = !enable;    
   }
