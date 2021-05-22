@@ -93,12 +93,21 @@ const app = function () {
   
   function _renderManage() {
     console.log('_renderManage');
+    page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
+    page.navManage.getElementsByClassName('btnTest')[0].addEventListener('click', _test);
   }
   
   function _renderOptions() {
     console.log('_renderOptions');
   }
-    
+  
+  function _test() {
+    console.log('test');
+    var x = new GoogleCalendar({});
+    x.listUpcomingEvents();
+    x.listCalendars();
+  }
+      
   //-----------------------------------------------------------------------------
 	// updating
 	//-----------------------------------------------------------------------------

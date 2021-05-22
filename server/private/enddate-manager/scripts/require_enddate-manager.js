@@ -10,6 +10,7 @@ define(function (require) {
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
+   require('classGoogleCalendar');
   require('enddate-manager');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

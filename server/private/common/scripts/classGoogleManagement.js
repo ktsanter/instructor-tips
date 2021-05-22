@@ -59,7 +59,7 @@ class GoogleManagement {
     console.log('GoogleAuth.trySignIn');
     gapi.auth2.getAuthInstance().signIn().then(
       function () {
-        console.log('sign-in okeydokey');
+        //console.log('sign-in okeydokey');
       },
 
       function(objErr) {
