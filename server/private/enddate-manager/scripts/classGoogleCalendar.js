@@ -15,51 +15,69 @@ class GoogleCalendar {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
-  listUpcomingEvents() {
-    gapi.client.calendar.events.list({
-      'calendarId': 'primary',
+  getCalendarInfo(callback) {
+    return gapi.client.calendar.calendarList.list({})
+    .then (
+      function(response) {
+        callback(true, response.result);
+      },
+      
+      function(err) { 
+        console.error("GoogleCalendar.loadCalendarInfo error", err); 
+        callback(false, err);
+      }
+    );
+  }    
+  
+  getEventInfo(params, callback) {
+    console.log('GoogleCalendar.loadEventInfo');
+    console.log(params.calendarId);
+    
+    return gapi.client.calendar.events.list({
+      'calendarId': params.calendarId,
       'timeMin': (new Date()).toISOString(),
       'showDeleted': false,
       'singleEvents': true,
       'maxResults': 10,
       'orderBy': 'startTime'
-    }).then(function(response) {
-      var events = response.result.items;
-      console.log('Upcoming events:');
-
-      if (events.length > 0) {
-        for (var i = 0; i < events.length; i++) {
-          var event = events[i];
-          var when = event.start.dateTime;
-          if (!when) {
-            when = event.start.date;
-          }
-          console.log(event.summary + ' (' + when + ')')
-        }
-      } else {
-        console.log('No upcoming events found.');
+    }) 
+    .then (
+      function(response) {
+        var events = response.result.items;
+        callback(true, response.result);
+      },
+      
+      function(err) {
+        console.log('GoogleCalendar.getEventInfo error', err);    
+        callback(false, err);
       }
-    });
+    )
   }
   
-  listCalendars() {
-    return gapi.client.calendar.calendarList.list({})
+  addAllDayEvent(params, callback) {
+    console.log('GoogleCalendar.addEvent');
+    console.log(params.calendarId);
+
+    return gapi.client.calendar.events.insert({
+      'calendarId': params.calendarId, 
+      "resource": {
+        "end": {
+          "date": params.date
+        },
+        "start": {
+          "date": params.date
+        },
+        "summary": params.summary,
+        "description": params.description,
+        "location": params.location
+      }
+    })
         .then(function(response) {
                 // Handle the results here (response.result has the parsed body).
-                console.log('Calendars:');
-                var calendarItems = response.result.items;
-                for (var i = 0; i < calendarItems.length; i++) {
-                 var item = calendarItems[i];
-                 console.log(item.summary + ' | ' + item.id + ' | ' + item.accessRole);
-                 console.log(item.summary + ' | ' + item.id + ' | ' + item.accessRole);
-                  console.log(item);
-                }
-                console.log('\n');
-                
+                console.log("Response", response);
               },
-              function(err) { console.error("Execute error", err); });
-  }  
-  
+              function(err) { console.error("Execute error", err); });  }
+
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   

@@ -53,10 +53,10 @@ html(lang="en")
     .contents
       .error-container
       
-      .container-fluid(class="contents-container contents-navManage hide-me")
+      .container-fluid(class="contents-container contents-navManage hide-me disable-container")
         +managerContainer()
 
-      .container-fluid(class="contents-container contents-navOptions hide-me")
+      .container-fluid(class="contents-container contents-navOptions hide-me disable-container")
         +optionsContainer()     
         
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

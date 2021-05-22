@@ -56,7 +56,6 @@ class GoogleManagement {
   }
   
   trySignIn() {
-    console.log('GoogleAuth.trySignIn');
     gapi.auth2.getAuthInstance().signIn().then(
       function () {
         //console.log('sign-in okeydokey');
@@ -77,7 +76,6 @@ class GoogleManagement {
   //--------------------------------------------------------------   
   _updateSigninStatus(context) {
     var isSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
-    console.log('GoogleAuth: isSignedIn = ' + isSignedIn);
 
     var callback = this._config.signInChange;
     if (context != null) {

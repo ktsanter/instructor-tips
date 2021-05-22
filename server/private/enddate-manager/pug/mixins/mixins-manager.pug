@@ -1,3 +1,12 @@
 mixin managerContainer()
-  div manage
-  button(class="btnTest") test
+  .row
+    .col-sm
+      .container-fluid
+        .row: col-sm
+          div(class="d-flex calendar-selection-container") 
+            div(class="input-group mb-3")
+              div(class="input-group-prepend")
+                label(class="input-group-text" for="inputCalendarSelect") calendar
+              
+              select(class="custom-select calendar-selection w-50" id="inputCalendarSelect")
+              button(class="btnTest") test

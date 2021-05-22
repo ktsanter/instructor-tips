@@ -117,6 +117,7 @@
           'maxResults': 10,
           'orderBy': 'startTime'
         }).then(function(response) {
+          appendPre('listUpcomingEvents.then');
           var events = response.result.items;
           appendPre('Upcoming events:');
 

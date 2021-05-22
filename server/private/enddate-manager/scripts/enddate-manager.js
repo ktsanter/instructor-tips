@@ -22,8 +22,9 @@ const app = function () {
       obj: null,
       clientId:  '780404244540-nug55q7bnd7daf3dpj5k5g8qob9uqv41.apps.googleusercontent.com',
       apiKey: 'AIzaSyDOa6Dc0pWvBBCmsQYShBaWuYsBEEFMIlI',
-      scopes: 'https://www.googleapis.com/auth/calendar.readonly',
-      isSignedIn: false
+      scopes: 'https://www.googleapis.com/auth/calendar.events',
+      isSignedIn: false,
+      objCalendar: null
     }
   };
     
@@ -66,6 +67,7 @@ const app = function () {
       "scopes": settings.google.scopes,
       "signInChange": _signInChangeForGoogle
     });
+    settings.google.objCalendar = new GoogleCalendar({});
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
@@ -94,18 +96,28 @@ const app = function () {
   function _renderManage() {
     console.log('_renderManage');
     page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
-    page.navManage.getElementsByClassName('btnTest')[0].addEventListener('click', _test);
+    page.navManage.getElementsByClassName('calendar-selection')[0].addEventListener('change', (e) => {_handleCalendarSelect(e);});
+    
+    page.navManage.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _test(e); });
   }
   
   function _renderOptions() {
     console.log('_renderOptions');
+    page.navOptions = page.contents.getElementsByClassName('contents-navOptions')[0];
   }
   
-  function _test() {
-    console.log('test');
-    var x = new GoogleCalendar({});
-    x.listUpcomingEvents();
-    x.listCalendars();
+  function _test(e) {
+    var elemCalendar = page.navManage.getElementsByClassName('calendar-selection')[0];
+    var calendarItem = JSON.parse(elemCalendar[elemCalendar.selectedIndex].value);
+    console.log(calendarItem.id);
+
+    settings.google.objCalendar.addAllDayEvent({
+        calendarId: calendarItem.id,
+        date: "2021-05-28",
+        summary: "test event",
+        description: "test event description",
+        location: "End date manager"
+      });
   }
       
   //-----------------------------------------------------------------------------
@@ -167,6 +179,57 @@ const app = function () {
     _setNavOptions();
   }
   
+  function _calendarInfoCallback(success, results) {
+    console.log('_calendarInfoCallback');
+    var elemSelect = page.navManage.getElementsByClassName('calendar-selection')[0];
+    UtilityKTS.removeChildren(elemSelect);
+    
+    if (success) {
+      if (true /* there isn't a current selection from DB */) {
+        var elemOption = CreateElement.createOption(null, null, JSON.stringify({id: null}), 'choose...');
+        elemSelect.appendChild(elemOption);
+        elemOption.selected = true;        
+      }
+
+      for (var i = 0; i < results.items.length; i++) {
+        var item = results.items[i];
+        if (item.accessRole == 'owner') {
+          var elemOption = CreateElement.createOption(null, null, JSON.stringify(item), item.summary);
+          elemSelect.appendChild(elemOption);
+          /* test if this is the one saved as selected in DB */
+          console.log('  ' + item.summary);
+        }
+      }
+      _enableMainUI(true);
+      
+    } else {
+      copnsole.log('error: ' + JSON.stringify(results));
+      _enableMainUI(false);
+    }
+  }
+  
+  function _eventInfoCallback(success, results) {
+    console.log('_eventInfoCallback');
+    
+    if (success) {
+      console.log(results.items);
+      _enableMainUI(true);  /* temp - this should come after everything is loaded */
+      
+    } else {
+      console.log('error: ' + JSON.stringify(results));
+      _enableMainUI(false);
+    }
+    
+  }
+  
+  function _enableMainUI(enable) {
+    UtilityKTS.setClass(page.navManage, 'disable-container', !enable);
+    page.navManage.disabled = !enable;    
+
+    UtilityKTS.setClass(page.navOptions, 'disable-container', !enable);
+    page.navOptions.disabled = !enable;    
+  }
+  
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
@@ -222,18 +285,42 @@ const app = function () {
     _setDirtyBit(false);
   }
   
-  function _signInChangeForGoogle(isSignedIn) {
-    settings.google.isSignedIn = isSignedIn;
-
-    var enable = !isSignedIn;
-    _enableNavOption('navGoogle', enable, enable);
-  }
-      
   function _handleGoogleSignIn() {
     console.log('_handleGoogleSignIn');
     settings.google.obj.trySignIn();
   }
   
+  function _signInChangeForGoogle(isSignedIn) {
+    settings.google.isSignedIn = isSignedIn;
+
+    var enable = !isSignedIn;
+    _enableNavOption('navGoogle', enable, enable);
+    
+    UtilityKTS.setClass(page.navManage, 'disable-container', true);
+    page.navManage.disabled = true;    
+
+    UtilityKTS.setClass(page.navOptions, 'disable-container', true);
+    page.navOptions.disabled = true;    
+
+    if (isSignedIn) settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
+  }
+  
+  function _handleCalendarSelect(e) {
+    console.log('_handleCalendarSelect');
+    var calendarItem = JSON.parse(e.target[e.target.selectedIndex].value);
+    console.log(calendarItem);
+    
+    if (calendarItem.id == null) {
+      console.log('null selected');  /* remove null once a selection is made? */
+    } 
+    
+    settings.google.objCalendar.getEventInfo({
+        calendarId: calendarItem.id
+      }, 
+      _eventInfoCallback
+    );
+  }
+      
   //---------------------------------------
 	// DB interface
 	//----------------------------------------  
