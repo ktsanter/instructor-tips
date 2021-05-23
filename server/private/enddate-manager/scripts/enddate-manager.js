@@ -99,6 +99,7 @@ const app = function () {
     page.navManage.getElementsByClassName('calendar-selection')[0].addEventListener('change', (e) => {_handleCalendarSelect(e);});
     
     page.navManage.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _test(e); });
+    page.navManage.getElementsByClassName('btnTest2')[0].addEventListener('click', (e) => { _test2(e); });
   }
   
   function _renderOptions() {
@@ -116,8 +117,30 @@ const app = function () {
         date: "2021-05-28",
         summary: "test event",
         description: "test event description",
-        location: "End date manager"
-      });
+        location: "End date manager",
+        reminders: [
+          {method: 'email', minutes: 360},
+          {method: 'popup', minutes: 720}
+        ]
+      },
+      _testCallback
+    );
+  }
+  
+  function _testCallback(success, results) {
+    console.log('_testCallback: ' + success);
+    console.log(results);
+  }
+  
+  function _test2(e) {
+    var elemCalendar = page.navManage.getElementsByClassName('calendar-selection')[0];
+    var calendarItem = JSON.parse(elemCalendar[elemCalendar.selectedIndex].value);
+    var eventId = page.navManage.getElementsByClassName('input-delete')[0].value;
+    
+    settings.google.objCalendar.removeEvent({
+      "calendarId": calendarItem.id,
+      "eventId": eventId
+    });
   }
       
   //-----------------------------------------------------------------------------

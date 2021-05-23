@@ -16,8 +16,7 @@ class GoogleCalendar {
   // public methods
   //--------------------------------------------------------------   
   getCalendarInfo(callback) {
-    return gapi.client.calendar.calendarList.list({})
-    .then (
+    return gapi.client.calendar.calendarList.list({}).then (
       function(response) {
         callback(true, response.result);
       },
@@ -29,9 +28,13 @@ class GoogleCalendar {
     );
   }    
   
+  /* getEventInfo:
+   * params = {
+   *   calendarId: google calendar ID,
+   * }
+   */
   getEventInfo(params, callback) {
     console.log('GoogleCalendar.loadEventInfo');
-    console.log(params.calendarId);
     
     return gapi.client.calendar.events.list({
       'calendarId': params.calendarId,
@@ -40,8 +43,7 @@ class GoogleCalendar {
       'singleEvents': true,
       'maxResults': 10,
       'orderBy': 'startTime'
-    }) 
-    .then (
+    }).then (
       function(response) {
         var events = response.result.items;
         callback(true, response.result);
@@ -54,9 +56,36 @@ class GoogleCalendar {
     )
   }
   
+  /* addAllDayEvent:
+   * params = {
+   *   calendarId: google calendar ID,
+   *   date:  date of event 'yyyy-mm-dd',
+   *   summary: title of event
+   *   description: description of event,
+   *   location: location of event,
+   *   busy: (optional) boolean, default = false
+   *   reminders: (optional) list [
+   *     {
+   *        method: 'popup' or 'email',
+   *        minutes: number of minutes reminder is sent before event
+   *     }
+   *   ]
+   * }
+   */
   addAllDayEvent(params, callback) {
     console.log('GoogleCalendar.addEvent');
-    console.log(params.calendarId);
+    
+    var propReminders = { useDefault: true };
+    if (params.hasOwnProperty('reminders')) {
+      propReminders.useDefault = false;
+      propReminders.overrides = [];
+      for (var i = 0; i < params.reminders.length; i++) {
+        propReminders.overrides.push(params.reminders[i]);
+      }
+    }
+    
+    var propTransparency = 'transparent';
+    if (params.hasOwnProperty('busy') && params.busy) propTransparency = 'opaque';
 
     return gapi.client.calendar.events.insert({
       'calendarId': params.calendarId, 
@@ -69,15 +98,47 @@ class GoogleCalendar {
         },
         "summary": params.summary,
         "description": params.description,
-        "location": params.location
+        "location": params.location,
+        "reminders": propReminders,
+        "transparency": propTransparency
       }
-    })
-        .then(function(response) {
-                // Handle the results here (response.result has the parsed body).
-                console.log("Response", response);
-              },
-              function(err) { console.error("Execute error", err); });  }
+    }).then(
+      function(response) {
+        callback(true, response.result);
+      },
+      
+      function(err) { 
+        console.error("Execute error", err);
+        callback(false, err);        
+      }
+    )  
+  }
+  
+  /* removeEvent:
+   * params = {
+   *   calendarId:  google calendar ID,
+   *   eventId:  calendar event ID
+   * }
+   */
+  removeEvent(params) {
+    console.log('GoogleCalendar.removeEvent');
+    console.log(params);
 
+    return gapi.client.calendar.events.delete({
+      "calendarId": params.calendarId, 
+      "eventId": params.eventId
+    }).then(
+      function(response) {
+        // on success response.body = "", response.result = false, response.status = 204
+        //console.log("Response", response);
+      },
+      
+      function(err) { 
+        console.error("GoogleCalendar.removeEvent error", err); 
+      }
+    )  
+  }
+  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
