@@ -392,6 +392,12 @@ const dbCommentBuddy = new dbCommentBuddyClass({
 });
 
 //------------------------------------------
+// EndDateManager general query objects (DB not added yet)
+//------------------------------------------
+const endDateManagerClass = require('./classes/enddate-manager')
+const endDateManager = new endDateManagerClass({tempFileManager: tmp, formManager: formidable});
+
+//------------------------------------------
 // DB manager lookup, app info lookup
 //------------------------------------------
 var dbManagerLookup = {
@@ -477,7 +483,6 @@ var appLookup = {
 // app specific routing and queries
 //------------------------------------------------------
 function routeIfLoggedIn(req, res, appDescriptor) {
-  console.log(appDescriptor);
   var loggedin = userManagement.isLoggedIn(req.session);
   var appInfo = appLookup[appDescriptor];
   
@@ -545,6 +550,9 @@ app.get('/enddate-manager/manager', function (req, res) { routeIfLoggedIn(req, r
 app.get('/enddate-manager/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'enddate-manager/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+app.post('/usermanagement/routeToApp/enddate-manager/:formname', function (req, res) {
+  endDateManager.processUploadedFile(req, res, processEndDateManagerResult); 
 })
 
 app.get('/commentbuddy/composer', function (req, res) { routeIfLoggedIn(req, res, 'commentbuddy'); })
@@ -875,7 +883,7 @@ app.get('/basic-web-design/:app', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-/*
+/*  
 app.get('/countdown/scripts/:script', function (req, res) {
   var scriptFileName = path.join(__dirname, 'private', 'countdown/scripts/' + req.params.script);
   res.sendFile(scriptFileName);
@@ -931,6 +939,23 @@ app.get('/roster-manager/help', function (req, res) {
 
 
 async function processRosterManagerResult(req, res, result) {
+  if (result.success) {
+    var fileName = result.targetfilename;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+    await result.workbook.xlsx.write(res);
+
+    res.end();
+    
+  } else {
+    var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/error.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {formname: result.formname, description: result.description}});
+  }
+}
+
+async function processEndDateManagerResult(req, res, result) {
   if (result.success) {
     var fileName = result.targetfilename;
 

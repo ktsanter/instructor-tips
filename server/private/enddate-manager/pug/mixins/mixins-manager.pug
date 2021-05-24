@@ -1,18 +1,31 @@
 mixin managerContainer()
   .row
     .col-sm
-      .container-fluid
-        .row
-          .col-sm
-            div(class="d-flex calendar-selection-container") 
-              div(class="input-group mb-3")
-                div(class="input-group-prepend")
-                  label(class="input-group-text" for="inputCalendarSelect") calendar
-                
-                select(class="custom-select calendar-selection w-50" id="inputCalendarSelect")
-                button(class="btnTest") test
-                
-        .row
-          .col-sm
-            input(class="input-delete w-50" type="text")
-            button(class="btnTest2") test delete
+      div(class="d-flex calendar-selection-container") 
+        div(class="input-group mb-3")
+          div(class="input-group-prepend")
+            label(class="input-group-text" for="inputCalendarSelect") calendar
+          
+          select(class="custom-select calendar-selection w-50" id="inputCalendarSelect")
+            
+    .row
+      .col-sm
+        .eventlist-container
+
+    .row
+      .col-sm
+        button(class="btnAddEvent") add event
+
+    .row
+      .col-sm
+        button(class="btnDeleteEvent") delete event
+            
+    .row
+      .col-sm            
+        form(class="userform enrollmentform" action="enddate-manager/enrollment" enctype="multipart/form-data" method="post")
+          .form-row
+            .form-col
+              input(type="file" class="file-select" name="enrollment-report-file" accept=".xlsx" required title="enrollment report file to process")
+              
+            .form-col.submit-region
+              input(class="form-submit btn btn-outline-primary" type="submit" value="process")

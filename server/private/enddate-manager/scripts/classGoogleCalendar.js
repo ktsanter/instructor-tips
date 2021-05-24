@@ -34,14 +34,12 @@ class GoogleCalendar {
    * }
    */
   getEventInfo(params, callback) {
-    console.log('GoogleCalendar.loadEventInfo');
-    
     return gapi.client.calendar.events.list({
       'calendarId': params.calendarId,
       'timeMin': (new Date()).toISOString(),
       'showDeleted': false,
       'singleEvents': true,
-      'maxResults': 10,
+      'maxResults': 1000,
       'orderBy': 'startTime'
     }).then (
       function(response) {

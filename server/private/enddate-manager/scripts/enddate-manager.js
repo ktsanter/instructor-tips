@@ -25,7 +25,9 @@ const app = function () {
       scopes: 'https://www.googleapis.com/auth/calendar.events',
       isSignedIn: false,
       objCalendar: null
-    }
+    },
+    
+    eventLocation: 'End date manager'
   };
     
 	//---------------------------------------
@@ -98,8 +100,8 @@ const app = function () {
     page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
     page.navManage.getElementsByClassName('calendar-selection')[0].addEventListener('change', (e) => {_handleCalendarSelect(e);});
     
-    page.navManage.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _test(e); });
-    page.navManage.getElementsByClassName('btnTest2')[0].addEventListener('click', (e) => { _test2(e); });
+    page.navManage.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
+    page.navManage.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
   }
   
   function _renderOptions() {
@@ -107,40 +109,50 @@ const app = function () {
     page.navOptions = page.contents.getElementsByClassName('contents-navOptions')[0];
   }
   
-  function _test(e) {
+  function _testAddEvent(e) {
+    console.log('_testAddEvent');
     var elemCalendar = page.navManage.getElementsByClassName('calendar-selection')[0];
-    var calendarItem = JSON.parse(elemCalendar[elemCalendar.selectedIndex].value);
-    console.log(calendarItem.id);
-
-    settings.google.objCalendar.addAllDayEvent({
-        calendarId: calendarItem.id,
-        date: "2021-05-28",
-        summary: "test event",
-        description: "test event description",
-        location: "End date manager",
-        reminders: [
-          {method: 'email', minutes: 360},
-          {method: 'popup', minutes: 720}
-        ]
-      },
-      _testCallback
-    );
-  }
-  
-  function _testCallback(success, results) {
-    console.log('_testCallback: ' + success);
-    console.log(results);
-  }
-  
-  function _test2(e) {
-    var elemCalendar = page.navManage.getElementsByClassName('calendar-selection')[0];
-    var calendarItem = JSON.parse(elemCalendar[elemCalendar.selectedIndex].value);
-    var eventId = page.navManage.getElementsByClassName('input-delete')[0].value;
+    var calendarId = JSON.parse(elemCalendar[elemCalendar.selectedIndex].value).id;
+    var eventDay = Math.floor(Math.random() * (29 - 25) + 25);
     
-    settings.google.objCalendar.removeEvent({
-      "calendarId": calendarItem.id,
-      "eventId": eventId
-    });
+    var studentList = [
+      {studentLast: "Smith", studentFirst: "Bob", section: "Basic Web Design"},
+      {studentLast: "Doe", studentFirst: "Jane",  section: "Java Programming A"},
+      {studentLast: "Weasley", studentFirst: "Fred",  section: "Potions"},
+      {studentLast: "Longbottom", studentFirst: "Neville",  section: "Herbology"},
+      {studentLast: "Granger", studentFirst: "Hermione", section: "Arithmancy"},
+      {studentLast: "Potter", studentFirst: "Harry", section: "Defense Against the Dark Arts"},
+      {studentLast: "Malfoy", studentFirst: "Draco", section: "Intro to Skullduggery"},
+      {studentLast: "Ahab", studentFirst: "Trevor", section: "Whaling 101"},
+      {studentLast: "Baggins", studentFirst: "Frodo", section: "Unmaking Rings"}
+    ];
+    
+    var numEnrollments = Math.floor(Math.random() * (5 - 1) + 1);
+    var enrollmentList = [];
+    for (var i = 0; i < numEnrollments; i++) enrollmentList.push(studentList[i]);
+
+    var params = {
+      "calendarId": calendarId,
+      "date": '2021-05-' + eventDay,
+      "enrollments": enrollmentList,
+      "reminders": [
+        {method: 'email', minutes: 6 * 60},
+        {method: 'popup', minutes: 12 * 60}
+      ]
+    }
+    
+    _addEndDateEvent(params);
+  }
+  
+  function _testDeleteEvent(e) {
+    console.log('_testDeleteEvent (disabled)');
+    return;
+    
+    var params = {
+      "calendarId":  xxxx,
+      "eventId": xxxx
+    };
+    _removeEndDateEvent(params);    
   }
       
   //-----------------------------------------------------------------------------
@@ -202,6 +214,64 @@ const app = function () {
     _setNavOptions();
   }
   
+  function _displayEventList(eventList) {
+    console.log('_displayEventList');
+    var container = page.navManage.getElementsByClassName('eventlist-container')[0];
+    UtilityKTS.removeChildren(container);
+    for (var i = 0; i < eventList.length; i++) {
+      var item = eventList[i];
+      var lines = item.description.split('\n');
+      for (var j = 1; j < lines.length; j++) {
+        var name = lines[j].split('(')[0].trim();
+        var section = lines[j].split('(')[1].slice(0, -1).trim();
+        container.appendChild(CreateElement.createDiv(null, null, item.start.date + ': ' + name + ' | ' + section));
+      }
+    }
+  }
+  
+  function _enableMainUI(enable) {
+    UtilityKTS.setClass(page.navManage, 'disable-container', !enable);
+    page.navManage.disabled = !enable;    
+
+    UtilityKTS.setClass(page.navOptions, 'disable-container', !enable);
+    page.navOptions.disabled = !enable;    
+  }
+  
+  function _addEndDateEvent(params) {
+    console.log('_addEndDateEvent');
+    console.log(params);
+    var description = 'Term end date scheduled for:';
+    for (var i = 0; i < params.enrollments.length; i++) {
+      var item = params.enrollments[i];
+      description += '\n' + item.studentLast + ', ' + item.studentFirst + ' (' + item.section + ')';
+    }
+
+    settings.google.objCalendar.addAllDayEvent({
+        "calendarId": params.calendarId,
+        "date": params.date,
+        "summary": "End date",
+        "description": description,
+        "location": settings.eventLocation,
+        "reminders": params.reminders
+      },
+      _callbackAddEndDateEvent
+    );
+  }
+  
+  function _removeEndDateEvent(params) {
+    console.log('_removeEndDateEvent (disabled)');
+    console.log(params);
+    return;
+    
+    settings.google.objCalendar.removeEvent({
+      "calendarId": params.calendarId,
+      "eventId": params.eventId
+    });    
+  }
+  
+  //--------------------------------------------------------------------------
+  // callbacks
+	//--------------------------------------------------------------------------
   function _calendarInfoCallback(success, results) {
     console.log('_calendarInfoCallback');
     var elemSelect = page.navManage.getElementsByClassName('calendar-selection')[0];
@@ -213,14 +283,17 @@ const app = function () {
         elemSelect.appendChild(elemOption);
         elemOption.selected = true;        
       }
-
-      for (var i = 0; i < results.items.length; i++) {
-        var item = results.items[i];
+      
+      var fullCalendarList = results.items.sort(function(a,b) {
+        return a.summary.localeCompare(b.summary);
+      });
+      
+      for (var i = 0; i < fullCalendarList.length; i++) {
+        var item = fullCalendarList[i];
         if (item.accessRole == 'owner') {
           var elemOption = CreateElement.createOption(null, null, JSON.stringify(item), item.summary);
           elemSelect.appendChild(elemOption);
           /* test if this is the one saved as selected in DB */
-          console.log('  ' + item.summary);
         }
       }
       _enableMainUI(true);
@@ -233,24 +306,26 @@ const app = function () {
   
   function _eventInfoCallback(success, results) {
     console.log('_eventInfoCallback');
+    var eventList = [];
     
     if (success) {
-      console.log(results.items);
-      _enableMainUI(true);  /* temp - this should come after everything is loaded */
+      for (var i = 0; i < results.items.length; i++) {
+        var item = results.items[i];
+        if (item.location == settings.eventLocation) eventList.push(item);
+      }
+      _displayEventList(eventList);
+
+      _enableMainUI(true);
       
     } else {
       console.log('error: ' + JSON.stringify(results));
       _enableMainUI(false);
     }
-    
   }
   
-  function _enableMainUI(enable) {
-    UtilityKTS.setClass(page.navManage, 'disable-container', !enable);
-    page.navManage.disabled = !enable;    
-
-    UtilityKTS.setClass(page.navOptions, 'disable-container', !enable);
-    page.navOptions.disabled = !enable;    
+  function _callbackAddEndDateEvent(success, results) {
+    console.log('_callbackAddEndDateEvent: ' + success);
+    console.log(results);
   }
   
   //--------------------------------------------------------------------------
@@ -331,7 +406,6 @@ const app = function () {
   function _handleCalendarSelect(e) {
     console.log('_handleCalendarSelect');
     var calendarItem = JSON.parse(e.target[e.target.selectedIndex].value);
-    console.log(calendarItem);
     
     if (calendarItem.id == null) {
       console.log('null selected');  /* remove null once a selection is made? */
