@@ -16,6 +16,7 @@ const MARIA_DBNAME_IMAGEFLIPPER = getEnv('MARIA_DBNAME_IMAGEFLIPPER', true);
 const MARIA_DBNAME_FAQCOMPOSER = getEnv('MARIA_DBNAME_FAQCOMPOSER', true);
 const MARIA_DBNAME_WALKTHROUGH = getEnv('MARIA_DBNAME_WALKTHROUGH', true);
 const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
+const MARIA_DBNAME_ENDDATEMANAGER = getEnv('MARIA_DBNAME_ENDDATEMANAGER', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -162,6 +163,16 @@ const mariadbParams_CommentBuddy = {
     connectionLimit: 5 */
 };
 
+
+const mariadbParams_EndDateManager = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_ENDDATEMANAGER /*, 
+    connectionLimit: 5 */
+};
+
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
@@ -171,6 +182,7 @@ const mariaDBManager_ImageFlipper = new mariaDBManagerClass(mariadbParams_ImageF
 const mariaDBManager_FAQComposer = new mariaDBManagerClass(mariadbParams_FAQComposer);
 const mariaDBManager_Walkthrough = new mariaDBManagerClass(mariadbParams_Walkthrough);
 const mariaDBManager_CommentBuddy = new mariaDBManagerClass(mariadbParams_CommentBuddy);
+const mariaDBManager_EndDateManager = new mariaDBManagerClass(mariadbParams_EndDateManager);
     
 //------------------------------------------
 // session management
@@ -395,7 +407,12 @@ const dbCommentBuddy = new dbCommentBuddyClass({
 // EndDateManager general query objects (DB not added yet)
 //------------------------------------------
 const endDateManagerClass = require('./classes/enddate-manager')
-const endDateManager = new endDateManagerClass({tempFileManager: tmp, formManager: formidable});
+const endDateManager = new endDateManagerClass({
+  "dbManager": mariaDBManager_EndDateManager,
+  "userManagement": userManagement,
+  tempFileManager: tmp, 
+  formManager: formidable
+});
 
 //------------------------------------------
 // DB manager lookup, app info lookup
@@ -410,7 +427,8 @@ var dbManagerLookup = {
   "imageflipper": dbImageFlipper,
   "faqcomposer": dbFAQComposer,
   "walkthrough": dbWalkthrough,
-  "commentbuddy": dbCommentBuddy
+  "commentbuddy": dbCommentBuddy,
+  "enddate-manager": endDateManager
 };
 
 var appLookup = {
@@ -1092,8 +1110,12 @@ app.post('/admin/delete/:queryName', async function (req, res) {
 app.get('/:app/query/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
 
+  console.log(req.params.app);
+  console.log(req.params.queryName);
+
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
     var dbManager = dbManagerLookup[req.params.app];
+    console.log(dbManager);
     res.send(await dbManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {

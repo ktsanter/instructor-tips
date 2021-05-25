@@ -8,6 +8,8 @@ const internal = {};
 
 module.exports = internal.EndDateManager = class {
   constructor(params) {
+    this._dbManager = params.dbManager;
+    this._userManagement = params.userManagement;    
     this._tempFileManager = params.tempFileManager;
     this._formManager = params.formManager;
     
@@ -24,7 +26,68 @@ module.exports = internal.EndDateManager = class {
   }
   
 //---------------------------------------------------------------
-// public methods
+// public: dispatchers
+//---------------------------------------------------------------
+  async doQuery(params, postData, userInfo, funcCheckPrivilege) {
+    var dbResult = this._dbManager.queryFailureResult();
+
+    if (params.queryName == 'test') {
+      dbResult = await this._getTest(params, postData, userInfo);
+            
+    } else if (params.queryName == 'faqsetlist') {
+      dbResult = await this._getFAQsetList(params, postData, userInfo);
+            
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    } 
+    
+    return dbResult;
+  }
+
+  async doInsert(params, postData, userInfo, funcCheckPrivilege) {
+    var dbResult = this._dbManager.queryFailureResult();
+    
+    if (params.queryName == 'faqset') {
+      dbResult = await this._insertFAQSet(params, postData, userInfo);
+  
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    }
+        
+    return dbResult;
+  }
+  
+  async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
+    var dbResult = this._dbManager.queryFailureResult();
+    
+    if (params.queryName == 'hierarchy') {
+      dbResult = await this._updateHierarchy(params, postData, userInfo);
+    
+    } else if (params.queryName == 'faqset') {
+      dbResult = await this._updateFAQset(params, postData, userInfo);
+    
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    }
+    
+    return dbResult;
+  }  
+
+  async doDelete(params, postData, userInfo, funcCheckPrivilege) {
+    var dbResult = this._dbManager.queryFailureResult();
+    
+    if (params.queryName == 'faqset') {
+      dbResult = await this._deleteFAQset(params, postData, userInfo);
+    
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    }
+    
+    return dbResult;
+  }
+  
+//---------------------------------------------------------------
+// public: enrollment file upload
 //---------------------------------------------------------------  
   processUploadedFile(req, res) {
     var thisObj = this;
@@ -65,7 +128,43 @@ module.exports = internal.EndDateManager = class {
       thisObj._sendSuccess(req, res, 'upload succeeded', packagedValues.data);
     });
   }
-  
+
+//---------------------------------------------------------------
+// specific query methods
+//---------------------------------------------------------------
+  async _getTest(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select ' +
+        'a.testid, a.someval ' +
+      'from test as a ' +
+      'where userid = ' + userInfo.userId;
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
+//---------------------------------------------------------------
+// spreadsheet processing
+//--------------------------------------------------------------- 
   _packageEnrollmentValues(thisObj, worksheet, columnMapping) {
     var result = {success: false, data: null};
     

@@ -103,6 +103,7 @@ const app = function () {
     page.navManage.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
     page.navManage.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
     page.navManage.getElementsByClassName('btnUpload')[0].addEventListener('click', (e) => { _testUpload(e); });
+    page.navManage.getElementsByClassName('btnTestDB')[0].addEventListener('click', (e) => { _testDB(e); });
   }
   
   function _renderOptions() {
@@ -170,6 +171,13 @@ const app = function () {
     } else {
       _displayEnrollmentList([]);
     }
+  }
+  
+  async function _testDB(e) {
+    console.log('test DB');
+    dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'test');
+
+    console.log(dbResult);
   }
   
   //-----------------------------------------------------------------------------
