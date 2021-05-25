@@ -1,0 +1,33 @@
+mixin debugContainer()
+  .row
+    .col-sm Debug
+            
+    .row
+      .col-sm
+        .eventlist-container
+
+    .row
+      .col-sm
+        button(class="btnSignout") Google signout
+
+    .row
+      .col-sm
+        button(class="btnAddEvent") add event
+
+    .row
+      .col-sm
+        button(class="btnDeleteEvent") delete event
+            
+    .row
+      .col-sm
+        button(class="btnTestDB") test DB
+            
+    .row
+      .col-sm            
+        input(type="file" class="uploadfile" accept=".xlsx" title="enrollment report file to process")              
+        button(class="btnUpload") process
+
+    .row
+      .col-sm
+        .enrollmentlist-container
+

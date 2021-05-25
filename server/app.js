@@ -1110,12 +1110,8 @@ app.post('/admin/delete/:queryName', async function (req, res) {
 app.get('/:app/query/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
 
-  console.log(req.params.app);
-  console.log(req.params.queryName);
-
   if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor')) {
     var dbManager = dbManagerLookup[req.params.app];
-    console.log(dbManager);
     res.send(await dbManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
   } else {

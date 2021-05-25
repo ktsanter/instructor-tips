@@ -6,6 +6,8 @@
 const app = function () {
 	const page = {};
   
+  const DEBUGMODE = true;
+  
   const settings = {
     hideClass: 'hide-me',
     navItemClass: 'use-handler',
@@ -27,6 +29,8 @@ const app = function () {
       objCalendar: null
     },
     
+    configuration: null,
+    
     eventLocation: 'End date manager'
   };
     
@@ -36,6 +40,7 @@ const app = function () {
 	async function init (sodium) {    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
+    
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('loading...', true);
 
@@ -44,6 +49,19 @@ const app = function () {
     
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
+    await _initializeProfile(sodium);
+
+    page.notice.setNotice('');
+    
+    UtilityKTS.setClass(page.navbar, 'hide-me', false);
+    _attachNavbarHandlers();
+    _renderContents();
+    _initializeGoogleStuff();
+
+    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
+  }
+  
+  async function _initializeProfile(sodium) {
     settings.profile = new ASProfile({
       id: "myProfile",
       "sodium": sodium,
@@ -55,23 +73,19 @@ const app = function () {
       },
       hideClass: 'hide-me'
     });
-    await settings.profile.init();
 
-    page.notice.setNotice('');
-    UtilityKTS.setClass(page.navbar, 'hide-me', false);
-    _attachNavbarHandlers();
+    await settings.profile.init();
+  }
     
-    _renderContents();
-    
+  function _initializeGoogleStuff() {
     settings.google.obj = new GoogleManagement({
       "clientId": settings.google.clientId,
       "apiKey": settings.google.apiKey,
       "scopes": settings.google.scopes,
       "signInChange": _signInChangeForGoogle
     });
-    settings.google.objCalendar = new GoogleCalendar({});
 
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    settings.google.objCalendar = new GoogleCalendar({});    
   }
   
   //-----------------------------------------------------------------------------
@@ -93,93 +107,27 @@ const app = function () {
     
     _renderManage();
     _renderOptions();
+    _renderDebug();
   }
   
   function _renderManage() {
-    console.log('_renderManage');
     page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
-    page.navManage.getElementsByClassName('calendar-selection')[0].addEventListener('change', (e) => {_handleCalendarSelect(e);});
-    
-    page.navManage.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
-    page.navManage.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
-    page.navManage.getElementsByClassName('btnUpload')[0].addEventListener('click', (e) => { _testUpload(e); });
-    page.navManage.getElementsByClassName('btnTestDB')[0].addEventListener('click', (e) => { _testDB(e); });
   }
   
   function _renderOptions() {
-    console.log('_renderOptions');
     page.navOptions = page.contents.getElementsByClassName('contents-navOptions')[0];
   }
   
-  function _testAddEvent(e) {
-    console.log('_testAddEvent');
-    var elemCalendar = page.navManage.getElementsByClassName('calendar-selection')[0];
-    var calendarId = JSON.parse(elemCalendar[elemCalendar.selectedIndex].value).id;
-    var eventDay = Math.floor(Math.random() * (29 - 25) + 25);
+  function _renderDebug() {
+    page.navDebug = page.contents.getElementsByClassName('contents-navDebug')[0];
     
-    var studentList = [
-      {studentLast: "Smith", studentFirst: "Bob", section: "Basic Web Design"},
-      {studentLast: "Doe", studentFirst: "Jane",  section: "Java Programming A"},
-      {studentLast: "Weasley", studentFirst: "Fred",  section: "Potions"},
-      {studentLast: "Longbottom", studentFirst: "Neville",  section: "Herbology"},
-      {studentLast: "Granger", studentFirst: "Hermione", section: "Arithmancy"},
-      {studentLast: "Potter", studentFirst: "Harry", section: "Defense Against the Dark Arts"},
-      {studentLast: "Malfoy", studentFirst: "Draco", section: "Intro to Skullduggery"},
-      {studentLast: "Ahab", studentFirst: "Trevor", section: "Whaling 101"},
-      {studentLast: "Baggins", studentFirst: "Frodo", section: "Unmaking Rings"}
-    ];
+    page.navDebug.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
+    page.navDebug.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
+    page.navDebug.getElementsByClassName('btnUpload')[0].addEventListener('click', (e) => { _testUpload(e); });
+    page.navDebug.getElementsByClassName('btnTestDB')[0].addEventListener('click', (e) => { _testDB(e); });
+    page.navDebug.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
+  }
     
-    var numEnrollments = Math.floor(Math.random() * (5 - 1) + 1);
-    var enrollmentList = [];
-    for (var i = 0; i < numEnrollments; i++) enrollmentList.push(studentList[i]);
-
-    var params = {
-      "calendarId": calendarId,
-      "date": '2021-05-' + eventDay,
-      "enrollments": enrollmentList,
-      "reminders": [
-        {method: 'email', minutes: 6 * 60},
-        {method: 'popup', minutes: 12 * 60}
-      ]
-    }
-    
-    _addEndDateEvent(params);
-  }
-  
-  function _testDeleteEvent(e) {
-    console.log('_testDeleteEvent (disabled)');
-    return;
-    
-    var params = {
-      "calendarId":  xxxx,
-      "eventId": xxxx
-    };
-    _removeEndDateEvent(params);    
-  }
-      
-  async function _testUpload(e) {
-    console.log('_testUpload');
-    var fileList = page.navManage.getElementsByClassName('uploadfile')[0].files;
-    if (fileList.length == 0) {
-      console.log('no file chosen');
-      return;
-    }
-
-    var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
-    if (result.success) {
-      _displayEnrollmentList(result.data);
-    } else {
-      _displayEnrollmentList([]);
-    }
-  }
-  
-  async function _testDB(e) {
-    console.log('test DB');
-    dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'test');
-
-    console.log(dbResult);
-  }
-  
   //-----------------------------------------------------------------------------
 	// updating
 	//-----------------------------------------------------------------------------
@@ -194,17 +142,19 @@ const app = function () {
     
     if (contentsId == 'navManage') _showManage();
     if (contentsId == 'navOptions') _showOptions();
+    if (contentsId == 'navDebug') _showDebug();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
   }
   
   function _showManage() {
-    console.log('_showManage');
   }
   
   function _showOptions() {
-    console.log('_showOptions');
+  }
+  
+  function _showDebug() {
   }
   
   function _setNavOptions() {
@@ -219,7 +169,9 @@ const app = function () {
       
     } else if (opt == 'navOptions') {
 
-    } else if (opt == 'navProfile') {
+    } else if (opt == 'navDebug') {
+      
+    }else if (opt == 'navProfile') {
       var enable = settings.profile.isDirty();
       _enableNavOption('navSave', true, enable);
       _enableNavOption('navReload', true, enable);
@@ -240,8 +192,7 @@ const app = function () {
   }
   
   function _displayEventList(eventList) {
-    console.log('_displayEventList');
-    var container = page.navManage.getElementsByClassName('eventlist-container')[0];
+    var container = page.navDebug.getElementsByClassName('eventlist-container')[0];
     UtilityKTS.removeChildren(container);
     
     for (var i = 0; i < eventList.length; i++) {
@@ -256,8 +207,7 @@ const app = function () {
   }
   
   function _displayEnrollmentList(enrollmentList) {
-    console.log('_displayEnrollmentList');
-    var container = page.navManage.getElementsByClassName('enrollmentlist-container')[0];
+    var container = page.navDebug.getElementsByClassName('enrollmentlist-container')[0];
     UtilityKTS.removeChildren(container);
     
     for (var i = 0; i < enrollmentList.length; i++) {
@@ -266,17 +216,12 @@ const app = function () {
     }
   }
   
-  function _enableMainUI(enable) {
-    UtilityKTS.setClass(page.navManage, 'disable-container', !enable);
-    page.navManage.disabled = !enable;    
-
-    UtilityKTS.setClass(page.navOptions, 'disable-container', !enable);
-    page.navOptions.disabled = !enable;    
+  function _updateUI() {
+    console.log('_updateUI');
+    _setMainUIEnable(settings.google.isSignedIn);
   }
   
   function _addEndDateEvent(params) {
-    console.log('_addEndDateEvent');
-    console.log(params);
     var description = 'Term end date scheduled for:';
     for (var i = 0; i < params.enrollments.length; i++) {
       var item = params.enrollments[i];
@@ -306,58 +251,78 @@ const app = function () {
     });    
   }
   
+  function _setMainUIEnable(enable) {
+    var containers = page.contents.getElementsByClassName('contents-container');
+    for (var i = 0; i < containers.length; i++) {
+      if (containers[i].classList.contains('contents-navManage') ||
+          containers[i].classList.contains('contents-navOptions') ||
+          containers[i].classList.contains('contents-navDebug')) {
+        UtilityKTS.setClass(containers[i], 'disable-container', !enable);
+        containers[i].disabled = !enable;   
+      }
+    }
+  }
+  
   //--------------------------------------------------------------------------
   // callbacks
 	//--------------------------------------------------------------------------
   function _calendarInfoCallback(success, results) {
     console.log('_calendarInfoCallback');
-    var elemSelect = page.navManage.getElementsByClassName('calendar-selection')[0];
-    UtilityKTS.removeChildren(elemSelect);
     
-    if (success) {
-      if (true /* there isn't a current selection from DB */) {
-        var elemOption = CreateElement.createOption(null, null, JSON.stringify({id: null}), 'choose...');
-        elemSelect.appendChild(elemOption);
-        elemOption.selected = true;        
-      }
-      
-      var fullCalendarList = results.items.sort(function(a,b) {
-        return a.summary.localeCompare(b.summary);
-      });
-      
-      for (var i = 0; i < fullCalendarList.length; i++) {
-        var item = fullCalendarList[i];
-        if (item.accessRole == 'owner') {
-          var elemOption = CreateElement.createOption(null, null, JSON.stringify(item), item.summary);
-          elemSelect.appendChild(elemOption);
-          /* test if this is the one saved as selected in DB */
+    var elemSelect = page.navOptions.getElementsByClassName('calendar-selection')[0];
+    UtilityKTS.removeChildren(elemSelect);
+
+    if (!success) {
+      console.log('error: ' + JSON.stringify(results));
+      return;
+    }      
+    
+    var fullCalendarList = results.items.sort(function(a,b) {
+      return a.summary.localeCompare(b.summary);
+    });
+    
+    for (var i = 0; i < fullCalendarList.length; i++) {
+      var item = fullCalendarList[i];
+      if (item.accessRole == 'owner') {
+        var elemOption = CreateElement.createOption(null, null, JSON.stringify(item), item.summary);
+        var elemOptionDebug = CreateElement.createOption(null, null, JSON.stringify(item), item.summary);
+                          
+        if (settings.configuration.calendarId != null && settings.configuration.calendarId == item.id) {
+          elemOption.selected = true;
+
+        } else if (settings.configuration.calendarId == null && item.hasOwnProperty('primary') && item.primary) {
+          settings.configuration.calendarId = item.id;
+          elemOption.selected = true;
         }
+
+        elemSelect.appendChild(elemOption);
       }
-      _enableMainUI(true);
-      
-    } else {
-      copnsole.log('error: ' + JSON.stringify(results));
-      _enableMainUI(false);
     }
+
+    settings.google.objCalendar.getEventInfo({
+        calendarId: settings.configuration.calendarId
+      }, 
+      _eventInfoCallback
+    );      
   }
   
   function _eventInfoCallback(success, results) {
     console.log('_eventInfoCallback');
+    
+    if (!success) {
+      console.log('error: ' + JSON.stringify(results));
+      return;
+    }
+    
     var eventList = [];
     
-    if (success) {
-      for (var i = 0; i < results.items.length; i++) {
-        var item = results.items[i];
-        if (item.location == settings.eventLocation) eventList.push(item);
-      }
-      _displayEventList(eventList);
-
-      _enableMainUI(true);
-      
-    } else {
-      console.log('error: ' + JSON.stringify(results));
-      _enableMainUI(false);
+    for (var i = 0; i < results.items.length; i++) {
+      var item = results.items[i];
+      if (item.location == settings.eventLocation) eventList.push(item);
     }
+    //_displayEventList(eventList);
+    console.log(eventList);
+    _updateUI();
   }
   
   function _callbackAddEndDateEvent(success, results) {
@@ -376,6 +341,7 @@ const app = function () {
     var dispatchMap = {
       "navManage": function() { _showContents('navManage');},
       "navOptions": function() { _showContents('navOptions'); },
+      "navDebug": function() { _showContents('navDebug');},
       "navGoogle": function() { _handleGoogleSignIn(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
@@ -393,6 +359,9 @@ const app = function () {
       
     } else if (settings.currentNavOption == 'navOptions') {
       console.log('_handleSave: navOptions');
+      
+    } else if (settings.currentNavOption == 'navDebug') {
+      console.log('_handleSave: navDebug');
       
     } else if (settings.currentNavOption == 'navProfile') {
       settings.profile.save();
@@ -413,6 +382,9 @@ const app = function () {
     } else if (settings.currentNavOption == 'navOptions') {
       console.log('_handleReload: navOptions');
       
+    } else if (settings.currentNavOption == 'navDebug') {
+      console.log('_handleReload: navDebug');
+      
     } else if (settings.currentNavOption == 'navProfile') {
       settings.profile.reload();
     }
@@ -421,38 +393,31 @@ const app = function () {
   }
   
   function _handleGoogleSignIn() {
-    console.log('_handleGoogleSignIn');
     settings.google.obj.trySignIn();
   }
   
-  function _signInChangeForGoogle(isSignedIn) {
-    settings.google.isSignedIn = isSignedIn;
-
-    var enable = !isSignedIn;
-    _enableNavOption('navGoogle', enable, enable);
-    
-    UtilityKTS.setClass(page.navManage, 'disable-container', true);
-    page.navManage.disabled = true;    
-
-    UtilityKTS.setClass(page.navOptions, 'disable-container', true);
-    page.navOptions.disabled = true;    
-
-    if (isSignedIn) settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
+  function _handleGoogleSignout() {
+    settings.google.obj.signout();
   }
   
-  function _handleCalendarSelect(e) {
-    console.log('_handleCalendarSelect');
-    var calendarItem = JSON.parse(e.target[e.target.selectedIndex].value);
+  async function _signInChangeForGoogle(isSignedIn) {
+    console.log('_signInChangeForGoogle: isSignedIn = ' + isSignedIn);
+    settings.google.isSignedIn = isSignedIn;
+
+    _setMainUIEnable(false);
     
-    if (calendarItem.id == null) {
-      console.log('null selected');  /* remove null once a selection is made? */
-    } 
-    
-    settings.google.objCalendar.getEventInfo({
-        calendarId: calendarItem.id
-      }, 
-      _eventInfoCallback
-    );
+    if (isSignedIn) {    
+      var configOkay = await _loadConfiguration();
+      if (!configOkay) {
+        page.notice.setNotice('failed to load configuration');
+        return;
+      }
+
+      settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
+    }
+
+    var enable = !isSignedIn;
+    _enableNavOption('navGoogle', enable, enable);    
   }
       
   //----------------------------------------
@@ -499,6 +464,13 @@ const app = function () {
   //---------------------------------------
   // DB interface
   //----------------------------------------  
+  async function _loadConfiguration() {
+    settings.configuration = {
+      calendarId: "c_h702bj3dk5fjqjgqi8psg8q1mg@group.calendar.google.com" //null
+      //calendarId: null
+    }
+    return true;
+  }
 
   //--------------------------------------------------------------------------
   // utility
@@ -509,6 +481,78 @@ const app = function () {
     elem.disabled = !enable;    
   }
   
+  //--------------------------------------------------------------------------
+  // test stuff
+	//--------------------------------------------------------------------------  
+  function _testAddEvent(e) {
+    console.log('_testAddEvent');
+    var elemCalendar = page.navDebug.getElementsByClassName('calendar-selection')[0];
+    var calendarId = settings.configuration.calendarId;
+    var eventDay = Math.floor(Math.random() * (30 - 26) + 26);
+    
+    var studentList = [
+      {studentLast: "Smith", studentFirst: "Bob", section: "Basic Web Design"},
+      {studentLast: "Doe", studentFirst: "Jane",  section: "Java Programming A"},
+      {studentLast: "Weasley", studentFirst: "Fred",  section: "Potions"},
+      {studentLast: "Longbottom", studentFirst: "Neville",  section: "Herbology"},
+      {studentLast: "Granger", studentFirst: "Hermione", section: "Arithmancy"},
+      {studentLast: "Potter", studentFirst: "Harry", section: "Defense Against the Dark Arts"},
+      {studentLast: "Malfoy", studentFirst: "Draco", section: "Intro to Skullduggery"},
+      {studentLast: "Ahab", studentFirst: "Trevor", section: "Whaling 101"},
+      {studentLast: "Baggins", studentFirst: "Frodo", section: "Unmaking Rings"}
+    ];
+    
+    var numEnrollments = Math.floor(Math.random() * (5 - 1) + 1);
+    var enrollmentList = [];
+    for (var i = 0; i < numEnrollments; i++) enrollmentList.push(studentList[i]);
+
+    var params = {
+      "calendarId": calendarId,
+      "date": '2021-05-' + eventDay,
+      "enrollments": enrollmentList,
+      "reminders": [
+        {method: 'email', minutes: 6 * 60},
+        {method: 'popup', minutes: 12 * 60}
+      ]
+    }
+    
+    _addEndDateEvent(params);
+  }
+  
+  function _testDeleteEvent(e) {
+    console.log('_testDeleteEvent (disabled)');
+    return;
+    
+    var params = {
+      "calendarId":  xxxx,
+      "eventId": xxxx
+    };
+    _removeEndDateEvent(params);    
+  }
+      
+  async function _testUpload(e) {
+    console.log('_testUpload');
+    var fileList = page.navDebug.getElementsByClassName('uploadfile')[0].files;
+    if (fileList.length == 0) {
+      console.log('no file chosen');
+      return;
+    }
+
+    var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
+    if (result.success) {
+      _displayEnrollmentList(result.data);
+    } else {
+      _displayEnrollmentList([]);
+    }
+  }
+  
+  async function _testDB(e) {
+    console.log('test DB');
+    dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'test');
+
+    console.log(dbResult);
+  }
+
 	//-----------------------------------------------------------------------------------
 	// init:
 	//-----------------------------------------------------------------------------------
