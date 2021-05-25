@@ -22,10 +22,10 @@ mixin managerContainer()
             
     .row
       .col-sm            
-        form(class="userform enrollmentform" action="enddate-manager/enrollment" enctype="multipart/form-data" method="post")
-          .form-row
-            .form-col
-              input(type="file" class="file-select" name="enrollment-report-file" accept=".xlsx" required title="enrollment report file to process")
-              
-            .form-col.submit-region
-              input(class="form-submit btn btn-outline-primary" type="submit" value="process")
+        input(type="file" class="uploadfile" accept=".xlsx" title="enrollment report file to process")              
+        button(class="btnUpload") process
+
+    .row
+      .col-sm
+        .enrollmentlist-container
+

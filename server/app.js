@@ -551,8 +551,8 @@ app.get('/enddate-manager/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'enddate-manager/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
-app.post('/usermanagement/routeToApp/enddate-manager/:formname', function (req, res) {
-  endDateManager.processUploadedFile(req, res, processEndDateManagerResult); 
+app.post('/usermanagement/routeToApp/enddate-manager/upload', function (req, res) {
+  endDateManager.processUploadedFile(req, res); 
 })
 
 app.get('/commentbuddy/composer', function (req, res) { routeIfLoggedIn(req, res, 'commentbuddy'); })
@@ -939,23 +939,6 @@ app.get('/roster-manager/help', function (req, res) {
 
 
 async function processRosterManagerResult(req, res, result) {
-  if (result.success) {
-    var fileName = result.targetfilename;
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-
-    await result.workbook.xlsx.write(res);
-
-    res.end();
-    
-  } else {
-    var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/error.pug');
-    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {formname: result.formname, description: result.description}});
-  }
-}
-
-async function processEndDateManagerResult(req, res, result) {
   if (result.success) {
     var fileName = result.targetfilename;
 

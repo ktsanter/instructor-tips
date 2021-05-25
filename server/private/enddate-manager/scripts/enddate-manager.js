@@ -102,6 +102,7 @@ const app = function () {
     
     page.navManage.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
     page.navManage.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
+    page.navManage.getElementsByClassName('btnUpload')[0].addEventListener('click', (e) => { _testUpload(e); });
   }
   
   function _renderOptions() {
@@ -155,6 +156,22 @@ const app = function () {
     _removeEndDateEvent(params);    
   }
       
+  async function _testUpload(e) {
+    console.log('_testUpload');
+    var fileList = page.navManage.getElementsByClassName('uploadfile')[0].files;
+    if (fileList.length == 0) {
+      console.log('no file chosen');
+      return;
+    }
+
+    var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
+    if (result.success) {
+      _displayEnrollmentList(result.data);
+    } else {
+      _displayEnrollmentList([]);
+    }
+  }
+  
   //-----------------------------------------------------------------------------
 	// updating
 	//-----------------------------------------------------------------------------
@@ -218,6 +235,7 @@ const app = function () {
     console.log('_displayEventList');
     var container = page.navManage.getElementsByClassName('eventlist-container')[0];
     UtilityKTS.removeChildren(container);
+    
     for (var i = 0; i < eventList.length; i++) {
       var item = eventList[i];
       var lines = item.description.split('\n');
@@ -226,6 +244,17 @@ const app = function () {
         var section = lines[j].split('(')[1].slice(0, -1).trim();
         container.appendChild(CreateElement.createDiv(null, null, item.start.date + ': ' + name + ' | ' + section));
       }
+    }
+  }
+  
+  function _displayEnrollmentList(enrollmentList) {
+    console.log('_displayEnrollmentList');
+    var container = page.navManage.getElementsByClassName('enrollmentlist-container')[0];
+    UtilityKTS.removeChildren(container);
+    
+    for (var i = 0; i < enrollmentList.length; i++) {
+      var item = enrollmentList[i];
+      container.appendChild(CreateElement.createDiv(null, null, item.student + ' ' + item.section + ' ' + item.enddate));
     }
   }
   
@@ -418,10 +447,51 @@ const app = function () {
     );
   }
       
-  //---------------------------------------
-	// DB interface
-	//----------------------------------------  
+  //----------------------------------------
+  // enrollment report post
+  //----------------------------------------
+  async function _formPost(url, fileToPost) {
+    const METHOD_TITLE = 'formPost';
+    
+    var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
+    var data = new FormData();
+    data.append('file', fileToPost)
+
+    try {
+      const resp = await fetch(
+        url, 
+        {
+          method: 'post', 
+          //headers: {'Content-Type': 'multipart/form-data; charset=utf-8'}, //browser will fill in appropriately (?)
+          body: data
+        }
+      );
+      const json = await resp.json();
+      //console.log(json);
+      
+      if (!json.success) {
+        var errmsg = '*ERROR: in ' + METHOD_TITLE + ', ' + JSON.stringify(json.details);
+        console.log(errmsg);
+        //console.log('url: ' + url);
+        //console.log('postData: ' + JSON.stringify(postData));
+        result.details = errmsg;
+      } else {
+        result = json;
+      }
+      
+    } catch (error) {
+      var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
+      console.log(errmsg);
+      result.details = errmsg;
+    }
+    
+    return result;
+  }
   
+  //---------------------------------------
+  // DB interface
+  //----------------------------------------  
+
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------  
