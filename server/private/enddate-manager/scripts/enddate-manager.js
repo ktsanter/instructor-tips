@@ -58,7 +58,7 @@ const app = function () {
     _renderContents();
     _initializeGoogleStuff();
 
-    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
   
   async function _initializeProfile(sodium) {
@@ -112,6 +112,8 @@ const app = function () {
   
   function _renderManage() {
     page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
+
+    page.navManage.getElementsByClassName('btnUpload')[0].addEventListener('click', (e) => { _uploadEnrollments(e); });
   }
   
   function _renderOptions() {
@@ -123,7 +125,7 @@ const app = function () {
     
     page.navDebug.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
     page.navDebug.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
-    page.navDebug.getElementsByClassName('btnUpload')[0].addEventListener('click', (e) => { _testUpload(e); });
+    page.navDebug.getElementsByClassName('btnUploadTest')[0].addEventListener('click', (e) => { _testUpload(e); });
     page.navDebug.getElementsByClassName('btnTestDB')[0].addEventListener('click', (e) => { _testDB(e); });
     page.navDebug.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
   }
@@ -190,37 +192,91 @@ const app = function () {
     settings.dirtyBit[settings.currentNavOption] = dirty;
     _setNavOptions();
   }
-  
-  function _displayEventList(eventList) {
-    var container = page.navDebug.getElementsByClassName('eventlist-container')[0];
-    UtilityKTS.removeChildren(container);
     
-    for (var i = 0; i < eventList.length; i++) {
-      var item = eventList[i];
-      var lines = item.description.split('\n');
-      for (var j = 1; j < lines.length; j++) {
-        var name = lines[j].split('(')[0].trim();
-        var section = lines[j].split('(')[1].slice(0, -1).trim();
-        container.appendChild(CreateElement.createDiv(null, null, item.start.date + ': ' + name + ' | ' + section));
+  function _setMainUIEnable(enable) {
+    console.log('_setMainUIEnable: ' + enable);
+    var containers = page.contents.getElementsByClassName('contents-container');
+    for (var i = 0; i < containers.length; i++) {
+      if (containers[i].classList.contains('contents-navManage') ||
+          containers[i].classList.contains('contents-navOptions') ||
+          containers[i].classList.contains('contents-navDebug')) {
+        UtilityKTS.setClass(containers[i], 'disable-container', !enable);
+        containers[i].disabled = !enable;   
       }
     }
   }
-  
-  function _displayEnrollmentList(enrollmentList) {
-    var container = page.navDebug.getElementsByClassName('enrollmentlist-container')[0];
-    UtilityKTS.removeChildren(container);
-    
-    for (var i = 0; i < enrollmentList.length; i++) {
-      var item = enrollmentList[i];
-      container.appendChild(CreateElement.createDiv(null, null, item.student + ' ' + item.section + ' ' + item.enddate));
-    }
-  }
-  
+
   function _updateUI() {
     console.log('_updateUI');
+    
+    var noEnrollmentData = (settings.configuration.enrollmentList.length == 0);
+    if (noEnrollmentData) {
+      console.log(' - no enrollment data');
+      console.log(' - reconcile calendarEvents with enddateOverrides');
+      console.log(' - display table of results');
+      _setDirtyBit(false);
+      
+    } else {
+      console.log(' - have enrollment data');
+      console.log(' - reconcile enrollmentList with enddateOverrides');
+      console.log(' - display table of results');
+      _setDirtyBit(true);
+    }
+    
+    var elemResults = page.navManage.getElementsByClassName('result-container')[0];
+    var msg = '';
+    msg += 'calendarId: ' + settings.configuration.calendarId;
+    msg += '<br><br>calendarList:';
+    for (var i = 0; i < settings.configuration.calendarList.length; i++) {
+      var item = settings.configuration.calendarList[i];
+      msg += '<br>';
+      msg += '&nbsp;&nbsp;' + settings.configuration.calendarList[i].summary;
+      if (item.id == settings.configuration.calendarId) msg += ' <em>selected</em>';
+    }
+    
+    msg += '<br><br>calendarEvents:';
+    for (var i = 0; i < settings.configuration.calendarEvents.length; i++) {
+      var item = settings.configuration.calendarEvents[i];
+      msg += '<br>&nbsp;&nbsp;' + item.enddate;
+      for (j = 0; j < item.studentList.length; j++) {
+        var subItem = item.studentList[j];
+        msg += '<br>&nbsp;&nbsp;&nbsp;&nbsp;' + subItem.enddate + ' ' + subItem.student + ' ' + subItem.section;
+      }
+    }
+    
+    msg += '<br><br>enddateOverrides:';
+    for (var i = 0; i < settings.configuration.enddateOverrides.length; i++) {
+      var item = settings.configuration.enddateOverrides[i];
+      msg += '<br>&nbsp;&nbsp;' + item.enddate + ' ' + item.student + ' ' + item.enddate + ' ' + item.notes;
+    }
+    
+    msg += '<br><br>enrollmentList:';
+    for (var i = 0; i < settings.configuration.enrollmentList.length; i++) {
+      var item = settings.configuration.enrollmentList[i];
+      msg += '<br>&nbsp;&nbsp;' + _formatAsShortDate(item.enddate) + ' ' + item.student + ' ' + item.section;
+    }
+    
+    elemResults.innerHTML = msg;
+    
+    _updateCalendarSelectOptions();    
     _setMainUIEnable(settings.google.isSignedIn);
   }
-  
+    
+  function _updateCalendarSelectOptions() {
+    var elemSelect = page.navOptions.getElementsByClassName('calendar-selection')[0];
+    UtilityKTS.removeChildren(elemSelect);
+
+    var calendarList = settings.configuration.calendarList;
+    
+    for (var i = 0; i < calendarList.length; i++) {
+      var item = calendarList[i];
+      var elemOption = CreateElement.createOption(null, null, JSON.stringify(item), item.summary);      
+      
+      if (settings.configuration.calendarId == item.id) elemOption.selected = true;
+      elemSelect.appendChild(elemOption);
+    }
+  }
+
   function _addEndDateEvent(params) {
     var description = 'Term end date scheduled for:';
     for (var i = 0; i < params.enrollments.length; i++) {
@@ -250,28 +306,13 @@ const app = function () {
       "eventId": params.eventId
     });    
   }
-  
-  function _setMainUIEnable(enable) {
-    var containers = page.contents.getElementsByClassName('contents-container');
-    for (var i = 0; i < containers.length; i++) {
-      if (containers[i].classList.contains('contents-navManage') ||
-          containers[i].classList.contains('contents-navOptions') ||
-          containers[i].classList.contains('contents-navDebug')) {
-        UtilityKTS.setClass(containers[i], 'disable-container', !enable);
-        containers[i].disabled = !enable;   
-      }
-    }
-  }
-  
+    
   //--------------------------------------------------------------------------
   // callbacks
 	//--------------------------------------------------------------------------
   function _calendarInfoCallback(success, results) {
     console.log('_calendarInfoCallback');
     
-    var elemSelect = page.navOptions.getElementsByClassName('calendar-selection')[0];
-    UtilityKTS.removeChildren(elemSelect);
-
     if (!success) {
       console.log('error: ' + JSON.stringify(results));
       return;
@@ -280,24 +321,20 @@ const app = function () {
     var fullCalendarList = results.items.sort(function(a,b) {
       return a.summary.localeCompare(b.summary);
     });
+    var filteredCalendarList = [];
     
     for (var i = 0; i < fullCalendarList.length; i++) {
       var item = fullCalendarList[i];
       if (item.accessRole == 'owner') {
-        var elemOption = CreateElement.createOption(null, null, JSON.stringify(item), item.summary);
-        var elemOptionDebug = CreateElement.createOption(null, null, JSON.stringify(item), item.summary);
-                          
-        if (settings.configuration.calendarId != null && settings.configuration.calendarId == item.id) {
-          elemOption.selected = true;
+        filteredCalendarList.push(item);
 
-        } else if (settings.configuration.calendarId == null && item.hasOwnProperty('primary') && item.primary) {
+        if (settings.configuration.calendarId == null && item.hasOwnProperty('primary') && item.primary) {
           settings.configuration.calendarId = item.id;
-          elemOption.selected = true;
         }
-
-        elemSelect.appendChild(elemOption);
       }
     }
+    
+    settings.configuration.calendarList = filteredCalendarList;
 
     settings.google.objCalendar.getEventInfo({
         calendarId: settings.configuration.calendarId
@@ -314,14 +351,13 @@ const app = function () {
       return;
     }
     
-    var eventList = [];
+    settings.configuration.calendarEvents = [];
     
     for (var i = 0; i < results.items.length; i++) {
       var item = results.items[i];
-      if (item.location == settings.eventLocation) eventList.push(item);
+      if (item.location == settings.eventLocation) settings.configuration.calendarEvents.push(_parseCalendarEvent(item));
     }
-    //_displayEventList(eventList);
-    console.log(eventList);
+
     _updateUI();
   }
   
@@ -416,10 +452,25 @@ const app = function () {
       settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
     }
 
-    var enable = !isSignedIn;
-    _enableNavOption('navGoogle', enable, enable);    
+    _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
   }
       
+  async function _uploadEnrollments(e) {
+    console.log('_uploadEnrollments');
+    var fileList = page.navManage.getElementsByClassName('uploadfile')[0].files;
+    if (fileList.length == 0) {
+      console.log('no file chosen');
+      return;
+    }
+
+    var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
+    var enrollmentList = [];
+    if (result.success) enrollmentList = result.data;
+    
+    settings.configuration.enrollmentList = enrollmentList;
+    _updateUI();    
+  }
+  
   //----------------------------------------
   // enrollment report post
   //----------------------------------------
@@ -466,8 +517,14 @@ const app = function () {
   //----------------------------------------  
   async function _loadConfiguration() {
     settings.configuration = {
-      calendarId: "c_h702bj3dk5fjqjgqi8psg8q1mg@group.calendar.google.com" //null
-      //calendarId: null
+      calendarId: "c_h702bj3dk5fjqjgqi8psg8q1mg@group.calendar.google.com",
+      //calendarId: null,
+      calendarList: [],
+      enddateOverrides: [
+        {"student": "Holmes, Sherlock", section: "Fingerprinting 101", enddate: "2021-07-04", notes: "some reason"},
+        {"student": "Watson, John", section: "Creative Writing", enddate: "2021-07-05", notes: "an important reason"},
+      ],
+      enrollmentList: []
     }
     return true;
   }
@@ -479,6 +536,30 @@ const app = function () {
     var elem = document.getElementById(navOption);
     UtilityKTS.setClass(elem, 'hide-me', !visible);
     elem.disabled = !enable;    
+  }
+  
+  function _parseCalendarEvent(item) {
+    var parsedItem = {};
+    parsedItem.original = item;
+    parsedItem.enddate = item.end.date;
+    
+    var descriptionLines = item.description.split('\n');
+    
+    var studentList = [];
+    for (var i = 1; i < descriptionLines.length; i++) {
+      var parsedLine = descriptionLines[i].split('(');
+      var student = parsedLine[0].trim();
+      var section = parsedLine[1].slice(0, -1);
+      studentList.push({"student": student, "section": section, "enddate": item.end.date});
+    }
+
+    parsedItem.studentList = studentList;
+    
+    return parsedItem;
+  }
+  
+  function _formatAsShortDate(d) {
+    return d;
   }
   
   //--------------------------------------------------------------------------
@@ -532,18 +613,23 @@ const app = function () {
       
   async function _testUpload(e) {
     console.log('_testUpload');
-    var fileList = page.navDebug.getElementsByClassName('uploadfile')[0].files;
+    var fileList = page.navDebug.getElementsByClassName('uploadfileTest')[0].files;
     if (fileList.length == 0) {
       console.log('no file chosen');
       return;
     }
 
     var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
-    if (result.success) {
-      _displayEnrollmentList(result.data);
-    } else {
-      _displayEnrollmentList([]);
-    }
+    var enrollmentList = [];
+    if (result.success) enrollmentList = result.data;
+    
+    var container = page.navDebug.getElementsByClassName('enrollmentlist-container')[0];
+    UtilityKTS.removeChildren(container);
+    
+    for (var i = 0; i < enrollmentList.length; i++) {
+      var item = enrollmentList[i];
+      container.appendChild(CreateElement.createDiv(null, null, item.student + ' ' + item.section + ' ' + item.enddate));
+    }    
   }
   
   async function _testDB(e) {

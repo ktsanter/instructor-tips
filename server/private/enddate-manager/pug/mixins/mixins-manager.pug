@@ -1,5 +1,15 @@
 mixin managerContainer()
   .row
-    .col-sm Manage
+    .col-sm: strong Manage
+    
+  .row
+    .col-sm            
+      input(type="file" class="uploadfile" accept=".xlsx" title="enrollment report file to process")              
+      button(class="btnUpload") process
+    
+    
+  .row
+    .col-sm
+      .result-container
 
 
