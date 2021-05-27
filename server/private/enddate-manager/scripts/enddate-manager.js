@@ -113,7 +113,11 @@ const app = function () {
   function _renderManage() {
     page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
 
-    page.navManage.getElementsByClassName('btnUpload')[0].addEventListener('click', (e) => { _uploadEnrollments(e); });
+    var elems = page.navManage.getElementsByClassName('enddate-option');
+    for (var i = 0; i < elems.length; i++) {
+      elems[i].addEventListener('change', (e) => { _handleEnddateSourceChange(e); } );
+    }
+    page.navManage.getElementsByClassName('uploadfile')[0].addEventListener('change', (e) => { _uploadEnrollments(e); });
   }
   
   function _renderOptions() {
@@ -125,7 +129,6 @@ const app = function () {
     
     page.navDebug.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
     page.navDebug.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
-    page.navDebug.getElementsByClassName('btnUploadTest')[0].addEventListener('click', (e) => { _testUpload(e); });
     page.navDebug.getElementsByClassName('btnTestDB')[0].addEventListener('click', (e) => { _testDB(e); });
     page.navDebug.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
   }
@@ -209,17 +212,29 @@ const app = function () {
   function _updateUI() {
     console.log('_updateUI');
     
-    var noEnrollmentData = (settings.configuration.enrollmentList.length == 0);
-    if (noEnrollmentData) {
-      console.log(' - no enrollment data');
+    var standarizedOverrides = _standardizeOverrides();
+    var source = _getSourceSelection();
+    
+    if (source == 'enddate-calender') {
+      var standardizedCalendarEvents = _standardizeCalendarEvents();
+      console.log(' - use calendar event data');
       console.log(' - reconcile calendarEvents with enddateOverrides');
       console.log(' - display table of results');
+
+      console.log(standardizedCalendarEvents);
+      console.log(standarizedOverrides);
+
       _setDirtyBit(false);
       
     } else {
-      console.log(' - have enrollment data');
+      var standardizedEnrollments = _standardizeEnrollments();
+      console.log(' - use enrollment data');
       console.log(' - reconcile enrollmentList with enddateOverrides');
       console.log(' - display table of results');
+
+      console.log(standardizedEnrollments);
+      console.log(standarizedOverrides);
+      
       _setDirtyBit(true);
     }
     
@@ -260,6 +275,120 @@ const app = function () {
     
     _updateCalendarSelectOptions();    
     _setMainUIEnable(settings.google.isSignedIn);
+  }
+  
+  function _getSourceSelection() {
+    var elems = page.navManage.getElementsByClassName('enddate-option');
+    var source = '';
+    for (var i = 0; i < elems.length; i++) {
+      if (elems[i].checked) source = elems[i].id;
+    }
+    return source;
+  }
+  
+  function _standardizeCalendarEvents() {
+    console.log('_standardizeCalendarEvents');
+    
+    var standardized = {
+      list: [],
+      byStudent: {},
+      byDate: {},
+      bySection: {},
+    }
+
+    for (var i = 0; i < settings.configuration.calendarEvents.length; i++) {
+      var item = settings.configuration.calendarEvents[i];
+      for (var j = 0; j < item.studentList.length; j++) {
+        var subItem = item.studentList[j];
+        var standardizedItem = {
+          "enddate": item.enddate,
+          "student": subItem.student,
+          "section": subItem.section,
+          "override": false,
+          "notes": ''
+        }
+        
+        standardized.list.push(standardizedItem);
+      }
+    }
+    
+    standardized.byStudent = _collateStandardizedList(standardized.list, 'student');
+    standardized.byDate = _collateStandardizedList(standardized.list, 'enddate');
+    standardized.bySection = _collateStandardizedList(standardized.list, 'section');
+    
+    return standardized;
+  }
+  
+  function _standardizeOverrides() {
+    console.log('_standardizeOverrides');
+    
+    var standardized = {
+      list: [],
+      byStudent: {},
+      byDate: {},
+      bySection: {},
+    }
+
+    for (var i = 0; i < settings.configuration.enddateOverrides.length; i++) {
+      var item = settings.configuration.enddateOverrides[i];
+        var standardizedItem = {
+          "enddate": item.enddate,
+          "student": item.student,
+          "section": item.section,
+          "override": true,
+          "notes": item.notes
+        }
+        
+        standardized.list.push(standardizedItem);
+    }
+    
+    standardized.byStudent = _collateStandardizedList(standardized.list, 'student');
+    standardized.byDate = _collateStandardizedList(standardized.list, 'enddate');
+    standardized.bySection = _collateStandardizedList(standardized.list, 'section');
+        
+    return standardized;
+  }
+  
+  function _standardizeEnrollments() {
+    console.log('_standardizeEnrollments');
+
+    var standardized = {
+      list: [],
+      byStudent: {},
+      byDate: {},
+      bySection: {},
+    }
+
+    for (var i = 0; i < settings.configuration.enrollmentList.length; i++) {
+      var item = settings.configuration.enrollmentList[i];
+      var standardizedItem = {
+        "enddate": _formatAsShortDate(item.enddate),
+        "student": item.student,
+        "section": item.section,
+        "override": false,
+        "notes": ''
+      }
+      
+      standardized.list.push(standardizedItem);
+    }
+    
+    standardized.byStudent = _collateStandardizedList(standardized.list, 'student');
+    standardized.byDate = _collateStandardizedList(standardized.list, 'enddate');
+    standardized.bySection = _collateStandardizedList(standardized.list, 'section');
+    
+    return standardized;
+  }
+  
+  function _collateStandardizedList(standardizedList, collateBy) {
+    var collated = {};
+    
+    for (var i = 0; i < standardizedList.length; i++) {
+      var item = standardizedList[i];
+      var collateValue = item[collateBy];
+      if (!collated.hasOwnProperty(collateValue)) collated[collateValue] = [];
+      collated[collateValue].push(item);
+    }
+    return collated;
   }
     
   function _updateCalendarSelectOptions() {
@@ -454,15 +583,36 @@ const app = function () {
 
     _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
   }
+  
+  function _handleEnddateSourceChange(e) {
+    var selection = e.target.id;
+
+    var elemFileUpload = page.navManage.getElementsByClassName('uploadfile')[0];
+    var elemFileUploadLabel = page.navManage.getElementsByClassName('uploadfile-label')[0];
+
+    elemFileUpload.value = null;
+    elemFileUploadLabel.innerHTML = 'choose file...';
+    
+    if (selection == 'enddate-calender') {
+      elemFileUpload.disabled = true;
+      settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
+      
+    } else if (selection == 'enddate-enrollment') {
+      elemFileUpload.disabled = false;
+    }
+  }  
       
   async function _uploadEnrollments(e) {
     console.log('_uploadEnrollments');
-    var fileList = page.navManage.getElementsByClassName('uploadfile')[0].files;
+    var elem = page.navManage.getElementsByClassName('uploadfile')[0];
+    var fileList = elem.files;
     if (fileList.length == 0) {
       console.log('no file chosen');
       return;
     }
 
+    page.navManage.getElementsByClassName('uploadfile-label')[0].innerHTML = fileList[0].name;
+    
     var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
     var enrollmentList = [];
     if (result.success) enrollmentList = result.data;
@@ -558,10 +708,25 @@ const app = function () {
     return parsedItem;
   }
   
-  function _formatAsShortDate(d) {
-    return d;
+  function _formatAsShortDate(date) {
+    /*
+      var d = new Date(date),
+          month = '' + (d.getMonth() + 1),
+          day = '' + d.getDate(),
+          year = d.getFullYear();
+
+      if (month.length < 2) 
+          month = '0' + month;
+      if (day.length < 2) 
+          day = '0' + day;
+
+      return [year, month, day].join('-');
+    */
+    
+    // hack due to time zone problems
+    return date.toString().slice(0,10);
   }
-  
+
   //--------------------------------------------------------------------------
   // test stuff
 	//--------------------------------------------------------------------------  
@@ -611,27 +776,6 @@ const app = function () {
     _removeEndDateEvent(params);    
   }
       
-  async function _testUpload(e) {
-    console.log('_testUpload');
-    var fileList = page.navDebug.getElementsByClassName('uploadfileTest')[0].files;
-    if (fileList.length == 0) {
-      console.log('no file chosen');
-      return;
-    }
-
-    var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
-    var enrollmentList = [];
-    if (result.success) enrollmentList = result.data;
-    
-    var container = page.navDebug.getElementsByClassName('enrollmentlist-container')[0];
-    UtilityKTS.removeChildren(container);
-    
-    for (var i = 0; i < enrollmentList.length; i++) {
-      var item = enrollmentList[i];
-      container.appendChild(CreateElement.createDiv(null, null, item.student + ' ' + item.section + ' ' + item.enddate));
-    }    
-  }
-  
   async function _testDB(e) {
     console.log('test DB');
     dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'test');

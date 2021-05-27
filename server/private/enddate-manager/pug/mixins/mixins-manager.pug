@@ -1,13 +1,27 @@
 mixin managerContainer()
   .row
     .col-sm: strong Manage
-    
+
   .row
-    .col-sm            
-      input(type="file" class="uploadfile" accept=".xlsx" title="enrollment report file to process")              
-      button(class="btnUpload") process
-    
-    
+    .col-sm
+      .section-label source of end dates
+      
+  .row
+    .col-sm
+      .form-check
+        input(class="form-check-input enddate-option" type="radio" name="enddate-source" id="enddate-calender" checked)
+        label(class="form-check-label" for="enddate-calender") calendar
+        
+      .form-check
+        input(class="form-check-input enddate-option" type="radio" name="enddate-source" id="enddate-enrollment")
+        label(class="form-check-label" for="enddate-enrollment") enrollment report
+
+        input(type="file" class="uploadfile" id="file-upload" accept=".xlsx" disabled)
+        label(for="file-upload" class="uploadfile-label" title="choose enrollment report file to process") choose file...
+        
+  .row
+    .col-sm &nbsp;
+
   .row
     .col-sm
       .result-container

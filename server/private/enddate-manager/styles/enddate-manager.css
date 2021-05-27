@@ -31,6 +31,30 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navManage {}
 
+.contents .contents-navManage .enddate-option:checked {
+  background-color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+}
+
+.contents .contents-navManage .uploadfile {
+  opacity: 0;
+  z-index: -1;
+  position: absolute; /* don't let it take up space */
+}
+
+.contents .contents-navManage .uploadfile#file-upload + label {
+  border: 1px solid var(--bgPrimary);
+  margin-left: 0.4em;
+  padding: 0 0.3em 0 0.3em;
+  cursor: pointer;
+}
+
+.contents .contents-navManage .uploadfile#file-upload:disabled + label {
+  background-color: var(--bgShaded);
+  opacity: 50%;
+  cursor: default;
+}
+
 /*------------------------------------------------------------------------------
  * contents - navOptions
  *------------------------------------------------------------------------------*/
