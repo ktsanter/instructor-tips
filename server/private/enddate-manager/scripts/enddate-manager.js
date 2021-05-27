@@ -238,10 +238,27 @@ const app = function () {
       _setDirtyBit(true);
     }
     
-    var elemResults = page.navManage.getElementsByClassName('result-container')[0];
+    _showDebugResults();
+    _updateEventUI();
+    _updateCalendarSelectOptions();    
+    _setMainUIEnable(settings.google.isSignedIn);
+  }
+  
+  function _updateEventUI() {
+    console.log('_updateEventUI');
+    
+    var container = page.navManage.getElementsByClassName('event-container')[0];
+    UtilityKTS.removeChildren(container);
+    console.log('pick up here by rendering then updating EventEditor object');
+  }
+  
+  function _showDebugResults() {
+    console.log('_showDebugResults');
+    
+    var elemResults = page.navDebug.getElementsByClassName('result-container')[0];
     var msg = '';
     msg += 'calendarId: ' + settings.configuration.calendarId;
-    msg += '<br><br>calendarList:';
+    msg += '<br><br>calendarList (' + settings.configuration.calendarList.length + '):';
     for (var i = 0; i < settings.configuration.calendarList.length; i++) {
       var item = settings.configuration.calendarList[i];
       msg += '<br>';
@@ -249,7 +266,7 @@ const app = function () {
       if (item.id == settings.configuration.calendarId) msg += ' <em>selected</em>';
     }
     
-    msg += '<br><br>calendarEvents:';
+    msg += '<br><br>calendarEvents (' + settings.configuration.calendarEvents.length + '):';
     for (var i = 0; i < settings.configuration.calendarEvents.length; i++) {
       var item = settings.configuration.calendarEvents[i];
       msg += '<br>&nbsp;&nbsp;' + item.enddate;
@@ -259,22 +276,19 @@ const app = function () {
       }
     }
     
-    msg += '<br><br>enddateOverrides:';
+    msg += '<br><br>enddateOverrides ' + settings.configuration.enddateOverrides.length + '):';
     for (var i = 0; i < settings.configuration.enddateOverrides.length; i++) {
       var item = settings.configuration.enddateOverrides[i];
       msg += '<br>&nbsp;&nbsp;' + item.enddate + ' ' + item.student + ' ' + item.enddate + ' ' + item.notes;
     }
     
-    msg += '<br><br>enrollmentList:';
+    msg += '<br><br>enrollmentList (' + settings.configuration.enrollmentList.length + '):';
     for (var i = 0; i < settings.configuration.enrollmentList.length; i++) {
       var item = settings.configuration.enrollmentList[i];
       msg += '<br>&nbsp;&nbsp;' + _formatAsShortDate(item.enddate) + ' ' + item.student + ' ' + item.section;
     }
     
-    elemResults.innerHTML = msg;
-    
-    _updateCalendarSelectOptions();    
-    _setMainUIEnable(settings.google.isSignedIn);
+    elemResults.innerHTML = msg;    
   }
   
   function _getSourceSelection() {
@@ -481,6 +495,7 @@ const app = function () {
     }
     
     settings.configuration.calendarEvents = [];
+    settings.configuration.enrollmentList = [];
     
     for (var i = 0; i < results.items.length; i++) {
       var item = results.items[i];
@@ -618,6 +633,7 @@ const app = function () {
     if (result.success) enrollmentList = result.data;
     
     settings.configuration.enrollmentList = enrollmentList;
+    settings.configuration.calendarEvents = [];
     _updateUI();    
   }
   

@@ -6,11 +6,13 @@ define(function (require) {
   require('/scripts/classProfile');
   require('/scripts/usermanagement');
   require('/scripts/classGoogleManagement');
+
   
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
-   require('classGoogleCalendar');
+  require('classGoogleCalendar');
+  require('classEventEditor');
   require('enddate-manager');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));
