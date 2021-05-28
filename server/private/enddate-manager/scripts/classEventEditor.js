@@ -5,104 +5,161 @@
 //-------------------------------------------------------------------
 class EventEditor {
   constructor(config) {
-    this._config = config;
-    this._config.tableContainerClass = 'event-table-container';
-    this._config.editContainerClass = 'event-editor-container';
-    this._config.tableBodyClass = 'event-table-body';    
+    console.log('EventEditor.constructor');
+    this._config = config;  
+    
+    this.rowClassList = 'eventlist-row';
+    this.datacellClassList = 'eventlist-datacell';
+    this.controlcellClassList = 'eventlist-controlcell';
+    
+    this.alertIconClassList = 'event-icon event-alerticon fas fa-exclamation-circle';
+    this.editIconClassList = 'event-icon event-editicon fas fa-pencil-alt';
+    this.clearIconClassList = 'event-icon event-clearicon fas fa-cloud-sun';
   }
   
   //--------------------------------------------------------------
-  // rendering
+  // public methods
   //--------------------------------------------------------------
+  show(showMe) {
+    _show('eventist', showMe);
+    _show('editor', false);
+  }
+  
   render() { 
-    this.elemTableContainer = document.getElementsByClassName(this._config.tableContainerClass)[0];
-    this.elemTableBody = this.elemTableContainer.getElementsByClassName(this._config.tableBodyClass)[0];
+    console.log('EventEditor.render');
+    this.tableBody = this._config.eventContainer.getElementsByTagName('tbody')[0];
     
-    this.elemEditContainer = document.getElementsByClassName(this._config.editContainerClass)[0];
+    this._config.editorOkay.addEventListener('click', (e) => { this._handleEditEnd(true); });
+    this._config.editorCancel.addEventListener('click', (e) => { this._handleEditEnd(false); });
     
-    this.elemPrompt = this.elemEditContainer.getElementsByClassName('input-prompt')[0];
-    this.elemResponse = this.elemEditContainer.getElementsByClassName('input-response')[0];
-    this.elemConfirmation = this.elemEditContainer.getElementsByClassName('input-confirmation')[0];
+    this.editorEventIndex = null;
     
-    this.elemActionSelect = this.elemEditContainer.getElementsByClassName('select-action')[0];
-    this.elemActionSearchFor = this.elemEditContainer.getElementsByClassName('input-searchfor')[0];
-    this.elemActionURL = this.elemEditContainer.getElementsByClassName('input-url')[0];
-    this.elemActionEffectSelect = this.elemEditContainer.getElementsByClassName('select-effect')[0];
-    this.elemActionEffectMessage = this.elemEditContainer.getElementsByClassName('input-effectmessage')[0];
+    this.elemStudent = this._config.editorContainer.getElementsByClassName('input-student')[0];
+    this.elemSection = this._config.editorContainer.getElementsByClassName('input-section')[0];
+    this.elemEndDate = this._config.editorContainer.getElementsByClassName('input-enddate')[0];  
+    this.elemNotes = this._config.editorContainer.getElementsByClassName('input-notes')[0];  
+  }
+   
+  update(eventList) {
+    console.log('EventEditor.update');
     
-    this.elemTableContainer.getElementsByClassName('add-icon')[0].addEventListener('click', (e) => { this._handleRowAdd(e); });
-    this.elemActionSelect.addEventListener('change', (e) => { this._handleActionChange(e); });
+    this.eventList = eventList;
+    UtilityKTS.removeChildren(this.tableBody);
     
-    this.elemEditContainer.getElementsByClassName('button-clue-okay')[0].addEventListener('click', () => { this._handleRowEditEnd(true); });
-    this.elemEditContainer.getElementsByClassName('button-clue-cancel')[0].addEventListener('click', () => { this._handleRowEditEnd(false); });
-   }
-    
-  _renderTableRow(rowData) {
-    var elemRow = CreateElement._createElement('tr', null, 'clues-table-row');
+    for (var i = 0; i < eventList.length; i++) {
+      var item = eventList[i];
+      //console.log(item);
+      this.tableBody.appendChild(this._renderTableRow(i, item));
+    }  
 
-    elemRow.clue = rowData;
-    if (rowData.number == 1) {
-      elemRow.appendChild(this._renderRowControlCell('none'));
-    } else {
-      elemRow.appendChild(this._renderRowControlCell('move'));
+    this._show('eventlist', true);
+    this._show('editor', false);
+  }
+
+  clear() {
+    UtilityKTS.removeChildren(this.tableBody);
+  }
+    
+  getEventList() {
+    console.log('EventEditor.getEventList');
+    
+    var eventList = [];
+    var rows = this.tableBody.getElementsByClassName(this.rowClassList);
+    for (var i = 0; i < rows.length; i++) {
+     // var rowItemData = rows[i].eventData;
+     // eventList.push(rowItemData);
     }
-    elemRow.appendChild(this._renderTableCell(rowData.prompt));
-    elemRow.appendChild(this._renderTableCell(rowData.response));
-    elemRow.appendChild(this._renderTableCell(rowData.confirmation));
-    elemRow.appendChild(this._renderTableCell(rowData.action.type));
-    elemRow.appendChild(this._renderRowControlCell('delete'));
-
+    
+    return eventList;
+  }
+  
+  //--------------------------------------------------------------
+  // private methods - rendering
+  //--------------------------------------------------------------
+  _renderTableRow(eventDataIndex, eventData) {
+    var elemRow = CreateElement._createElement('tr', null, this.rowClassList);
+    
+    elemRow.eventDataIndex = eventDataIndex;
+    elemRow.appendChild(this._rendeDataCell(eventData.student));
+    elemRow.appendChild(this._rendeDataCell(eventData.section));
+    elemRow.appendChild(this._rendeDataCell(eventData.enddate, eventData.override));
+    elemRow.appendChild(this._renderControlCell(eventData));
+    
     return elemRow;
   }
   
-  _renderRowControlCell(controlType) {
+  _rendeDataCell(columnData, markAsAlert) {
+    var elemCell = CreateElement._createElement('td', null, this.datacellClassList);
+    var html = columnData;
+    
+    if (markAsAlert) {
+      var icon = CreateElement.createIcon(null, this.alertIconClassList, null);
+      icon.title = 'has override';
+      html += icon.outerHTML;
+    }
+    elemCell.innerHTML = html;
+    
+    return elemCell;
+  }
+
+  _renderControlCell(eventData) {
     var elemCell = CreateElement._createElement('td', null, null);
     
-    if (controlType == 'move') {
-      var handler = (e) => { this._handleRowControl(e, 'move'); };
-      elemCell.appendChild(CreateElement.createIcon(null, 'clues-control reorder fas fa-arrow-circle-up', null, handler));
-
-    } else if (controlType == 'delete') {
-      var handler = (e) => { this._handleRowControl(e, 'delete'); };
-      elemCell.appendChild(CreateElement.createIcon(null, 'clues-control delete fas fa-trash-alt', null, handler));
+    var icon = CreateElement.createIcon(null, this.editIconClassList, null);
+    icon.title = 'add/edit override';
+    icon.addEventListener('click', (e) => { this._editItem(e); });
+    elemCell.appendChild(icon);
+    
+    if (eventData.override) {
+      icon = CreateElement.createIcon(null, this.clearIconClassList, null);
+      icon.title = 'clear override';
+      icon.addEventListener('click', (e) => { this._clearItem(e); });
+      elemCell.appendChild(icon);
     }
     
     return elemCell;
   }
   
-  _renderTableCell(columnData) {
-    var elemCell = CreateElement._createElement('td', null, 'clues-table-cell');
+  //--------------------------------------------------------------
+  // private methods - updating
+  //--------------------------------------------------------------
+  _beginEventEditing(eventIndex) {
+    console.log('_beginEventEditing');
     
-    elemCell.innerHTML = columnData;
+    this.editorEventIndex = eventIndex;
+    this._loadEventDataIntoEditor(this.eventList[this.editorEventIndex]);
     
-    elemCell.addEventListener('click', (e) => { this._handleRowEditInitiation(e); });
-    
-    return elemCell;
+    this._show('eventlist', false);
+    this._show('editor', true);
   }
-
-  //--------------------------------------------------------------
-  // updating
-  //--------------------------------------------------------------
-  update(clueList) {
-    this.clueList = [...clueList];
-    
-    UtilityKTS.removeChildren(this.elemTableBody);
-    
-    for (var i = 0; i < clueList.length; i++) {
-      var clue = clueList[i];
-      this.elemTableBody.appendChild(this._renderTableRow(clue));
+  
+  _endEventEditing(okay) {
+    console.log('_endEventEditing: ' + okay);
+    if (okay) {
+      var eventData = this.eventList[this.editorEventIndex];
+      console.log(eventData);
     }
     
-    this._config.callbackShowSaveReload(true);
-
-    UtilityKTS.setClass(this.elemTableContainer, this._config.hideClass, false);
-    UtilityKTS.setClass(this.elemEditContainer, this._config.hideClass, true);  
+    this._show('eventlist', true);
+    this._show('editor', false);
   }
   
-  getClueList() {
-    return this.clueList;
+  _loadEventDataIntoEditor(eventData) {
+    this.elemStudent.value = eventData.student;
+    this.elemSection.value = eventData.section;
+    this.elemEndDate.value = eventData.enddate;
+    this.elemNotes.value = eventData.notes;
+    console.log('_loadEventDataIntoEditor');
+    console.log(eventData);
   }
   
+  _getEventDataFromEditor() {
+    console.log('_getEventDataFromEditor');
+    
+    return 'abc';
+  }
+  
+  /*
   _initiateRowEdit(clue) {
     this.clueBeingEdited = clue;
   
@@ -216,28 +273,36 @@ class EventEditor {
     this._config.callbackClueChange();    
     this._config.callbackShowSaveReload(true);     
   }
-  
-  //--------------------------------------------------------------
-  // show/hide
-  //--------------------------------------------------------------
-  show(makeVisible) {
-    this._showTableContainer(makeVisible);
-    this._showEditContainer(false);
-
-    UtilityKTS.setClass(this._container, this._config.hideClass, !makeVisible);
-  }
-  
-  _showTableContainer(makeVisible) {
-    UtilityKTS.setClass(this._getTableContainer(), this._config.hideClass, !makeVisible);
-  }
-  
-  _showEditContainer(makeVisible) {
-    UtilityKTS.setClass(this._getEditContainer(), this._config.hideClass, !makeVisible);
-  }
-    
+  */
+      
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------  
+  _clearItem(e) {
+    var row = this._upsearchForRow(e.target);
+    if (!row) return;
+    
+    var eventData = this.eventList[row.eventDataIndex];
+    var original = eventData.original;
+    eventData = original;
+    eventData.original = original;
+    this.eventList[row.eventDataIndex] = eventData;
+    
+    this.update(this.eventList);
+  }
+  
+  _editItem(e) {  
+    var row = this._upsearchForRow(e.target);
+    if (!row) return;
+    
+    this._beginEventEditing(row.eventDataIndex);
+  }
+  
+  _handleEditEnd(okay) {
+    this._endEventEditing(okay);
+  }
+
+/*  
   _handleEditorChange(edit) {}
   
   _handleRowEditInitiation(e) {
@@ -276,8 +341,31 @@ class EventEditor {
       this._deleteClue(target.clue);
     }
   }
+  */
 
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------        
+  _upsearchForRow(startNode) {
+    var row = null;
+    
+    var node = startNode;
+    while(!row && node.parentNode != null) {
+      if (node.nodeName == 'TR') {
+        row = node;
+      } else {
+        node = node.parentNode;
+      }
+    }
+    
+    
+    return row;
+  }
+  
+  _show(containerName, showMe) {
+    var container = this._config.eventContainer;
+    if (containerName == 'editor') container = this._config.editorContainer;
+
+    UtilityKTS.setClass(container, this._config.hideClass, !showMe);
+  }  
 }

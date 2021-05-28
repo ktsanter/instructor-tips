@@ -20,5 +20,12 @@ mixin managerContainer()
         label(for="file-upload" class="uploadfile-label" title="choose enrollment report file to process") choose file...
 
   .row
-    .col-sm
-      .event-container
+    .col-sm(class="eventlist-container")
+      table(class="table table-striped table-hover table-sm")
+        thead(class="table-primary")
+          th student
+          th section
+          th end date
+          th
+
+        tbody(class="eventlist-body")

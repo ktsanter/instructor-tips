@@ -1,0 +1,31 @@
+mixin eventEditorContainer()
+  .row
+    .col-sm
+      .container-fluid      
+        .row(class="mb-3")
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-student" id="inputStudent" disabled)
+              label(for="inputStudent") student
+
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-section" id="inputSection" disabled)
+              label(for="inputSection") section
+
+        .row(class="mb-3")
+          .col-sm
+            .form-floating
+              input(type="date" class="form-control input-enddate" id="inputEndDate")
+              label(for="inputEndDate") end date
+              
+          .col-sm
+            .form-floating
+              textarea(class="form-control input-notes" id="inputNotes" maxlength="2000")
+              label(for="inputNotes") notes          
+
+        .row
+          .col-sm
+            button(class="btn btn-secondary button-editor-okay mx-2 py-1") okay
+            button(class="btn btn-secondary button-editor-cancel py-1") cancel
+            

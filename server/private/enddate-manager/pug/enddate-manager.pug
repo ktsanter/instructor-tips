@@ -7,6 +7,7 @@ include ../../common/pug/profile-mixins.pug
 include ./mixins/mixins-manager.pug
 include ./mixins/mixins-options.pug
 include ./mixins/mixins-debug.pug
+include ./mixins/mixins-eventeditor.pug
 
 doctype html
 html(lang="en")
@@ -57,6 +58,9 @@ html(lang="en")
       
       .container-fluid(class="contents-container contents-navManage hide-me disable-container")
         +managerContainer()
+
+      .container-fluid(class='eventlist-editor-container hide-me')
+        +eventEditorContainer()
 
       .container-fluid(class="contents-container contents-navOptions hide-me disable-container")
         +optionsContainer()     

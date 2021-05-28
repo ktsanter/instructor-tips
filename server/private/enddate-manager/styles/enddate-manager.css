@@ -55,6 +55,30 @@ body {
   cursor: default;
 }
 
+.contents .contents-navManage .eventlist-container {
+  margin-top: 1.0em;
+}
+
+.contents .contents-navManage .event-icon {
+  color: var(--bgPrimary);
+  cursor: pointer;
+}
+
+.contents .contents-navManage .event-alerticon {
+  margin-left: 0.4em;
+}
+
+.contents .contents-navManage .event-editicon {
+}
+
+.contents .contents-navManage .event-clearicon {
+  margin-left: 0.4em;
+}
+
+.contents .input-notes {
+  height: 16.0em;
+}
+
 /*------------------------------------------------------------------------------
  * contents - navOptions
  *------------------------------------------------------------------------------*/
