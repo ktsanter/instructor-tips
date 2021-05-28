@@ -15,6 +15,9 @@ class EventEditor {
     this.alertIconClassList = 'event-icon event-alerticon fas fa-exclamation-circle';
     this.editIconClassList = 'event-icon event-editicon fas fa-pencil-alt';
     this.clearIconClassList = 'event-icon event-clearicon fas fa-cloud-sun';
+    
+    this.sortBy = 'student';
+    this.sortDirection = 1;
   }
   
   //--------------------------------------------------------------
@@ -29,6 +32,10 @@ class EventEditor {
     console.log('EventEditor.render');
     this.tableBody = this._config.eventContainer.getElementsByTagName('tbody')[0];
     
+    this._config.eventContainer.getElementsByClassName('header-student')[0].addEventListener('click', (e) => { this._handleResort('student'); });
+    this._config.eventContainer.getElementsByClassName('header-section')[0].addEventListener('click', (e) => { this._handleResort('section'); });
+    this._config.eventContainer.getElementsByClassName('header-enddate')[0].addEventListener('click', (e) => { this._handleResort('enddate'); });
+    
     this._config.editorOkay.addEventListener('click', (e) => { this._handleEditEnd(true); });
     this._config.editorCancel.addEventListener('click', (e) => { this._handleEditEnd(false); });
     
@@ -37,13 +44,13 @@ class EventEditor {
     this.elemStudent = this._config.editorContainer.getElementsByClassName('input-student')[0];
     this.elemSection = this._config.editorContainer.getElementsByClassName('input-section')[0];
     this.elemEndDate = this._config.editorContainer.getElementsByClassName('input-enddate')[0];  
-    this.elemNotes = this._config.editorContainer.getElementsByClassName('input-notes')[0];  
+    this.elemNotes = this._config.editorContainer.getElementsByClassName('input-notes')[0];      
   }
    
   update(eventList) {
     console.log('EventEditor.update');
     
-    this.eventList = eventList;
+    this.eventList = this._sortEvents(eventList);
     UtilityKTS.removeChildren(this.tableBody);
     
     for (var i = 0; i < eventList.length; i++) {
@@ -63,19 +70,28 @@ class EventEditor {
   getEventList() {
     console.log('EventEditor.getEventList');
     
-    var eventList = [];
-    var rows = this.tableBody.getElementsByClassName(this.rowClassList);
-    for (var i = 0; i < rows.length; i++) {
-     // var rowItemData = rows[i].eventData;
-     // eventList.push(rowItemData);
-    }
-    
-    return eventList;
+    return this.eventList;
   }
   
   //--------------------------------------------------------------
   // private methods - rendering
   //--------------------------------------------------------------
+  _sortEvents(eventList) {
+    console.log('_sortEvents');
+    console.log(this.sortBy);
+    console.log(eventList);
+    
+    var sortBy = this.sortBy;
+    var sortDirection = this.sortDirection;
+    
+    var sorted = eventList.sort(function(a, b) {
+      return sortDirection * a[sortBy].localeCompare(b[sortBy]);
+    });
+    
+    return sorted;
+    
+  }
+  
   _renderTableRow(eventDataIndex, eventData) {
     var elemRow = CreateElement._createElement('tr', null, this.rowClassList);
     
@@ -92,11 +108,13 @@ class EventEditor {
     var elemCell = CreateElement._createElement('td', null, this.datacellClassList);
     var html = columnData;
     
+    /*
     if (markAsAlert) {
       var icon = CreateElement.createIcon(null, this.alertIconClassList, null);
       icon.title = 'has override';
       html += icon.outerHTML;
     }
+    */
     elemCell.innerHTML = html;
     
     return elemCell;
@@ -300,6 +318,17 @@ class EventEditor {
   
   _handleEditEnd(okay) {
     this._endEventEditing(okay);
+  }
+  
+  _handleResort(sortBy) {
+    if (sortBy == this.sortBy) {
+      this.sortDirection *= -1;
+    } else {
+      this.sortBy = sortBy;
+      this.sortDirection = 1;
+    }
+    
+    this.update(this.eventList);
   }
 
 /*  

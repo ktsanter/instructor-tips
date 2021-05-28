@@ -59,6 +59,10 @@ body {
   margin-top: 1.0em;
 }
 
+.contents .contents-navManage .header {
+  cursor: pointer;
+}
+
 .contents .contents-navManage .event-icon {
   color: var(--bgPrimary);
   cursor: pointer;
