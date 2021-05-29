@@ -6,8 +6,6 @@
 const app = function () {
 	const page = {};
   
-  const DEBUGMODE = true;
-  
   const settings = {
     hideClass: 'hide-me',
     navItemClass: 'use-handler',
@@ -29,7 +27,11 @@ const app = function () {
       objCalendar: null
     },
     
-    configuration: null,
+    configuration: {
+      calendarList: [],
+      calendarEvents: [],
+      enrollmentList: []
+    },
     
     eventLocation: 'End date manager'
   };
@@ -50,6 +52,12 @@ const app = function () {
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
     await _initializeProfile(sodium);
+    
+    var configOkay = await _loadConfiguration();
+    if (!configOkay) {
+      page.notice.setNotice('failed to load configuration');
+      return;
+    }
 
     page.notice.setNotice('');
     
@@ -118,7 +126,9 @@ const app = function () {
       eventContainer: page.navManage,
       editorContainer: page.contents.getElementsByClassName('eventlist-editor-container')[0],
       editorOkay: page.contents.getElementsByClassName('button-editor-okay')[0],
-      editorCancel: page.contents.getElementsByClassName('button-editor-cancel')[0]
+      editorCancel: page.contents.getElementsByClassName('button-editor-cancel')[0],
+      callbackEventChange: _callbackEditorEventChange,
+      callbackModeChange: _callbackEditorModeChange
     });
     settings.eventEditor.render();
 
@@ -138,7 +148,6 @@ const app = function () {
     
     page.navDebug.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
     page.navDebug.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
-    page.navDebug.getElementsByClassName('btnTestDB')[0].addEventListener('click', (e) => { _testDB(e); });
     page.navDebug.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
     page.navDebug.getElementsByClassName('btnTestEventEditor')[0].addEventListener('click', (e) => { _testEventEditorGetList(e); });
   }
@@ -175,18 +184,7 @@ const app = function () {
   function _setNavOptions() {
     var opt = settings.currentNavOption;
     
-    if (opt == 'navManage') {
-      /*
-      var enable = settings.dirtyBit[settings.currentNavOption];
-      _enableNavOption('navSave', true, enable);
-      _enableNavOption('navReload', true, enable);
-      */
-      
-    } else if (opt == 'navOptions') {
-
-    } else if (opt == 'navDebug') {
-      
-    }else if (opt == 'navProfile') {
+    if (opt == 'navProfile') {
       var enable = settings.profile.isDirty();
       _enableNavOption('navSave', true, enable);
       _enableNavOption('navReload', true, enable);
@@ -207,7 +205,6 @@ const app = function () {
   }
     
   function _setMainUIEnable(enable) {
-    console.log('_setMainUIEnable: ' + enable);
     var containers = page.contents.getElementsByClassName('contents-container');
     for (var i = 0; i < containers.length; i++) {
       if (containers[i].classList.contains('contents-navManage') ||
@@ -220,12 +217,10 @@ const app = function () {
   }
 
   function _updateUI() {
-    console.log('_updateUI');
-    
     var standarizedOverrides = _standardizeOverrides();
     var source = _getSourceSelection();
     
-    if (source == 'enddate-calender') {
+    if (source == 'enddate-calendar') {
       _updateEventUI(_standardizeCalendarEvents(), _standardizeOverrides());
       
     } else {
@@ -238,12 +233,10 @@ const app = function () {
   }
   
   function _updateEventUI(eventList, overrideList) {
-    console.log('_updateEventUI');
-        
     var reconciled = [];
     for (var i = 0; i < eventList.length; i++) {
       var item = eventList[i];
-      var original = item;
+      var original = JSON.parse(JSON.stringify(item));
       
       var overrideItem = _findMatchInList(item, overrideList);
       if (overrideItem) item = overrideItem;
@@ -265,8 +258,6 @@ const app = function () {
   }    
   
   function _showDebugResults() {
-    console.log('_showDebugResults');
-    
     var elemResults = page.navDebug.getElementsByClassName('result-container')[0];
     var msg = '';
     msg += 'calendarId: ' + settings.configuration.calendarId;
@@ -424,8 +415,6 @@ const app = function () {
   // callbacks
 	//--------------------------------------------------------------------------
   function _calendarInfoCallback(success, results) {
-    console.log('_calendarInfoCallback');
-    
     if (!success) {
       console.log('error: ' + JSON.stringify(results));
       return;
@@ -457,8 +446,6 @@ const app = function () {
   }
   
   function _eventInfoCallback(success, results) {
-    console.log('_eventInfoCallback');
-    
     if (!success) {
       console.log('error: ' + JSON.stringify(results));
       return;
@@ -478,6 +465,45 @@ const app = function () {
   function _callbackAddEndDateEvent(success, results) {
     console.log('_callbackAddEndDateEvent: ' + success);
     console.log(results);
+  }
+  
+  async function _callbackEditorEventChange(params) {
+    console.log('_callbackEditorEventChange');
+    console.log(params);
+    if (params.action == 'add') {
+      console.log('add override');
+      
+    } else if (params.action == 'update') {
+      console.log('update override: ' + params.data.overrideid);
+      
+    } else if (params.action == 'delete') {
+      console.log('delete override: ' + params.data.overrideid);
+    }
+
+    var configOkay = await _loadConfiguration();
+    if (!configOkay) {
+      page.notice.setNotice('failed to load configuration');
+      _setMainUIEnable(false);
+      return;
+    }
+    
+    var sourceSelection = _getSourceSelection();
+    
+    if (sourceSelection == 'enddate-calendar') {
+      settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
+    } else {
+      _updateUI();
+    }
+  }
+  
+  function _callbackEditorModeChange(mode) {
+    var enable = (mode != 'editing');
+    
+    var menuIds = ['navManage', 'navOptions', 'navDebug'];
+    for (var i = 0; i < menuIds.length; i++) {
+      var elem = document.getElementById(menuIds[i]);
+      UtilityKTS.setClass(elem, 'disabled', !enable);
+    }
   }
   
   //--------------------------------------------------------------------------
@@ -504,16 +530,7 @@ const app = function () {
   }
   
   async function _handleSave(e) {
-    if (settings.currentNavOption == 'navManage') {
-      console.log('_handleSave: navManage');
-      
-    } else if (settings.currentNavOption == 'navOptions') {
-      console.log('_handleSave: navOptions');
-      
-    } else if (settings.currentNavOption == 'navDebug') {
-      console.log('_handleSave: navDebug');
-      
-    } else if (settings.currentNavOption == 'navProfile') {
+    if (settings.currentNavOption == 'navProfile') {
       settings.profile.save();
     }
     
@@ -526,16 +543,7 @@ const app = function () {
       if (!confirm(msg)) return;
     }
     
-    if (settings.currentNavOption == 'navManage') {
-      console.log('_handlReload: navManage');
-      
-    } else if (settings.currentNavOption == 'navOptions') {
-      console.log('_handleReload: navOptions');
-      
-    } else if (settings.currentNavOption == 'navDebug') {
-      console.log('_handleReload: navDebug');
-      
-    } else if (settings.currentNavOption == 'navProfile') {
+    if (settings.currentNavOption == 'navProfile') {
       settings.profile.reload();
     }
     
@@ -551,18 +559,11 @@ const app = function () {
   }
   
   async function _signInChangeForGoogle(isSignedIn) {
-    console.log('_signInChangeForGoogle: isSignedIn = ' + isSignedIn);
     settings.google.isSignedIn = isSignedIn;
 
     _setMainUIEnable(false);
     
     if (isSignedIn) {    
-      var configOkay = await _loadConfiguration();
-      if (!configOkay) {
-        page.notice.setNotice('failed to load configuration');
-        return;
-      }
-
       settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
     }
 
@@ -580,7 +581,7 @@ const app = function () {
     elemFileUpload.value = null;
     elemFileUploadLabel.innerHTML = 'choose file...';
     
-    if (selection == 'enddate-calender') {
+    if (selection == 'enddate-calendar') {
       elemFileUpload.disabled = true;
       _setMainUIEnable(false);
       settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
@@ -656,6 +657,39 @@ const app = function () {
   // DB interface
   //----------------------------------------  
   async function _loadConfiguration() {
+    dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'configuration');
+
+    if (dbResult.success) {
+      var configData = dbResult.data.configuration[0];
+      var overrideData = dbResult.data.eventoverride;
+      
+      var config = JSON.parse(JSON.stringify(settings.configuration));
+      
+      config.calendarId = configData.calendarid;
+      config.emailNotificationMinutes = configData.emailnotificationminutes;
+      config.popupNotificationMinutes = configData.popupnotificationminutes;
+      
+      config.calendarList = [];
+      config.calendarEvents = [];
+      
+      config.enddateOverrides = [];
+      for (var i = 0; i < overrideData.length; i++) {
+        var item = overrideData[i];
+        config.enddateOverrides.push({
+          student: item.student,
+          section: item.section,
+          enddate: item.enddate,
+          notes: item.notes,
+          overrideid: item.eventoverrideid
+        });
+      }
+      
+      settings.configuration = config;      
+    }
+    
+    return dbResult.success;
+    
+    /*
     settings.configuration = {
       calendarId: "c_h702bj3dk5fjqjgqi8psg8q1mg@group.calendar.google.com",
       //calendarId: null,
@@ -668,6 +702,7 @@ const app = function () {
       enrollmentList: []
     }
     return true;
+    */
   }
 
   //--------------------------------------------------------------------------
@@ -703,12 +738,22 @@ const app = function () {
     // hack due to time zone problems
     return date.toString().slice(0,10);
   }
+  
+  function _getSourceSelection() {
+    var sourceSelection = null;
+    
+    var elems = page.navManage.getElementsByClassName('enddate-option');
+    for (var i = 0; i < elems.length && !sourceSelection; i++) {
+      var item = elems[i];
+      if (item.checked) sourceSelection = item.id;
+    }
+    return sourceSelection;
+  }
 
   //--------------------------------------------------------------------------
   // test stuff
 	//--------------------------------------------------------------------------  
   function _testAddEvent(e) {
-    console.log('_testAddEvent');
     var elemCalendar = page.navDebug.getElementsByClassName('calendar-selection')[0];
     var calendarId = settings.configuration.calendarId;
     var eventDay = Math.floor(Math.random() * (30 - 26) + 26);
@@ -752,14 +797,7 @@ const app = function () {
     };
     _removeEndDateEvent(params);    
   }
-      
-  async function _testDB(e) {
-    console.log('test DB');
-    dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'test');
-
-    console.log(dbResult);
-  }
-  
+        
   function _testEventEditorGetList(e) {
     console.log(settings.eventEditor.getEventList());
   }

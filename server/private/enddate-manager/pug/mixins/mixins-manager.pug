@@ -1,16 +1,13 @@
 mixin managerContainer()
   .row
-    .col-sm: strong Manage
-
-  .row
     .col-sm
-      .section-label source of end dates
+      .section-label: strong source of end dates
       
   .row
     .col-sm
       .form-check
-        input(class="form-check-input enddate-option" type="radio" name="enddate-source" id="enddate-calender" checked)
-        label(class="form-check-label" for="enddate-calender") calendar
+        input(class="form-check-input enddate-option" type="radio" name="enddate-source" id="enddate-calendar" checked)
+        label(class="form-check-label" for="enddate-calendar") calendar
         
       .form-check
         input(class="form-check-input enddate-option" type="radio" name="enddate-source" id="enddate-enrollment")

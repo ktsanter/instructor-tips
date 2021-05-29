@@ -5,7 +5,6 @@
 //-------------------------------------------------------------------
 class EventEditor {
   constructor(config) {
-    console.log('EventEditor.constructor');
     this._config = config;  
     
     this.rowClassList = 'eventlist-row';
@@ -29,7 +28,6 @@ class EventEditor {
   }
   
   render() { 
-    console.log('EventEditor.render');
     this.tableBody = this._config.eventContainer.getElementsByTagName('tbody')[0];
     
     this._config.eventContainer.getElementsByClassName('header-student')[0].addEventListener('click', (e) => { this._handleResort('student'); });
@@ -48,14 +46,11 @@ class EventEditor {
   }
    
   update(eventList) {
-    console.log('EventEditor.update');
-    
     this.eventList = this._sortEvents(eventList);
     UtilityKTS.removeChildren(this.tableBody);
     
     for (var i = 0; i < eventList.length; i++) {
       var item = eventList[i];
-      //console.log(item);
       this.tableBody.appendChild(this._renderTableRow(i, item));
     }  
 
@@ -77,10 +72,6 @@ class EventEditor {
   // private methods - rendering
   //--------------------------------------------------------------
   _sortEvents(eventList) {
-    console.log('_sortEvents');
-    console.log(this.sortBy);
-    console.log(eventList);
-    
     var sortBy = this.sortBy;
     var sortDirection = this.sortDirection;
     
@@ -108,13 +99,6 @@ class EventEditor {
     var elemCell = CreateElement._createElement('td', null, this.datacellClassList);
     var html = columnData;
     
-    /*
-    if (markAsAlert) {
-      var icon = CreateElement.createIcon(null, this.alertIconClassList, null);
-      icon.title = 'has override';
-      html += icon.outerHTML;
-    }
-    */
     elemCell.innerHTML = html;
     
     return elemCell;
@@ -141,25 +125,44 @@ class EventEditor {
   //--------------------------------------------------------------
   // private methods - updating
   //--------------------------------------------------------------
+  async _removeOverride(eventIndex) {
+    var eventData = this.eventList[eventIndex];
+    var original = eventData.original;
+    eventData = original;
+    eventData.original = original;
+    
+    await this._config.callbackEventChange({action: 'delete', data: eventData});
+  }
+  
   _beginEventEditing(eventIndex) {
-    console.log('_beginEventEditing');
+    this._config.callbackModeChange('editing');
     
     this.editorEventIndex = eventIndex;
     this._loadEventDataIntoEditor(this.eventList[this.editorEventIndex]);
+    console.log(this.eventList[this.editorEventIndex]);
     
     this._show('eventlist', false);
     this._show('editor', true);
   }
   
-  _endEventEditing(okay) {
-    console.log('_endEventEditing: ' + okay);
+  async _endEventEditing(okay) {
     if (okay) {
+      var editedData = this._getEventDataFromEditor();
       var eventData = this.eventList[this.editorEventIndex];
       console.log(eventData);
+
+      var changeAction = eventData.override ? 'update' : 'add';
+      eventData.override = true;
+      eventData.enddate = editedData.enddate;
+      eventData.notes = editedData.notes;
+      
+      await this._config.callbackEventChange({action: changeAction, data: eventData});
     }
+        
     
     this._show('eventlist', true);
     this._show('editor', false);
+    this._config.callbackModeChange('not editing');
   }
   
   _loadEventDataIntoEditor(eventData) {
@@ -167,131 +170,14 @@ class EventEditor {
     this.elemSection.value = eventData.section;
     this.elemEndDate.value = eventData.enddate;
     this.elemNotes.value = eventData.notes;
-    console.log('_loadEventDataIntoEditor');
-    console.log(eventData);
   }
   
   _getEventDataFromEditor() {
-    console.log('_getEventDataFromEditor');
-    
-    return 'abc';
+    return {
+      enddate: this.elemEndDate.value,
+      notes: this.elemNotes.value
+    };
   }
-  
-  /*
-  _initiateRowEdit(clue) {
-    this.clueBeingEdited = clue;
-  
-    this.elemPrompt.value = clue.prompt;
-    this.elemResponse.value = clue.response;
-    this.elemConfirmation.value = clue.confirmation;
-    
-    this.elemActionSelect.value = clue.action.type;
-    this.elemActionSearchFor.value = clue.action.searchfor;
-    this.elemActionURL.value = clue.action.target;
-    this.elemActionEffectSelect.value = clue.action.effecttype;
-    this.elemActionEffectMessage.value = clue.action.message;
-    
-    this.elemActionSelect.dispatchEvent(new Event("change"));
-
-    this._config.callbackShowSaveReload(false);
-    UtilityKTS.setClass(this.elemTableContainer, this._config.hideClass, true);
-    UtilityKTS.setClass(this.elemEditContainer, this._config.hideClass, false);
-  }
-  
-  _endRowEdit(saveChanges) {
-    if (saveChanges) {
-      var updatedClue = {...this.clueBeingEdited};
-
-      updatedClue.prompt = this.elemPrompt.value;
-      updatedClue.response = this.elemResponse.value;
-      updatedClue.confirmation = this.elemConfirmation.value;
-      
-      updatedClue.action = {
-        type: this.elemActionSelect.value,
-        searchfor: this.elemActionSearchFor.value,
-        target: this.elemActionURL.value,
-        effecttype: this.elemActionEffectSelect.value,
-        message: this.elemActionEffectMessage.value
-      };
-
-      this._updateTableRow(updatedClue);
-      this._config.callbackClueChange();
-    }
-    
-    this._config.callbackShowSaveReload(true);
-    
-    UtilityKTS.setClass(this.elemTableContainer, this._config.hideClass, false);
-    UtilityKTS.setClass(this.elemEditContainer, this._config.hideClass, true);  
-  }
-  
-  _updateTableRow(updatedClue) {
-    var foundClueIndex = null;
-    for (var i = 0; i < this.clueList.length && !foundClueIndex; i++) {
-      if (this.clueList[i].clueid == updatedClue.clueid) foundClueIndex = i; 
-    }
-
-    if (foundClueIndex != null) {
-      var updatedClueList = [...this.clueList];
-      updatedClueList[foundClueIndex] = updatedClue;
-      this.update(updatedClueList);
-    }  
-  }
-  
-  _addClue() {
-    var updatedClueList = [...this.clueList];
-
-    var clueNumber = updatedClueList.length + 1;
-    var clueId = 'tempid' + clueNumber;
-
-    updatedClueList.push({
-      clueid: clueId,
-      number: clueNumber,
-      prompt: 'default prompt',
-      response: 'default response',
-      confirmation: 'default confirmation',
-      action: {
-        type: 'none',
-        effecttype: '',
-        target: '',
-        message: '',
-        searchfor: ''
-      }
-    });
-      
-    this.update(updatedClueList);
-    this._config.callbackClueChange();    
-    this._config.callbackShowSaveReload(true);      
-  }
-  
-  _deleteClue(clue) {
-    var clueIndex = clue.number - 1;
-    var updatedClueList = [...this.clueList];
-    updatedClueList.splice(clueIndex, 1);
-    
-    for (var i = 0; i < updatedClueList.length; i++) {
-      updatedClueList[i].number = (i + 1);
-    }
-    
-    this.update(updatedClueList);
-    this._config.callbackClueChange();    
-    this._config.callbackShowSaveReload(true);      
-  }
-  
-  _moveClueUp(clue) {
-    var clueIndex = clue.number - 1;
-    
-    this.clueList[clueIndex].number--;
-    this.clueList[clueIndex - 1].number++;
-    
-    this.clueList = this.clueList.sort( function(a, b) {
-      return (a.number - b.number);
-    });
-    
-    this.update(this.clueList);
-    this._config.callbackClueChange();    
-    this._config.callbackShowSaveReload(true);     
-  }
-  */
       
   //--------------------------------------------------------------
   // handlers
@@ -300,13 +186,7 @@ class EventEditor {
     var row = this._upsearchForRow(e.target);
     if (!row) return;
     
-    var eventData = this.eventList[row.eventDataIndex];
-    var original = eventData.original;
-    eventData = original;
-    eventData.original = original;
-    this.eventList[row.eventDataIndex] = eventData;
-    
-    this.update(this.eventList);
+    this._removeOverride(row.eventDataIndex);    
   }
   
   _editItem(e) {  
@@ -330,47 +210,6 @@ class EventEditor {
     
     this.update(this.eventList);
   }
-
-/*  
-  _handleEditorChange(edit) {}
-  
-  _handleRowEditInitiation(e) {
-    var target = e.target;
-    while (!target.classList.contains('clues-table-row')) {
-      target = target.parentNode;
-    }
-
-    this._initiateRowEdit({...target.clue});
-  }
-  
-  _handleRowEditEnd(saveChanges) {
-    this._endRowEdit(saveChanges);
-  }
-  
-  _handleActionChange(e) {
-    var action = this.elemActionSelect.value;
-    UtilityKTS.setClass(this.elemActionSearchFor.parentNode, this._config.hideClass, action != 'google_search');
-    UtilityKTS.setClass(this.elemActionURL.parentNode, this._config.hideClass, action != 'url');
-    UtilityKTS.setClass(this.elemActionEffectSelect.parentNode, this._config.hideClass, action != 'effect');
-    UtilityKTS.setClass(this.elemActionEffectMessage.parentNode, this._config.hideClass, action != 'effect');
-  }
-
-  _handleRowAdd(e) {
-    this._addClue();
-  }
-  
-  _handleRowControl(e, controlType) {
-    var target = e.target;
-    while (!target.classList.contains('clues-table-row')) {
-      target = target.parentNode;
-    }
-    if (controlType == 'move') {
-      this._moveClueUp(target.clue);
-    } else {
-      this._deleteClue(target.clue);
-    }
-  }
-  */
 
   //--------------------------------------------------------------
   // utility

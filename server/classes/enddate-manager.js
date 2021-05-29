@@ -31,12 +31,9 @@ module.exports = internal.EndDateManager = class {
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
 
-    if (params.queryName == 'test') {
-      dbResult = await this._getTest(params, postData, userInfo);
-            
-    } else if (params.queryName == 'faqsetlist') {
-      dbResult = await this._getFAQsetList(params, postData, userInfo);
-            
+    if (params.queryName == 'configuration') {
+      dbResult = await this._getConfiguration(params, postData, userInfo);
+     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -47,7 +44,7 @@ module.exports = internal.EndDateManager = class {
   async doInsert(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'faqset') {
+    if (params.queryName == 'dummy') {
       dbResult = await this._insertFAQSet(params, postData, userInfo);
   
     } else {
@@ -60,12 +57,9 @@ module.exports = internal.EndDateManager = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'hierarchy') {
+    if (params.queryName == 'dummy') {
       dbResult = await this._updateHierarchy(params, postData, userInfo);
-    
-    } else if (params.queryName == 'faqset') {
-      dbResult = await this._updateFAQset(params, postData, userInfo);
-    
+
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -76,7 +70,7 @@ module.exports = internal.EndDateManager = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'faqset') {
+    if (params.queryName == 'dummy') {
       dbResult = await this._deleteFAQset(params, postData, userInfo);
     
     } else {
@@ -132,24 +126,57 @@ module.exports = internal.EndDateManager = class {
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
-  async _getTest(params, postData, userInfo) {
+  async _getConfiguration(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
     var query, queryResults;
     
     query = 
-      'select ' +
-        'a.testid, a.someval ' +
-      'from test as a ' +
+      'select a.configurationid ' +
+      'from configuration as a ' +
       'where userid = ' + userInfo.userId;
       
     queryResults = await this._dbManager.dbQuery(query);   
-
+    
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
     }
     
+    var configurationId;
+    
+    if (queryResults.data.length == 0) {
+      query = 'call add_default_configuration(' + userInfo.userId + ')';
+      
+      console.log(query);
+      queryResults = await this._dbManager.dbQuery(query);
+      
+      if (!queryResults.success) {
+        result.details = queryResult.details;
+        return result;
+      }
+      configurationId = queryResults.data[0][0].configurationid;
+      
+    } else {
+      configurationId = queryResults.data[0].configurationid;
+    }
+    
+    var queryList = {
+      'configuration': 
+        'select ' +
+          'a.calendarid, a.emailnotificationminutes, a.popupnotificationminutes ' +
+        'from configuration as a ' +
+        'where configurationid = ' + configurationId,
+        
+      'eventoverride': 
+        'select ' +
+          'a.eventoverrideid, a.student, a.section, a.enddate, a.notes ' +
+        'from eventoverride as a ' +
+        'where a.configurationid = ' + configurationId
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);   
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
