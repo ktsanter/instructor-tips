@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
-  
+//calendarId: "c_h702bj3dk5fjqjgqi8psg8q1mg@group.calendar.google.com"  
   const settings = {
     hideClass: 'hide-me',
     navItemClass: 'use-handler',
@@ -67,6 +67,7 @@ const app = function () {
     _initializeGoogleStuff();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    console.log('TODO; add original enrollment end date to calendar posting data');
   }
   
   async function _initializeProfile(sodium) {
@@ -470,16 +471,28 @@ const app = function () {
   async function _callbackEditorEventChange(params) {
     console.log('_callbackEditorEventChange');
     console.log(params);
+    
+    var queryType = null;
     if (params.action == 'add') {
-      console.log('add override');
+      queryType = 'insert';
       
     } else if (params.action == 'update') {
-      console.log('update override: ' + params.data.overrideid);
+      queryType = 'update';
       
     } else if (params.action == 'delete') {
-      console.log('delete override: ' + params.data.overrideid);
+      console.log('TODO: figure out how to get original enrollment end date for calender events');
+      queryType = 'delete';
     }
-
+    
+    if (queryType) {
+      console.log('queryType: ' + queryType);
+      dbResult = await SQLDBInterface.doPostQuery('enddate-manager/' + queryType, 'eventoverride', params.data);
+      console.log(dbResult);
+      await _reloadConfigurationAndEvents();
+    }
+  }
+  
+  async function _reloadConfigurationAndEvents() {
     var configOkay = await _loadConfiguration();
     if (!configOkay) {
       page.notice.setNotice('failed to load configuration');
@@ -488,6 +501,8 @@ const app = function () {
     }
     
     var sourceSelection = _getSourceSelection();
+    
+    console.log('_reloadConfigurationAndEvents: ' + sourceSelection);
     
     if (sourceSelection == 'enddate-calendar') {
       settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
@@ -688,21 +703,6 @@ const app = function () {
     }
     
     return dbResult.success;
-    
-    /*
-    settings.configuration = {
-      calendarId: "c_h702bj3dk5fjqjgqi8psg8q1mg@group.calendar.google.com",
-      //calendarId: null,
-      calendarList: [],
-      enddateOverrides: [
-        {"student": "Took, Peregrin", section: "Arithmancy", enddate: "2021-07-04", notes: "some reason", overrideid: 100},
-        {"student": "Holmes, Sherlock", section: "Fingerprinting 101", enddate: "2021-07-04", notes: "some reason", overrideid: 100},
-        {"student": "Watson, John", section: "Creative Writing", enddate: "2021-07-05", notes: "an important reason", overrideid: 101},
-      ],
-      enrollmentList: []
-    }
-    return true;
-    */
   }
 
   //--------------------------------------------------------------------------

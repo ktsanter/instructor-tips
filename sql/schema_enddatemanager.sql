@@ -21,6 +21,7 @@ create table configuration
   popupnotificationminutes      int unsigned not null,
   
   primary key (configurationid),
+  constraint unique(userid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
 );
 
@@ -34,6 +35,7 @@ create table eventoverride
   notes                  varchar(1000) not null,
   
   primary key (eventoverrideid),
+  constraint unique(configurationid, student, section),
   constraint foreign key (configurationid) references configuration (configurationid) on delete cascade
 );
 

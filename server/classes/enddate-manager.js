@@ -44,8 +44,8 @@ module.exports = internal.EndDateManager = class {
   async doInsert(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._insertFAQSet(params, postData, userInfo);
+    if (params.queryName == 'eventoverride') {
+      dbResult = await this._insertEventOverride(params, postData, userInfo);
   
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -57,8 +57,8 @@ module.exports = internal.EndDateManager = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._updateHierarchy(params, postData, userInfo);
+    if (params.queryName == 'eventoverride') {
+      dbResult = await this._updateEventOverride(params, postData, userInfo);
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -131,34 +131,19 @@ module.exports = internal.EndDateManager = class {
     
     var query, queryResults;
     
-    query = 
-      'select a.configurationid ' +
-      'from configuration as a ' +
-      'where userid = ' + userInfo.userId;
-      
-    queryResults = await this._dbManager.dbQuery(query);   
+    var configurationId = await this._getConfigurationIdForUser(userInfo);
     
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
-    
-    var configurationId;
-    
-    if (queryResults.data.length == 0) {
+    if (!configurationId) {
       query = 'call add_default_configuration(' + userInfo.userId + ')';
       
-      console.log(query);
       queryResults = await this._dbManager.dbQuery(query);
       
       if (!queryResults.success) {
         result.details = queryResult.details;
         return result;
       }
-      configurationId = queryResults.data[0][0].configurationid;
       
-    } else {
-      configurationId = queryResults.data[0].configurationid;
+      configurationId = queryResults.data[0][0].configurationid;
     }
     
     var queryList = {
@@ -187,6 +172,81 @@ module.exports = internal.EndDateManager = class {
     }
 
     return result;
+  }
+  
+  async _insertEventOverride(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var query, queryResults;
+    
+    var configurationId = await this._getConfigurationIdForUser(userInfo);
+    if (!configurationId) return result;
+    
+    query = 
+      'insert into eventoverride(' +
+        'configurationid, student, section, enddate, notes' +
+       ') values (' +
+         configurationId + ', ' +
+         '"' + postData.student + '", ' +
+         '"' + postData.section + '", ' +
+         '"' + postData.enddate + '", ' +
+         '"' + postData.notes + '"' +
+       ')';
+       
+    console.log(query);
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      
+    } else {
+      result.details = queryResults.details;
+    }    
+    
+    return result;
+  }  
+
+  async _updateEventOverride(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var query, queryResults;
+    
+    var configurationId = await this._getConfigurationIdForUser(userInfo);
+    if (!configurationId) return result;
+    
+    query = 
+      'update eventoverride set ' +
+        'enddate="' + postData.enddate + '", ' +
+        'notes="' + postData.notes + '" ' +
+      'where eventoverrideid=' + postData.overrideid;
+       
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      
+    } else {
+      result.details = queryResults.details;
+    }    
+    
+    return result;
+  }  
+
+//---------------------------------------------------------------
+// support queries
+//--------------------------------------------------------------- 
+  async _getConfigurationIdForUser(userInfo) {
+    var query, queryResults;
+    
+    query = 
+      'select a.configurationid ' +
+      'from configuration as a ' +
+      'where userid = ' + userInfo.userId;
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+    
+    if (!queryResults.success || queryResults.data.length == 0) return null;
+    return queryResults.data[0].configurationid;
   }
 
 //---------------------------------------------------------------

@@ -127,9 +127,6 @@ class EventEditor {
   //--------------------------------------------------------------
   async _removeOverride(eventIndex) {
     var eventData = this.eventList[eventIndex];
-    var original = eventData.original;
-    eventData = original;
-    eventData.original = original;
     
     await this._config.callbackEventChange({action: 'delete', data: eventData});
   }
@@ -139,7 +136,6 @@ class EventEditor {
     
     this.editorEventIndex = eventIndex;
     this._loadEventDataIntoEditor(this.eventList[this.editorEventIndex]);
-    console.log(this.eventList[this.editorEventIndex]);
     
     this._show('eventlist', false);
     this._show('editor', true);
@@ -149,7 +145,6 @@ class EventEditor {
     if (okay) {
       var editedData = this._getEventDataFromEditor();
       var eventData = this.eventList[this.editorEventIndex];
-      console.log(eventData);
 
       var changeAction = eventData.override ? 'update' : 'add';
       eventData.override = true;
