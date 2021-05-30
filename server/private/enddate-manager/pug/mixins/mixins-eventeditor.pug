@@ -24,8 +24,16 @@ mixin eventEditorContainer()
               textarea(class="form-control input-notes" id="inputNotes" maxlength="2000")
               label(for="inputNotes") notes          
 
+        .row(class="mb-3")
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control input-enrollmentenddate" id="inputEnrollmentEndDate" disabled)
+              label(for="inputEnrollmentEndDate") enrollment end date
+              
+          .col-sm
+            div
+
         .row
           .col-sm
             button(class="btn btn-secondary button-editor-okay mx-2 py-1") okay
             button(class="btn btn-secondary button-editor-cancel py-1") cancel
-            

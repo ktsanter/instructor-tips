@@ -43,6 +43,7 @@ class EventEditor {
     this.elemSection = this._config.editorContainer.getElementsByClassName('input-section')[0];
     this.elemEndDate = this._config.editorContainer.getElementsByClassName('input-enddate')[0];  
     this.elemNotes = this._config.editorContainer.getElementsByClassName('input-notes')[0];      
+    this.elemEnrollmentEndDate = this._config.editorContainer.getElementsByClassName('input-enrollmentenddate')[0];
   }
    
   update(eventList) {
@@ -62,10 +63,14 @@ class EventEditor {
     UtilityKTS.removeChildren(this.tableBody);
   }
     
-  getEventList() {
-    console.log('EventEditor.getEventList');
+  getEventList(eventId) {
+    var list = [];
+    for (var i = 0; i < this.eventList.length; i++) {
+      var item = this.eventList[i];
+      if (eventId == null || eventId == item.eventid) list.push(item);
+    }
     
-    return this.eventList;
+    return list;
   }
   
   //--------------------------------------------------------------
@@ -165,6 +170,7 @@ class EventEditor {
     this.elemSection.value = eventData.section;
     this.elemEndDate.value = eventData.enddate;
     this.elemNotes.value = eventData.notes;
+    this.elemEnrollmentEndDate.value = eventData.enrollmentenddate;
   }
   
   _getEventDataFromEditor() {

@@ -6,16 +6,18 @@ mixin managerContainer()
   .row
     .col-sm
       .form-check
-        input(class="form-check-input enddate-option" type="radio" name="enddate-source" id="enddate-calendar" checked)
-        label(class="form-check-label" for="enddate-calendar") calendar
-        
-      .form-check
         input(class="form-check-input enddate-option" type="radio" name="enddate-source" id="enddate-enrollment")
         label(class="form-check-label" for="enddate-enrollment") enrollment report
 
         input(type="file" class="uploadfile" id="file-upload" accept=".xlsx" disabled)
         label(for="file-upload" class="uploadfile-label" title="choose enrollment report file to process") choose file...
-
+          
+  .row
+    .col-sm
+      .form-check
+        input(class="form-check-input enddate-option" type="radio" name="enddate-source" id="enddate-calendar" checked)
+        label(class="form-check-label" for="enddate-calendar") calendar
+        
   .row
     .col-sm(class="eventlist-container")
       table(class="table table-striped table-hover table-sm")

@@ -70,8 +70,8 @@ module.exports = internal.EndDateManager = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._deleteFAQset(params, postData, userInfo);
+    if (params.queryName == 'eventoverride') {
+      dbResult = await this._deleteEventOverride(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -192,7 +192,6 @@ module.exports = internal.EndDateManager = class {
          '"' + postData.notes + '"' +
        ')';
        
-    console.log(query);
     queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {
@@ -217,6 +216,30 @@ module.exports = internal.EndDateManager = class {
       'update eventoverride set ' +
         'enddate="' + postData.enddate + '", ' +
         'notes="' + postData.notes + '" ' +
+      'where eventoverrideid=' + postData.overrideid;
+       
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      
+    } else {
+      result.details = queryResults.details;
+    }    
+    
+    return result;
+  }  
+
+  async _deleteEventOverride(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var query, queryResults;
+    
+    var configurationId = await this._getConfigurationIdForUser(userInfo);
+    if (!configurationId) return result;
+    
+    query = 
+      'delete from eventoverride ' +
       'where eventoverrideid=' + postData.overrideid;
        
     queryResults = await this._dbManager.dbQuery(query);

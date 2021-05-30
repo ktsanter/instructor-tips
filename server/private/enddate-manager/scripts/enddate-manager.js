@@ -67,7 +67,6 @@ const app = function () {
     _initializeGoogleStuff();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
-    console.log('TODO; add original enrollment end date to calendar posting data');
   }
   
   async function _initializeProfile(sodium) {
@@ -240,7 +239,14 @@ const app = function () {
       var original = JSON.parse(JSON.stringify(item));
       
       var overrideItem = _findMatchInList(item, overrideList);
-      if (overrideItem) item = overrideItem;
+      if (overrideItem) {
+        var enrollmentEndDate = item.enrollmentenddate;
+        var eventId = item.eventid;
+        item = JSON.parse(JSON.stringify(overrideItem));
+        item.enrollmentenddate = enrollmentEndDate;
+        item.eventid = eventId;
+      }
+        
       item.original = original;
       reconciled.push(item);
     }
@@ -309,17 +315,20 @@ const app = function () {
 
     for (var i = 0; i < settings.configuration.calendarEvents.length; i++) {
       var item = settings.configuration.calendarEvents[i];
+
       for (var j = 0; j < item.studentList.length; j++) {
         var subItem = item.studentList[j];
         var standardizedItem = {
+          "eventid": item.eventid,
           "enddate": item.enddate,
+          "enrollmentenddate": subItem.enrollmentenddate,
           "student": subItem.student,
           "section": subItem.section,
           "notes": '',
           "override": false,
           "overrideid": null
         }
-        
+
         standardized.push(standardizedItem);
       }
     }
@@ -334,6 +343,7 @@ const app = function () {
       var item = settings.configuration.enddateOverrides[i];
         var standardizedItem = {
           "enddate": item.enddate,
+          "enrollmentenddate": null,
           "student": item.student,
           "section": item.section,
           "notes": item.notes,
@@ -354,6 +364,7 @@ const app = function () {
       var item = settings.configuration.enrollmentList[i];
       var standardizedItem = {
         "enddate": _formatAsShortDate(item.enddate),
+        "enrollmentenddate": null,
         "student": item.student,
         "section": item.section,
         "notes": '',
@@ -386,7 +397,7 @@ const app = function () {
     var description = 'Term end date scheduled for:';
     for (var i = 0; i < params.enrollments.length; i++) {
       var item = params.enrollments[i];
-      description += '\n' + item.studentLast + ', ' + item.studentFirst + ' (' + item.section + ')';
+      description += '\n' + item.studentLast + ', ' + item.studentFirst + ' (' + item.section + ') original end date: ' + item.originalEndDate;
     }
 
     settings.google.objCalendar.addAllDayEvent({
@@ -410,6 +421,41 @@ const app = function () {
       "calendarId": params.calendarId,
       "eventId": params.eventId
     });    
+  }
+  
+  async function _reloadConfigurationAndEvents() {
+    var configOkay = await _loadConfiguration();
+    if (!configOkay) {
+      page.notice.setNotice('failed to load configuration');
+      _setMainUIEnable(false);
+      return;
+    }
+    
+    var sourceSelection = _getSourceSelection();
+    
+    console.log('_reloadConfigurationAndEvents: ' + sourceSelection);
+    
+    if (sourceSelection == 'enddate-calendar') {
+      settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
+    } else {
+      _updateUI();
+    }
+  }  
+  
+  async function _replaceEvent(eventId, changedItem) {
+    console.log('_replaceEvent');
+    
+    console.log('remove event: ' + eventId);
+    var currentCalendarEvents = settings.eventEditor.getEventList(eventId);
+    var newCalendarEvents = [];
+    for (var i = 0; i < currentCalendarEvents.length; i++) {
+      var item = currentCalendarEvents[i];
+      if (item.student == changedItem.student && item.section == changedItem.section) {
+        console.log('restore enrollment date: ' + JSON.stringify(item))
+      } else {
+        console.log('remake: ' + JSON.stringify(item))
+      }
+    }      
   }
     
   //--------------------------------------------------------------------------
@@ -469,9 +515,6 @@ const app = function () {
   }
   
   async function _callbackEditorEventChange(params) {
-    console.log('_callbackEditorEventChange');
-    console.log(params);
-    
     var queryType = null;
     if (params.action == 'add') {
       queryType = 'insert';
@@ -480,34 +523,18 @@ const app = function () {
       queryType = 'update';
       
     } else if (params.action == 'delete') {
-      console.log('TODO: figure out how to get original enrollment end date for calender events');
-      queryType = 'delete';
+      _replaceEvent(params.data.eventid, params.data);
+      //queryType = 'delete';
     }
     
     if (queryType) {
-      console.log('queryType: ' + queryType);
       dbResult = await SQLDBInterface.doPostQuery('enddate-manager/' + queryType, 'eventoverride', params.data);
-      console.log(dbResult);
-      await _reloadConfigurationAndEvents();
-    }
-  }
-  
-  async function _reloadConfigurationAndEvents() {
-    var configOkay = await _loadConfiguration();
-    if (!configOkay) {
-      page.notice.setNotice('failed to load configuration');
-      _setMainUIEnable(false);
-      return;
-    }
-    
-    var sourceSelection = _getSourceSelection();
-    
-    console.log('_reloadConfigurationAndEvents: ' + sourceSelection);
-    
-    if (sourceSelection == 'enddate-calendar') {
-      settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
-    } else {
-      _updateUI();
+      if (!dbResult.success) {
+        page.setNotice('event update failed');
+        console.log(dbResult.details);
+      } else {
+        await _reloadConfigurationAndEvents();
+      }
     }
   }
   
@@ -717,7 +744,8 @@ const app = function () {
   function _parseCalendarEvent(item) {
     var parsedItem = {};
     parsedItem.original = item;
-    parsedItem.enddate = item.end.date;
+    parsedItem.enddate = item.start.date;
+    parsedItem.eventid = item.id;
     
     var descriptionLines = item.description.split('\n');
     
@@ -725,8 +753,12 @@ const app = function () {
     for (var i = 1; i < descriptionLines.length; i++) {
       var parsedLine = descriptionLines[i].split('(');
       var student = parsedLine[0].trim();
-      var section = parsedLine[1].slice(0, -1);
-      studentList.push({"student": student, "section": section, "enddate": item.end.date});
+      
+      var delimiter1 = parsedLine[1].indexOf(')');
+      var delimiter2 = parsedLine[1].indexOf('original end date:') + 'original end date: '.length;
+      var section = parsedLine[1].slice(0, delimiter1).trim();
+      var enrollmentEndDate = parsedLine[1].slice(delimiter2).trim();
+      studentList.push({"student": student, "section": section, "enddate": item.end.date, "enrollmentenddate": enrollmentEndDate});
     }
 
     parsedItem.studentList = studentList;
@@ -759,15 +791,15 @@ const app = function () {
     var eventDay = Math.floor(Math.random() * (30 - 26) + 26);
     
     var studentList = [
-      {studentLast: "Smith", studentFirst: "Bob", section: "Basic Web Design"},
-      {studentLast: "Doe", studentFirst: "Jane",  section: "Java Programming A"},
-      {studentLast: "Weasley", studentFirst: "Fred",  section: "Potions"},
-      {studentLast: "Longbottom", studentFirst: "Neville",  section: "Herbology"},
-      {studentLast: "Granger", studentFirst: "Hermione", section: "Arithmancy"},
-      {studentLast: "Potter", studentFirst: "Harry", section: "Defense Against the Dark Arts"},
-      {studentLast: "Malfoy", studentFirst: "Draco", section: "Intro to Skullduggery"},
-      {studentLast: "Ahab", studentFirst: "Trevor", section: "Whaling 101"},
-      {studentLast: "Baggins", studentFirst: "Frodo", section: "Unmaking Rings"}
+      {studentLast: "Ahab", studentFirst: "Trevor", section: "Whaling 101", originalEndDate: '2021-09-01'},
+      {studentLast: "Baggins", studentFirst: "Frodo", section: "Unmaking Rings", originalEndDate: '2021-09-02'},
+      {studentLast: "Longbottom", studentFirst: "Neville",  section: "Herbology", originalEndDate: '2021-09-03'},
+      {studentLast: "Granger", studentFirst: "Hermione", section: "Arithmancy", originalEndDate: '2021-09-04'},
+      {studentLast: "Potter", studentFirst: "Harry", section: "Defense Against the Dark Arts", originalEndDate: '2021-09-05'},
+      {studentLast: "Malfoy", studentFirst: "Draco", section: "Intro to Skullduggery", originalEndDate: '2021-09-06'},
+      {studentLast: "Smith", studentFirst: "Bob", section: "Basic Web Design", originalEndDate: '2021-09-07'},
+      {studentLast: "Doe", studentFirst: "Jane",  section: "Java Programming A", originalEndDate: '2021-09-08'},
+      {studentLast: "Weasley", studentFirst: "Fred",  section: "Potions", originalEndDate: '2021-09-09'}
     ];
     
     var numEnrollments = Math.floor(Math.random() * (5 - 1) + 1);
@@ -776,7 +808,7 @@ const app = function () {
 
     var params = {
       "calendarId": calendarId,
-      "date": '2021-05-' + eventDay,
+      "date": '2021-06-' + eventDay,
       "enrollments": enrollmentList,
       "reminders": [
         {method: 'email', minutes: 6 * 60},
