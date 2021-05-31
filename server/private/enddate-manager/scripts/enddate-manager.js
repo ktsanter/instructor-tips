@@ -147,6 +147,7 @@ const app = function () {
     page.navDebug = page.contents.getElementsByClassName('contents-navDebug')[0];
     
     page.navDebug.getElementsByClassName('btnAddEvent')[0].addEventListener('click', (e) => { _testAddEvent(e); });
+    page.navDebug.getElementsByClassName('btnBatchAddEvent')[0].addEventListener('click', (e) => { _testBatchAddEvent(e); });
     page.navDebug.getElementsByClassName('btnDeleteEvent')[0].addEventListener('click', (e) => { _testDeleteEvent(e); });
     page.navDebug.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
     page.navDebug.getElementsByClassName('btnTestEventEditor')[0].addEventListener('click', (e) => { _testEventEditorGetList(e); });
@@ -393,34 +394,33 @@ const app = function () {
     }
   }
 
-  function _addEndDateEvent(params) {
+  async function _addEndDateEventToCalendar(params) {
     var description = 'Term end date scheduled for:';
     for (var i = 0; i < params.enrollments.length; i++) {
       var item = params.enrollments[i];
       description += '\n' + item.studentLast + ', ' + item.studentFirst + ' (' + item.section + ') original end date: ' + item.originalEndDate;
     }
 
-    settings.google.objCalendar.addAllDayEvent({
+    var result = await settings.google.objCalendar.addEvent({
         "calendarId": params.calendarId,
         "date": params.date,
         "summary": "End date",
         "description": description,
         "location": settings.eventLocation,
         "reminders": params.reminders
-      },
-      _callbackAddEndDateEvent
+      }
     );
+    
+    console.log(result);
   }
   
-  function _removeEndDateEvent(params) {
-    console.log('_removeEndDateEvent (disabled)');
-    console.log(params);
-    return;
-    
-    settings.google.objCalendar.removeEvent({
+  async function _removeEndDateEventFromCalendar(params) {
+    var result = await settings.google.objCalendar.removeEvent({
       "calendarId": params.calendarId,
       "eventId": params.eventId
     });    
+    
+    console.log(result);
   }
   
   async function _reloadConfigurationAndEvents() {
@@ -509,8 +509,8 @@ const app = function () {
     _updateUI();
   }
   
-  function _callbackAddEndDateEvent(success, results) {
-    console.log('_callbackAddEndDateEvent: ' + success);
+  function _callbackAddEndDateEventBatch(results) {
+    console.log('_callbackBatchAddEndDateEvent: ');
     console.log(results);
   }
   
@@ -787,28 +787,14 @@ const app = function () {
 	//--------------------------------------------------------------------------  
   function _testAddEvent(e) {
     var elemCalendar = page.navDebug.getElementsByClassName('calendar-selection')[0];
-    var calendarId = settings.configuration.calendarId;
-    var eventDay = Math.floor(Math.random() * (30 - 26) + 26);
     
-    var studentList = [
-      {studentLast: "Ahab", studentFirst: "Trevor", section: "Whaling 101", originalEndDate: '2021-09-01'},
+    var enrollmentList = [
       {studentLast: "Baggins", studentFirst: "Frodo", section: "Unmaking Rings", originalEndDate: '2021-09-02'},
-      {studentLast: "Longbottom", studentFirst: "Neville",  section: "Herbology", originalEndDate: '2021-09-03'},
-      {studentLast: "Granger", studentFirst: "Hermione", section: "Arithmancy", originalEndDate: '2021-09-04'},
-      {studentLast: "Potter", studentFirst: "Harry", section: "Defense Against the Dark Arts", originalEndDate: '2021-09-05'},
-      {studentLast: "Malfoy", studentFirst: "Draco", section: "Intro to Skullduggery", originalEndDate: '2021-09-06'},
-      {studentLast: "Smith", studentFirst: "Bob", section: "Basic Web Design", originalEndDate: '2021-09-07'},
-      {studentLast: "Doe", studentFirst: "Jane",  section: "Java Programming A", originalEndDate: '2021-09-08'},
-      {studentLast: "Weasley", studentFirst: "Fred",  section: "Potions", originalEndDate: '2021-09-09'}
     ];
     
-    var numEnrollments = Math.floor(Math.random() * (5 - 1) + 1);
-    var enrollmentList = [];
-    for (var i = 0; i < numEnrollments; i++) enrollmentList.push(studentList[i]);
-
     var params = {
-      "calendarId": calendarId,
-      "date": '2021-06-' + eventDay,
+      "calendarId": settings.configuration.calendarId,
+      "date": '2021-06-01',
       "enrollments": enrollmentList,
       "reminders": [
         {method: 'email', minutes: 6 * 60},
@@ -816,18 +802,46 @@ const app = function () {
       ]
     }
     
-    _addEndDateEvent(params);
+    _addEndDateEventToCalendar(params);
   }
   
   function _testDeleteEvent(e) {
-    console.log('_testDeleteEvent (disabled)');
-    return;
+    var eventId = prompt('event id');
+    if (!eventId) return;
     
     var params = {
-      "calendarId":  xxxx,
-      "eventId": xxxx
+      "calendarId":  settings.configuration.calendarId,
+      "eventId": eventId
     };
-    _removeEndDateEvent(params);    
+
+    _removeEndDateEventFromCalendar(params);    
+  }
+    
+  function _testBatchAddEvent(e) {
+    console.log('_testBatchAddEvent');
+    
+    settings.google.objCalendar.addBatchOfAllDayEvents(
+      [
+        {
+          "calendarId": settings.configuration.calendarId,
+          "date": '2021-06-27',
+          "summary": "End date",
+          "description": 'batch test 1',
+          "location": settings.eventLocation,
+          "reminders": null //params.reminders
+        },
+        {
+          "calendarId": settings.configuration.calendarId,
+          "date": '2021-06-28',
+          "summary": "End date",
+          "description": 'batch test 1',
+          "location": settings.eventLocation,
+          "reminders": null //params.reminders
+        }
+      ],
+      
+      _callbackAddEndDateEventBatch
+    );    
   }
         
   function _testEventEditorGetList(e) {
