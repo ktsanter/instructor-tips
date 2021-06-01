@@ -100,19 +100,28 @@ class GoogleCalendar {
       }
     }).then(
       function(response) {
-        console.log('(internal) success');
         return({success: true, data: response.result, details: 'add event succeeded'});
-        //callback(true, response.result);
       },
       
       function(err) { 
         console.error('(internal) fail', err);
         return({success: false, data: null, details: err});
-        //callback(false, err);        
       }
     )   
   }
   
+  async addEventBatch(eventList) {
+    var success = true;
+    
+    for (var i = 0; i < eventList.length && success; i++) {
+     var result = await this.addEvent(eventList[i]);
+     success = result.success;
+    }
+
+    return success;
+  }
+  
+    /*
   addBatchOfAllDayEvents(params, callback) {
     console.log('addBatchOfAllDayEvents');
 
@@ -152,6 +161,7 @@ class GoogleCalendar {
     console.log('foo');
     console.log(params);
   }
+  */
   
   /* removeEvent:
    * params = {
@@ -160,16 +170,12 @@ class GoogleCalendar {
    * }
    */
   async removeEvent(params) {
-    console.log('GoogleCalendar.removeEvent');
-    console.log(params);
-
     return await gapi.client.calendar.events.delete({
       "calendarId": params.calendarId, 
       "eventId": params.eventId
+      
     }).then(
       function(response) {
-        // on success response.body = "", response.result = false, response.status = 204
-        console.log("Response", response);
         return({success: true, data: params, details: 'event removed'});
       },
       
@@ -179,6 +185,19 @@ class GoogleCalendar {
       }
     )  
   }
+  
+  async removeEventBatch(calendarId, eventList) {
+    var success = true;
+
+    for (var i = 0; i < eventList.length && success; i++) {
+     var result = await this.removeEvent( {"calendarId": calendarId, "eventId": eventList[i]});
+     success = result.success;
+    }
+
+    if (!success) console.log('removeEventBatch failed');
+
+    return success;
+  }  
   
   //--------------------------------------------------------------
   // handlers

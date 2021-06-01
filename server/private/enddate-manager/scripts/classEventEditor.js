@@ -63,11 +63,22 @@ class EventEditor {
     UtilityKTS.removeChildren(this.tableBody);
   }
     
-  getEventList(eventId) {
+  getEventList(params) {
     var list = [];
+    
     for (var i = 0; i < this.eventList.length; i++) {
       var item = this.eventList[i];
-      if (eventId == null || eventId == item.eventid) list.push(item);
+      var include = false;
+      
+      if (!params) {
+        include = true;
+      } else if (params.queryType == 'eventid') {
+        include = (params.eventid == item.eventid);
+      } else if (params.queryType == 'enddate') {
+        include = (params.enddate == item.enddate);
+      }
+
+      if (include) list.push(item)
     }
     
     return list;
@@ -151,15 +162,19 @@ class EventEditor {
       var editedData = this._getEventDataFromEditor();
       var eventData = this.eventList[this.editorEventIndex];
 
+      var currentEndDate = eventData.enddate;
+      var enrollmentEndDate = eventData.enrollmentenddate;
+
       var changeAction = eventData.override ? 'update' : 'add';
       eventData.override = true;
       eventData.enddate = editedData.enddate;
+      eventData.currentenddate = currentEndDate;
+      eventData.enrollmentenddate = enrollmentEndDate;
       eventData.notes = editedData.notes;
-      
+
       await this._config.callbackEventChange({action: changeAction, data: eventData});
     }
         
-    
     this._show('eventlist', true);
     this._show('editor', false);
     this._config.callbackModeChange('not editing');

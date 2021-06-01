@@ -1,6 +1,11 @@
 mixin optionsContainer()
   .row
     .col-sm
+      input(type="file" class="uploadfile" id="file-upload" accept=".xlsx")
+      label(for="file-upload" class="uploadfile-label" title="choose enrollment report file to process") enrollment resport
+
+  .row
+    .col-sm
       div(class="d-flex calendar-selection-container") 
         div(class="input-group mb-3")
           div(class="input-group-prepend")
