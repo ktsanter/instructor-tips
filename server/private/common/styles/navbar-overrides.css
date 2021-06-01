@@ -21,6 +21,11 @@
   transition-duration: 0s;
 }
 
+.navbar a.menu-emphasize:not(.dropdown-item) {
+  font-weight: bold;
+  transition-duration: 0s;
+}
+
 .navbar a:hover:not(.navbar-brand):not(.dropdown-item) {
   color: rgba(66, 98, 150, 1.0);
   background-color: white;

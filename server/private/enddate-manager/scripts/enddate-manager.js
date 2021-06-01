@@ -5,7 +5,6 @@
 // TODO: enable _rewriteAllCalendarEvents
 // TODO: experiment with true batching for calendar operations
 // TODO: figure out how to clean out obsolete calendar events and overrides
-// TODO: tidy up cosmetics
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -51,7 +50,7 @@ const app = function () {
     page.notice.setNotice('loading...', true);
 
     page.navbar = page.body.getElementsByClassName('navbar')[0];
-    UtilityKTS.setClass(page.navbar, 'hide-me', true);
+    //UtilityKTS.setClass(page.navbar, 'hide-me', true);
     
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
@@ -221,6 +220,9 @@ const app = function () {
       var enable = settings.profile.isDirty();
       _enableNavOption('navSave', true, enable);
       _enableNavOption('navReload', true, enable);
+    } else {
+      _enableNavOption('navSave', false, false);
+      _enableNavOption('navReload', false, false);
     }
   }
     
@@ -252,7 +254,8 @@ const app = function () {
   function _updateUI() {
     _updateEventUI(_standardizeCalendarEvents(), _standardizeOverrides());
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
-          
+    page.notice.setNotice('');
+    
     _setMainUIEnable(settings.google.isSignedIn);
   }
   
@@ -577,6 +580,8 @@ const app = function () {
     if (!queryType) return;
     
     _setMainUIEnable(false);
+    _setMainNavbarEnable(false);
+    page.notice.setNotice('updating...', true);
     
     dbResult = await SQLDBInterface.doPostQuery('enddate-manager/' + queryType, 'eventoverride', params.data);
     if (!dbResult.success) {
@@ -596,11 +601,15 @@ const app = function () {
     if (!calendarSuccess) return;
     
     await _reloadConfigurationAndEvents();
+    _setMainNavbarEnable(true);
   }
   
   function _callbackEditorModeChange(mode) {
     var enable = (mode != 'editing');
-    
+    _setMainNavbarEnable(enable);
+  }
+  
+  function _setMainNavbarEnable(enable) {
     var menuIds = ['navManage', 'navOptions', 'navDebug'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
@@ -613,8 +622,12 @@ const app = function () {
 	//--------------------------------------------------------------------------
   function _navDispatch(e) {
     var dispatchTarget = e.target.id;
+
     if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
     if (dispatchTarget == settings.currentNavOption) return;
+    
+    _emphasizeMenuOption(settings.currentNavOption, false);
+    _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
       "navManage": function() { _showContents('navManage');},
@@ -629,6 +642,14 @@ const app = function () {
       "navReload": function() { _handleReload(e, false);}
     }
     dispatchMap[dispatchTarget]();
+  }
+  
+  function _emphasizeMenuOption(menuOption, emphasize) {
+    var mainOptions = new Set(['navManage', 'navOptions', 'navDebug']);
+    if (mainOptions.has(menuOption)) {
+      var elem = document.getElementById(menuOption);
+      UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);
+    }
   }
   
   async function _handleSave(e) {
