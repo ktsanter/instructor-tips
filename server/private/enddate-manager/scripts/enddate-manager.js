@@ -1,14 +1,15 @@
 //-----------------------------------------------------------------------
 // End date manager
 //-----------------------------------------------------------------------
-// TODO: eliminate use of settings.configuration.enrollmentList
-// TODO: disable and spinner when add/edit/delete override
 // TODO: work out how to reconcile overrides with enrollment upload
+// TODO: enable _rewriteAllCalendarEvents
+// TODO: experiment with true batching for calendar operations
+// TODO: figure out how to clean out obsolete calendar events and overrides
+// TODO: tidy up cosmetics
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
-//calendarId: "c_h702bj3dk5fjqjgqi8psg8q1mg@group.calendar.google.com"  
   const settings = {
     hideClass: 'hide-me',
     navItemClass: 'use-handler',
@@ -33,8 +34,7 @@ const app = function () {
     configuration: {
       calendarId: null,
       calendarList: [],
-      calendarEvents: [],
-      enrollmentList: []
+      calendarEvents: []
     },
     
     eventLocation: 'End date manager'
@@ -142,6 +142,18 @@ const app = function () {
     
     page.navOptions.getElementsByClassName('uploadfile')[0].addEventListener('change', (e) => { _uploadEnrollments(e); });
     page.navOptions.getElementsByClassName('calendar-selection')[0].addEventListener('change', (e) => { _handleCalendarSelectChange(e); });
+    
+    var elems = page.navOptions.getElementsByClassName('notification-check');
+    for (var i = 0; i < elems.length; i++) {
+      elems[i].addEventListener('change', (e) => { _handleNotificationChange(e); });
+    }
+
+    elems = page.navOptions.getElementsByClassName('notification-number');
+    for (var i = 0; i < elems.length; i++) {
+      elems[i].addEventListener('change', (e) => { _handleNotificationChange(e); });
+    }
+    
+    page.navOptions.getElementsByClassName('button-notification-save')[0].addEventListener('click', (e) => { _handleSaveNotifications(e); });
   }
   
   function _renderDebug() {
@@ -178,10 +190,25 @@ const app = function () {
     var elemFileUploadLabel = page.navOptions.getElementsByClassName('uploadfile-label')[0];
 
     elemFileUpload.value = null;
-    elemFileUploadLabel.innerHTML = 'enrollment report';
+    elemFileUploadLabel.innerHTML = 'upload enrollment report';
+
+    var elemEmailCheck = page.navOptions.getElementsByClassName('email-check')[0];
+    var elemEmailNumber = page.navOptions.getElementsByClassName('email-number')[0];
+    var elemPopupCheck = page.navOptions.getElementsByClassName('popup-check')[0];
+    var elemPopupNumber = page.navOptions.getElementsByClassName('popup-number')[0];
+    var elemSave = page.navOptions.getElementsByClassName('button-notification-save')[0];
     
-    console.log(settings.configuration.calendarList);
-    console.log(' - set notification options and amounts');
+    var useEmail = settings.configuration.emailNotification;
+    elemEmailCheck.checked = useEmail;
+    elemEmailNumber.disabled = !useEmail;
+    elemEmailNumber.value = settings.configuration.emailNotificationMinutes / 60
+    
+    var usePopup = settings.configuration.popupNotification;
+    elemPopupCheck.checked = usePopup;
+    elemPopupNumber.disabled = !usePopup;
+    elemPopupNumber.value = settings.configuration.popupNotificationMinutes / 60
+    
+    elemSave.disabled = true;    
   }
   
   function _showDebug() {
@@ -310,13 +337,16 @@ const app = function () {
     var description = 'Term end date scheduled for:';
     for (var i = 0; i < eventInfo.enrollments.length; i++) {
       var item = eventInfo.enrollments[i];
-      description += '\n' + item.student + ' | ' + item.section + ' | original end date: ' + item.originalEndDate;
+      description += '\n' + item.student + ' | ' + item.section + ' | enrollment: ' + item.originalEndDate;
     }
     
-    var reminders = [
-      {"method": 'email', "minutes": 360},
-      {"method": 'popup', "minutes": 720}
-    ];
+    var reminders = [];
+    if (settings.configuration.emailNotification) {
+      reminders.push({"method": "email", "minutes": settings.configuration.emailNotificationMinutes});
+    }
+    if (settings.configuration.popupNotification) {
+      reminders.push({"method": "popup", "minutes": settings.configuration.popupNotificationMinutes});
+    }
 
     return {
         "calendarId": settings.configuration.calendarId,
@@ -421,6 +451,66 @@ const app = function () {
     }
   }
   
+  async function _changeNotifications(params) {
+    var msg = 'The new notification settings will be applied to all calendar events.';
+    msg += '\n\nChoose "Okay" to proceed';
+    if (!confirm(msg)) return false;
+    
+    var dbResult = await SQLDBInterface.doPostQuery('enddate-manager/update', 'notification', params);    
+    if (!dbResult.success) {
+      page.notice.setNotice('failed to save notification info');
+      console.log(dbResult.details);
+      return false;
+    }
+
+    settings.configuration.emailNotification = params.emailnotification;
+    settings.configuration.emailNotificationMinutes = params.emailnotificationminutes;
+    settings.configuration.popupNotification = params.popupnotification;
+    settings.configuration.popupNotificationMinutes = params.popupnotificationminutes;
+
+    var success = await _rewriteAllCalendarEvents(settings.configuration.calendarId, settings.configuration.calendarId);
+    
+    if (success) {
+      _setMainUIEnable(false);
+      _reloadConfigurationAndEvents();
+    }
+    
+    return success;
+  }
+  
+  async function _changeCalendar(params) {
+    var msg = 'All calendar events will be moved from the current calendar to the new one.';
+    msg += '\nfrom: "' + params.sourcecalendarname + '"';
+    msg += '\nto: "' + params.destcalendarname + '"';
+    msg += '\n\nChoose "Okay" to continue with the move.';
+    if (!confirm(msg)) return false;
+    
+    var dbResult = await SQLDBInterface.doPostQuery('enddate-manager/update', 'calendar', {calendarid: params.destcalendarid});
+    if (!dbResult.success) {
+      page.notice.setNotice('failed to save calendar info');
+      console.log(dbResult.details);
+      return false;
+    }
+    
+    var success = await _rewriteAllCalendarEvents(params.sourcecalendarid, params.destcalendarid);
+
+    if (success) {
+      _setMainUIEnable(false);
+      _reloadConfigurationAndEvents();
+    }
+    
+    return success;
+  }
+  
+  async function _rewriteAllCalendarEvents(sourceCalendarId, destCalendarId) {
+    console.log('_rewriteAllCalendarEvents');
+    console.log(sourceCalendarId);
+    console.log(destCalendarId);
+    alert('_rewriteAllCalendarEvents disabled');
+    
+    return true;
+  }
+  
   //--------------------------------------------------------------------------
   // callbacks
 	//--------------------------------------------------------------------------
@@ -463,7 +553,6 @@ const app = function () {
     }
     
     settings.configuration.calendarEvents = [];
-    settings.configuration.enrollmentList = [];
     
     for (var i = 0; i < results.items.length; i++) {
       var item = results.items[i];
@@ -487,8 +576,9 @@ const app = function () {
     
     if (!queryType) return;
     
-    dbResult = await SQLDBInterface.doPostQuery('enddate-manager/' + queryType, 'eventoverride', params.data);
+    _setMainUIEnable(false);
     
+    dbResult = await SQLDBInterface.doPostQuery('enddate-manager/' + queryType, 'eventoverride', params.data);
     if (!dbResult.success) {
       page.notice.setNotice('event update failed');
       console.log(dbResult.details);
@@ -596,12 +686,9 @@ const app = function () {
     _setMainUIEnable(false);
     var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
     if (result.success) {
-      
       var removeResult = await _removeCalendarEvents();
-      console.log('removeResult: ' + JSON.stringify(removeResult));
       
       var addResult = await _addEnrollmentListToCalendar(result.data);
-      console.log('addResult: ' + JSON.stringify(addResult));
       
       page.notice.setNotice('');
       page.navbar.getElementsByClassName(settings.navItemClass)[0].click()
@@ -652,6 +739,14 @@ const app = function () {
     }
     
     var collated = [];
+    var reminders = [];
+    if (settings.configuration.emailNotification) {
+      reminders.push({"method": "email", "minutes": settings.configuration.emailNotificationMinutes});
+    }
+    if (settings.configuration.popupNotification) {
+      reminders.push({"method": "popup", "minutes": settings.configuration.popupNotificationMinutes});
+    }
+    
     for (var i = 0; i < standardized.length; i++) {
       var item = standardized[i];
       var enddate = item.enddate;
@@ -659,10 +754,7 @@ const app = function () {
         collated[enddate] = {
           "date": enddate,
           "calendarId": settings.configuration.calendarId,
-          "reminders": [
-            {"method": "email", "minutes": 360},
-            {"method": "popup", "minutes": 720}
-          ],
+          "reminders": reminders,
           enrollments: []
         };
       }
@@ -677,15 +769,55 @@ const app = function () {
     return collated;
   }
 
-  function _handleCalendarSelectChange(e) {
+  async function _handleCalendarSelectChange(e) {
     console.log('_handleCalendarSelectChange');
-    var elem = e.target[e.target.selectedIndex];
-    console.log(' - confirm change');
-    console.log(' - remove all calendar events from current');
-    console.log(' - change calendar to: ' + elem.value);
-    console.log(' - add calendar events to new');
-    console.log(' - select "manage"');
-    console.log(' - call _reloadConfigurationAndEvents');
+    
+    var sourceCalendarId = settings.configuration.calendarId;
+    var sourceCalendarName = null;
+    var opts = e.target.getElementsByTagName('option');
+    for (var i = 0; i < opts.length && !sourceCalendarName; i++) {
+      if (opts[i].value == sourceCalendarId) sourceCalendarName = opts[i].text;
+    }
+    
+    var destCalendarId = e.target[e.target.selectedIndex].value;
+    var destCalendarName = e.target[e.target.selectedIndex].text;
+    
+    var success = await _changeCalendar({
+      "sourcecalendarid": sourceCalendarId,
+      "sourcecalendarname": sourceCalendarName,
+      "destcalendarid": destCalendarId,
+      "destcalendarname": destCalendarName
+    });
+  }
+  
+  function _handleNotificationChange(e) {    
+    var elemEmailCheck = page.navOptions.getElementsByClassName('email-check')[0];
+    var elemEmailNumber = page.navOptions.getElementsByClassName('email-number')[0];
+    var elemPopupCheck = page.navOptions.getElementsByClassName('popup-check')[0];
+    var elemPopupNumber = page.navOptions.getElementsByClassName('popup-number')[0];
+    var elemSave = page.navOptions.getElementsByClassName('button-notification-save')[0];
+    
+    elemEmailNumber.disabled = !elemEmailCheck.checked;
+    elemPopupNumber.disabled = !elemPopupCheck.checked;
+    elemSave.disabled = false;
+  }
+  
+  async function _handleSaveNotifications(e) {
+    var elemEmailCheck = page.navOptions.getElementsByClassName('email-check')[0];
+    var elemEmailNumber = page.navOptions.getElementsByClassName('email-number')[0];
+    var elemPopupCheck = page.navOptions.getElementsByClassName('popup-check')[0];
+    var elemPopupNumber = page.navOptions.getElementsByClassName('popup-number')[0];
+    var elemSave = page.navOptions.getElementsByClassName('button-notification-save')[0];
+
+    var params = {
+      "emailnotification": elemEmailCheck.checked,
+      "emailnotificationminutes": elemEmailNumber.value * 60,
+      "popupnotification": elemPopupCheck.checked,
+      "popupnotificationminutes": elemPopupNumber.value * 60
+    }
+    
+    var success = await _changeNotifications(params);
+    if (success) elemSave.disabled = true;
   }
   
   //----------------------------------------
@@ -740,9 +872,10 @@ const app = function () {
       var overrideData = dbResult.data.eventoverride;
       
       var config = JSON.parse(JSON.stringify(settings.configuration));
-      
       config.calendarId = configData.calendarid;
+      config.emailNotification = (configData.emailnotification == 1);
       config.emailNotificationMinutes = configData.emailnotificationminutes;
+      config.popupNotification = (configData.popupnotification == 1);
       config.popupNotificationMinutes = configData.popupnotificationminutes;
       
       config.calendarList = [];

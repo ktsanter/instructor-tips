@@ -26,34 +26,21 @@ body {
   pointer-events: none;
 }
 
+.contents .btn-secondary {
+  background-color: var(--bgPrimary);
+  color: white;
+}
+
+.contents .btn-secondary:disabled {
+  background-color: white;
+  color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+}
+
 /*------------------------------------------------------------------------------
  * contents - navManage
  *------------------------------------------------------------------------------*/
 .contents .contents-navManage {}
-
-.contents .contents-navManage .enddate-option:checked {
-  background-color: var(--bgPrimary);
-  border-color: var(--bgPrimary);
-}
-
-.contents .contents-navManage .uploadfile {
-  opacity: 0;
-  z-index: -1;
-  position: absolute; /* don't let it take up space */
-}
-
-.contents .contents-navManage .uploadfile#file-upload + label {
-  border: 1px solid var(--bgPrimary);
-  margin-left: 0.4em;
-  padding: 0 0.3em 0 0.3em;
-  cursor: pointer;
-}
-
-.contents .contents-navManage .uploadfile#file-upload:disabled + label {
-  background-color: var(--bgShaded);
-  opacity: 50%;
-  cursor: default;
-}
 
 .contents .contents-navManage .eventlist-container {
   margin-top: 1.0em;
@@ -68,12 +55,7 @@ body {
   cursor: pointer;
 }
 
-.contents .contents-navManage .event-alerticon {
-  margin-left: 0.4em;
-}
-
-.contents .contents-navManage .event-editicon {
-}
+.contents .contents-navManage .event-editicon {}
 
 .contents .contents-navManage .event-clearicon {
   margin-left: 0.4em;
@@ -87,6 +69,31 @@ body {
  * contents - navOptions
  *------------------------------------------------------------------------------*/
 .contents .contents-navOptions {}
+
+.contents .contents-navOptions .uploadfile {
+  opacity: 0;
+  z-index: -1;
+  position: absolute; /* don't let it take up space */
+}
+
+.contents .contents-navOptions .uploadfile-label {
+  border: 1px solid var(--bgPrimary);
+  background-color: var(--bgShaded);
+}
+
+.contents .contents-navOptions .notification-container {
+  border: 1px solid var(--borderPrimary);
+  padding: 0.4em;
+}
+
+.contents .contents-navOptions .notification-check:checked {
+  background-color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+}
+
+.contents .contents-navOptions .notification-number:disabled + label {
+  color: gray;
+}
 
 /*------------------------------------------------------------------
  * standard error and notice

@@ -59,6 +59,12 @@ module.exports = internal.EndDateManager = class {
     
     if (params.queryName == 'eventoverride') {
       dbResult = await this._updateEventOverride(params, postData, userInfo);
+    
+    } else if (params.queryName == 'notification') {
+      dbResult = await this._updateNotificationInfo(params, postData, userInfo);
+
+    } else if (params.queryName == 'calendar') {
+      dbResult = await this._updateCalendarInfo(params, postData, userInfo);
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -149,7 +155,7 @@ module.exports = internal.EndDateManager = class {
     var queryList = {
       'configuration': 
         'select ' +
-          'a.calendarid, a.emailnotificationminutes, a.popupnotificationminutes ' +
+          'a.calendarid, a.emailnotification, a.emailnotificationminutes, a.popupnotification, a.popupnotificationminutes ' +
         'from configuration as a ' +
         'where configurationid = ' + configurationId,
         
@@ -242,6 +248,61 @@ module.exports = internal.EndDateManager = class {
       'delete from eventoverride ' +
       'where eventoverrideid=' + postData.overrideid;
        
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      
+    } else {
+      result.details = queryResults.details;
+    }    
+    
+    return result;
+  }  
+
+  async _updateNotificationInfo(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var query, queryResults;
+    
+    var configurationId = await this._getConfigurationIdForUser(userInfo);
+    if (!configurationId) return result;
+
+    query = 
+      'update configuration ' +
+      'set ' +
+        'emailnotification=' + (postData.emailnotification ? '1' : '0') + ', ' +
+        'emailnotificationminutes=' + postData.emailnotificationminutes + ', ' +
+        'popupnotification=' + (postData.popupnotification ? '1' : '0') + ', ' +
+        'popupnotificationminutes=' + postData.popupnotificationminutes + ' ' +
+      'where configurationid=' + configurationId;
+
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      
+    } else {
+      result.details = queryResults.details;
+    }    
+    
+    return result;
+  }  
+
+  async _updateCalendarInfo(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var query, queryResults;
+
+    var configurationId = await this._getConfigurationIdForUser(userInfo);
+    if (!configurationId) return result;
+
+    query = 
+      'update configuration ' +
+      'set ' +
+        'calendarid="' + postData.calendarid + '" ' +
+      'where configurationid=' + configurationId;
+
     queryResults = await this._dbManager.dbQuery(query);
     
     if (queryResults.success) {

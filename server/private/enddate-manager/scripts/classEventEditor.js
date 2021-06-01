@@ -158,6 +158,9 @@ class EventEditor {
   }
   
   async _endEventEditing(okay) {
+    this._show('eventlist', true);
+    this._show('editor', false);
+
     if (okay) {
       var editedData = this._getEventDataFromEditor();
       var eventData = this.eventList[this.editorEventIndex];
@@ -175,8 +178,6 @@ class EventEditor {
       await this._config.callbackEventChange({action: changeAction, data: eventData});
     }
         
-    this._show('eventlist', true);
-    this._show('editor', false);
     this._config.callbackModeChange('not editing');
   }
   

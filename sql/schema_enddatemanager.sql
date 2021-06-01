@@ -14,11 +14,13 @@ select "creating tables" as comment;
 
 create table configuration
 (
-  configurationid        int unsigned not null AUTO_INCREMENT,
-  userid                 int unsigned not null,
-  calendarid             varchar(300) null,
-  emailnotificationminutes      int unsigned not null,
-  popupnotificationminutes      int unsigned not null,
+  configurationid          int unsigned not null AUTO_INCREMENT,
+  userid                   int unsigned not null,
+  calendarid               varchar(300) null,
+  emailnotification        int unsigned not null,
+  emailnotificationminutes int unsigned not null,
+  popupnotification        int unsigned not null,
+  popupnotificationminutes int unsigned not null,
   
   primary key (configurationid),
   constraint unique(userid),
@@ -60,21 +62,28 @@ begin
   insert into configuration (
     userid,
     calendarid,
+    emailnotification,
     emailnotificationminutes,
+    popupnotification,
     popupnotificationminutes
   ) values (
     user_Id,
     null,
+    1,
     360,
+    1,
     720
   );
   
   select 
     LAST_INSERT_ID() as configurationid,
     calendarid,
+    emailnotification,
     emailnotificationminutes,
+    popupnotification,
     popupnotificationminutes
-  from configuration;
+  from configuration
+  where userid = user_Id;
 end;
 //
 DELIMITER ;
