@@ -6,7 +6,7 @@ include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-manager.pug
 include ./mixins/mixins-options.pug
-include ./mixins/mixins-debug.pug
+include ./mixins/mixins-admin.pug
 include ./mixins/mixins-eventeditor.pug
 
 doctype html
@@ -36,7 +36,7 @@ html(lang="en")
         items: [
           {id: "navManage", type: "link", label: "manage"},
           {id: "navOptions", type: "link", label: "configure"},
-          {id: "navDebug", type: "link", label: "debug"},
+          {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
@@ -65,7 +65,7 @@ html(lang="en")
       .container-fluid(class="contents-container contents-navOptions hide-me disable-container")
         +optionsContainer()     
         
-      .container-fluid(class="contents-container contents-navDebug hide-me disable-container")
-        +debugContainer()     
+      .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
+        +adminContainer()     
         
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

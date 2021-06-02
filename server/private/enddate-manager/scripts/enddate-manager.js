@@ -5,7 +5,7 @@
 // TODO: enable _rewriteAllCalendarEvents
 // TODO: experiment with true batching for calendar operations
 // TODO: figure out how to clean out obsolete calendar events and overrides
-// TODO: add report option?
+// TODO: rework debug to become admin
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -49,9 +49,11 @@ const app = function () {
     
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('loading...', true);
+    
+    await _setAdminMenu();
 
     page.navbar = page.body.getElementsByClassName('navbar')[0];
-    //UtilityKTS.setClass(page.navbar, 'hide-me', true);
+    _setMainNavbarEnable(false);
     
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
@@ -71,6 +73,18 @@ const app = function () {
     _initializeGoogleStuff();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+  }
+  
+  async function _setAdminMenu() {
+    _enableNavOption('navAdmin', false, false);
+    
+    dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'admin-allowed');
+    if (!dbResult.success) return;
+    
+    console.log(dbResult.data);
+    
+    var adminAllowed = dbResult.data.adminallowed;
+    _enableNavOption('navAdmin', adminAllowed, adminAllowed);
   }
   
   async function _initializeProfile(sodium) {
@@ -119,7 +133,7 @@ const app = function () {
     
     _renderManage();
     _renderOptions();
-    _renderDebug();
+    _renderAdmin();
   }
   
   function _renderManage() {
@@ -157,10 +171,10 @@ const app = function () {
     page.navOptions.getElementsByClassName('button-notification-save')[0].addEventListener('click', (e) => { _handleSaveNotifications(e); });
   }
   
-  function _renderDebug() {
-    page.navDebug = page.contents.getElementsByClassName('contents-navDebug')[0];
+  function _renderAdmin() {
+    page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
     
-    page.navDebug.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
+    page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
   }
     
   //-----------------------------------------------------------------------------
@@ -177,7 +191,7 @@ const app = function () {
     
     if (contentsId == 'navManage') _showManage();
     if (contentsId == 'navOptions') _showOptions();
-    if (contentsId == 'navDebug') _showDebug();
+    if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
@@ -212,7 +226,7 @@ const app = function () {
     elemSave.disabled = true;    
   }
   
-  function _showDebug() {
+  function _showAdmin() {
   }
   
   function _setNavOptions() {
@@ -246,7 +260,7 @@ const app = function () {
     for (var i = 0; i < containers.length; i++) {
       if (containers[i].classList.contains('contents-navManage') ||
           containers[i].classList.contains('contents-navOptions') ||
-          containers[i].classList.contains('contents-navDebug')) {
+          containers[i].classList.contains('contents-navAdmin')) {
         UtilityKTS.setClass(containers[i], 'disable-container', !enable);
         containers[i].disabled = !enable;   
       }
@@ -259,6 +273,7 @@ const app = function () {
     page.notice.setNotice('');
     
     _setMainUIEnable(settings.google.isSignedIn);
+    _setMainNavbarEnable(settings.google.isSignedIn);   
   }
   
   function _updateEventUI(eventList, overrideList) {
@@ -623,7 +638,7 @@ const app = function () {
   }
   
   function _setMainNavbarEnable(enable) {
-    var menuIds = ['navManage', 'navOptions', 'navDebug'];
+    var menuIds = ['navManage', 'navOptions', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
       UtilityKTS.setClass(elem, 'disabled', !enable);
@@ -645,7 +660,7 @@ const app = function () {
     var dispatchMap = {
       "navManage": function() { _showContents('navManage');},
       "navOptions": function() { _showContents('navOptions'); },
-      "navDebug": function() { _showContents('navDebug');},
+      "navAdmin": function() { _showContents('navAdmin'); },
       "navGoogle": function() { _handleGoogleSignIn(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
@@ -658,7 +673,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navManage', 'navOptions', 'navDebug']);
+    var mainOptions = new Set(['navManage', 'navOptions', 'navAdmin']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);

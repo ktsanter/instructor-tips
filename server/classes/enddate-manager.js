@@ -34,6 +34,9 @@ module.exports = internal.EndDateManager = class {
     if (params.queryName == 'configuration') {
       dbResult = await this._getConfiguration(params, postData, userInfo);
      
+    } else if (params.queryName == 'admin-allowed') {
+      dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -231,6 +234,16 @@ module.exports = internal.EndDateManager = class {
     return result;
   }
   
+  async _getAdminAllowed(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {adminallowed: funcCheckPrivilege(userInfo, 'admin')};
+
+    return result;
+  }
+
   async _insertEventOverride(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     var query, queryResults;
