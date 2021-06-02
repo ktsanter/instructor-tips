@@ -1,10 +1,14 @@
 mixin adminContainer()   
-  .row
+  .row(class="py-2")
     .col-sm
-      button(class="btnSignout") Google signout
+      button(class="btnSignout" title="sign out from Google") Google signout
 
   .row(class="py-2")
     .col-sm
-      button(class="btnCleanup") clean out obsolete data
+      button(class="btnCleanup" title="clean out obsolete overrided") clean out obsolete data
+
+  .row(class="py-2")
+    .col-sm
+      button(class="btnRemoveEvents" title="remove all calendar events for current calendar") remove events
 
 

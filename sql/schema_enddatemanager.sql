@@ -34,6 +34,7 @@ create table eventoverride
   student                varchar(200) not null,
   section                varchar(500) not null,
   enddate                varchar(20) not null,
+  enrollmentenddate      varchar(20) not null,
   notes                  varchar(1000) not null,
   
   primary key (eventoverrideid),

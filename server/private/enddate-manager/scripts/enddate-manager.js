@@ -1,9 +1,8 @@
 //-----------------------------------------------------------------------
 // End date manager
 //-----------------------------------------------------------------------
-// TODO: enable _rewriteAllCalendarEvents
 // TODO: experiment with true batching for calendar operations
-// TODO: implement obsolete data cleanup
+// TODO: implement "_handleObsoleteDataCleanup"
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -78,8 +77,6 @@ const app = function () {
     
     dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'admin-allowed');
     if (!dbResult.success) return;
-    
-    console.log(dbResult.data);
     
     var adminAllowed = dbResult.data.adminallowed;
     _enableNavOption('navAdmin', adminAllowed, adminAllowed);
@@ -174,6 +171,7 @@ const app = function () {
     
     page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
     page.navAdmin.getElementsByClassName('btnCleanup')[0].addEventListener('click', (e) => { _handleObsoleteDataCleanup(e); });
+    page.navAdmin.getElementsByClassName('btnRemoveEvents')[0].addEventListener('click', (e) => { _handleRemoveEvents(e); });
   }
     
   //-----------------------------------------------------------------------------
@@ -276,17 +274,19 @@ const app = function () {
   }
   
   function _updateEventUI(eventList, overrideList) {
+    var reconciled = eventList;
+
     var reconciled = [];
     for (var i = 0; i < eventList.length; i++) {
-      var item = eventList[i];
+      var item = JSON.parse(JSON.stringify(eventList[i]));
       
       var overrideItem = _findMatchInList(item, overrideList);
       if (overrideItem) {
-        var enrollmentEndDate = item.enrollmentenddate;
-        var eventId = item.eventid;
-        item = JSON.parse(JSON.stringify(overrideItem));
-        item.enrollmentenddate = enrollmentEndDate;
-        item.eventid = eventId;
+        item.override = true;
+        item.overrideid = overrideItem.overrideid;
+        item.notes = overrideItem.notes;
+        item.enddate = overrideItem.enddate;
+        item.enrolmmentenddate = overrideItem.enrollmentenddate;
       }
         
       reconciled.push(item);
@@ -333,12 +333,12 @@ const app = function () {
   
   function _standardizeOverrides() {
     var standardized = [];
-
+    
     for (var i = 0; i < settings.configuration.enddateOverrides.length; i++) {
       var item = settings.configuration.enddateOverrides[i];
         var standardizedItem = {
           "enddate": item.enddate,
-          "enrollmentenddate": null,
+          "enrollmentenddate": item.enrollmentenddate,
           "student": item.student,
           "section": item.section,
           "notes": item.notes,
@@ -441,7 +441,7 @@ const app = function () {
     var removeResult = await settings.google.objCalendar.removeEventBatch(settings.configuration.calendarId, Array.from(eventsToRemove));
     if (!removeResult) return false;
 
-    var addResult = await settings.google.objCalendar.addEventBatch(eventsToAdd);
+    var addResult = await settings.google.objCalendar.addEventBatch(settings.configuration.calendarId, eventsToAdd);
     if (!addResult) return false;
   
     return true;
@@ -475,6 +475,8 @@ const app = function () {
     msg += '\n\nChoose "Okay" to proceed';
     if (!confirm(msg)) return false;
     
+    _setMainNavbarEnable(false);
+    _setMainUIEnable(false);
     var dbResult = await SQLDBInterface.doPostQuery('enddate-manager/update', 'notification', params);    
     if (!dbResult.success) {
       page.notice.setNotice('failed to save notification info');
@@ -490,7 +492,6 @@ const app = function () {
     var success = await _rewriteAllCalendarEvents(settings.configuration.calendarId, settings.configuration.calendarId);
     
     if (success) {
-      _setMainUIEnable(false);
       _reloadConfigurationAndEvents();
     }
     
@@ -504,17 +505,18 @@ const app = function () {
     msg += '\n\nChoose "Okay" to continue with the move.';
     if (!confirm(msg)) return false;
     
+    _setMainNavbarEnable(false);
+    _setMainUIEnable(false);
     var dbResult = await SQLDBInterface.doPostQuery('enddate-manager/update', 'calendar', {calendarid: params.destcalendarid});
     if (!dbResult.success) {
       page.notice.setNotice('failed to save calendar info');
       console.log(dbResult.details);
       return false;
     }
-    
+
     var success = await _rewriteAllCalendarEvents(params.sourcecalendarid, params.destcalendarid);
 
     if (success) {
-      _setMainUIEnable(false);
       _reloadConfigurationAndEvents();
     }
     
@@ -522,12 +524,30 @@ const app = function () {
   }
   
   async function _rewriteAllCalendarEvents(sourceCalendarId, destCalendarId) {
-    console.log('_rewriteAllCalendarEvents');
-    console.log(sourceCalendarId);
-    console.log(destCalendarId);
-    alert('_rewriteAllCalendarEvents disabled');
+    var eventList = settings.eventEditor.getEventList();
     
-    return true;
+    var eventsToRemove = new Set([]);
+    for (var i = 0; i < eventList.length; i++) {
+      eventsToRemove.add(eventList[i].eventid);
+    }
+
+    var arrEventsToRemove = Array.from(eventsToRemove);
+    var eventsToRemoveList = [];
+    for (var i = 0; i < arrEventsToRemove.length; i++) {
+      eventsToRemoveList.push(arrEventsToRemove[i]);
+    }
+    var success = await settings.google.objCalendar.removeEventBatch(settings.configuration.calendarId, eventsToRemoveList);
+    if (!success) return false;
+    
+    var collated = _collateEnrollments(eventList);
+    
+    var eventsToAddList = [];
+    for (var enddate in collated) {
+      var item = collated[enddate];
+      eventsToAddList.push(_makeEndDateEventParams(item));
+    }
+   
+    return await settings.google.objCalendar.addEventBatch(destCalendarId, eventsToAddList);    
   }
   
   //--------------------------------------------------------------------------
@@ -590,6 +610,14 @@ const app = function () {
       queryType = 'update';
       
     } else if (params.action == 'delete') {
+      var msg = 'The override information for this item will be removed and the enrollment end date restored\n';
+      msg += '\n' + params.data.student;
+      msg += '\n' + params.data.section;
+      msg += '\nend date: ' + params.data.enddate;
+      msg += '\nenrollment end date: ' + params.data.enrollmentenddate;
+      msg += '\n\nChoose "Okay" to continue with the removal';
+      if (!confirm(msg)) return;
+      
       queryType = 'delete';
     }
     
@@ -626,14 +654,9 @@ const app = function () {
   }
   
   async function _callbackEditorExport(exportData) {
-    console.log('_callbackEditorExport');
-    console.log(exportData);
-    
     var elemForm = page.navManage.getElementsByClassName('export-form')[0];
     elemForm.getElementsByClassName('export-data')[0].value = JSON.stringify(exportData);
     elemForm.submit();
-    
-    console.log('okeydokey');
   }
   
   function _setMainNavbarEnable(enable) {
@@ -720,8 +743,93 @@ const app = function () {
     _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
   }
   
-  function _handleObsoleteDataCleanup() {
-    console.log('_handleObsoleteDataCleanup');
+  async function _handleObsoleteDataCleanup() {
+    //console.log('_handleObsoleteDataCleanup');
+
+    console.log('testing batch methods');
+    var batchParams = [];
+    var testAdd = false;
+    
+    if (testAdd) {
+      batchParams.push({
+        action: 'add', 
+        params: {
+          calendarId: settings.configuration.calendarId,
+          date: '2021-08-18',
+          summary: 'some event1',
+          description: 'xyzzy',
+          location: 'secret bunker'
+        }
+      });
+
+      batchParams.push({
+        action: 'add', 
+        params: {
+          calendarId: settings.configuration.calendarId,
+          date: '2021-08-18',
+          summary: 'some event2',
+          description: 'xyzzy',
+          location: 'secret bunker'
+        }
+      });
+
+      batchParams.push({
+        action: 'add', 
+        params: {
+          calendarId: settings.configuration.calendarId,
+          date: '2021-08-18',
+          summary: 'some event3',
+          description: 'xyzzy',
+          location: 'secret bunker'
+        }
+      });
+
+      batchParams.push({
+        action: 'add', 
+        params: {
+          calendarId: settings.configuration.calendarId,
+          date: '2021-08-18',
+          summary: 'some event4',
+          description: 'xyzzy',
+          location: 'secret bunker'
+        }
+      });
+      
+    } else {
+      var idList = ["tqaouevlu43dbvf0dk308gpna4", "t2k212i3c63hhslgn2l0j2jp94", "ga8qjmj26m8acr6nib0paar5vk", "vp5a1gm28ekhp9e472po31t9d8"];
+      for (var i = 0; i < idList.length; i++) {
+        batchParams.push({
+          action: 'remove',
+          params: {calendarId: settings.configuration.calendarId, eventId: idList[i]}
+        });
+      }
+    }
+    
+    var result = await settings.google.objCalendar.testBatch(batchParams);
+    
+    if (result.success) {
+      console.log(result.data);
+      if (testAdd) {
+        var s = '';
+        var first = true;
+        for (var key in result.data) {
+          var item = result.data[key];
+          
+          if (!first) s += ', ';
+          first = false;
+          s += '"' + item.result.id + '"';
+        }
+        console.log('[' + s + ']');
+      }
+      
+    } else {
+      console.log('fail');
+      console.log(result);
+    }
+  }
+  
+  function _handleRemoveEvents() {
+    _adminClearAllEvents();
   }
       
   async function _uploadEnrollments(e) {
@@ -732,9 +840,12 @@ const app = function () {
       return;
     }
     
-    var msg = 'The current calendar entries will be removed and replaced by the data in the uploaded file, however all overrides will be preserved.';
-    msg += '\n\nChoose "Okay" to continue with the upload';
-    if (!confirm(msg)) return;
+    var numCurrentEvents = settings.eventEditor.getEventList().length;
+    if (numCurrentEvents > 0) {
+      var msg = 'The current calendar entries will be removed and replaced by the data in the uploaded file, however all overrides will be preserved.';
+      msg += '\n\nChoose "Okay" to continue with the upload';
+      if (!confirm(msg)) return;
+    }
 
     page.navOptions.getElementsByClassName('uploadfile-label')[0].innerHTML = fileList[0].name;
 
@@ -763,27 +874,25 @@ const app = function () {
   }
   
   async function _addEnrollmentListToCalendar(enrollmentList) {
-    var collated = _collateEnrollments(enrollmentList);
+    var collated = _collateEnrollments(enrollmentList, _standardizeOverrides());
     
     var addList = [];
     for (var enddate in collated) {
       var item = collated[enddate];
       addList.push(_makeEndDateEventParams(item));
     }
-    
-    console.log('reconcile overrides with new events');
    
-    return await settings.google.objCalendar.addEventBatch(addList);
+    return await settings.google.objCalendar.addEventBatch(settings.configuration.calendarId, addList);
   }
   
-  function _collateEnrollments(enrollmentList) {
+  function _collateEnrollments(enrollmentList, overrideList) {
     var standardized = [];
 
     for (var i = 0; i < enrollmentList.length; i++) {
       var item = enrollmentList[i];
       var standardizedItem = {
         "enddate": _formatAsShortDate(item.enddate),
-        "enrollmentenddate": null,
+        "enrollmentenddate": _formatAsShortDate(item.enddate),
         "student": item.student,
         "section": item.section,
         "notes": '',
@@ -791,6 +900,17 @@ const app = function () {
         "overrideid": null
       }
       
+      if (overrideList) {
+        var overrideItem = _findMatchInList(standardizedItem, overrideList);
+        if (overrideItem) {
+          standardizedItem.enddate = overrideItem.enddate;
+          standardizedItem.enrollmentenddate = overrideItem.enrollmentenddate;
+          standardizedItem.override = true;
+          standardizedItem.overrideid = overrideItem.overrideid;
+          standardizedItem.notes = overrideItem.notes;
+        }
+      }
+
       standardized.push(standardizedItem);
     }
     
@@ -816,7 +936,7 @@ const app = function () {
       }
       
       collated[enddate].enrollments.push({
-        "originalEndDate": enddate,
+        "originalEndDate": item.enrollmentenddate,
         "section": item.section,
         "student": item.student
       });
@@ -826,8 +946,6 @@ const app = function () {
   }
 
   async function _handleCalendarSelectChange(e) {
-    console.log('_handleCalendarSelectChange');
-    
     var sourceCalendarId = settings.configuration.calendarId;
     var sourceCalendarName = null;
     var opts = e.target.getElementsByTagName('option');
@@ -944,6 +1062,7 @@ const app = function () {
           student: item.student,
           section: item.section,
           enddate: item.enddate,
+          enrollmentenddate: item.enrollmentenddate,
           notes: item.notes,
           overrideid: item.eventoverrideid
         });
@@ -955,6 +1074,57 @@ const app = function () {
     return dbResult.success;
   }
 
+  //--------------------------------------------------------------------------
+  // admin
+  //--------------------------------------------------------------------------
+  function _adminClearAllEvents() {
+    var msg = 'All end date manager events will be removed from calendar.';
+    if (!confirm(msg)) return;
+    
+    _setMainUIEnable(false);
+    
+    settings.google.objCalendar.getEventInfo({
+      "calendarId": settings.configuration.calendarId
+    },  _adminClearAllEventsCallback);      
+
+  }
+  
+  async function _adminClearAllEventsCallback(success, results) {
+    if (!success) {
+      console.log('error: ' + JSON.stringify(results));
+      return;
+    }
+    
+    var toRemoveSet = new Set([]);
+    for (var i = 0; i < results.items.length; i++) {
+      var item = results.items[i];
+      if (item.location == settings.eventLocation) toRemoveSet.add(item.id);
+    }
+    
+    var toRemoveList = Array.from(toRemoveSet);
+    var removeResult = await settings.google.objCalendar.removeEventBatch(settings.configuration.calendarId, Array.from(toRemoveSet));
+    
+    if (removeResult) location.reload();
+  }
+/*
+
+  
+  function _eventInfoCallback(success, results) {
+    if (!success) {
+      console.log('error: ' + JSON.stringify(results));
+      return;
+    }
+    
+    settings.configuration.calendarEvents = [];
+    
+    for (var i = 0; i < results.items.length; i++) {
+      var item = results.items[i];
+      if (item.location == settings.eventLocation) settings.configuration.calendarEvents.push(_parseCalendarEvent(item));
+    }
+
+    _updateUI();
+  }
+  */
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------  

@@ -54,7 +54,7 @@ class GoogleCalendar {
     )
   }
   
-  /* addAllDayEvent:
+  /* addEvent:
    * params = {
    *   calendarId: google calendar ID,
    *   date:  date of event 'yyyy-mm-dd',
@@ -70,34 +70,10 @@ class GoogleCalendar {
    *   ]
    * }
    */
-  async addEvent(params) {
-    var propReminders = { useDefault: true };
-    if (params.hasOwnProperty('reminders')) {
-      propReminders.useDefault = false;
-      propReminders.overrides = [];
-      for (var i = 0; i < params.reminders.length; i++) {
-        propReminders.overrides.push(params.reminders[i]);
-      }
-    }
-    
-    var propTransparency = 'transparent';
-    if (params.hasOwnProperty('busy') && params.busy) propTransparency = 'opaque';
-
+  async addEvent(calendarId, eventInfo) {
     return await gapi.client.calendar.events.insert({
-      'calendarId': params.calendarId, 
-      "resource": {
-        "end": {
-          "date": params.date
-        },
-        "start": {
-          "date": params.date
-        },
-        "summary": params.summary,
-        "description": params.description,
-        "location": params.location,
-        "reminders": propReminders,
-        "transparency": propTransparency
-      }
+      'calendarId': calendarId, 
+      "resource": this._formatAddResource(eventInfo)
     }).then(
       function(response) {
         return({success: true, data: response.result, details: 'add event succeeded'});
@@ -110,58 +86,17 @@ class GoogleCalendar {
     )   
   }
   
-  async addEventBatch(eventList) {
+  async addEventBatch(calendarId, eventList) {
     var success = true;
     
     for (var i = 0; i < eventList.length && success; i++) {
-     var result = await this.addEvent(eventList[i]);
+     var result = await this.addEvent(calendarId, eventList[i]);
      success = result.success;
     }
 
     return success;
   }
-  
-    /*
-  addBatchOfAllDayEvents(params, callback) {
-    console.log('addBatchOfAllDayEvents');
-
-    var eventList = [];
-    for (var i = 0; i < params.length; i++) {
-      var item = params[i];
-      
-      var propTransparency = 'transparent';  // check for busy
-      var propReminders = { useDefault: true }; // check for overrides
-
-      eventList.push({
-        "calendarId": item.calendarId,
-        "resource": {
-          "end": {
-            "date": item.date
-          },
-          "start": {
-            "date": item.date
-          },
-          "summary": item.summary,
-          "description": item.description,
-          "location": item.location,
-          "reminders": propReminders,
-          "transparency": propTransparency
-        }
-      });
-    }
-    
-    var batch = gapi.client.newBatch();
-    var getCalendarList = gapi.client.calendar.calendarList.list({});
-    batch.add(getCalendarList);
-    batch.add(getCalendarList);
-    batch.execute(callback);
-  }
-  
-  foo(params) {
-    console.log('foo');
-    console.log(params);
-  }
-  */
+ 
   
   /* removeEvent:
    * params = {
@@ -169,19 +104,17 @@ class GoogleCalendar {
    *   eventId:  calendar event ID
    * }
    */
-  async removeEvent(params) {
-    return await gapi.client.calendar.events.delete({
-      "calendarId": params.calendarId, 
-      "eventId": params.eventId
-      
-    }).then(
+  async removeEvent(eventInfo) {
+    return await gapi.client.calendar.events.delete(_formatDeleteParams(eventInfo))
+    .then(
       function(response) {
         return({success: true, data: params, details: 'event removed'});
       },
       
       function(err) { 
-        console.error("GoogleCalendar.removeEvent error", err); 
-        return({success: false, data: params, details: error});
+        console.error("GoogleCalendar.removeEvent error");
+        console.error(err);
+        return({success: false, data: params, details: err});
       }
     )  
   }
@@ -198,6 +131,112 @@ class GoogleCalendar {
 
     return success;
   }  
+  
+  //--------------------------------------------------------------
+  // true batching example
+  //--------------------------------------------------------------
+  async testBatch(batchParams) {
+    return await this._testBatchPromise(batchParams);
+  }
+  
+  _testBatchPromise(batchParams) {
+    return new Promise((resolve, reject) => {        
+      this._testBatch_internal((result) => {
+        if (!result.hasOwnProperty('success')) {
+          result = {success: true, details: 'batch succeeded', data: result};
+        }
+        resolve(result);
+      }, 
+      batchParams);
+    });
+  }
+  
+  _testBatch_internal(promiseCallback, batchParams) {
+    try {
+      var batchList = this._buildBatchList(batchParams);
+      if (batchList.length == 0) {
+        promiseCallback({success: true, data: null, details: 'no items in batch list'});
+        return;
+      }
+      
+      var batch = gapi.client.newBatch();
+
+      for (var i = 0; i < batchList.length; i++) {
+        batch.add(batchList[i]);
+      }
+      
+      batch.execute(promiseCallback);
+      
+    } catch(err) {
+      console.log('_testBatch_internal catch');
+      console.log(err);
+      promiseCallback({success: false, data: null, details: JSON.stringify(err)});
+    }
+  }
+  
+  //--------------------------------------------------------------
+  // private methods
+  //--------------------------------------------------------------   
+  _formatAddResource(eventInfo) {
+    var propReminders = { useDefault: true };
+    if (eventInfo.hasOwnProperty('reminders')) {
+      propReminders.useDefault = false;
+      propReminders.overrides = [];
+      for (var i = 0; i < eventInfo.reminders.length; i++) {
+        propReminders.overrides.push(eventInfo.reminders[i]);
+      }
+    }
+    
+    var propTransparency = 'transparent';
+    if (eventInfo.hasOwnProperty('busy') && eventInfo.busy) propTransparency = 'opaque';
+    
+    var resource = {
+      "end": {
+        "date": eventInfo.date
+      },
+      "start": {
+        "date": eventInfo.date
+      },
+      "summary": eventInfo.summary,
+      "description": eventInfo.description,
+      "location": eventInfo.location,
+      "reminders": propReminders,
+      "transparency": propTransparency
+    };
+    
+    return resource;
+  }
+  
+  _formatDeleteParams(eventInfo) {
+    var params = {
+      "calendarId": eventInfo.calendarId, 
+      "eventId": eventInfo.eventId
+    };
+    
+    return params;      
+  }
+  
+  _buildBatchList(batchParams) {
+    var batchList = [];
+    for (var i = 0; i < batchParams.length; i++) {
+      var item = batchParams[i];
+      
+      if (item.action == 'add') {
+        batchList.push(gapi.client.calendar.events.insert({
+          "calendarId": item.params.calendarId, 
+          "resource": this._formatAddResource(item.params)
+        }));
+    
+      } else if (item.action == 'remove') {
+        batchList.push(gapi.client.calendar.events.delete(this._formatDeleteParams(item.params)));
+        
+      } else if (item.action == 'get-calendars') {
+        batchList.push(gapi.client.calendar.calendarList.list({}));
+      }
+    }
+    
+    return batchList;
+  }
   
   //--------------------------------------------------------------
   // handlers

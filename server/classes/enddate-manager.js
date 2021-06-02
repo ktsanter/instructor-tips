@@ -215,7 +215,7 @@ module.exports = internal.EndDateManager = class {
         
       'eventoverride': 
         'select ' +
-          'a.eventoverrideid, a.student, a.section, a.enddate, a.notes ' +
+          'a.eventoverrideid, a.student, a.section, a.enddate, a.enrollmentenddate, a.notes ' +
         'from eventoverride as a ' +
         'where a.configurationid = ' + configurationId
     };
@@ -253,12 +253,13 @@ module.exports = internal.EndDateManager = class {
     
     query = 
       'insert into eventoverride(' +
-        'configurationid, student, section, enddate, notes' +
+        'configurationid, student, section, enddate, enrollmentenddate, notes' +
        ') values (' +
          configurationId + ', ' +
          '"' + postData.student + '", ' +
          '"' + postData.section + '", ' +
          '"' + postData.enddate + '", ' +
+         '"' + postData.enrollmentenddate + '", ' +
          '"' + postData.notes + '"' +
        ')';
        
@@ -285,6 +286,7 @@ module.exports = internal.EndDateManager = class {
     query = 
       'update eventoverride set ' +
         'enddate="' + postData.enddate + '", ' +
+        'enrollmentenddate="' + postData.enrollmentenddate + '", ' +
         'notes="' + postData.notes + '" ' +
       'where eventoverrideid=' + postData.overrideid;
        
