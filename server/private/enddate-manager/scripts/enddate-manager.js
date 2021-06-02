@@ -1,11 +1,9 @@
 //-----------------------------------------------------------------------
 // End date manager
 //-----------------------------------------------------------------------
-// TODO: work out how to reconcile overrides with enrollment upload
 // TODO: enable _rewriteAllCalendarEvents
 // TODO: experiment with true batching for calendar operations
-// TODO: figure out how to clean out obsolete calendar events and overrides
-// TODO: rework debug to become admin
+// TODO: implement obsolete data cleanup
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -175,6 +173,7 @@ const app = function () {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
     
     page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
+    page.navAdmin.getElementsByClassName('btnCleanup')[0].addEventListener('click', (e) => { _handleObsoleteDataCleanup(e); });
   }
     
   //-----------------------------------------------------------------------------
@@ -720,6 +719,10 @@ const app = function () {
 
     _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
   }
+  
+  function _handleObsoleteDataCleanup() {
+    console.log('_handleObsoleteDataCleanup');
+  }
       
   async function _uploadEnrollments(e) {
     var elem = page.navOptions.getElementsByClassName('uploadfile')[0];
@@ -728,6 +731,10 @@ const app = function () {
       console.log('no file chosen');
       return;
     }
+    
+    var msg = 'The current calendar entries will be removed and replaced by the data in the uploaded file, however all overrides will be preserved.';
+    msg += '\n\nChoose "Okay" to continue with the upload';
+    if (!confirm(msg)) return;
 
     page.navOptions.getElementsByClassName('uploadfile-label')[0].innerHTML = fileList[0].name;
 
@@ -983,10 +990,6 @@ const app = function () {
     // hack due to time zone problems
     return date.toString().slice(0,10);
   }
-
-  //--------------------------------------------------------------------------
-  // test stuff
-	//--------------------------------------------------------------------------  
 
 	//-----------------------------------------------------------------------------------
 	// init:
