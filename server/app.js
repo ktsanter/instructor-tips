@@ -572,6 +572,27 @@ app.get('/enddate-manager/help', function (req, res) {
 app.post('/usermanagement/routeToApp/enddate-manager/upload', function (req, res) {
   endDateManager.processUploadedFile(req, res); 
 })
+app.post('/usermanagement/routeToApp/enddate-manager/export', function (req, res) {
+  endDateManager.exportToExcel(req, res, processEndDateManagerExportResult); 
+})
+
+async function processEndDateManagerExportResult(req, res, result) {
+  if (result.success) {
+    var fileName = result.targetfilename;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+    await result.workbook.xlsx.write(res);
+
+    res.end();
+    
+  } else {
+    var pugFileName = path.join(__dirname, 'private', 'enddate-manager/pug/export-error.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {description: result.description}});
+  }
+}
+
 
 app.get('/commentbuddy/composer', function (req, res) { routeIfLoggedIn(req, res, 'commentbuddy'); })
 app.get('/commentbuddy/help', function (req, res) {
@@ -954,7 +975,6 @@ app.get('/roster-manager/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
-
 
 async function processRosterManagerResult(req, res, result) {
   if (result.success) {

@@ -34,6 +34,8 @@ class EventEditor {
     this._config.eventContainer.getElementsByClassName('header-section')[0].addEventListener('click', (e) => { this._handleResort('section'); });
     this._config.eventContainer.getElementsByClassName('header-enddate')[0].addEventListener('click', (e) => { this._handleResort('enddate'); });
     
+    this._config.eventContainer.getElementsByClassName('event-exporticon')[0].addEventListener('click', (e) => { this._handleExport(); });
+    
     this._config.editorOkay.addEventListener('click', (e) => { this._handleEditEnd(true); });
     this._config.editorCancel.addEventListener('click', (e) => { this._handleEditEnd(false); });
     
@@ -195,6 +197,10 @@ class EventEditor {
       notes: this.elemNotes.value
     };
   }
+  
+  async _export() {
+    await this._config.callbackExport( this.getEventList() );
+  }
       
   //--------------------------------------------------------------
   // handlers
@@ -226,6 +232,10 @@ class EventEditor {
     }
     
     this.update(this.eventList);
+  }
+  
+  _handleExport(e) {
+    this._export();
   }
 
   //--------------------------------------------------------------

@@ -130,6 +130,57 @@ module.exports = internal.EndDateManager = class {
   }
 
 //---------------------------------------------------------------
+// public: export to Excel
+//---------------------------------------------------------------  
+  exportToExcel(req, res, callback) {
+    var thisObj = this;
+
+    var form = new this._formManager.IncomingForm();
+    form.parse(req, async function(err, fields, files) {
+      if (err) {
+        thisObj._failureCallback(req, res, 'error in form.parse: ' + JSON.stringify(err), callback);
+        return;
+      }
+      
+      if (!fields.hasOwnProperty('export-data')) {
+        thisObj._failureCallback(req, res, 'missing export data field', callback);
+        return;
+      }
+      
+      var exportData = JSON.parse(fields['export-data']);
+      
+      const exceljs = require('exceljs');
+      var workbook = new exceljs.Workbook();
+      workbook.clearThemes();
+      
+      var sheet = workbook.addWorksheet('end dates');
+      sheet.columns = [ 
+        {width: 32}, 
+        {width: 58}, 
+        {width: 20, style: {alignment: {horizontal: 'center'}}}, 
+        {width: 20, style: {alignment: {horizontal: 'center'}}}, 
+        {width: 12, style: {alignment: {horizontal: 'center'}}} 
+      ];
+      sheet.addRow(['student', 'section', 'end date', 'enrollment end date', 'override']);
+      sheet.getRow(1).font = {bold: true};
+      sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+      
+      for (var i = 0; i < exportData.length; i++) {
+        var item = exportData[i];
+        sheet.addRow([
+          item.student,
+          item.section,
+          item.enddate,
+          item.enrollmentenddate,
+          item.override ? '☑' : ''
+        ]);
+      }
+      
+      thisObj._successCallback(req, res, 'success', workbook, 'end-date-manager-export.xlsx', callback);      
+   });
+  }
+
+//---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
   async _getConfiguration(params, postData, userInfo) {
@@ -384,6 +435,28 @@ module.exports = internal.EndDateManager = class {
     
     res.send(result);
   }
+  
+  _failureCallback(req, res, errorDescription, callback) {
+    var result = {
+      sucess: false,
+      description: errorDescription,
+      workbook: null,
+      targetfilename: ''
+    };
+    
+    callback(req, res, result);
+  }
+  
+  _successCallback(req, res, message, workbookToSend, targetFileName, callback) {
+    var result = {
+      success: true,
+      description: message,
+      workbook: workbookToSend,
+      targetfilename: targetFileName
+    };
+    
+    callback(req, res, result);
+  }  
     
 //----------------------------------------------------------------------
 // utility

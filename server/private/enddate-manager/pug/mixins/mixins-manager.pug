@@ -7,5 +7,8 @@ mixin managerContainer()
           th(class="header header-section") section
           th(class="header header-enddate") end date
           th
+            i(class="event-icon event-exporticon fas fa-file-excel" title="export to Excel")
+            form(id="formExport" class="export-form hide-me" action="enddate-manager/export" enctype="multipart/form-data" method="post")
+              textarea(id="exportData" class="export-data" name="export-data")
 
         tbody(class="eventlist-body")

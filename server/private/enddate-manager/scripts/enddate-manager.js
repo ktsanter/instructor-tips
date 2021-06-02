@@ -5,6 +5,7 @@
 // TODO: enable _rewriteAllCalendarEvents
 // TODO: experiment with true batching for calendar operations
 // TODO: figure out how to clean out obsolete calendar events and overrides
+// TODO: add report option?
 // TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
@@ -131,7 +132,8 @@ const app = function () {
       editorOkay: page.contents.getElementsByClassName('button-editor-okay')[0],
       editorCancel: page.contents.getElementsByClassName('button-editor-cancel')[0],
       callbackEventChange: _callbackEditorEventChange,
-      callbackModeChange: _callbackEditorModeChange
+      callbackModeChange: _callbackEditorModeChange,
+      callbackExport: _callbackEditorExport
     });
     settings.eventEditor.render();
   }
@@ -609,6 +611,17 @@ const app = function () {
     _setMainNavbarEnable(enable);
   }
   
+  async function _callbackEditorExport(exportData) {
+    console.log('_callbackEditorExport');
+    console.log(exportData);
+    
+    var elemForm = page.navManage.getElementsByClassName('export-form')[0];
+    elemForm.getElementsByClassName('export-data')[0].value = JSON.stringify(exportData);
+    elemForm.submit();
+    
+    console.log('okeydokey');
+  }
+  
   function _setMainNavbarEnable(enable) {
     var menuIds = ['navManage', 'navOptions', 'navDebug'];
     for (var i = 0; i < menuIds.length; i++) {
@@ -705,7 +718,7 @@ const app = function () {
 
     page.notice.setNotice('loading...', true);
     _setMainUIEnable(false);
-    var result = await _formPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
+    var result = await _enrollmentReportPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
     if (result.success) {
       var removeResult = await _removeCalendarEvents();
       
@@ -844,8 +857,8 @@ const app = function () {
   //----------------------------------------
   // enrollment report post
   //----------------------------------------
-  async function _formPost(url, fileToPost) {
-    const METHOD_TITLE = 'formPost';
+  async function _enrollmentReportPost(url, fileToPost) {
+    const METHOD_TITLE = '_enrollmentReportPost';
     
     var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
     var data = new FormData();
@@ -881,7 +894,7 @@ const app = function () {
     
     return result;
   }
-  
+
   //---------------------------------------
   // DB interface
   //----------------------------------------  
