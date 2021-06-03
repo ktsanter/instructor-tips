@@ -85,7 +85,31 @@ class GoogleCalendar {
       }
     )   
   }
+    
+  /* removeEvent:
+   * params = {
+   *   calendarId:  google calendar ID,
+   *   eventId:  calendar event ID
+   * }
+   */
+  async removeEvent(eventInfo) {
+    return await gapi.client.calendar.events.delete(this._formatDeleteParams(eventInfo))
+    .then(
+      function(response) {
+        return({success: true, data: response, details: 'event removed'});
+      },
+      
+      function(err) { 
+        console.error("GoogleCalendar.removeEvent error");
+        console.error(err);
+        return({success: false, data: null, details: err});
+      }
+    )  
+  }
   
+  //--------------------------------------------------------------
+  // synchronous batching
+  //--------------------------------------------------------------
   async addEventBatch(calendarId, eventList) {
     var success = true;
     
@@ -97,28 +121,6 @@ class GoogleCalendar {
     return success;
   }
  
-  
-  /* removeEvent:
-   * params = {
-   *   calendarId:  google calendar ID,
-   *   eventId:  calendar event ID
-   * }
-   */
-  async removeEvent(eventInfo) {
-    return await gapi.client.calendar.events.delete(_formatDeleteParams(eventInfo))
-    .then(
-      function(response) {
-        return({success: true, data: params, details: 'event removed'});
-      },
-      
-      function(err) { 
-        console.error("GoogleCalendar.removeEvent error");
-        console.error(err);
-        return({success: false, data: params, details: err});
-      }
-    )  
-  }
-  
   async removeEventBatch(calendarId, eventList) {
     var success = true;
 
@@ -133,45 +135,18 @@ class GoogleCalendar {
   }  
   
   //--------------------------------------------------------------
-  // true batching example
+  // async batching using Google API
   //--------------------------------------------------------------
-  async testBatch(batchParams) {
-    return await this._testBatchPromise(batchParams);
-  }
-  
-  _testBatchPromise(batchParams) {
-    return new Promise((resolve, reject) => {        
-      this._testBatch_internal((result) => {
-        if (!result.hasOwnProperty('success')) {
-          result = {success: true, details: 'batch succeeded', data: result};
-        }
-        resolve(result);
-      }, 
-      batchParams);
-    });
-  }
-  
-  _testBatch_internal(promiseCallback, batchParams) {
-    try {
-      var batchList = this._buildBatchList(batchParams);
-      if (batchList.length == 0) {
-        promiseCallback({success: true, data: null, details: 'no items in batch list'});
-        return;
-      }
-      
-      var batch = gapi.client.newBatch();
-
-      for (var i = 0; i < batchList.length; i++) {
-        batch.add(batchList[i]);
-      }
-      
-      batch.execute(promiseCallback);
-      
-    } catch(err) {
-      console.log('_testBatch_internal catch');
-      console.log(err);
-      promiseCallback({success: false, data: null, details: JSON.stringify(err)});
-    }
+  async executeBatch(batchParams) {
+    //console.log('GoogleCalendar.executeBatch');
+    //console.log('batchParams...');
+    //console.log(batchParams);
+    
+    //return await this._executeBatchPromise(batchParams);
+    var result = await this._executeBatchPromise(batchParams);
+    //console.log('result...');
+    //console.log(result);
+    return result;
   }
   
   //--------------------------------------------------------------
@@ -216,6 +191,44 @@ class GoogleCalendar {
     return params;      
   }
   
+  _executeBatchPromise(batchParams) {
+    return new Promise((resolve, reject) => {        
+      this._executeBatch_internal((result) => {
+        //console.log('_executeBatchPromise result...');
+        //console.log(result);
+
+        if (!result.hasOwnProperty('success')) {
+          result = {success: true, details: 'batch succeeded', data: result};
+        }
+        resolve(result);
+      }, 
+      batchParams);
+    });
+  }
+  
+  _executeBatch_internal(promiseCallback, batchParams) {
+    try {
+      var batchList = this._buildBatchList(batchParams);
+      if (batchList.length == 0) {
+        promiseCallback({success: true, data: null, details: 'no items in batch list'});
+        return;
+      }
+      
+      var batch = gapi.client.newBatch();
+
+      for (var i = 0; i < batchList.length; i++) {
+        batch.add(batchList[i]);
+      }
+
+      batch.execute(promiseCallback);
+      
+    } catch(err) {
+      console.log('_executeBatch_internal catch');
+      console.log(err);
+      promiseCallback({success: false, data: null, details: JSON.stringify(err)});
+    }
+  }
+  
   _buildBatchList(batchParams) {
     var batchList = [];
     for (var i = 0; i < batchParams.length; i++) {
@@ -237,6 +250,8 @@ class GoogleCalendar {
     
     return batchList;
   }
+  
+  
   
   //--------------------------------------------------------------
   // handlers

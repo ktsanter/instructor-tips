@@ -1,7 +1,6 @@
 //-----------------------------------------------------------------------
 // End date manager
 //-----------------------------------------------------------------------
-// TODO: experiment with true batching for calendar operations
 // TODO: implement "_handleObsoleteDataCleanup"
 // TODO: finish help
 //-----------------------------------------------------------------------
@@ -172,6 +171,7 @@ const app = function () {
     page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
     page.navAdmin.getElementsByClassName('btnCleanup')[0].addEventListener('click', (e) => { _handleObsoleteDataCleanup(e); });
     page.navAdmin.getElementsByClassName('btnRemoveEvents')[0].addEventListener('click', (e) => { _handleRemoveEvents(e); });
+    page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
   }
     
   //-----------------------------------------------------------------------------
@@ -386,10 +386,19 @@ const app = function () {
     var itemsWithSameId = settings.eventEditor.getEventList({queryType: 'eventid', eventid: eventParams.eventid});
     var itemsWithSameTargetDate = settings.eventEditor.getEventList({queryType: 'enddate', enddate: eventParams.enddate});
 
+    var batchParams = [];
+
     var eventsToRemove = new Set([eventParams.eventid]);
     for (var i = 0; i < itemsWithSameTargetDate.length; i++) {
       var item = itemsWithSameTargetDate[i];
       if (item.eventid != eventParams.eventid) eventsToRemove.add(item.eventid);
+    }
+    var eventsToRemoveList = Array.from(eventsToRemove);
+    for (var i = 0; i < eventsToRemoveList.length; i++) {
+      batchParams.push({
+        "action": 'remove',
+        "params": {"calendarId": settings.configuration.calendarId, "eventId": eventsToRemoveList[i]}
+      });
     }
     
     var objEventsToAdd = [];
@@ -433,18 +442,16 @@ const app = function () {
       }
     }
     
-    var eventsToAdd = [];
     for (var enddate in objEventsToAdd) {
-      eventsToAdd.push(_makeEndDateEventParams({"date": enddate, "enrollments": objEventsToAdd[enddate].enrollments}));
+      batchParams.push({
+        "action": 'add',
+        "params": _makeEndDateEventParams({"date": enddate, "enrollments": objEventsToAdd[enddate].enrollments})
+      });
     }
     
-    var removeResult = await settings.google.objCalendar.removeEventBatch(settings.configuration.calendarId, Array.from(eventsToRemove));
-    if (!removeResult) return false;
-
-    var addResult = await settings.google.objCalendar.addEventBatch(settings.configuration.calendarId, eventsToAdd);
-    if (!addResult) return false;
-  
-    return true;
+    var result = await settings.google.objCalendar.executeBatch(batchParams);
+    
+    return result.success;
   }
     
   async function _reloadConfigurationAndEvents() {
@@ -525,6 +532,7 @@ const app = function () {
   
   async function _rewriteAllCalendarEvents(sourceCalendarId, destCalendarId) {
     var eventList = settings.eventEditor.getEventList();
+    var batchParams = [];
     
     var eventsToRemove = new Set([]);
     for (var i = 0; i < eventList.length; i++) {
@@ -532,22 +540,24 @@ const app = function () {
     }
 
     var arrEventsToRemove = Array.from(eventsToRemove);
-    var eventsToRemoveList = [];
-    for (var i = 0; i < arrEventsToRemove.length; i++) {
-      eventsToRemoveList.push(arrEventsToRemove[i]);
+    for (var i = 0; i < arrEventsToRemove.length; i++) {;
+      batchParams.push({action: 'remove', params: {"calendarId": sourceCalendarId, "eventId": arrEventsToRemove[i]}});
     }
-    var success = await settings.google.objCalendar.removeEventBatch(settings.configuration.calendarId, eventsToRemoveList);
+
+    var success = await settings.google.objCalendar.executeBatch(batchParams);
     if (!success) return false;
     
     var collated = _collateEnrollments(eventList);
     
-    var eventsToAddList = [];
+    var batchParams = [];
     for (var enddate in collated) {
       var item = collated[enddate];
-      eventsToAddList.push(_makeEndDateEventParams(item));
+      var formattedItem = _makeEndDateEventParams(item);
+      formattedItem.calendarId = destCalendarId;
+      batchParams.push({action: 'add', params: _makeEndDateEventParams(item)});
     }
-   
-    return await settings.google.objCalendar.addEventBatch(destCalendarId, eventsToAddList);    
+    
+    return await settings.google.objCalendar.executeBatch(batchParams);
   }
   
   //--------------------------------------------------------------------------
@@ -744,88 +754,11 @@ const app = function () {
   }
   
   async function _handleObsoleteDataCleanup() {
-    //console.log('_handleObsoleteDataCleanup');
+    console.log('_handleObsoleteDataCleanup');
+  }
 
-    console.log('testing batch methods');
-    var batchParams = [];
-    var testAdd = false;
-    
-    if (testAdd) {
-      batchParams.push({
-        action: 'add', 
-        params: {
-          calendarId: settings.configuration.calendarId,
-          date: '2021-08-18',
-          summary: 'some event1',
-          description: 'xyzzy',
-          location: 'secret bunker'
-        }
-      });
-
-      batchParams.push({
-        action: 'add', 
-        params: {
-          calendarId: settings.configuration.calendarId,
-          date: '2021-08-18',
-          summary: 'some event2',
-          description: 'xyzzy',
-          location: 'secret bunker'
-        }
-      });
-
-      batchParams.push({
-        action: 'add', 
-        params: {
-          calendarId: settings.configuration.calendarId,
-          date: '2021-08-18',
-          summary: 'some event3',
-          description: 'xyzzy',
-          location: 'secret bunker'
-        }
-      });
-
-      batchParams.push({
-        action: 'add', 
-        params: {
-          calendarId: settings.configuration.calendarId,
-          date: '2021-08-18',
-          summary: 'some event4',
-          description: 'xyzzy',
-          location: 'secret bunker'
-        }
-      });
-      
-    } else {
-      var idList = ["tqaouevlu43dbvf0dk308gpna4", "t2k212i3c63hhslgn2l0j2jp94", "ga8qjmj26m8acr6nib0paar5vk", "vp5a1gm28ekhp9e472po31t9d8"];
-      for (var i = 0; i < idList.length; i++) {
-        batchParams.push({
-          action: 'remove',
-          params: {calendarId: settings.configuration.calendarId, eventId: idList[i]}
-        });
-      }
-    }
-    
-    var result = await settings.google.objCalendar.testBatch(batchParams);
-    
-    if (result.success) {
-      console.log(result.data);
-      if (testAdd) {
-        var s = '';
-        var first = true;
-        for (var key in result.data) {
-          var item = result.data[key];
-          
-          if (!first) s += ', ';
-          first = false;
-          s += '"' + item.result.id + '"';
-        }
-        console.log('[' + s + ']');
-      }
-      
-    } else {
-      console.log('fail');
-      console.log(result);
-    }
+  async function _handleTest() {
+    console.log('_handleTest');
   }
   
   function _handleRemoveEvents() {
@@ -864,25 +797,35 @@ const app = function () {
   }
   
   async function _removeCalendarEvents() {
-    var removeList = [];
+    var batchParams = [];
     for (var i = 0; i < settings.configuration.calendarEvents.length; i++) {
       var item = settings.configuration.calendarEvents[i];
-      removeList.push(item.eventid);
+      batchParams.push({
+        "action": 'remove',
+        "params": {"calendarId": settings.configuration.calendarId, "eventId": item.eventid}
+      });
     }
     
-    return await settings.google.objCalendar.removeEventBatch(settings.configuration.calendarId, removeList);
+    var result = await settings.google.objCalendar.executeBatch(batchParams);
+
+    return result.success;
   }
   
   async function _addEnrollmentListToCalendar(enrollmentList) {
     var collated = _collateEnrollments(enrollmentList, _standardizeOverrides());
     
-    var addList = [];
+    var batchParams = [];
     for (var enddate in collated) {
       var item = collated[enddate];
-      addList.push(_makeEndDateEventParams(item));
+      batchParams.push({
+        "action": 'add',
+        "params": _makeEndDateEventParams(item)
+      });
     }
    
-    return await settings.google.objCalendar.addEventBatch(settings.configuration.calendarId, addList);
+    var result = await settings.google.objCalendar.executeBatch(batchParams);
+
+    return result.success;
   }
   
   function _collateEnrollments(enrollmentList, overrideList) {
@@ -1102,29 +1045,19 @@ const app = function () {
     }
     
     var toRemoveList = Array.from(toRemoveSet);
-    var removeResult = await settings.google.objCalendar.removeEventBatch(settings.configuration.calendarId, Array.from(toRemoveSet));
-    
-    if (removeResult) location.reload();
-  }
-/*
-
-  
-  function _eventInfoCallback(success, results) {
-    if (!success) {
-      console.log('error: ' + JSON.stringify(results));
-      return;
+    var batchParams = [];
+    for (var i = 0; i < toRemoveList.length; i++) {
+      batchParams.push({
+        action: 'remove',
+        params: {calendarId: settings.configuration.calendarId, "eventId": toRemoveList[i]}
+      });
     }
+ 
+    var result = await settings.google.objCalendar.executeBatch(batchParams);
     
-    settings.configuration.calendarEvents = [];
-    
-    for (var i = 0; i < results.items.length; i++) {
-      var item = results.items[i];
-      if (item.location == settings.eventLocation) settings.configuration.calendarEvents.push(_parseCalendarEvent(item));
-    }
-
-    _updateUI();
+    if (result.success) location.reload();
   }
-  */
+
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------  
