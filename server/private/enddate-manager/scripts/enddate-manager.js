@@ -534,6 +534,9 @@ const app = function () {
     var eventList = settings.eventEditor.getEventList();
     var batchParams = [];
     
+    //console.log(sourceCalendarId);
+    //console.log(destCalendarId);
+    
     var eventsToRemove = new Set([]);
     for (var i = 0; i < eventList.length; i++) {
       eventsToRemove.add(eventList[i].eventid);
@@ -553,11 +556,16 @@ const app = function () {
     for (var enddate in collated) {
       var item = collated[enddate];
       var formattedItem = _makeEndDateEventParams(item);
+      //console.log(formattedItem);
       formattedItem.calendarId = destCalendarId;
-      batchParams.push({action: 'add', params: _makeEndDateEventParams(item)});
+      //console.log(formattedItem);
+      batchParams.push({action: 'add', params: formattedItem});
     }
     
+    //console.log(batchParams);
+    
     return await settings.google.objCalendar.executeBatch(batchParams);
+    return true;
   }
   
   //--------------------------------------------------------------------------

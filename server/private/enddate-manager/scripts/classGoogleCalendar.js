@@ -143,10 +143,10 @@ class GoogleCalendar {
     //console.log('batchParams...');
     //console.log(batchParams);
     
-    //return await this._executeBatchPromise(batchParams);
     var result = await this._executeBatchPromise(batchParams);
     //console.log('result...');
     //console.log(result);
+    
     return result;
   }
   

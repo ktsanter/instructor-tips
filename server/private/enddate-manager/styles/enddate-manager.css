@@ -88,13 +88,23 @@ body {
 }
 
 .contents .contents-navOptions .uploadfile-label {
+  color: white;
+  background-color: var(--bgPrimary);
   border: 1px solid var(--bgPrimary);
-  background-color: var(--bgShaded);
+  cursor: pointer;
 }
 
 .contents .contents-navOptions .notification-container {
   border: 1px solid var(--borderPrimary);
   padding: 0.4em;
+}
+
+.contents .contents-navOptions .notification-check {
+  cursor: pointer;
+}
+
+.contents .contents-navOptions .notification-check + label {
+  cursor: pointer;
 }
 
 .contents .contents-navOptions .notification-check:checked {
@@ -106,10 +116,7 @@ body {
   color: gray;
 }
 
-.contents .contents-navOptions .button-removeoutofdate {
-  border: 1px solid var(--bgPrimary);
-  background-color: var(--bgShaded);
-}
+.contents .contents-navOptions .calendar-selection {}
 
 
 /*------------------------------------------------------------------

@@ -1,10 +1,11 @@
 include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
 
 doctype html
 html(lang="en")
   head
-    title help for End Date Manager
+    title help - End date manager
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
 
@@ -12,7 +13,154 @@ html(lang="en")
     +bootstrapstyle()
     
     style
+      include ../../common/styles/navbar-overrides.css    
       include ../styles/help.css
 
-    body()
-      h4 End date manager help (tbd)
+  body(class="colorscheme")
+    +makeNavbar("End date manager help", 
+      {
+        items: [
+          {id: "navOverview", type: "link", label: "overview"},
+          {id: "navManage", type: "link", label: "manage"},
+          {id: "navConfigure", type: "link", label: "configure"},
+          {id: "navOther", type: "link", label: "other"},
+          {id: "navError", type: "link", label: "errors"}
+        ],
+        
+        buttons: [],        
+        profile: false
+      }
+    )    
+
+    .container-fluid
+      .row: .col-sm 
+        .helpsection(id="anchorOverview") 
+          .helpsection-title overview
+          .helpsection-content 
+            |TBD
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+        
+      .row: .col-sm 
+        .helpsection(id="anchorManage") 
+          hr
+          .helpsection-title the "manage" menu option
+          .helpsection-content 
+            |TBD            
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+        
+      .row: .col-sm 
+        .helpsection(id="anchorConfigure") 
+          hr
+          .helpsection-title the "configure" menu option
+          .helpsection-content 
+            |TBD
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+
+      .row: .col-sm 
+        .helpsection(id="anchorOther") 
+          hr
+          .helpsection-title the "other" menu option
+          .helpsection-content 
+            |TBD
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            
+      .row: .col-sm 
+        .helpsection(id="anchorError") 
+          hr
+          .helpsection-title potential errors
+          .helpsection-content 
+            |TBD
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            br
+            
+    script
+      include ../scripts/help.js

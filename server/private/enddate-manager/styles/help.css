@@ -1,3 +1,60 @@
+/*-------------------------------------------------------------------
+ * styling for End Date Manager help
+ *------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+}
+
+body {
+  padding-top: 4.0em;
+  margin-bottom: 10.0em;
+}
+
+.hide-me {
+  display: none;
+}
+
+
 /*------------------------------------------------------------------------------
- * FAQ composer help
+ * navbar
  *------------------------------------------------------------------------------*/
+.navbar-brand {
+  border: 1px solid white;
+  border-radius: 5px;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  font-size: 1.1em;
+}
+
+/*-------------------------------------------------------------------
+ * sections
+ *------------------------------------------------------------------*/
+.helpsection {
+  padding-top: 4.0em;
+}
+
+.helpsection .helpsection-title {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.helpsection .helpsection-content {
+  margin-top: 0.4em;
+}
+
+.helpsection .helpsection-content.shrink {
+  max-width: 50%;
+}
+
+.helpsection .helpsection-imagelink { 
+  display: inline-block;
+  margin-left: 0.4em;
+  margin-right: 0.6em;
+}
+
+.helpsection .helpsection-imagecontainer img {
+  border: 1px solid var(--borderPrimary);  
+  width: 22.0em;
+}
