@@ -187,14 +187,14 @@ class EventEditor {
     this.elemStudent.value = eventData.student;
     this.elemSection.value = eventData.section;
     this.elemEndDate.value = eventData.enddate;
-    this.elemNotes.value = eventData.notes;
+    this.elemNotes.value = decodeURIComponent(eventData.notes);
     this.elemEnrollmentEndDate.value = eventData.enrollmentenddate;
   }
   
   _getEventDataFromEditor() {
     return {
       enddate: this.elemEndDate.value,
-      notes: this.elemNotes.value
+      notes: encodeURIComponent(this.elemNotes.value)
     };
   }
   

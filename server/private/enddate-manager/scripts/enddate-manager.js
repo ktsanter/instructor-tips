@@ -936,7 +936,7 @@ const app = function () {
     var success = await _changeNotifications(params);
     if (success) elemSave.disabled = true;
   }
-  
+    
   //----------------------------------------
   // enrollment report post
   //----------------------------------------
@@ -1028,8 +1028,7 @@ const app = function () {
     
     settings.google.objCalendar.getEventInfo({
       "calendarId": settings.configuration.calendarId
-    },  _adminClearAllEventsCallback);      
-
+    },  _adminClearAllEventsCallback);
   }
   
   async function _adminClearAllEventsCallback(success, results) {

@@ -106,6 +106,12 @@ body {
   color: gray;
 }
 
+.contents .contents-navOptions .button-removeoutofdate {
+  border: 1px solid var(--bgPrimary);
+  background-color: var(--bgShaded);
+}
+
+
 /*------------------------------------------------------------------
  * standard error and notice
  *------------------------------------------------------------------*/

@@ -162,9 +162,10 @@ module.exports = internal.EndDateManager = class {
         {width: 58}, 
         {width: 20, style: {alignment: {horizontal: 'center'}}}, 
         {width: 20, style: {alignment: {horizontal: 'center'}}}, 
-        {width: 12, style: {alignment: {horizontal: 'center'}}} 
+        {width: 12, style: {alignment: {horizontal: 'center'}}},
+        {width: 50} 
       ];
-      sheet.addRow(['student', 'section', 'end date', 'enrollment end date', 'override']);
+      sheet.addRow(['student', 'section', 'end date', 'enrollment end date', 'override', 'notes']);
       sheet.getRow(1).font = {bold: true};
       sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
       
@@ -175,7 +176,8 @@ module.exports = internal.EndDateManager = class {
           item.section,
           item.enddate,
           item.enrollmentenddate,
-          item.override ? '☑' : ''
+          item.override ? '☑' : '',
+          decodeURIComponent(item.notes)
         ]);
       }
       

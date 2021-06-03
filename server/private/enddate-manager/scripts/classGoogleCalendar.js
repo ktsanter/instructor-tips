@@ -33,15 +33,16 @@ class GoogleCalendar {
    *   calendarId: google calendar ID,
    * }
    */
-  getEventInfo(params, callback) {
-    return gapi.client.calendar.events.list({
+  getEventInfo(params, callback, timeMin, timeMax) {
+    var params = {
       'calendarId': params.calendarId,
       'timeMin': (new Date()).toISOString(),
       'showDeleted': false,
       'singleEvents': true,
       'maxResults': 1000,
       'orderBy': 'startTime'
-    }).then (
+    };
+    return gapi.client.calendar.events.list(params).then (
       function(response) {
         var events = response.result.items;
         callback(true, response.result);
