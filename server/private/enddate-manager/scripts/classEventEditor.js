@@ -152,6 +152,8 @@ class EventEditor {
   _beginEventEditing(eventIndex) {
     this._config.callbackModeChange('editing');
     
+    this._setCalendarLimits();
+    
     this.editorEventIndex = eventIndex;
     this._loadEventDataIntoEditor(this.eventList[this.editorEventIndex]);
     
@@ -181,6 +183,18 @@ class EventEditor {
     }
         
     this._config.callbackModeChange('not editing');
+  }
+  
+  _setCalendarLimits() {
+    var now = new Date();
+    var minDate = new Date();
+    var maxDate = new Date();
+    
+    minDate.setDate(now.getDate() + 1);
+    maxDate.setDate(now.getDate() + 365);
+    
+    this.elemEndDate.min = minDate.toISOString().slice(0,10);
+    this.elemEndDate.max = maxDate.toISOString().slice(0,10);
   }
   
   _loadEventDataIntoEditor(eventData) {

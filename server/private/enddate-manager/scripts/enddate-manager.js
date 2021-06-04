@@ -194,15 +194,14 @@ const app = function () {
     _setNavOptions();
   }
   
-  function _showManage() {
-  }
+  function _showManage() {}
   
   function _showOptions() {
     var elemFileUpload = page.navOptions.getElementsByClassName('uploadfile')[0];
     var elemFileUploadLabel = page.navOptions.getElementsByClassName('uploadfile-label')[0];
 
     elemFileUpload.value = null;
-    elemFileUploadLabel.innerHTML = 'upload enrollment report';
+    elemFileUploadLabel.innerHTML = 'upload';
 
     var elemEmailCheck = page.navOptions.getElementsByClassName('email-check')[0];
     var elemEmailNumber = page.navOptions.getElementsByClassName('email-number')[0];
@@ -534,9 +533,6 @@ const app = function () {
     var eventList = settings.eventEditor.getEventList();
     var batchParams = [];
     
-    //console.log(sourceCalendarId);
-    //console.log(destCalendarId);
-    
     var eventsToRemove = new Set([]);
     for (var i = 0; i < eventList.length; i++) {
       eventsToRemove.add(eventList[i].eventid);
@@ -562,10 +558,7 @@ const app = function () {
       batchParams.push({action: 'add', params: formattedItem});
     }
     
-    //console.log(batchParams);
-    
     return await settings.google.objCalendar.executeBatch(batchParams);
-    return true;
   }
   
   //--------------------------------------------------------------------------
@@ -763,10 +756,11 @@ const app = function () {
   
   async function _handleObsoleteDataCleanup() {
     console.log('_handleObsoleteDataCleanup');
+    alert('_handleObsoleteDataCleanup() not implemented yet');
   }
 
   async function _handleTest() {
-    console.log('_handleTest');
+    console.log('_handleTest - no content');
   }
   
   function _handleRemoveEvents() {

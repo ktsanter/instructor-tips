@@ -81,6 +81,16 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navOptions {}
 
+
+.contents .contents-navOptions .configure-fieldset {}
+
+.contents .contents-navOptions .configure-fieldset legend {
+  font-size: 1.0em;
+  font-weight: 500;
+  float: none; 
+  padding: inherit; 
+}
+
 .contents .contents-navOptions .uploadfile {
   opacity: 0;
   z-index: -1;
@@ -112,11 +122,21 @@ body {
   border-color: var(--bgPrimary);
 }
 
+.contents .contents-navOptions .notification-number {
+  width: 5.0em;
+}
+
 .contents .contents-navOptions .notification-number:disabled + label {
   color: gray;
 }
 
-.contents .contents-navOptions .calendar-selection {}
+.contents .contents-navOptions .button-notification-save {
+  float: right;
+}
+
+.contents .contents-navOptions .calendar-selection {
+  width: 93%;
+}
 
 
 /*------------------------------------------------------------------

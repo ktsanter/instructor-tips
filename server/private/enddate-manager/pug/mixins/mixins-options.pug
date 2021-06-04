@@ -1,38 +1,38 @@
 mixin optionsContainer()
-  .row(class="mb-3")
+  .row(class="mb-4")
     .col-sm-5
-      .notification-container 
-        .notification-container-label notifications
+      fieldset(class="border ps-2 configure-fieldset")
+        legend(class="w-auto") enrollment report
         
-        .form-check
-          input(class="form-check-input notification-check email-check" type="checkbox" value="email-check" id="checkEmail")
-          label(class="form-check-label" for="checkEmail") email
-          
-          .form-check
-            input(class="notification-number email-number" type="number" value="1" id="numberEmail" min="1" max="120" disabled)
-            label(class="form-check-label notification-label px-1" for="numberEmail") hours
+        div
+          label(for="file-upload" class="uploadfile-label py-1 px-4 mb-2 ms-4" title="choose enrollment report file to process") 
+          input(type="file" class="uploadfile" id="file-upload" accept=".xlsx")
 
-        .form-check
-          input(class="form-check-input notification-check popup-check" type="checkbox" value="1" id="checkPopup")
-          label(class="form-check-label" for="checkPopup") popup
+  .row(class="mb-4")
+    .col-sm-5
+      fieldset(class="border ps-2 configure-fieldset")
+        legend(class="w-auto") calendar
+        
+        div(class="d-flex calendar-selection-container ms-3") 
+          select(class="custom-select calendar-selection ms-2 mb-2" id="inputCalendarSelect" title="choose Google Calendar")
           
-          .form-check
-            input(class="notification-number popup-number" type="number" value="1" id="numberPopup"  min="1" max="120" disabled)
-            label(class="form-check-label notification-label px-1" for="numberPopup") hours
+  .row(class="mb-4")
+    .col-sm-5
+      fieldset(class="border ps-2 configure-fieldset")
+        legend(class="w-auto") notifications
+
+        .form-check(class="ms-4")
+          input(class="form-check-input notification-check email-check" type="checkbox" value="email-check" id="checkEmail"  title="send email notifications for calendar events")
+          label(class="form-check-label" for="checkEmail" title="send email notifications for calendar events") email
+          
+          input(class="notification-number email-number ms-3" type="number" value="1" id="numberEmail" min="1" max="120" disabled title="time before event when notification is sent")
+          label(class="form-check-label notification-label px-1" for="numberEmail") hours
+
+        .form-check(class="ms-4")
+          input(class="form-check-input notification-check popup-check" type="checkbox" value="1" id="checkPopup" title="send popup notifications for calendar events")
+          label(class="form-check-label" for="checkPopup" title="send popup notifications for calendar events") popup
+          
+          input(class="notification-number popup-number ms-2" type="number" value="1" id="numberPopup"  min="1" max="120" disabled title="time before event when notification is sent")
+          label(class="form-check-label notification-label px-1" for="numberPopup") hours
             
-        button(class="btn btn-secondary button-notification-save mt-2 py-1" disabled) save
-
-  .row(class="mb-3")
-    .col-sm-5
-      div(class="d-flex calendar-selection-container") 
-        div(class="input-group")
-          div(class="input-group-prepend")
-            label(class="input-group-text" for="inputCalendarSelect") calendar
-          
-          select(class="custom-select calendar-selection w-75" id="inputCalendarSelect")
-          
-  .row(class="mb-3")
-    .col-sm-5
-      label(for="file-upload" class="uploadfile-label p-2 mt-2 mb-3" title="choose enrollment report file to process") upload enrollment resport
-      input(type="file" class="uploadfile" id="file-upload" accept=".xlsx")
-
+        button(class="btn btn-secondary button-notification-save ms-4 my-2 me-2" disabled title="save notification settings") save
