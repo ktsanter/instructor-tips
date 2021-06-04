@@ -5,10 +5,10 @@ function setNavbarTargets() {
   var navbarElements = document.getElementsByClassName('use-handler');
   navMap = {
     "navOverview": "anchorOverview",
+    "navAuthorize": "anchorAuthorize",
     "navManage": "anchorManage",
     "navConfigure": "anchorConfigure",
-    "navOther": "anchorOther",
-    "navError": "anchorError"
+    "navOther": "anchorOther"
   };
   
   for (var i = 0; i < navbarElements.length; i++) {

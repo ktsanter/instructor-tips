@@ -2,6 +2,12 @@ include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
 
+include ./help-mixins/help-mixins-overview.pug
+include ./help-mixins/help-mixins-authorize.pug
+include ./help-mixins/help-mixins-manage.pug
+include ./help-mixins/help-mixins-configure.pug
+include ./help-mixins/help-mixins-other.pug
+
 doctype html
 html(lang="en")
   head
@@ -21,10 +27,10 @@ html(lang="en")
       {
         items: [
           {id: "navOverview", type: "link", label: "overview"},
+          {id: "navAuthorize", type: "link", label: "authorize"},
           {id: "navManage", type: "link", label: "manage"},
           {id: "navConfigure", type: "link", label: "configure"},
-          {id: "navOther", type: "link", label: "other"},
-          {id: "navError", type: "link", label: "errors"}
+          {id: "navOther", type: "link", label: "other"}
         ],
         
         buttons: [],        
@@ -35,132 +41,27 @@ html(lang="en")
     .container-fluid
       .row: .col-sm 
         .helpsection(id="anchorOverview") 
-          .helpsection-title overview
-          .helpsection-content 
-            |TBD
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
+          +helpcontent_Overview()
+        
+      .row: .col-sm 
+        .helpsection(id="anchorAuthorize") 
+          hr
+          +helpcontent_Authorize()
         
       .row: .col-sm 
         .helpsection(id="anchorManage") 
           hr
-          .helpsection-title the "manage" menu option
-          .helpsection-content 
-            |TBD            
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
+          +helpcontent_Manage()
         
       .row: .col-sm 
         .helpsection(id="anchorConfigure") 
           hr
-          .helpsection-title the "configure" menu option
-          .helpsection-content 
-            |TBD
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
+          +helpcontent_Configure()
 
       .row: .col-sm 
         .helpsection(id="anchorOther") 
           hr
-          .helpsection-title the "other" menu option
-          .helpsection-content 
-            |TBD
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            
-      .row: .col-sm 
-        .helpsection(id="anchorError") 
-          hr
-          .helpsection-title potential errors
-          .helpsection-content 
-            |TBD
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
-            br
+          +helpcontent_Other()
             
     script
       include ../scripts/help.js
