@@ -126,7 +126,7 @@ class EventEditor {
     var elemCell = CreateElement._createElement('td', null, null);
     
     var icon = CreateElement.createIcon(null, this.editIconClassList, null);
-    icon.title = 'add/edit override';
+    icon.title = eventData.override ? 'edit override' : 'add override';
     icon.addEventListener('click', (e) => { this._editItem(e); });
     elemCell.appendChild(icon);
     
