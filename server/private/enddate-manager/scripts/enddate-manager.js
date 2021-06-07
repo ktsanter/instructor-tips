@@ -33,7 +33,8 @@ const app = function () {
       calendarEvents: []
     },
     
-    eventLocation: 'End date manager'
+    eventLocation: 'End date manager',
+    adminDisable: false
   };
     
 	//---------------------------------------
@@ -77,7 +78,7 @@ const app = function () {
     dbResult = await SQLDBInterface.doGetQuery('enddate-manager/query', 'admin-allowed');
     if (!dbResult.success) return;
     
-    var adminAllowed = dbResult.data.adminallowed;
+    var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
     _enableNavOption('navAdmin', adminAllowed, adminAllowed);
   }
   
@@ -171,6 +172,8 @@ const app = function () {
     page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
     page.navAdmin.getElementsByClassName('btnCleanup')[0].addEventListener('click', (e) => { _handleObsoleteDataCleanup(e); });
     page.navAdmin.getElementsByClassName('btnRemoveEvents')[0].addEventListener('click', (e) => { _handleRemoveEvents(e); });
+    page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });
+    
     page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
   }
     
@@ -759,8 +762,14 @@ const app = function () {
     alert('_handleObsoleteDataCleanup() not implemented yet');
   }
 
+  async function _handleToggleAdmin() {
+    settings.adminDisable = !settings.adminDisable;
+    _setAdminMenu();
+  }
+  
   async function _handleTest() {
-    console.log('_handleTest - no content');
+    console.log('_handleTest');
+    console.log('no action');
   }
   
   function _handleRemoveEvents() {

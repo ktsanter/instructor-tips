@@ -66,6 +66,11 @@ body {
   cursor: pointer;
 }
 
+.contents .contents-navManage .event-icon.event-exporticon {
+  color: #379164;
+  font-size: 1.1em;
+}
+
 .contents .contents-navManage .event-editicon {}
 
 .contents .contents-navManage .event-clearicon {

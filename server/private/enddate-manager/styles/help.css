@@ -47,6 +47,21 @@ body {
   margin-left: 0.4em;
 }
 
+.helpsection .divider {
+  border: none;
+  border-bottom: 3px solid var(--bgPrimary);
+}
+
+.helpsection .spacer {}
+
+.helpsection .event-icon {
+  color: var(--bgPrimary);
+}
+
+.helpsection .event-icon.event-exporticon {
+  color: #379164;  
+}
+
 .helpsection .helpsection-content {
   margin-top: 0.4em;
 }
@@ -55,12 +70,23 @@ body {
   vertical-align: top;
 }
 
-.helpsection .helpsection-content .screenshot.screenshot-configure {
+.helpsection .screenshot.screenshot-configure {
   width: 22.0em;
+  margin-left: 0.2em;
+}
+
+.helpsection .screenshot.screenshot-authorize {
+  width: 40.0em;
   margin-left: 0.2em;
 }
 
 .helpsection .helpsection-content .helpsection-subcontent {
   max-width: 55.0em;
   margin-bottom: 0.4em;
+}
+
+.helpsection .helpsection-subcontent .helpsection-subsubcontent {}
+
+.helpsection .helpsection-subcontent.demo-video {
+  max-width: 30%;
 }

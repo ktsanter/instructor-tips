@@ -2,4 +2,18 @@ mixin helpcontent_Authorize()
   .helpsection-title authorize
 
   .helpsection-content
-    div help content - authorize
+      |Your information is synchronized with a Google Calendar.  
+      |In order to use this app you must authorize it to use one of your Google accounts. 
+          
+  .helpsection-subcontent(class="ms-4")
+    |The first time you use the app you can specify the Google account by using the 
+    em Authorize 
+    |button.
+    
+    div
+      img(class="screenshot screenshot-authorize" src="https://res.cloudinary.com/ktsanter/image/upload/v1623065526/End%20date%20manager/authorize.png")
+        
+    em: strong Important
+    | - you must select your Michigan Virtual account (
+    em xxx@mivi.org 
+    |) as other Google accounts will not work with this app.
