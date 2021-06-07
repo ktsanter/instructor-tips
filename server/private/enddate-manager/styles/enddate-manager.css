@@ -69,6 +69,12 @@ body {
 .contents .contents-navManage .event-icon.event-exporticon {
   color: #379164;
   font-size: 1.1em;
+  float: right;
+}
+
+.contents .contents-navManage .event-icon.event-calendaricon {
+  font-size: 1.1em;
+  float: right;
 }
 
 .contents .contents-navManage .event-editicon {}

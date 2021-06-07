@@ -35,6 +35,7 @@ class EventEditor {
     this._config.eventContainer.getElementsByClassName('header-enddate')[0].addEventListener('click', (e) => { this._handleResort('enddate'); });
     
     this._config.eventContainer.getElementsByClassName('event-exporticon')[0].addEventListener('click', (e) => { this._handleExport(); });
+    this._config.eventContainer.getElementsByClassName('event-calendaricon')[0].addEventListener('click', (e) => { this._handleOpenCalendar(); });
     
     this._config.editorOkay.addEventListener('click', (e) => { this._handleEditEnd(true); });
     this._config.editorCancel.addEventListener('click', (e) => { this._handleEditEnd(false); });
@@ -216,6 +217,10 @@ class EventEditor {
     await this._config.callbackExport( this.getEventList() );
   }
       
+  _openCalendar() {
+    this._config.callbackOpenCalendar();
+  }
+
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------  
@@ -250,6 +255,10 @@ class EventEditor {
   
   _handleExport(e) {
     this._export();
+  }
+
+  _handleOpenCalendar(e) {
+    this._openCalendar();
   }
 
   //--------------------------------------------------------------

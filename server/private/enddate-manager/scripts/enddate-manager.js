@@ -2,7 +2,6 @@
 // End date manager
 //-----------------------------------------------------------------------
 // TODO: implement "_handleObsoleteDataCleanup"
-// TODO: finish help
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -142,7 +141,8 @@ const app = function () {
       editorCancel: page.contents.getElementsByClassName('button-editor-cancel')[0],
       callbackEventChange: _callbackEditorEventChange,
       callbackModeChange: _callbackEditorModeChange,
-      callbackExport: _callbackEditorExport
+      callbackExport: _callbackEditorExport,
+      callbackOpenCalendar: _callbackOpenCalendar
     });
     settings.eventEditor.render();
   }
@@ -564,6 +564,19 @@ const app = function () {
     return await settings.google.objCalendar.executeBatch(batchParams);
   }
   
+  function _openCurrentCalendar() {
+    console.log('_openCurrentCalendar');
+    
+    var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    var baseURL = 'https://calendar.google.com/calendar/u/0/embed';
+    var qparamSrc = 'src=' + settings.configuration.calendarId;
+    var qparamTimeZone = 'ctz=' + timeZone;
+    
+    var url = baseURL + '?' + qparamSrc + '&' + qparamTimeZone;
+    window.open(url, '_blank');
+  }  
+  
   //--------------------------------------------------------------------------
   // callbacks
 	//--------------------------------------------------------------------------
@@ -673,6 +686,10 @@ const app = function () {
     elemForm.submit();
   }
   
+  function _callbackOpenCalendar() {
+    _openCurrentCalendar(); 
+  }
+  
   function _setMainNavbarEnable(enable) {
     var menuIds = ['navManage', 'navOptions', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
@@ -769,7 +786,7 @@ const app = function () {
   
   async function _handleTest() {
     console.log('_handleTest');
-    console.log('no action');
+    console.log('stub');   
   }
   
   function _handleRemoveEvents() {
