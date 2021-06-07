@@ -565,8 +565,6 @@ const app = function () {
   }
   
   function _openCurrentCalendar() {
-    console.log('_openCurrentCalendar');
-    
     var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     var baseURL = 'https://calendar.google.com/calendar/u/0/embed';
