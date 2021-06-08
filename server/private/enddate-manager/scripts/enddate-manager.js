@@ -11,6 +11,8 @@ const app = function () {
 
     helpURL: '/enddate-manager/help',
     logoutURL: '/usermanagement/logout/enddate-manager',
+    owaURL: 'https://outlook.office365.com/mail/inbox',
+    googleCalendarURL: 'https://calendar.google.com/calendar',
     
     dirtyBit: {
       "navManage": false,
@@ -241,6 +243,14 @@ const app = function () {
     }
   }
     
+  function _handleCalendarOpen() {
+    window.open(settings.googleCalendarURL, '_blank');
+  }
+  
+  function _handleOWAOpen() {
+    window.open(settings.owaURL, '_blank');
+  }
+  
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
   }
@@ -713,6 +723,8 @@ const app = function () {
       "navOptions": function() { _showContents('navOptions'); },
       "navAdmin": function() { _showContents('navAdmin'); },
       "navGoogle": function() { _handleGoogleSignIn(); },
+      "navCalendar": function() { _handleCalendarOpen(); },
+      "navOWA": function() { _handleOWAOpen(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },

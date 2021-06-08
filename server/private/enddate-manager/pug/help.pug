@@ -7,6 +7,7 @@ include ./help-mixins/help-mixins-authorize.pug
 include ./help-mixins/help-mixins-manage.pug
 include ./help-mixins/help-mixins-configure.pug
 include ./help-mixins/help-mixins-other.pug
+include ./help-mixins/help-mixins-integration.pug
 
 doctype html
 html(lang="en")
@@ -30,7 +31,8 @@ html(lang="en")
           {id: "navAuthorize", type: "link", label: "authorize"},
           {id: "navManage", type: "link", label: "manage"},
           {id: "navConfigure", type: "link", label: "configure"},
-          {id: "navOther", type: "link", label: "other"}
+          {id: "navOther", type: "link", label: "other"},
+          {id: "navIntegration", type: "link", label: "integration"}
         ],
         
         buttons: [],        
@@ -62,6 +64,11 @@ html(lang="en")
         .helpsection(id="anchorOther") 
           .divider(class="mb-1")
           +helpcontent_Other()
+            
+      .row: .col-sm 
+        .helpsection(id="anchorIntegration") 
+          .divider(class="mb-1")
+          +helpcontent_Integration()
             
     script
       include ../scripts/help.js

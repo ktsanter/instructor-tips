@@ -47,6 +47,10 @@ body {
   margin-left: 0.4em;
 }
 
+.helpsection .menu-image.menu-image-other {
+  width: 25.0em;
+}
+
 .helpsection .divider {
   border: none;
   border-bottom: 3px solid var(--bgPrimary);
@@ -89,4 +93,15 @@ body {
 
 .helpsection .helpsection-subcontent.demo-video {
   max-width: 30%;
+}
+
+.helpsection .integration-image {
+}
+
+.helpsection .integration-image.integration-image-001 {
+  width: 30.0em;
+}
+
+.helpsection .integration-image.integration-image-002 {
+  width: 32.0em;
 }

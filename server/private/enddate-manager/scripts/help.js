@@ -8,7 +8,8 @@ function setNavbarTargets() {
     "navAuthorize": "anchorAuthorize",
     "navManage": "anchorManage",
     "navConfigure": "anchorConfigure",
-    "navOther": "anchorOther"
+    "navOther": "anchorOther",
+    "navIntegration": "anchorIntegration"
   };
   
   for (var i = 0; i < navbarElements.length; i++) {
