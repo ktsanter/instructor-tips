@@ -1,0 +1,46 @@
+include ../../common/pug/fontawesome-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title MathML to image
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    
+    
+    style
+      include ../styles/mathml.css
+    
+    script(data-main="/scripts/mathml/require_mathml", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    h3 Convert MathML to image
+    
+    div
+      input(type="radio" id="imageTypeSVG" name="imageType" value="svg" checked)
+      label(for="imageTypeSVG") SVG
+
+      input(type="radio" id="imageTypePNG" name="imageType" value="png")
+      label(for="imageTypePNG") PNG      
+
+    div
+      textarea(id="areaMathML" class="area-mathml" rows="10" cols="100" placeholder="enter MathML")
+    
+    div
+      button(id="btnConvert" class="button-convert") convert
+    
+    .error-result(class="hide-me")
+    
+    .result(class="hide-me")
+      h4 result image
+      img(id="imgResult" class="result-image")
+      
+      .result-svg-container
+        h4 result SVG
+        div(id="resultSVG" class="result-svg")
+
+      div
+        a(id="downloadLink" class="download-link") download
+        
