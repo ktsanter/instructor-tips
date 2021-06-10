@@ -25,8 +25,6 @@ const app = function () {
     page.downloadLink = page.result.getElementsByClassName('download-link')[0];
     
     _renderContents();
-    console.log('okay so far');    
-    return;
   }
  
   //-----------------------------------------------------------------------------
@@ -112,7 +110,7 @@ const app = function () {
     mathML = mathML.replace(/#/g, '%23');
     
     var paramFormat = 'format=' + format;
-    var paramMML = '&mml=' + mathML;
+    var paramMML = 'mml=' + mathML;
   ;
     var url = settings.conversionBaseURL + '?' + paramFormat + '&' + paramMML;
 
@@ -124,7 +122,7 @@ const app = function () {
 
       var requestOptions = {
         method: 'GET',
-        headers: myHeaders,
+        //headers: myHeaders,
         redirect: 'follow'
       };
       
