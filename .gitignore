@@ -16,3 +16,7 @@ sql/*.bat
 
 # has passwords
 /docker-compose.yml
+
+# Google credentials and tokens
+/server/google-credentials.json
+/server/token.json
