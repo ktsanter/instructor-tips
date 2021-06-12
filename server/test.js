@@ -1,6 +1,8 @@
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
+const MIMEText = require('mimetext')  // https://www.npmjs.com/package/mimetext
+
 var googleAuth = null;
 
 // If modifying these scopes, delete token.json.
@@ -107,86 +109,35 @@ app.get('/sendmessage', function (req, res) {
 // test mail stuff
 //------------------------------------------
 function sendMessage(oauth2Client, res) {
-  console.log('sendMessage');
-  var num = 15;
+  const message = new MIMEText()
+  message.setSender('ksanter@mivu.org')
+  message.setRecipient('ktsanter@gmail.com')
+  message.setSubject('Newsletter #55 Ready 🤖')
+  message.setMessage('Hi <b>buddy!</b>.')
+   
+  const gmail = google.gmail({ version: 'v1', auth: oauth2Client })
 
-  var rawText = makeBody("subject " + num, "This is message " + num, "ktsanter@gmail.com");
-
-  const gmail = google.gmail({"version": 'v1', "auth": oauth2Client});
-  var request = gmail.users.drafts.create({
-    'userId': "me",
-    'resource': {
-        'message': {
-            'raw': rawText
-        }
-    }      
-
-  }, (err, response) => {
-    if (response == null) {
-      console.log('**error creating draft Gmail message');
-      console.log(err.response.data.error);
-      res.send('** error creating draft Gmail message<br>' + JSON.err.response.data.error);
-  
-    } else {
-      var draftId = response.data.id;
-    
-      gmail.users.drafts.send({
-        'userId': "me", 
-        'resource': { 
-          'id': draftId 
-        } 
-      }, (err, response) => {
-        if (response == null) {
-          console.log('**error sending draft Gmail message');            
-          console.log(err.response.data.error);
-          res.send('** error sending draft Gmail message<br>' + JSON.err.response.data.error);
+  gmail.users.messages
+    .send({
+      userId: 'me',
+      requestBody: {
+        raw: message.asEncoded()
+      }
+    })
+    .then(function(result) {
+      res.send( {success: true, details: 'OK', data: message.getSubject()} );
       
-        } else {        
-          console.log(response.status + ' ' + response.statusText);
-          res.send(response.status + ' ' + response.statusText);
-        }
-      });
-    }
-  });
-}
-
-function makeBody(subject, message, receiverId) {
-    var boundary = "__myapp__";
-    var nl = "\n";
-    //var attach = new Buffer(fs.readFileSync(__dirname + "/../" + fileName)).toString("base64");
-
-    var str = [
-
-        "MIME-Version: 1.0",
-        "Content-Transfer-Encoding: 7bit",
-        "to: " + receiverId,
-        "subject: " + subject,
-        "Content-Type: multipart/alternate; boundary=" + boundary + nl,
-        "--" + boundary,
-        "Content-Type: text/plain; charset=UTF-8",
-        "Content-Transfer-Encoding: 7bit" + nl,
-        message /* + nl,
-        "--" + boundary ,
-        "--" + boundary,
-        "Content-Type: Application/pdf; name=myPdf.pdf",
-        'Content-Disposition: attachment; filename=myPdf.pdf',
-        "Content-Transfer-Encoding: base64" + nl,
-        attach,
-        "--" + boundary + "--"
-        */
-
-    ].join("\n");
-
-    var encodedMail = Buffer.from(str).toString("base64").replace(/\+/g, '-').replace(/\//g, '_');
-    return encodedMail;
+    })
+    .catch(function(err) {
+      console.log('catch');
+      console.log(err);
+      return res.send( {success: false, details: err, data: null} );
+    })
 }
 
 function getInboxMessages(oauth2Client, res) {
   console.log('getInboxMessages');
-  listMessages(oauth2Client, res);
-}
 
-function listMessages(oauth2Client, res) {
   const gmail = google.gmail({"version": 'v1', "auth": oauth2Client});
   gmail.users.messages.list({
       userId: 'me'

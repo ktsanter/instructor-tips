@@ -489,6 +489,13 @@ var appLookup = {
     loginReRoute: 'endate-manager/manager'
   }, 
 
+  "as-admin" : {
+    appDescriptor: 'as-admin',
+    appName: 'Aardvark Studios admin',
+    routePug: 'as-admin/pug/as-admin.pug',
+    loginReRoute: 'as-admin/admin'
+  }, 
+
   "commentbuddy" : {
     appDescriptor: 'commentbuddy',
     appName: 'CommentBuddy composer',
@@ -698,6 +705,12 @@ app.get('/usermanagement/routeToApp/:app', async function (req, res) {
     res.redirect(appInfo.routeRedirect);
 
   } else if (appInfo && appInfo.routePug) {
+    var userInfo = userManagement.getUserInfo(req.session);    
+    if (appInfo.appDescriptor == 'as-admin' && !userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
+      res.send('unauthorized');
+      return;
+    } 
+
     var pugFileName = path.join(__dirname, 'private', appInfo.routePug);
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
     
@@ -709,12 +722,6 @@ app.get('/usermanagement/routeToApp/:app', async function (req, res) {
     sendFailedAccess(res, 'routeToApp/' + appDescriptor);
   }
 });
-
-/*
-app.get('/login', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', '/login/html/login.html'))
-})
-*/
 
 app.post('/usermanagement/login_attempt', async function (req, res) {
   var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.hashedPassword);
@@ -902,6 +909,10 @@ app.get('/accordion-wrapper', function (req, res) {
 app.get('/jsgd/:app', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'jsgd/pug/' + req.params.app + '.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/as-admin', function (req, res) {
+  routeIfLoggedIn(req, res, 'as-admin');
 })
 
 app.get('/support-tool-index', function (req, res) {
