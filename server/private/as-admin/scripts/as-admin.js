@@ -4,6 +4,13 @@
 // TODO:
 //-----------------------------------------------------------------------
 const app = function () {
+  const TOOLINDEX_SPREADSHEETID = '1-M4mw9TFt7J7ytZdn_-mDP95HjSAH84oupOVBG-XNZM';
+  
+  const apiInfo = {
+    apibase: 'https://script.google.com/macros/s/AKfycbxAHeZ1fkN8Ei82SWPytXwLqDa2FqwJCgDyIVSbbRNmimujxYcu/exec',
+    apikey: 'KTS_toolindex'
+  };
+  
 	const page = {};
   const settings = {
     hideClass: 'hide-me',
@@ -28,6 +35,9 @@ const app = function () {
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
     await _initializeProfile(sodium);
+    
+    settings.indexdata = await _loadInitialData();
+    if (!settings.indexdata) return;
     
     page.notice.setNotice('');
     
@@ -74,15 +84,59 @@ const app = function () {
   }
   
   function _renderSites() {
-    console.log('_renderSites');
+    page.navSites = page.contents.getElementsByClassName('contents-navSites')[0];
+    
+    page.navSites.appendChild(_renderSiteItems());
   }
     
   function _renderAdmin() {
-    console.log('_renderAdmin');
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
     
     page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
   }
+  
+  function _renderSiteItems() {
+    var container = CreateElement.createDiv(null, 'sites');
+
+    var currentCategory;
+    var categoryContainer;
+    var categoryCount = 0;
+
+    for (var i = 0; i < settings.indexdata.length; i++) {
+      var item = settings.indexdata[i];
+
+      if (i == 0 || (item.category != currentCategory && item.category != '')) {
+        currentCategory = item.category;
+        categoryCount++;
+        categoryContainer = _renderCategory(currentCategory, categoryCount == 1);
+        container.appendChild(categoryContainer);
+      }
+      
+      if (item.url && item.url != '') categoryContainer.appendChild(_renderIndexItem(item));
+    }
+    
+    return container;
+  }
+  
+  function _renderCategory(categoryName, firstCategory) {
+    var classes = 'category';
+    if (!firstCategory) classes += ' mt-3';
+    
+    var container = CreateElement.createDiv(null, classes);
+    container.appendChild(CreateElement.createDiv(null, 'category-label', categoryName));
+    
+    return container;
+  }
+  
+  function _renderIndexItem(item) {
+    var container = CreateElement.createDiv(null, 'item');
+    
+    var toolLink = CreateElement.createLink(null, 'item-contents ms-2', item.label, null, item.url);
+    container.appendChild(toolLink);
+    toolLink.target = '_blank';
+    
+    return container;
+  }  
     
   //-----------------------------------------------------------------------------
 	// updating
@@ -104,11 +158,9 @@ const app = function () {
   }
   
   function _showSites() {
-    console.log('_showSites');
   }
     
   function _showAdmin() {
-    console.log('_showAdmin');
   }
   
   function _setNavOptions() {
@@ -194,7 +246,24 @@ const app = function () {
   //---------------------------------------
   // DB interface
   //----------------------------------------  
+  async function _loadInitialData() {
+    var result = null;
+    
+    page.notice.setNotice('loading...', true);
+    var requestParams = {sourcefileid: TOOLINDEX_SPREADSHEETID};
+    var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'indexinfo', requestParams, page.notice);
 
+    if (requestResult.success) {
+      page.notice.setNotice('');
+      var result = requestResult.data;
+      
+    } else {
+      page.notice.setNotice('load failed');
+    }
+
+    return result;
+  }
+  
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------  

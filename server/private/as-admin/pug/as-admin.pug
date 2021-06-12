@@ -4,7 +4,6 @@ include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/profile-mixins.pug
 
-include ./mixins/mixins-sites.pug
 include ./mixins/mixins-admin.pug
 
 doctype html
@@ -48,8 +47,7 @@ html(lang="en")
     .contents
       .error-container
       
-      .container-fluid(class="contents-container contents-navSites hide-me")
-        +sitesContainer()     
+      .container-fluid(class="contents-container contents-navSites hide-me")   
         
       .container-fluid(class="contents-container contents-navAdmin hide-me")
         +adminContainer()     
