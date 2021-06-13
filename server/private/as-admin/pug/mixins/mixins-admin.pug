@@ -1,5 +1,31 @@
 mixin adminContainer()   
   .row(class="py-2")
     .col-sm
-      button(class="btnTest") test
+      fieldset(class="mb-3")
+        legend Gmail authorization
+        div(class="ms-3")
+          button(class="btnTestGmailAuth") test Gmail auth
+          button(class="btnDoGmailAuth") do Gmail auth
 
+  .row(class="py-2")
+    .col-sm
+      fieldset(class="mb-3")
+        legend mailer debug mode 
+        div(class="form-check form-switch ms-3")
+          input(class="form-check-input check-mailer-debug" type="checkbox" id="checkMailerDebug" checked)
+          label(class="form-check-label" for="checkMailerDebug") mailer debug is ON
+
+  .row(class="py-2")
+    .col-sm
+      fieldset(class="mb-3")
+        legend cron jobs
+        div(class="form-check form-switch ms-3")
+          input(class="form-check-input check-reset-request-cron" type="checkbox" id="checkResetRequestCron" checked)
+          label(class="form-check-label" for="checkResetRequestCron") expired login reset request cron job is ENABLED
+
+  .row(class="py-2")
+    .col-sm
+      fieldset(class="mb-3")
+        legend general purpose
+        div(class="ms-3")
+          button(class="btnTest") test
