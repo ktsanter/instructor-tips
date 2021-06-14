@@ -92,14 +92,9 @@ body {
 }
 
 /*------------------------------------------------------------------------------
- * contents - navAdmin
- *------------------------------------------------------------------------------*/
-.contents .contents-navAdmin {}
-
-/*------------------------------------------------------------------------------
  * contents - navMailer
  *------------------------------------------------------------------------------*/
-.contents .contents-navAdmin {}
+.contents .contents-navMailer {}
 
 .contents .contents-navMailer .gmail-authorization-label.not-authorized {
   background-color: yellow;
@@ -108,6 +103,16 @@ body {
 
 .contents .contents-navMailer .btnFinishGmailAuth {
   display: block;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navCron
+ *------------------------------------------------------------------------------*/
+.contents .contents-navCron {}
+
+.contents .contents-navCron .cron-icon {
+  color: var(--bgPrimary);
+  cursor: pointer;
 }
 
 /*------------------------------------------------------------------

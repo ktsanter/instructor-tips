@@ -425,7 +425,7 @@ const endDateManager = new endDateManagerClass({
 // ASAdmin general query objects
 //------------------------------------------
 const ASAdminClass = require('./classes/as-admin');
-const ASAdmin = new ASAdminClass({"gMailer": gMailer2});
+const ASAdmin = new ASAdminClass({"gMailer": gMailer2, "cronScheduler": cronScheduler});
 
 //------------------------------------------
 // DB manager lookup, app info lookup

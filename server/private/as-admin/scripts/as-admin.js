@@ -32,7 +32,10 @@ const app = function () {
     page.notice.setNotice('loading...', true);
     
     page.navbar = page.body.getElementsByClassName('navbar')[0];    
-    page.contents = page.body.getElementsByClassName('contents')[0];    
+    page.contents = page.body.getElementsByClassName('contents')[0]; 
+
+    page.navbar.disabled = true;    
+    UtilityKTS.setClass(page.navbar, 'hide-me', true);
     
     await _initializeProfile(sodium);
     
@@ -41,6 +44,7 @@ const app = function () {
     
     page.notice.setNotice('');
     
+    page.navbar.disabled = false;
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     _renderContents();
@@ -109,7 +113,7 @@ const app = function () {
   function _renderCron() {
     page.navCron = page.contents.getElementsByClassName('contents-navCron')[0];
 
-    page.navCron.getElementsByClassName('check-reset-request-cron')[0].addEventListener('click', (e) => { _handleResetRequestCronToggle(e); });
+    page.navCron.getElementsByClassName('btnCronRefresh')[0].addEventListener('click', (e) => { _handleCronRefresh(e); });
   }
   
   function _renderTest() {
@@ -212,6 +216,7 @@ const app = function () {
   }
   
   async function _showCron() {
+    _doCronRefresh();
   }
   
   async function _showTest() {
@@ -252,7 +257,45 @@ const app = function () {
   function _updateMailerDebugUI(debugState) {
     page.labelMailerDebug.innerHTML = 'mailer debug is ' + debugState;
   }
-              
+  
+  function _updateCronJobListUI(cronJobList) {
+    var tbody = page.navCron.getElementsByClassName('crontable-body')[0];
+    UtilityKTS.removeChildren(tbody);
+    
+    for (var i = 0; i < cronJobList.length; i++) {
+      var job = cronJobList[i];
+      tbody.appendChild(_createCronJobRow(job));
+    }
+  }
+  
+  function _createCronJobRow(job) {
+    var row = CreateElement.createTableRow(null, 'cron-table-row');
+  
+    row.appendChild(CreateElement.createTableCell(null, 'cron-table-cell', job.jobName, false));
+    row.appendChild(CreateElement.createTableCell(null, 'cron-table-cell', job.running ? 'true' : 'false', false));
+    row.appendChild(CreateElement.createTableCell(null, 'cron-table-cell', job.fireTime, false));
+    
+    var cell = CreateElement.createTableCell(null, 'cron-table-cell', '', false)
+    row.appendChild(cell);
+    
+    var span = CreateElement.createSpan(null, 'cron-icon fa-stack');
+    cell.appendChild(span);
+    span.appendChild(CreateElement.createIcon(null, 'fas fa-running fa-stack-1x'));
+    span.addEventListener('click', (e) => { _handleRunCronJob(job); });
+
+    if (job.running) {
+      span.title = 'stop cron job';
+    } else {
+      span.title = 'start cron job';
+    }
+
+    var icon = CreateElement.createIcon(null, 'fas fa-ban fa-stack-2x cron-icon-strikethrough')
+    span.appendChild(icon);
+    UtilityKTS.setClass(icon, 'hide-me', !job.running);
+    
+    return row;
+  }
+  
   //--------------------------------------------------------------------------
   // admin
 	//--------------------------------------------------------------------------
@@ -299,9 +342,19 @@ const app = function () {
     _updateMailerDebugUI(debugState);      
   }
   
-  async function _doSetResetRequestCron(enableCronJob) {
-    console.log('_doSetResetRequestCron ' + enableCronJob);
-    console.log('**stub');
+  async function _doCronRefresh() {
+    var result = await SQLDBInterface.doGetQuery('as-admin/admin', 'cron-status');
+    var cronJobList = null;
+    if (result.success) cronJobList = result.data;
+    _updateCronJobListUI(cronJobList);
+  }
+  
+  async function _toggleCronJobRunState(job) {
+    var command = job.running ? 'cron-stop' : 'cron-start';
+    
+    var result = await SQLDBInterface.doPostQuery('as-admin/admin', command, {jobname: job.jobName}, page.setNotice);
+    
+    if (result.success) _doCronRefresh();
   }
   
   async function _doTest() {
@@ -368,10 +421,6 @@ const app = function () {
     await _doSetMailerDebug(e.target.checked);
   }
     
-  async function _handleResetRequestCronToggle(e) {
-    await _doSetResetRequestCron(e.target.checked);
-  }
-
   async function _handleTestGmailAuth() {
     await _testGmailAuthorization(); 
   }
@@ -388,6 +437,14 @@ const app = function () {
     await _sendTestMessage();
   }
     
+  async function _handleCronRefresh(e) {
+    await _doCronRefresh();
+  }
+
+  async function _handleRunCronJob(job) {
+    await _toggleCronJobRunState(job);
+  }
+              
   async function _handleTest() {
     await _doTest(); 
   }

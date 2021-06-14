@@ -138,6 +138,21 @@ module.exports = internal.CronScheduler = class {
     return this._jobList[jobName].job.running;
   }
   
+  listJobs() {
+    var jobStatus = [];
+
+    for (var jobName in this._jobList) {
+      var job = this._jobList[jobName];
+      jobStatus.push({
+        "jobName": jobName,
+        "running": job.job.running,
+        "fireTime": job.params.fireTime
+      });
+    }
+
+    return jobStatus;
+  }
+  
 //---------------------------------------------------------------
 // private methods
 //---------------------------------------------------------------

@@ -1,6 +1,18 @@
 mixin cronContainer()   
   .row(class="py-2")
     .col-sm
-      div(class="form-check form-switch ms-3")
-        input(class="form-check-input check-reset-request-cron" type="checkbox" id="checkResetRequestCron" checked)
-        label(class="form-check-label" for="checkResetRequestCron") expired login reset request cron job is ENABLED
+      table(class="table table-striped table-hover table-sm")
+        thead(class="table-primary")
+          tr
+            th(class="header header-jobname") job name
+            th(class="header header-running") running
+            th(class="header header-firetime") fire time
+            th
+        
+        tbody(class="crontable-body")
+      
+  .row(class="py-2")
+    .col-sm
+      button(class="btn btn-primary btnCronRefresh") refresh
+      
+      
