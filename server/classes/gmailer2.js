@@ -2,29 +2,33 @@
 //---------------------------------------------------------------
 // GMailer2 interface
 //---------------------------------------------------------------
-// TODO:
+// TODO: check gmail auth at startup
 //---------------------------------------------------------------
 
 const internal = {};
 
 module.exports = internal.GMailer2 = class {
   constructor(params) {
-    const {google} = require('googleapis');
-    this._fileservices = params.fileservices;
+    this.fsp = require('fs').promises;    
+    this.google = params.google;
+    this.mimetext = require('mimetext');  // https://www.npmjs.com/package/mimetext
     
-    var googleAuth = null;
+    this.googleAuth = null;
+    
+    this.googleCredentialsPath = 'google-credentials.json';
 
-    // If modifying these scopes, delete token.json.
-    const SCOPES = [
+    // The tokenPath file stores the user's access and refresh tokens, and is
+    // created automatically when the authorization flow completes for the first
+    // time.
+    this.tokenPath = 'token.json';    
+
+    // If modifying these scopes, delete the tokenPath file and
+    // rerun the authorization flow
+    this.scopes = [
       'https://www.googleapis.com/auth/gmail.readonly',
       'https://www.googleapis.com/auth/gmail.compose'
     ];
     
-    // The file token.json stores the user's access and refresh tokens, and is
-    // created automatically when the authorization flow completes for the first
-    // time.
-    const TOKEN_PATH = 'token.json';    
-
     this.setDebugMode(false);
   }
   
@@ -43,18 +47,204 @@ module.exports = internal.GMailer2 = class {
   }
   
   async checkGmailAuthorization() {
-    return {success: true, data: {authorized: this.DEBUG}, details: 'debugging'};
+    var result = this._failResult();
+    
+    var credentialsResult = await this._getCredentials(); 
+    if (!credentialsResult.success) {
+      result.details = credentialsResult.err;
+      return result;
+    } 
+
+    var credentials = credentialsResult.credentials;
+    const {client_secret, client_id, redirect_uris} = credentials.installed;
+    const oAuth2Client = new this.google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+    
+    var tokenResult = await this._getTokenContents();
+    if (!tokenResult.success) {
+      result.success = true;
+      result.details = tokenResult.err;
+      result.data = {authorized: false};
+      return result;
+    }
+      
+    var tokenContents = tokenResult.tokencontents;
+    oAuth2Client.setCredentials(tokenContents);
+    this.googleAuth = oAuth2Client;
+    result.details = 'authorized';
+    result.success = true;
+    result.data = {authorized: true}
+      
+    return result;
   }
   
+  async beginGmailAuthorization() {
+    var result = this._failResult();
+    
+    var credentialsResult = await this._getCredentials(); 
+    if (!credentialsResult.success) {
+      result.details = credentialsResult.err;
+      return result;
+    } 
+    
+    var credentials = credentialsResult.credentials;
+    const {client_secret, client_id, redirect_uris} = credentials.installed;
+    this.googleAuth = new this.google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
+    
+    
+    const authUrl = this.googleAuth.generateAuthUrl({
+      access_type: 'offline',
+      scope: this.scopes
+    });
+    
+    result.success = true;
+    result.data = {"authorizationurl": authUrl};
+    result.details = 'authorization URL generated';
+    
+    return result;
+  }
+  
+  async finishGmailAuthorization(confirmCode) {
+    var result = this._failResult();
+    
+    var getTokenResult = await this._getTokenFromConfirmCode(confirmCode);
+    if (!getTokenResult.success) {
+      result.details = getTokenResult.err;
+      return result;
+    }
+    
+    this.googleAuth.setCredentials(getTokenResult.token);
+    
+    var writeTokenResult = await this._writeToken(getTokenResult.token);
+    if (!writeTokenResult.success) {
+      result.details = writeTokenResult.err;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'confirm complete';
+    
+    return result;
+  }
+  
+  async sendTestMail(params) {
+    return this._sendMessage(params);
+  }
+  
+  /*
   async sendMessage(addresseeList, subjectText, bodyText, bodyHTML, attachments) {
     return this._failResult();
   }
-
+  */
   
 //---------------------------------------------------------------
 // private methods
 //---------------------------------------------------------------
   _failResult(msg) {
     return {success: false, data: null, details: msg};
-  }    
+  }
+
+  async _getCredentials() {
+    var result = {sucess: false, credentials: null, err: 'failed to get credentials'};
+
+    await this.fsp.readFile(this.googleCredentialsPath)
+      .then(function(contents, err) {
+        result.success = true;
+        result.credentials = JSON.parse(contents);
+        result.err = null;
+      })
+      .catch(function(err) {
+        result.success = false;
+        result.credentials = null;
+        result.err = err;
+      });
+
+    return result;
+  }
+  
+  async _getTokenContents() {
+    var result = {success: false, tokencontents: null, err: 'failed to get token contents'};
+    
+    await this.fsp.readFile(this.tokenPath)
+      .then(function(contents) {
+        result.success = true;
+        result.tokencontents = JSON.parse(contents);
+        result.err = null;
+      })
+      .catch(function(err) {
+        result.success = false;
+        result.tokencontents = null;
+        result.err = err;
+      });
+      
+    return result;
+  }
+  
+  async _getTokenFromConfirmCode(confirmCode) {
+    var result = {success: false, token: null, err: 'failed to get token from confirm code'};
+    
+    await this.googleAuth.getToken(confirmCode)
+      .then(function(token) {
+        result.success = true;
+        result.token = token.tokens;
+        result.err = null;
+      })
+      .catch(function(err) {
+        result.success = false;
+        result.token = null;
+        result.err = 'failed to get token from confirm code';
+      });
+      
+    return result;
+  }
+  
+  async _writeToken(token) {
+    var result = {success: false, err: 'failed to write token'};
+    
+    await this.fsp.writeFile(this.tokenPath, JSON.stringify(token))
+      .then(function() {
+        result.success = true;
+        result.err = null;
+      })
+      .catch(function(err) {
+        result.success = false;
+        result.err = err;
+      });
+          
+    return result;
+  }
+
+  async _sendMessage(params) {
+    var result = this._failResult();
+
+    var message = new this.mimetext();
+    message.setSender(params.sender);
+    message.setRecipient(params.recipient);
+    message.setSubject(params.subject);
+    message.setMessage(params.message);
+    
+    try {
+      var gmail = this.google.gmail({ version: 'v1', auth: this.googleAuth });
+      await gmail.users.messages
+        .send({
+          userId: 'me',
+          requestBody: {
+            raw: message.asEncoded()
+          }
+        })
+        .then(function(gmailResult) {
+          result.success = true;
+          result.details = 'message sent';
+          result.data = message.getSubject();
+          
+        })
+        .catch(function(err) {
+          result.details = 'failed to send email';
+        });
+        
+    } catch(err) {
+      result.details = 'failed to send email';
+    }
+      
+    return result;
+  }
 }

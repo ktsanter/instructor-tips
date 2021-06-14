@@ -93,13 +93,19 @@ const app = function () {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
 
     page.labelGmailAuthorization = page.navAdmin.getElementsByClassName('gmail-authorization-label')[0];
-    page.btnDoGMailAuthorization = page.navAdmin.getElementsByClassName('btnDoGmailAuth')[0];
+    page.btnBeginGMailAuthorization = page.navAdmin.getElementsByClassName('btnBeginGmailAuth')[0];
+    page.containerGmailAuthConfirm = page.navAdmin.getElementsByClassName('gmail-authorization-confirm')[0];
+    page.linkGmailAuthorization = page.navAdmin.getElementsByClassName('authorization-link')[0];
+    page.inputGmailAuthorizationConfirm = page.navAdmin.getElementsByClassName('gmail-authorization-confirmcode')[0];
+    page.btnSendTestMessage = page.navAdmin.getElementsByClassName('btnSendTestMessage')[0];
 
     page.labelMailerDebug = page.navAdmin.getElementsByClassName('check-mailer-debug-label')[0];
     page.checkMailerDebug = page.navAdmin.getElementsByClassName('check-mailer-debug')[0];
 
     page.navAdmin.getElementsByClassName('btnTestGmailAuth')[0].addEventListener('click', (e) => { _handleTestGmailAuth(e); });
-    page.navAdmin.getElementsByClassName('btnDoGmailAuth')[0].addEventListener('click', (e) => { _handleDoGmailAuth(e); });
+    page.navAdmin.getElementsByClassName('btnBeginGmailAuth')[0].addEventListener('click', (e) => { _handleBeginGmailAuth(e); });
+    page.navAdmin.getElementsByClassName('btnFinishGmailAuth')[0].addEventListener('click', (e) => { _handleFinishGmailAuth(e); });
+    page.navAdmin.getElementsByClassName('btnSendTestMessage')[0].addEventListener('click', (e) => { _handleSendTestMessage(); });
 
     page.navAdmin.getElementsByClassName('check-mailer-debug')[0].addEventListener('click', (e) => { _handleMailerDebugToggle(e); });
     page.navAdmin.getElementsByClassName('check-reset-request-cron')[0].addEventListener('click', (e) => { _handleResetRequestCronToggle(e); });
@@ -174,7 +180,7 @@ const app = function () {
     
   async function _showAdmin() {
     page.notice.setNotice('loading...', true);
-
+    
     var gmailAuthorized = false;
     var result = await SQLDBInterface.doGetQuery('as-admin/admin', 'check-gmail-auth');
     if (result.success) gmailAuthorized = result.data.authorized;
@@ -217,7 +223,11 @@ const app = function () {
   function _updateGmailAuthorizationUI(authorized) {
     page.labelGmailAuthorization.innerHTML = 'Gmail is ' + (authorized ? 'AUTHORIZED' : 'NOT AUTHORIZED');
     UtilityKTS.setClass(page.labelGmailAuthorization, 'not-authorized', !authorized);
-    UtilityKTS.setClass(page.btnDoGMailAuthorization, 'hide-me', authorized);
+    UtilityKTS.setClass(page.btnBeginGMailAuthorization, 'hide-me', authorized);
+    page.btnBeginGMailAuthorization.disabled = false;
+    
+    UtilityKTS.setClass(page.btnSendTestMessage, 'hide-me', !authorized);
+    UtilityKTS.setClass(page.containerGmailAuthConfirm, 'hide-me', true);
   }
   
   function _updateMailerDebugUI(debugState) {
@@ -234,9 +244,35 @@ const app = function () {
     _updateGmailAuthorizationUI(gmailAuthorized);
   }
   
-  async function _doGmailAuthorization() {
-    console.log('_doGmailAuthorization');
-    console.log('**stub');
+  async function _beginGmailAuthorization() {
+    var result = await SQLDBInterface.doGetQuery('as-admin/admin', 'begin-gmail-auth', page.notice);
+    
+    UtilityKTS.setClass(page.containerGmailAuthConfirm, 'hide-me', !result.success);
+    if (!result.success) return;
+    
+    page.btnBeginGMailAuthorization.disabled = true;
+    page.linkGmailAuthorization.href = result.data.authorizationurl;
+    page.inputGmailAuthorizationConfirm.value = '';
+  }
+  
+  async function _finishGmailAuthorization() {
+    var confirmCode = page.inputGmailAuthorizationConfirm.value;
+    var result = await SQLDBInterface.doPostQuery('as-admin/admin', 'finish-gmail-auth', {confirmcode: confirmCode}, page.notice);
+
+    await _testGmailAuthorization();
+  }
+  
+  async function _sendTestMessage() {
+    console.log('_sendTestMessage');
+    var params = {
+      sender: 'ksanter@mivu.org',
+      recipient: 'ktsanter@gmail.com',
+      subject: 'Aardvark Studios admin ' + (new Date()).toLocaleString(),
+      message: 'this is a test message from <em><strong>Aardvark Studios admin</strong></em>. Enjoy!'
+    };
+    
+    var result = await SQLDBInterface.doPostQuery('as-admin/admin', 'send-test-mail', params, page.notice);
+    console.log(result);
   }
   
   async function _doSetMailerDebug(setDebugOn) {
@@ -321,8 +357,16 @@ const app = function () {
     await _testGmailAuthorization(); 
   }
     
-  async function _handleDoGmailAuth() {
-    await _doGmailAuthorization();
+  async function _handleBeginGmailAuth() {
+    await _beginGmailAuthorization();
+  }
+  
+  async function _handleFinishGmailAuth() {
+    await _finishGmailAuthorization();
+  }
+  
+  async function _handleSendTestMessage() {
+    await _sendTestMessage();
   }
     
   async function _handleTest() {

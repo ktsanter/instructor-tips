@@ -19,13 +19,22 @@ module.exports = internal.ASAdmin = class {
     var result = this._failResult(task + ' failed');
     
     if (task == 'get-mailer-debug') {
-      return (this.gMailer.isDebugModeOn());
+      result = this.gMailer.isDebugModeOn();
       
     }  else if (task == 'set-mailer-debug') {
-      return this.gMailer.setDebugMode(params.debugon);
+      result = this.gMailer.setDebugMode(params.debugon);
       
     } else if (task == 'check-gmail-auth') {
-      return this.gMailer.checkGmailAuthorization();
+      var result = await this.gMailer.checkGmailAuthorization();
+      
+    } else if (task == 'begin-gmail-auth') {
+      var result = await this.gMailer.beginGmailAuthorization();
+      
+    } else if (task == 'finish-gmail-auth') {
+      var result = await this.gMailer.finishGmailAuthorization(params.confirmcode);
+      
+    } else if (task == 'send-test-mail') {
+      var result = await this.gMailer.sendTestMail(params);
     } 
     
     return result;

@@ -8,7 +8,15 @@ mixin adminContainer()
           span(class="gmail-authorization-label")
 
         div(class="ms-3 mt-2")
-          button(class="btn btn-primary btnDoGmailAuth") do Gmail authorization
+          button(class="btn btn-primary btnBeginGmailAuth") do Gmail authorization
+          .gmail-authorization-confirm(class="ms-4")
+            .authorization-url(class="my-2") authorize this app by visiting
+              a(href="" class="authorization-link ps-2" target="_blank") this page
+            input(class="gmail-authorization-confirmcode mb-2" type="text" placeholder="Enter confirmation code" autocomplete="off")
+            button(class="btn btn-primary btnFinishGmailAuth") confirm
+
+        div(class="ms-3 mt-2")
+          button(class="btn btn-primary btnSendTestMessage") send test message
 
   .row(class="py-2")
     .col-sm

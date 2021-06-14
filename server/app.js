@@ -56,7 +56,6 @@ if ((process.env.NODE_ENV || 'development') == 'development') {
     app.use(cors(corsOptions));
 }
 
-
 //------------------------------------------
 // configure favicon
 //------------------------------------------
@@ -85,6 +84,11 @@ const sendFileDefaultOptions = {
   root: path.join(__dirname, 'private'),
   dotfiles: 'deny'
 };
+
+//------------------------------------------
+// Google APIs
+//------------------------------------------
+const {google} = require('googleapis');
 
 //------------------------------------------
 // mariadb management
@@ -237,7 +241,7 @@ const gMailerClass = require('./classes/gmailer');
 const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD, fileServices: fileservices});
 
 const gMailer2Class = require('./classes/gmailer2');
-const gMailer2 = new gMailer2Class({"fileservices": fileservices});
+const gMailer2 = new gMailer2Class({"google": google});
 
 //------------------------------------------
 // Pug management
