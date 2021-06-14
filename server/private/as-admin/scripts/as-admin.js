@@ -36,7 +36,7 @@ const app = function () {
     
     await _initializeProfile(sodium);
     
-    settings.indexdata = await _loadInitialData();
+    settings.indexdata = await _loadToolSiteData();
     if (!settings.indexdata) return;
     
     page.notice.setNotice('');
@@ -91,7 +91,19 @@ const app = function () {
     
   function _renderAdmin() {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
-    
+
+    page.labelGmailAuthorization = page.navAdmin.getElementsByClassName('gmail-authorization-label')[0];
+    page.btnDoGMailAuthorization = page.navAdmin.getElementsByClassName('btnDoGmailAuth')[0];
+
+    page.labelMailerDebug = page.navAdmin.getElementsByClassName('check-mailer-debug-label')[0];
+    page.checkMailerDebug = page.navAdmin.getElementsByClassName('check-mailer-debug')[0];
+
+    page.navAdmin.getElementsByClassName('btnTestGmailAuth')[0].addEventListener('click', (e) => { _handleTestGmailAuth(e); });
+    page.navAdmin.getElementsByClassName('btnDoGmailAuth')[0].addEventListener('click', (e) => { _handleDoGmailAuth(e); });
+
+    page.navAdmin.getElementsByClassName('check-mailer-debug')[0].addEventListener('click', (e) => { _handleMailerDebugToggle(e); });
+    page.navAdmin.getElementsByClassName('check-reset-request-cron')[0].addEventListener('click', (e) => { _handleResetRequestCronToggle(e); });
+
     page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
   }
   
@@ -151,7 +163,7 @@ const app = function () {
     }
     
     if (contentsId == 'navSites') _showSites();
-    if (contentsId == 'navAdmin') _showAdmin();
+    if (contentsId == 'navAdmin') await _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
@@ -160,7 +172,24 @@ const app = function () {
   function _showSites() {
   }
     
-  function _showAdmin() {
+  async function _showAdmin() {
+    page.notice.setNotice('loading...', true);
+
+    var gmailAuthorized = false;
+    var result = await SQLDBInterface.doGetQuery('as-admin/admin', 'check-gmail-auth');
+    if (result.success) gmailAuthorized = result.data.authorized;
+    _updateGmailAuthorizationUI(gmailAuthorized);
+
+    var debugState = 'UNKNOWN';
+    page.checkMailerDebug.disabled = true;
+    var result = await SQLDBInterface.doGetQuery('as-admin/admin', 'get-mailer-debug');       
+    if (result.success) {
+      page.notice.setNotice('');
+      debugState = result.data.debugstate ? 'ON' : 'OFF';
+      page.checkMailerDebug.disabled = false;
+      page.checkMailerDebug.checked = result.data.debugstate;
+    }
+    _updateMailerDebugUI(debugState);
   }
   
   function _setNavOptions() {
@@ -184,7 +213,49 @@ const app = function () {
     settings.dirtyBit[settings.currentNavOption] = dirty;
     _setNavOptions();
   }
+  
+  function _updateGmailAuthorizationUI(authorized) {
+    page.labelGmailAuthorization.innerHTML = 'Gmail is ' + (authorized ? 'AUTHORIZED' : 'NOT AUTHORIZED');
+    UtilityKTS.setClass(page.labelGmailAuthorization, 'not-authorized', !authorized);
+    UtilityKTS.setClass(page.btnDoGMailAuthorization, 'hide-me', authorized);
+  }
+  
+  function _updateMailerDebugUI(debugState) {
+    page.labelMailerDebug.innerHTML = 'mailer debug is ' + debugState;
+  }
               
+  //--------------------------------------------------------------------------
+  // admin
+	//--------------------------------------------------------------------------
+  async function _testGmailAuthorization() {
+    var gmailAuthorized = false;
+    var result = await SQLDBInterface.doGetQuery('as-admin/admin', 'check-gmail-auth');
+    if (result.success) gmailAuthorized = result.data.authorized;
+    _updateGmailAuthorizationUI(gmailAuthorized);
+  }
+  
+  async function _doGmailAuthorization() {
+    console.log('_doGmailAuthorization');
+    console.log('**stub');
+  }
+  
+  async function _doSetMailerDebug(setDebugOn) {
+    var debugState = 'UNKNOWN';
+    var result = await SQLDBInterface.doPostQuery('as-admin/admin', 'set-mailer-debug', {debugon: setDebugOn});
+    if (result.success) debugState = result.data.debugstate ? 'ON' : 'OFF';
+    _updateMailerDebugUI(debugState);      
+  }
+  
+  async function _doSetResetRequestCron(enableCronJob) {
+    console.log('_doSetResetRequestCron ' + enableCronJob);
+    console.log('**stub');
+  }
+  
+  async function _doTest() {
+    console.log('_doTest');
+    console.log('**stub');
+  }
+  
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
@@ -238,15 +309,30 @@ const app = function () {
     _setDirtyBit(false);
   }
   
-  async function _handleTest() {
-    console.log('_handleTest');
-    console.log('stub');   
+  async function _handleMailerDebugToggle(e) {
+    await _doSetMailerDebug(e.target.checked);
   }
     
+  async function _handleResetRequestCronToggle(e) {
+    await _doSetResetRequestCron(e.target.checked);
+  }
+
+  async function _handleTestGmailAuth() {
+    await _testGmailAuthorization(); 
+  }
+    
+  async function _handleDoGmailAuth() {
+    await _doGmailAuthorization();
+  }
+    
+  async function _handleTest() {
+    await _doTest(); 
+  }
+        
   //---------------------------------------
   // DB interface
   //----------------------------------------  
-  async function _loadInitialData() {
+  async function _loadToolSiteData() {
     var result = null;
     
     page.notice.setNotice('loading...', true);

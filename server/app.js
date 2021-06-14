@@ -236,6 +236,9 @@ var nodemailer = require('nodemailer');
 const gMailerClass = require('./classes/gmailer');
 const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD, fileServices: fileservices});
 
+const gMailer2Class = require('./classes/gmailer2');
+const gMailer2 = new gMailer2Class({"fileservices": fileservices});
+
 //------------------------------------------
 // Pug management
 //------------------------------------------
@@ -404,7 +407,7 @@ const dbCommentBuddy = new dbCommentBuddyClass({
 });
 
 //------------------------------------------
-// EndDateManager general query objects (DB not added yet)
+// EndDateManager general query objects
 //------------------------------------------
 const endDateManagerClass = require('./classes/enddate-manager')
 const endDateManager = new endDateManagerClass({
@@ -413,6 +416,12 @@ const endDateManager = new endDateManagerClass({
   tempFileManager: tmp, 
   formManager: formidable
 });
+
+//------------------------------------------
+// ASAdmin general query objects
+//------------------------------------------
+const ASAdminClass = require('./classes/as-admin');
+const ASAdmin = new ASAdminClass({"gMailer": gMailer2});
 
 //------------------------------------------
 // DB manager lookup, app info lookup
@@ -913,6 +922,26 @@ app.get('/jsgd/:app', function (req, res) {
 
 app.get('/as-admin', function (req, res) {
   routeIfLoggedIn(req, res, 'as-admin');
+})
+
+app.get('/as-admin/admin/:task', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
+    res.send(await ASAdmin.adminTask(req.params.task, req.body, userInfo));
+  } else {
+    res.send({success: false, data: null, details: 'unauthorized'});
+  }
+})
+
+app.post('/as-admin/admin/:task', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
+    res.send(await ASAdmin.adminTask(req.params.task, req.body, userInfo));
+  } else {
+    res.send({success: false, data: null, details: 'unauthorized'});
+  }
 })
 
 app.get('/support-tool-index', function (req, res) {
