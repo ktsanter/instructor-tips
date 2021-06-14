@@ -4,7 +4,9 @@ include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/profile-mixins.pug
 
-include ./mixins/mixins-admin.pug
+include ./mixins/mixins-mailer.pug
+include ./mixins/mixins-cron.pug
+include ./mixins/mixins-test.pug
 
 doctype html
 html(lang="en")
@@ -29,7 +31,9 @@ html(lang="en")
       {
         items: [
           {id: "navSites", type: "link", label: "sites"},
-          {id: "navAdmin", type: "link", label: "admin"},
+          {id: "navMailer", type: "link", label: "gmail"},
+          {id: "navCron", type: "link", label: "cron"},
+          {id: "navTest", type: "link", label: "test"},
           {type: "dropdown", label: "other", items: [
             {id: "navSignout", type: "link", label: "sign out"},
           ]}
@@ -47,9 +51,15 @@ html(lang="en")
     .contents
       .error-container
       
-      .container-fluid(class="contents-container contents-navSites hide-me")   
+      .container-fluid(class="contents-container contents-navSites hide-me")       
         
-      .container-fluid(class="contents-container contents-navAdmin hide-me")
-        +adminContainer()     
+      .container-fluid(class="contents-container contents-navMailer hide-me")
+        +mailerContainer()     
+        
+      .container-fluid(class="contents-container contents-navCron hide-me")
+        +cronContainer()     
+        
+      .container-fluid(class="contents-container contents-navTest hide-me")
+        +testContainer()     
         
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

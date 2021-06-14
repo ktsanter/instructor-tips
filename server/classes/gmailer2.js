@@ -2,7 +2,7 @@
 //---------------------------------------------------------------
 // GMailer2 interface
 //---------------------------------------------------------------
-// TODO: check gmail auth at startup
+// TODO: 
 //---------------------------------------------------------------
 
 const internal = {};
@@ -30,6 +30,15 @@ module.exports = internal.GMailer2 = class {
     ];
     
     this.setDebugMode(false);
+    
+    this._testAuth();
+  }
+  
+  async _testAuth() {
+    var authTestResult = await this.checkGmailAuthorization();
+    if (!authTestResult.success || !authTestResult.data.authorized) {
+      console.log('** Gmail authorization failed: ' + authTestResult.details);
+    }
   }
   
 //---------------------------------------------------------------
@@ -214,6 +223,8 @@ module.exports = internal.GMailer2 = class {
   }
 
   async _sendMessage(params) {
+    if (this.DEBUG) return this._sendMessageDebug(params);
+    
     var result = this._failResult();
 
     var message = new this.mimetext();
@@ -246,5 +257,11 @@ module.exports = internal.GMailer2 = class {
     }
       
     return result;
+  }
+  
+  _sendMessageDebug(params) {
+    console.log('Gmailer2._sendMessageDebug');
+    console.log(params);
+    return {success: true, details: 'debug mode is on', data: null};
   }
 }

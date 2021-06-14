@@ -80,7 +80,42 @@ const app = function () {
 	//-----------------------------------------------------------------------------
   function _renderContents() {
     _renderSites();
-    _renderAdmin();
+    _renderMailer();
+    _renderCron();
+    _renderTest();
+  }
+  
+  function _renderMailer() {
+    page.navMailer = page.contents.getElementsByClassName('contents-navMailer')[0];
+
+    page.labelGmailAuthorization = page.navMailer.getElementsByClassName('gmail-authorization-label')[0];
+    page.btnBeginGMailAuthorization = page.navMailer.getElementsByClassName('btnBeginGmailAuth')[0];
+    page.containerGmailAuthConfirm = page.navMailer.getElementsByClassName('gmail-authorization-confirm')[0];
+    page.linkGmailAuthorization = page.navMailer.getElementsByClassName('authorization-link')[0];
+    page.inputGmailAuthorizationConfirm = page.navMailer.getElementsByClassName('gmail-authorization-confirmcode')[0];
+    page.btnSendTestMessage = page.navMailer.getElementsByClassName('btnSendTestMessage')[0];
+
+    page.labelMailerDebug = page.navMailer.getElementsByClassName('check-mailer-debug-label')[0];
+    page.checkMailerDebug = page.navMailer.getElementsByClassName('check-mailer-debug')[0];
+
+    page.navMailer.getElementsByClassName('btnTestGmailAuth')[0].addEventListener('click', (e) => { _handleTestGmailAuth(e); });
+    page.navMailer.getElementsByClassName('btnBeginGmailAuth')[0].addEventListener('click', (e) => { _handleBeginGmailAuth(e); });
+    page.navMailer.getElementsByClassName('btnFinishGmailAuth')[0].addEventListener('click', (e) => { _handleFinishGmailAuth(e); });
+    page.navMailer.getElementsByClassName('btnSendTestMessage')[0].addEventListener('click', (e) => { _handleSendTestMessage(); });
+
+    page.navMailer.getElementsByClassName('check-mailer-debug')[0].addEventListener('click', (e) => { _handleMailerDebugToggle(e); });
+  }
+  
+  function _renderCron() {
+    page.navCron = page.contents.getElementsByClassName('contents-navCron')[0];
+
+    page.navCron.getElementsByClassName('check-reset-request-cron')[0].addEventListener('click', (e) => { _handleResetRequestCronToggle(e); });
+  }
+  
+  function _renderTest() {
+    page.navTest = page.contents.getElementsByClassName('contents-navTest')[0];
+
+    page.navTest.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
   }
   
   function _renderSites() {
@@ -89,30 +124,6 @@ const app = function () {
     page.navSites.appendChild(_renderSiteItems());
   }
     
-  function _renderAdmin() {
-    page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
-
-    page.labelGmailAuthorization = page.navAdmin.getElementsByClassName('gmail-authorization-label')[0];
-    page.btnBeginGMailAuthorization = page.navAdmin.getElementsByClassName('btnBeginGmailAuth')[0];
-    page.containerGmailAuthConfirm = page.navAdmin.getElementsByClassName('gmail-authorization-confirm')[0];
-    page.linkGmailAuthorization = page.navAdmin.getElementsByClassName('authorization-link')[0];
-    page.inputGmailAuthorizationConfirm = page.navAdmin.getElementsByClassName('gmail-authorization-confirmcode')[0];
-    page.btnSendTestMessage = page.navAdmin.getElementsByClassName('btnSendTestMessage')[0];
-
-    page.labelMailerDebug = page.navAdmin.getElementsByClassName('check-mailer-debug-label')[0];
-    page.checkMailerDebug = page.navAdmin.getElementsByClassName('check-mailer-debug')[0];
-
-    page.navAdmin.getElementsByClassName('btnTestGmailAuth')[0].addEventListener('click', (e) => { _handleTestGmailAuth(e); });
-    page.navAdmin.getElementsByClassName('btnBeginGmailAuth')[0].addEventListener('click', (e) => { _handleBeginGmailAuth(e); });
-    page.navAdmin.getElementsByClassName('btnFinishGmailAuth')[0].addEventListener('click', (e) => { _handleFinishGmailAuth(e); });
-    page.navAdmin.getElementsByClassName('btnSendTestMessage')[0].addEventListener('click', (e) => { _handleSendTestMessage(); });
-
-    page.navAdmin.getElementsByClassName('check-mailer-debug')[0].addEventListener('click', (e) => { _handleMailerDebugToggle(e); });
-    page.navAdmin.getElementsByClassName('check-reset-request-cron')[0].addEventListener('click', (e) => { _handleResetRequestCronToggle(e); });
-
-    page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
-  }
-  
   function _renderSiteItems() {
     var container = CreateElement.createDiv(null, 'sites');
 
@@ -169,7 +180,9 @@ const app = function () {
     }
     
     if (contentsId == 'navSites') _showSites();
-    if (contentsId == 'navAdmin') await _showAdmin();
+    if (contentsId == 'navMailer') await _showMailer();
+    if (contentsId == 'navCron') await _showCron();
+    if (contentsId == 'navTest') await _showTest();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
@@ -177,8 +190,8 @@ const app = function () {
   
   function _showSites() {
   }
-    
-  async function _showAdmin() {
+      
+  async function _showMailer() {
     page.notice.setNotice('loading...', true);
     
     var gmailAuthorized = false;
@@ -196,6 +209,12 @@ const app = function () {
       page.checkMailerDebug.checked = result.data.debugstate;
     }
     _updateMailerDebugUI(debugState);
+  }
+  
+  async function _showCron() {
+  }
+  
+  async function _showTest() {
   }
   
   function _setNavOptions() {
@@ -263,7 +282,6 @@ const app = function () {
   }
   
   async function _sendTestMessage() {
-    console.log('_sendTestMessage');
     var params = {
       sender: 'ksanter@mivu.org',
       recipient: 'ktsanter@gmail.com',
@@ -272,7 +290,6 @@ const app = function () {
     };
     
     var result = await SQLDBInterface.doPostQuery('as-admin/admin', 'send-test-mail', params, page.notice);
-    console.log(result);
   }
   
   async function _doSetMailerDebug(setDebugOn) {
@@ -306,7 +323,9 @@ const app = function () {
     
     var dispatchMap = {
       "navSites": function() { _showContents('navSites');},
-      "navAdmin": function() { _showContents('navAdmin'); },
+      "navMailer": function() { _showContents('navMailer'); },
+      "navCron": function() { _showContents('navCron'); },
+      "navTest": function() { _showContents('navTest'); },
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
       "navSignout": function() { _doLogout();},
@@ -317,7 +336,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navManage', 'navOptions', 'navAdmin']);
+    var mainOptions = new Set(['navSites', 'navMailer', 'navCron', 'navTest']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);

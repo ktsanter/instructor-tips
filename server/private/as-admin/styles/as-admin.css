@@ -49,6 +49,39 @@ body {
   border-color: var(--bgPrimary);
 }
 
+.contents .btn.btn-primary{
+  background-color: var(--bgPrimary);
+}
+
+.contents .btn.btn-primary:active{
+  background-color: var(--bgPrimaryFaded);
+}
+
+.contents .btn.btn-primary:focus{
+  border-color: var(--borderPrimary);  
+  box-shadow: none;
+}
+
+.contents .form-check-input {
+  cursor: pointer;
+}
+
+.contents .form-check-input + label{
+  cursor: pointer;
+}
+
+.contents .form-check-input:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e"); 
+  box-shadow: none;
+  border-color: var(--borderPrimary);  
+}
+
+.contents .form-check-input:checked {
+  background-color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
 /*------------------------------------------------------------------------------
  * contents - navSites
  *------------------------------------------------------------------------------*/
@@ -63,49 +96,17 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navAdmin {}
 
-.contents .contents-navAdmin legend {
-  font-size: 120%;
-}
+/*------------------------------------------------------------------------------
+ * contents - navMailer
+ *------------------------------------------------------------------------------*/
+.contents .contents-navAdmin {}
 
-.contents .contents-navAdmin .gmail-authorization-label.not-authorized {
+.contents .contents-navMailer .gmail-authorization-label.not-authorized {
   background-color: yellow;
   font-style: italic;
 }
 
-.contents .contents-navAdmin .btn.btn-primary{
-  background-color: var(--bgPrimary);
-}
-
-.contents .contents-navAdmin .btn.btn-primary:active{
-  background-color: var(--bgPrimaryFaded);
-}
-
-.contents .contents-navAdmin .btn.btn-primary:focus{
-  border-color: var(--borderPrimary);  
-  box-shadow: none;
-}
-
-.contents .contents-navAdmin .form-check-input {
-  cursor: pointer;
-}
-
-.contents .contents-navAdmin .form-check-input + label{
-  cursor: pointer;
-}
-
-.contents .contents-navAdmin .form-check-input:focus {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e"); 
-  box-shadow: none;
-  border-color: var(--borderPrimary);  
-}
-
-.contents .contents-navAdmin .form-check-input:checked {
-  background-color: var(--bgPrimary);
-  border-color: var(--bgPrimary);
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
-}
-
-.contents .contents-navAdmin .btnFinishGmailAuth {
+.contents .contents-navMailer .btnFinishGmailAuth {
   display: block;
 }
 
