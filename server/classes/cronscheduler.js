@@ -153,6 +153,17 @@ module.exports = internal.CronScheduler = class {
     return jobStatus;
   }
   
+  forceJob(jobName) {
+    if (!this._jobExists(jobName)) {
+      console.log('CronScheduler.forceJob: **error: failed to force run of job ' + jobName + ' ' + this._getDateStamp());
+      return false;
+    }
+    
+    this._jobList[jobName].params.funcOnTick();
+    
+    return true;
+  }
+  
 //---------------------------------------------------------------
 // private methods
 //---------------------------------------------------------------

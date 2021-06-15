@@ -299,7 +299,7 @@ module.exports = internal.UserManagement = class {
   }
   
   async clearExpiredRequests() {
-    console.log(this._getDateStamp() + ': UserManagement.sendSchedulePushNotifications');
+    console.log(this._getDateStamp() + ': UserManagement.clearExpiredRequests');
     var result = this._dbManager.queryFailureResult();
     var query, queryResults;
     

@@ -45,7 +45,10 @@ module.exports = internal.ASAdmin = class {
       
     } else if (task == 'cron-stop') {
       var result = await this._setCronRunState(params, 'stop');
-    } 
+      
+    } else if (task == 'cron-forcejob') {
+      var result = await this._forceCronJob(params);
+    }
     
     return result;
   }
@@ -77,6 +80,15 @@ module.exports = internal.ASAdmin = class {
     
     result.success = runStateSuccess;
     result.details = params.jobname + ': ' + desiredRunState;
+    
+    return result;
+  }
+  
+  _forceCronJob(params) {
+    var result = this._failResult();
+    
+    result.success = this.cronScheduler.forceJob(params.jobname);
+    result.details = 'force cron job: ' + params.jobname;
     
     return result;
   }

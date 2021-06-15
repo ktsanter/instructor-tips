@@ -271,10 +271,10 @@ const app = function () {
   function _createCronJobRow(job) {
     var row = CreateElement.createTableRow(null, 'cron-table-row');
   
+    // job name cell
     row.appendChild(CreateElement.createTableCell(null, 'cron-table-cell', job.jobName, false));
-    row.appendChild(CreateElement.createTableCell(null, 'cron-table-cell', job.running ? 'true' : 'false', false));
-    row.appendChild(CreateElement.createTableCell(null, 'cron-table-cell', job.fireTime, false));
-    
+
+    // run control cell    
     var cell = CreateElement.createTableCell(null, 'cron-table-cell', '', false)
     row.appendChild(cell);
     
@@ -284,15 +284,26 @@ const app = function () {
     span.addEventListener('click', (e) => { _handleRunCronJob(job); });
 
     if (job.running) {
-      span.title = 'stop cron job';
+      span.title = 'job is running, click to stop';
     } else {
-      span.title = 'start cron job';
+      span.title = 'job is not running, click to start';
     }
 
     var icon = CreateElement.createIcon(null, 'fas fa-ban fa-stack-2x cron-icon-strikethrough')
     span.appendChild(icon);
-    UtilityKTS.setClass(icon, 'hide-me', !job.running);
+    UtilityKTS.setClass(icon, 'hide-me', job.running);
     
+    // fire time cell
+    row.appendChild(CreateElement.createTableCell(null, 'cron-table-cell', job.fireTime, false));
+
+    // force run cell
+    cell = CreateElement.createTableCell(null, 'cron-table-cell', '', false);
+    row.appendChild(cell);
+    icon = CreateElement.createIcon(null, 'cron-icon fas fa-sync');
+    cell.appendChild(icon);
+    icon.addEventListener('click', (e) => { _handleCronForce(job); });
+    icon.title = 'force job to run once';
+
     return row;
   }
   
@@ -352,9 +363,18 @@ const app = function () {
   async function _toggleCronJobRunState(job) {
     var command = job.running ? 'cron-stop' : 'cron-start';
     
-    var result = await SQLDBInterface.doPostQuery('as-admin/admin', command, {jobname: job.jobName}, page.setNotice);
+    var result = await SQLDBInterface.doPostQuery('as-admin/admin', command, {jobname: job.jobName}, page.notice);
     
     if (result.success) _doCronRefresh();
+  }
+  
+  async function _forceCronJob(job) {
+    var msg = 'The cron job named "' + job.jobName + '" will be forced to run.';
+    msg += '\n\nChoose Okay to continue.';
+    
+    if (!confirm(msg)) return;
+    
+    var result = await SQLDBInterface.doPostQuery('as-admin/admin', 'cron-forcejob', {jobname: job.jobName}, page.notice);
   }
   
   async function _doTest() {
@@ -445,6 +465,10 @@ const app = function () {
     await _toggleCronJobRunState(job);
   }
               
+  async function _handleCronForce(job) {
+    await _forceCronJob(job);
+  }
+
   async function _handleTest() {
     await _doTest(); 
   }
