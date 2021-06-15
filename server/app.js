@@ -236,12 +236,12 @@ const tmp = require('tmp');
 //------------------------------------------
 // email management
 //------------------------------------------
-var nodemailer = require('nodemailer');
-const gMailerClass = require('./classes/gmailer');
-const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD, fileServices: fileservices});
+//var nodemailer = require('nodemailer');
+//const gMailerClass_old = require('./classes/gmailer_old');
+//const gMailer_old = new gMailerClass_old(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD, fileServices: fileservices});
 
-const gMailer2Class = require('./classes/gmailer2');
-const gMailer2 = new gMailer2Class({"google": google});
+const gMailerClass = require('./classes/gmailer');
+const gMailer = new gMailerClass({"google": google});
 
 //------------------------------------------
 // Pug management
@@ -260,7 +260,7 @@ var commonmark = require('commonmark');
 const messageManagementClass = require('./classes/messagemanagement')
 const messageManagement = new messageManagementClass({
   "dbManager": mariaDBManager_InstructorTips, 
-  "mailer": gMailer, 
+  "mailer": gMailer,
   "commonmark": commonmark, 
   "pug": pug, 
   "appURL": INSTRUCTORTIPS_URL, 
@@ -425,7 +425,7 @@ const endDateManager = new endDateManagerClass({
 // ASAdmin general query objects
 //------------------------------------------
 const ASAdminClass = require('./classes/as-admin');
-const ASAdmin = new ASAdminClass({"gMailer": gMailer2, "cronScheduler": cronScheduler});
+const ASAdmin = new ASAdminClass({"gMailer": gMailer, "cronScheduler": cronScheduler});
 
 //------------------------------------------
 // DB manager lookup, app info lookup

@@ -141,17 +141,17 @@ const app = function () {
       if (i == 0 || (item.category != currentCategory && item.category != '')) {
         currentCategory = item.category;
         categoryCount++;
-        categoryContainer = _renderCategory(currentCategory, categoryCount == 1);
+        categoryContainer = _renderSiteCategory(currentCategory, categoryCount == 1);
         container.appendChild(categoryContainer);
       }
       
-      if (item.url && item.url != '') categoryContainer.appendChild(_renderIndexItem(item));
+      if (item.url && item.url != '') categoryContainer.appendChild(_renderSiteIndexItem(item));
     }
     
     return container;
   }
   
-  function _renderCategory(categoryName, firstCategory) {
+  function _renderSiteCategory(categoryName, firstCategory) {
     var classes = 'category';
     if (!firstCategory) classes += ' mt-3';
     
@@ -161,7 +161,7 @@ const app = function () {
     return container;
   }
   
-  function _renderIndexItem(item) {
+  function _renderSiteIndexItem(item) {
     var container = CreateElement.createDiv(null, 'item');
     
     var toolLink = CreateElement.createLink(null, 'item-contents ms-2', item.label, null, item.url);
@@ -337,7 +337,6 @@ const app = function () {
   
   async function _sendTestMessage() {
     var params = {
-      sender: 'ksanter@mivu.org',
       recipient: 'ktsanter@gmail.com',
       subject: 'Aardvark Studios admin ' + (new Date()).toLocaleString(),
       message: 'this is a test message from <em><strong>Aardvark Studios admin</strong></em>. Enjoy!'
@@ -380,6 +379,7 @@ const app = function () {
   async function _doTest() {
     console.log('_doTest');
     console.log('**stub');
+    alert('There is currently no action for this choice');
   }
   
   //--------------------------------------------------------------------------
