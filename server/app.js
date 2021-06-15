@@ -212,13 +212,30 @@ var sessionStore = new MySQLStore({
   mysqlPool
 );
 
-app.use(session({
-  secret: SESSION_SECRET,
-  cookie: {maxAge: 24 * MS_PER_HOUR}, 
-  resave: false,
-  saveUninitialized: true,
-  store: sessionStore
-}))
+if ((process.env.NODE_ENV || 'development') == 'development') {
+  app.use(session({
+    secret: SESSION_SECRET,
+    cookie: {
+      maxAge: 24 * MS_PER_HOUR,
+      secure: false
+    }, 
+    resave: false,
+    saveUninitialized: true,
+    store: sessionStore
+  }))
+} else {
+  app.use(session({
+    secret: SESSION_SECRET,
+    proxy: true,
+    cookie: {
+      maxAge: 24 * MS_PER_HOUR,
+      secure: true
+    }, 
+    resave: false,
+    saveUninitialized: true,
+    store: sessionStore
+  }))
+}
 
 app.use(function (req, res, next) {
   if (!req.session.userInfo) {
@@ -445,6 +462,13 @@ var dbManagerLookup = {
 };
 
 var appLookup = {
+  "as-default": {
+    appDescriptor: 'as-default',
+    appName: 'Aardvark Studios',
+    routePug: 'default/pug/default.pug',
+    loginReRoute: 'default'
+  },
+  
   "instructortips" : {
     appDescriptor: 'instructortips',
     appName: 'InstructorTips',
@@ -541,6 +565,8 @@ app.get('/', function (req, res) {
 app.get('/marco', function (req, res) {
     res.send('polo');
 });
+
+app.get('/default', function (req, res) { routeIfLoggedIn(req, res, 'as-default'); })
 
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
 
@@ -708,7 +734,7 @@ app.get('/welcomeletter/help', function (req, res) {
 app.get('/usermanagement/routeToApp/:app', async function (req, res) {
   var appDescriptor = req.params.app;
   var appInfo = appLookup[appDescriptor];
-
+  
   var loggedIn = userManagement.isLoggedIn(req.session);
   if (!loggedIn) {
     userManagement.setAppInfoForSession(req.session, appInfo);
@@ -739,7 +765,7 @@ app.get('/usermanagement/routeToApp/:app', async function (req, res) {
 app.post('/usermanagement/login_attempt', async function (req, res) {
   var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.hashedPassword);
   
-  var appInfo = userManagement.getAppInfoForSession(req.session);
+  var appInfo = userManagement.getAppInfoForSession(req.session) || {appDescriptor: 'default'};
   
   if (loginSuccess) {
     res.redirect('/usermanagement/routeToApp/' + appInfo.appDescriptor);
@@ -821,10 +847,12 @@ app.get('/usermanagement/passwordsalt', function (req, res) { // note this is no
 })  
 
 app.get('/usermanagement/sessionappname', function (req, res) { // note this is not privilege protected
+  var appStuff = userManagement.getAppInfoForSession(req.session);
+  
   var result = {
     success: true,
     details: 'query succeeded',
-    data: {appname: userManagement.getAppInfoForSession(req.session).appName}
+    data: {appname: appStuff ? appStuff.appName : 'Aardvark Studios'}
   };
   
   res.send(result);  

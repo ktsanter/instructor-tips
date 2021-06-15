@@ -1,0 +1,21 @@
+/*-------------------------------------------------------------------
+ * styling for default Aardvark Studios page
+ *------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+}
+
+body {}
+
+.hide-me {
+  display: none;
+}
+
+.logo {
+  max-width: 5em;
+}
+
+.welcome {
+}

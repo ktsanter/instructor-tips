@@ -1,0 +1,23 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title help - Aardvark Studios
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+
+    +fontawesome()
+    +bootstrapstyle()
+    
+    style   
+      include ../styles/default.css
+
+  body(class="colorscheme")
+    .container-fluid
+      .row
+        .col-sm
+          img(class="logo" src="https://res.cloudinary.com/ktsanter/image/upload/v1623780914/Aardvark%20Studios/android-chrome-512x512.png")
+          span(class="welcome")
+            |Welcome to Aardvark Studios
