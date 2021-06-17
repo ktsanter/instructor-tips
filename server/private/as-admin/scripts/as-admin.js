@@ -86,6 +86,7 @@ const app = function () {
     _renderSites();
     _renderMailer();
     _renderCron();
+    _renderDatabase();
     _renderTest();
   }
   
@@ -170,6 +171,16 @@ const app = function () {
     
     return container;
   }  
+  
+  function _renderDatabase() {
+    page.navDatabase = page.contents.getElementsByClassName('contents-navDatabase')[0];
+    settings.dbIntrospect = new DBIntrospect({
+      "container": page.navDatabase,
+      "hideClass": "hide-me", 
+      "elemNotice": page.notice
+    });
+    settings.dbIntrospect.render();
+  }
     
   //-----------------------------------------------------------------------------
 	// updating
@@ -186,6 +197,7 @@ const app = function () {
     if (contentsId == 'navSites') _showSites();
     if (contentsId == 'navMailer') await _showMailer();
     if (contentsId == 'navCron') await _showCron();
+    if (contentsId == 'navDatabase') await _showDatabase();
     if (contentsId == 'navTest') await _showTest();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
@@ -220,6 +232,10 @@ const app = function () {
   }
   
   async function _showTest() {
+  }
+  
+  async function _showDatabase() {
+    await settings.dbIntrospect.update();
   }
   
   function _setNavOptions() {
@@ -398,6 +414,7 @@ const app = function () {
       "navSites": function() { _showContents('navSites');},
       "navMailer": function() { _showContents('navMailer'); },
       "navCron": function() { _showContents('navCron'); },
+      "navDatabase": function() { _showContents('navDatabase'); },
       "navTest": function() { _showContents('navTest'); },
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
@@ -409,7 +426,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navSites', 'navMailer', 'navCron', 'navTest']);
+    var mainOptions = new Set(['navSites', 'navMailer', 'navCron', 'navDatabase', 'navTest']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);

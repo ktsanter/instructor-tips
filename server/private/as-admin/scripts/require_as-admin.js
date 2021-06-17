@@ -10,6 +10,7 @@ define(function (require) {
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
+  require('classDBIntrospect');
   require('as-admin');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

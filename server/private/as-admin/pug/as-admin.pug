@@ -6,6 +6,7 @@ include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-mailer.pug
 include ./mixins/mixins-cron.pug
+include ./mixins/mixins-database.pug
 include ./mixins/mixins-test.pug
 
 doctype html
@@ -33,6 +34,7 @@ html(lang="en")
           {id: "navSites", type: "link", label: "sites"},
           {id: "navMailer", type: "link", label: "gmail"},
           {id: "navCron", type: "link", label: "cron"},
+          {id: "navDatabase", type: "link", label: "database"},
           {id: "navTest", type: "link", label: "test"},
           {type: "dropdown", label: "other", items: [
             {id: "navSignout", type: "link", label: "sign out"},
@@ -58,6 +60,9 @@ html(lang="en")
         
       .container-fluid(class="contents-container contents-navCron hide-me")
         +cronContainer()     
+        
+      .container-fluid(class="contents-container contents-navDatabase hide-me")
+        +databaseContainer()     
         
       .container-fluid(class="contents-container contents-navTest hide-me")
         +testContainer()     

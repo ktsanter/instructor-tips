@@ -167,13 +167,21 @@ const mariadbParams_CommentBuddy = {
     connectionLimit: 5 */
 };
 
-
 const mariadbParams_EndDateManager = {
     reqd: mariadb,
     host: MARIA_HOST,
     user: MARIA_USER,
     password: MARIA_PASSWORD,
     dbName: MARIA_DBNAME_ENDDATEMANAGER /*, 
+    connectionLimit: 5 */
+};
+
+const mariadbParams_ASAdmin = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: 'information_schema' /*, 
     connectionLimit: 5 */
 };
 
@@ -187,6 +195,7 @@ const mariaDBManager_FAQComposer = new mariaDBManagerClass(mariadbParams_FAQComp
 const mariaDBManager_Walkthrough = new mariaDBManagerClass(mariadbParams_Walkthrough);
 const mariaDBManager_CommentBuddy = new mariaDBManagerClass(mariadbParams_CommentBuddy);
 const mariaDBManager_EndDateManager = new mariaDBManagerClass(mariadbParams_EndDateManager);
+const mariaDBManager_ASAdmin = new mariaDBManagerClass(mariadbParams_ASAdmin);
     
 //------------------------------------------
 // session management
@@ -442,7 +451,11 @@ const endDateManager = new endDateManagerClass({
 // ASAdmin general query objects
 //------------------------------------------
 const ASAdminClass = require('./classes/as-admin');
-const ASAdmin = new ASAdminClass({"gMailer": gMailer, "cronScheduler": cronScheduler});
+const ASAdmin = new ASAdminClass({
+  "gMailer": gMailer, 
+  "cronScheduler": cronScheduler,
+  "dbManager": mariaDBManager_ASAdmin
+});
 
 //------------------------------------------
 // DB manager lookup, app info lookup
