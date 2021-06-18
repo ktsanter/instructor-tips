@@ -121,7 +121,7 @@ create view options_tableinfo as
     is_nullable,
     column_key
   from information_schema.COLUMNS 
-  where table_schema = DATABASE();
+  where table_schema = 'welcomeletterv2';
   
 create view coursecount as 
   select 

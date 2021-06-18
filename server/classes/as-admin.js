@@ -119,11 +119,10 @@ module.exports = internal.ASAdmin = class {
     
     var queryList = {
       'schemata': 
-        'select ' +
+        'select  ' +
           'a.schema_name ' +
-        'from schemata as a ' +
-        'where a.schema_name not in ("mysql", "performance_schema", "information_schema") ' + 
-        'order by schema_name '
+        'from instructortips.whitelist_schema as a ' +
+        'order by a.schema_name '
     };
     
     queryResults = await this.dbManager.dbQueries(queryList);   
@@ -149,7 +148,7 @@ module.exports = internal.ASAdmin = class {
       'tables': 
         'select ' +
           'a.table_name, a.table_type ' +
-        'from tables as a ' +
+        'from instructortips.whitelist_table as a ' +
         'where a.table_schema = "' + params.dbname + '" ' + 
         'order by a.table_name '
     };
@@ -176,11 +175,11 @@ module.exports = internal.ASAdmin = class {
     var queryList = {
       'columns': 
         'select ' +
-          'a.column_name, a.column_type, a.column_key, a.is_nullable ' +
-        'from columns as a ' +
+          'a.table_schema, a.table_name, a.column_name, a.column_type, a.column_key, a.is_nullable, a.is_private ' +
+        'from instructortips.whitelist_column as a ' +
         'where a.table_schema = "' + params.dbname + '" ' + 
           'and a.table_name = "' + params.tablename + '" ' +
-        'order by a.column_name '
+        'order by a.ordinal_position '
     };
     
     queryResults = await this.dbManager.dbQueries(queryList);   
@@ -205,23 +204,58 @@ module.exports = internal.ASAdmin = class {
     var fullTableName = params.dbname + '.' + params.tablename;
     
     var queryList = {
+      'whitelist': 
+        'select column_name, is_private ' +
+        'from instructortips.whitelist_column ' +
+        'where table_schema = "' + params.dbname + '" ' +
+          'and table_name = "' + params.tablename + '" ',
+          
       'rows': 
         'select ' +
           '* ' +
         'from ' + fullTableName + ' '
     };
     
-    queryResults = await this.dbManager.dbQueries(queryList);   
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = queryResults.data;
-      
-    } else {
+    queryResults = await this.dbManager.dbQueries(queryList);  
+    
+    if (!queryResults.success) {
       result.details = queryResults.details;
+      return result;
     }
 
+    var result = this._filterRowData(queryResults.data.rows, queryResults.data.whitelist);
+
     return result;
+  }
+  
+  _filterRowData(unfilteredRowList, whitelistInfo) {
+    var result = this.dbManager.queryFailureResult();
+    
+    var filteredRowList = [];
+    for (var i = 0; i < unfilteredRowList.length; i++) {
+      var unfilteredRow = unfilteredRowList[i];
+      var filteredRow = {};
+      
+      for (var colName in unfilteredRow) {
+        var isPrivate = this._getPrivacyInfo(whitelistInfo, colName);
+        filteredRow[colName] = isPrivate ? '***' : unfilteredRow[colName];
+      }
+      
+      filteredRowList.push(filteredRow)
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {"rows": filteredRowList};
+    
+    return result;
+  }
+  
+  _getPrivacyInfo(whitelistInfo, colName) {
+    var isPrivate = true;
+    for (var i = 0; i < whitelistInfo.length; i++) {
+      if (whitelistInfo[i].column_name == colName) isPrivate = (whitelistInfo[i].is_private != 0);
+    }
+    return isPrivate;
   }
 }

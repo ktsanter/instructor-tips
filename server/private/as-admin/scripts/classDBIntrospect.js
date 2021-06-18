@@ -13,9 +13,7 @@ class DBIntrospect {
   //--------------------------------------------------------------
   render() {
     this._config.container.getElementsByClassName('btnDBTest')[0].addEventListener('click', (e) => { this._handleDBTest(e); });
-  }
-   
-  async update() {
+
     this.elemDBSelect = this._config.container.getElementsByClassName('db-selection')[0];
     this.elemDBSelect.addEventListener('change', (e) => { this._handleDBSelect(e); });
     
@@ -26,7 +24,9 @@ class DBIntrospect {
 
     this.elemRowDataHead = this._config.container.getElementsByClassName('rowdata-head')[0];
     this.elemRowDataBody = this._config.container.getElementsByClassName('rowdata-body')[0];
-
+  }
+   
+  async update() {
     await this._loadDatabases();  
   }
 
@@ -98,6 +98,7 @@ class DBIntrospect {
     row.appendChild(CreateElement.createTableCell(null, null, columnData.column_type));
     row.appendChild(CreateElement.createTableCell(null, null, columnData.column_key));
     row.appendChild(CreateElement.createTableCell(null, null, columnData.is_nullable));
+    row.appendChild(CreateElement.createTableCell(null, null, columnData.is_private ? "YES": "NO"));
     
     return row;
   }

@@ -142,8 +142,12 @@ class ASProfile {
   }
   
   _setNavbarProfilePic() {
+    this.elemPic.title = 'profile';
     var usePic = (this.userInfo && this.userInfo.profilepic);
-    if (usePic) this.elemPic.src = this.userInfo.profilepic;
+    if (usePic) {
+      this.elemPic.src = this.userInfo.profilepic;
+      this.elemPic.title = this.userInfo.displayname;
+    }
     UtilityKTS.setClass(this.elemIcon, 'hide-me', usePic);
     UtilityKTS.setClass(this.elemPic, 'hide-me', !usePic);
   }

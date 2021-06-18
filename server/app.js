@@ -331,21 +331,6 @@ const rosterManagerClass = require('./classes/roster-manager')
 const rosterManager = new rosterManagerClass({tempFileManager: tmp, formManager: formidable});
 
 //------------------------------------------
-// InstructorTips admin query objects
-//------------------------------------------
-const dbAdminQueryClass = require('./classes/dbadmin_query')
-const dbAdminQuery = new dbAdminQueryClass(userManagement, mariaDBManager_InstructorTips);
-
-const dbAdminInsertClass = require('./classes/dbadmin_insert')
-const dbAdminInsert = new dbAdminInsertClass(userManagement, mariaDBManager_InstructorTips);
-
-const dbAdminUpdateClass = require('./classes/dbadmin_update')
-const dbAdminUpdate = new dbAdminUpdateClass(userManagement, mariaDBManager_InstructorTips);
-
-const dbAdminDeleteClass = require('./classes/dbadmin_delete')
-const dbAdminDelete = new dbAdminDeleteClass(userManagement, mariaDBManager_InstructorTips);
-
-//------------------------------------------
 // InstructorTips general query objects
 //------------------------------------------
 const dbTipManagerClass = require('./classes/tipmanager')
@@ -536,7 +521,7 @@ var appLookup = {
     appDescriptor: 'enddate-manager',
     appName: 'End date manager',
     routePug: 'enddate-manager/pug/enddate-manager.pug',
-    loginReRoute: 'endate-manager/manager'
+    loginReRoute: 'enddate-manager/manager'
   }, 
 
   "as-admin" : {
@@ -1133,90 +1118,6 @@ app.get('/subpage/:app/:helptype', function (req, res) {
 //------------------------------------------------------
 // protected queries
 //------------------------------------------------------
-app.get('/admin/query/:queryName',  async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor') && req.params.queryName == 'navbar') {
-    res.send(await dbAdminQuery.doQuery(req.params, res, userInfo));
-
-  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus') {
-    res.send({
-      success: true, 
-      details: 'cronstatus', 
-      data: {
-        scheduleNotificationsRunning: cronScheduler.isRunning('schedulepush'),
-        clearExpiredRequestisRunning: cronScheduler.isRunning('clearexpiredrequests'),
-        mailerDebugMode: gMailer.isDebugModeOn()
-      }});
-
-  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus-forcepush') {
-    await messageManagement.sendSchedulePushNotifications();
-    res.send({success: true, details: 'forced push notifications'});
-
-  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
-    res.send(await dbAdminQuery.doQuery(req.params, res, userInfo));
-    
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})
-
-app.post('/admin/insert/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
-    res.send(await dbAdminInsert.doInsert(req.params, req.body));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-app.post('/admin/update/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus') {
-    if (req.body.enablePushNotifications) {
-      cronScheduler.startJob('schedulepush');
-    } else {
-      cronScheduler.stopJob('schedulepush');
-    }
-    if (req.body.enableClearExpired) {
-      cronScheduler.startJob('clearexpiredrequests');
-    } else {
-      cronScheduler.stopJob('clearexpiredrequests');
-    }
-
-    gMailer.setDebugMode(req.body.setMailerDebugMode);
-    res.send({
-      success: true, 
-      details: 'cronstatus', 
-      data: {
-        enablePushNotifications: cronScheduler.isRunning('schedulepush'),
-        enableClearExpired: cronScheduler.isRunning('clearexpiredrequests'),
-        setMailerDebugMode: gMailer.isDebugModeOn()
-      }
-    });
-
-  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
-    res.send(await dbAdminUpdate.doUpdate(req.params, req.body));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-app.post('/admin/delete/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
-    res.send(await dbAdminDelete.doDelete(req.params, req.body));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
 app.get('/:app/query/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
 
