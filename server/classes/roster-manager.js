@@ -12,6 +12,7 @@ module.exports = internal.RosterManager = class {
     this._userManagement = params.userManagement;    
     this._tempFileManager = params.tempFileManager;
     this._formManager = params.formManager;
+    this._apiKey = params.apiKey;
   }
   
 //---------------------------------------------------------------
@@ -32,8 +33,8 @@ module.exports = internal.RosterManager = class {
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
       
-    } else if (params.queryName == 'test') {
-      dbResult = await this._getTest(params, postData, userInfo);
+    } else if (params.queryName == 'apikey') {
+      dbResult = await this._getAPIKey(params, postData, userInfo);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -137,7 +138,6 @@ module.exports = internal.RosterManager = class {
     return result;
   }
   
-  
   async _getAdminAllowed(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
     
@@ -148,7 +148,17 @@ module.exports = internal.RosterManager = class {
     return result;
   }  
   
-//------------------------------------------------------------------------------
+  async _getAPIKey(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = this._apiKey;
+
+    return result;
+  }  
+  
+  //------------------------------------------------------------------------------
 // 
 //------------------------------------------------------------------------------
 

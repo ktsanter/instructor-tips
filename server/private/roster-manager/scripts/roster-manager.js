@@ -23,7 +23,6 @@ const app = function () {
         'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
       ],  
       clientId:  '980213956279-rk5mjllkulhip472ooqmgnavog9c0s58.apps.googleusercontent.com',
-      apiKey: 'AIzaSyDlZNx0YpTXFHS6FBgSH__0mC-PAE4o38g',
       scopes: 'https://www.googleapis.com/auth/docs https://www.googleapis.com/auth/drive.file',
       isSignedIn: false
     },
@@ -55,7 +54,7 @@ const app = function () {
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     _renderContents();
-    _initializeGoogleStuff();
+    await _initializeGoogleStuff();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
@@ -86,12 +85,15 @@ const app = function () {
     await settings.profile.init();
   }
     
-  function _initializeGoogleStuff() {
+  async function _initializeGoogleStuff() {    
+    var result = await SQLDBInterface.doGetQuery('roster-manager/query', 'apikey', page.notice);
+    if (!result.success) return;
+
     settings.google.obj = new GoogleManagement({
       "appId": settings.google.appId,
       "discoveryDocs": settings.google.discoveryDocs,
       "clientId": settings.google.clientId,
-      "apiKey": settings.google.apiKey,
+      "apiKey": result.data,
       "scopes": settings.google.scopes,
       "signInChange": _signInChangeForGoogle
     });

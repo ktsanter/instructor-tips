@@ -12,6 +12,7 @@ module.exports = internal.EndDateManager = class {
     this._userManagement = params.userManagement;    
     this._tempFileManager = params.tempFileManager;
     this._formManager = params.formManager;
+    this._apiKey = params.apiKey;
     
     this._tempDir = 'temp';
 
@@ -36,6 +37,9 @@ module.exports = internal.EndDateManager = class {
      
     } else if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
+      
+    } else if (params.queryName == 'apikey') {
+      dbResult = await this._getAPIKey(params, postData, userInfo);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -243,6 +247,16 @@ module.exports = internal.EndDateManager = class {
     result.details = 'query succeeded';
     result.data = {adminallowed: funcCheckPrivilege(userInfo, 'admin')};
 
+    return result;
+  }
+
+  async _getAPIKey(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = this._apiKey;
+    
     return result;
   }
 

@@ -55,13 +55,12 @@ class GoogleDrive {
   //--------------------------------------------------------------   
   _pickerCallback(data) {
     console.log('_pickerCallback');
-    console.log(data);
 
     if (data.action == 'picked') {
       console.log('picked: "' + data.docs[0].name + '"');
       
     } else {
-      console.log('** file not picked');
+      console.log(data.action);
     }
   }
   
