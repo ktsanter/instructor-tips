@@ -5,16 +5,20 @@ include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-test.pug
+include ./mixins/mixins-admin.pug
 
 doctype html
 html(lang="en")
   head
-    title Aardvark Studios admin
+    title Roster manager
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
     
     +fontawesome()
     +bootstrapstyle()
+    
+    script(src="/scripts/commonmark_min.js")
+    script(src="https://apis.google.com/js/api.js")
     
     style
       include ../../common/styles/classProfile.css
@@ -25,16 +29,19 @@ html(lang="en")
     script(data-main="/scripts/roster-manager/require_roster-manager", src="/scripts/require.js")      \
     
   body(class="colorscheme")
-    +makeNavbar("Roster Manager", 
+    +makeNavbar("Roster manager", 
       {
         items: [
           {id: "navTest", type: "link", label: "test"},
+          {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
+            {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
           ]}
         ],
         
         buttons: [
+          {id: 'navGoogle', label: 'authorize'},
           {id: 'navSave', label: 'save'},
           {id: 'navReload', label: 'reload'}        
         ],
@@ -45,8 +52,12 @@ html(lang="en")
     
     .contents
       .error-container
+      
+      .container-fluid(class="contents-container contents-navTest hide-me disable-container")
+        +testContainer()
+   
         
-      .container-fluid(class="contents-container contents-navTest hide-me")
-        +testContainer()     
+      .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
+        +adminContainer()     
         
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

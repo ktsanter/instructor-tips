@@ -16,6 +16,7 @@ class GoogleCalendar {
   // public methods
   //--------------------------------------------------------------   
   getCalendarInfo(callback) {
+    console.log(gapi.client.calendar);
     return gapi.client.calendar.calendarList.list({}).then (
       function(response) {
         callback(true, response.result);

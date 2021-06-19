@@ -8,8 +8,8 @@ class GoogleManagement {
     this._config = config;
     
     this._config.isSignedIn = false;
-    this._config.discoveryDocs = ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'];
-    
+    //this._config.discoveryDocs = ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'];
+    console.log(this._config.discoveryDocs);
     gapi.load('client:auth2', this._callInitClient(this));
   }
   
@@ -73,6 +73,10 @@ class GoogleManagement {
   
   signout() {
     gapi.auth2.getAuthInstance().signOut();
+  }
+  
+  getOAuthToken() {
+    return gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
   }
   
   //--------------------------------------------------------------

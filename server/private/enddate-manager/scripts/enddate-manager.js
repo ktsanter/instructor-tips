@@ -21,6 +21,9 @@ const app = function () {
     
     google: {
       obj: null,
+      discoveryDocs: [
+        'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'
+      ],
       clientId:  '780404244540-nug55q7bnd7daf3dpj5k5g8qob9uqv41.apps.googleusercontent.com',
       apiKey: 'AIzaSyDOa6Dc0pWvBBCmsQYShBaWuYsBEEFMIlI',
       scopes: 'https://www.googleapis.com/auth/calendar.events',
@@ -101,6 +104,7 @@ const app = function () {
     
   function _initializeGoogleStuff() {
     settings.google.obj = new GoogleManagement({
+      "discoveryDocs": settings.google.discoveryDocs,
       "clientId": settings.google.clientId,
       "apiKey": settings.google.apiKey,
       "scopes": settings.google.scopes,

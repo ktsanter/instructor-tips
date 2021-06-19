@@ -5,11 +5,13 @@ define(function (require) {
   require('/scripts/sqldbinterface');
   require('/scripts/classProfile');
   require('/scripts/usermanagement');
-  require('/scripts/google_webapp_interface');  
+  require('/scripts/classGoogleManagement');
 
+  
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
+  require('classGoogleDrive');
   require('roster-manager');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

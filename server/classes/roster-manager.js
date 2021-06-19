@@ -29,7 +29,10 @@ module.exports = internal.RosterManager = class {
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
 
-    if (params.queryName == 'test') {
+    if (params.queryName == 'admin-allowed') {
+      dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
+      
+    } else if (params.queryName == 'test') {
       dbResult = await this._getTest(params, postData, userInfo);
       
     } else {
@@ -133,6 +136,17 @@ module.exports = internal.RosterManager = class {
 
     return result;
   }
+  
+  
+  async _getAdminAllowed(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {adminallowed: funcCheckPrivilege(userInfo, 'admin')};
+
+    return result;
+  }  
   
 //------------------------------------------------------------------------------
 // 

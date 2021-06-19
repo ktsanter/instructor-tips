@@ -1,18 +1,34 @@
 //-----------------------------------------------------------------------
-// Roster Manager
+// Roster manager
 //-----------------------------------------------------------------------
-// TODO:
+// TODO: 
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
-
   const settings = {
     hideClass: 'hide-me',
     navItemClass: 'use-handler',
 
+    helpURL: '/roster-manager/help',
     logoutURL: '/usermanagement/logout/roster-manager',
     
-    dirtyBit: {},    
+    dirtyBit: {
+      "navTest": false
+    },
+    
+    google: {
+      obj: null,
+      appId: 'aardvarkstudios-rostermanager',
+      discoveryDocs: [
+        'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+      ],  
+      clientId:  '980213956279-rk5mjllkulhip472ooqmgnavog9c0s58.apps.googleusercontent.com',
+      apiKey: 'AIzaSyDlZNx0YpTXFHS6FBgSH__0mC-PAE4o38g',
+      scopes: 'https://www.googleapis.com/auth/docs https://www.googleapis.com/auth/drive.file',
+      isSignedIn: false
+    },
+
+    adminDisable: false
   };
     
 	//---------------------------------------
@@ -25,24 +41,35 @@ const app = function () {
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('loading...', true);
     
-    page.navbar = page.body.getElementsByClassName('navbar')[0];    
-    page.contents = page.body.getElementsByClassName('contents')[0]; 
+    await _setAdminMenu();
 
-    page.navbar.disabled = true;    
-    UtilityKTS.setClass(page.navbar, 'hide-me', true);
+    page.navbar = page.body.getElementsByClassName('navbar')[0];
+    _setMainNavbarEnable(false);
+    
+    page.contents = page.body.getElementsByClassName('contents')[0];    
     
     await _initializeProfile(sodium);
     
     page.notice.setNotice('');
     
-    page.navbar.disabled = false;
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     _renderContents();
+    _initializeGoogleStuff();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
+  
+  async function _setAdminMenu() {
+    _enableNavOption('navAdmin', false, false);
     
+    dbResult = await SQLDBInterface.doGetQuery('roster-manager/query', 'admin-allowed', page.notice);
+    if (!dbResult.success) return;
+    
+    var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
+    _enableNavOption('navAdmin', adminAllowed, adminAllowed);
+  }
+  
   async function _initializeProfile(sodium) {
     settings.profile = new ASProfile({
       id: "myProfile",
@@ -58,7 +85,22 @@ const app = function () {
 
     await settings.profile.init();
   }
-      
+    
+  function _initializeGoogleStuff() {
+    settings.google.obj = new GoogleManagement({
+      "appId": settings.google.appId,
+      "discoveryDocs": settings.google.discoveryDocs,
+      "clientId": settings.google.clientId,
+      "apiKey": settings.google.apiKey,
+      "scopes": settings.google.scopes,
+      "signInChange": _signInChangeForGoogle
+    });
+    
+    settings.googleDrive = new GoogleDrive({
+      "googleManagement": settings.google.obj
+    });
+  }
+  
   //-----------------------------------------------------------------------------
 	// navbar
 	//-----------------------------------------------------------------------------
@@ -74,15 +116,25 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
+    _enableNavOption('navGoogle', false, false);
+    
     _renderTest();
+    _renderAdmin();
   }
   
   function _renderTest() {
     page.navTest = page.contents.getElementsByClassName('contents-navTest')[0];
-
-    page.navTest.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
   }
- 
+    
+  function _renderAdmin() {
+    page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
+    
+    page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
+    page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });
+    
+    page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
+  }
+    
   //-----------------------------------------------------------------------------
 	// updating
 	//-----------------------------------------------------------------------------
@@ -95,17 +147,16 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navTest') await _showTest();
+    if (contentsId == 'navTest') _showTest();
+    if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
   }
   
-  function _showSites() {
-  }
-      
-  async function _showTest() {
-  }
+  function _showTest() {}
+  
+  function _showAdmin() {}
   
   function _setNavOptions() {
     var opt = settings.currentNavOption;
@@ -119,7 +170,11 @@ const app = function () {
       _enableNavOption('navReload', false, false);
     }
   }
-      
+    
+  function _doHelp() {
+    window.open(settings.helpURL, '_blank');
+  }
+  
   function _doLogout() {
     window.open(settings.logoutURL, '_self'); 
   }
@@ -128,50 +183,32 @@ const app = function () {
     settings.dirtyBit[settings.currentNavOption] = dirty;
     _setNavOptions();
   }
-  
-  function _updateGmailAuthorizationUI(authorized) {
-    page.labelGmailAuthorization.innerHTML = 'Gmail is ' + (authorized ? 'AUTHORIZED' : 'NOT AUTHORIZED');
-    UtilityKTS.setClass(page.labelGmailAuthorization, 'not-authorized', !authorized);
-    UtilityKTS.setClass(page.btnBeginGMailAuthorization, 'hide-me', authorized);
-    page.btnBeginGMailAuthorization.disabled = false;
     
-    UtilityKTS.setClass(page.btnSendTestMessage, 'hide-me', !authorized);
-    UtilityKTS.setClass(page.containerGmailAuthConfirm, 'hide-me', true);
+  function _setMainUIEnable(enable) {
+    var containers = page.contents.getElementsByClassName('contents-container');
+    for (var i = 0; i < containers.length; i++) {
+      if (containers[i].classList.contains('contents-navTest') ||
+          containers[i].classList.contains('contents-navAdmin')) {
+        UtilityKTS.setClass(containers[i], 'disable-container', !enable);
+        containers[i].disabled = !enable;   
+      }
+    }
   }
-    
-  //--------------------------------------------------------------------------
-  // admin
-	//--------------------------------------------------------------------------
-  async function _testGmailAuthorization() {
-    var gmailAuthorized = false;
-    var result = await SQLDBInterface.doGetQuery('as-admin/admin', 'check-gmail-auth');
-    if (result.success) gmailAuthorized = result.data.authorized;
-    _updateGmailAuthorizationUI(gmailAuthorized);
-  }
-  
-  async function _beginGmailAuthorization() {
-    var result = await SQLDBInterface.doGetQuery('as-admin/admin', 'begin-gmail-auth', page.notice);
-    
-    UtilityKTS.setClass(page.containerGmailAuthConfirm, 'hide-me', !result.success);
-    if (!result.success) return;
-    
-    page.btnBeginGMailAuthorization.disabled = true;
-    page.linkGmailAuthorization.href = result.data.authorizationurl;
-    page.inputGmailAuthorizationConfirm.value = '';
+      
+  function _setMainNavbarEnable(enable) {
+    var menuIds = ['navTest', 'navAdmin'];
+    for (var i = 0; i < menuIds.length; i++) {
+      var elem = document.getElementById(menuIds[i]);
+      UtilityKTS.setClass(elem, 'disabled', !enable);
+    }
   }
   
-  async function _finishGmailAuthorization() {
-    var confirmCode = page.inputGmailAuthorizationConfirm.value;
-    var result = await SQLDBInterface.doPostQuery('as-admin/admin', 'finish-gmail-auth', {confirmcode: confirmCode}, page.notice);
-
-    await _testGmailAuthorization();
-  }
-    
   async function _doTest() {
     console.log('_doTest');
     //console.log('**stub');
     //alert('There is currently no action for this choice');
 
+  /*
     var result = await SQLDBInterface.doGetQuery('roster-manager/query', 'test', page.notice);
     console.log(result);
 
@@ -181,10 +218,19 @@ const app = function () {
       msg += '\ndata: ' + JSON.stringify(result.data);
     } else {
       msg += '\nfail';
-      msg += '\ndetails: ' + result.details;
     }
     alert(msg);
+  */
+  
+    settings.googleDrive.test();
+    
   }
+
+
+  
+  //--------------------------------------------------------------------------
+  // callbacks
+	//--------------------------------------------------------------------------  
   
   //--------------------------------------------------------------------------
   // handlers
@@ -199,7 +245,10 @@ const app = function () {
     _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
-      "navTest": function() { _showContents('navTest'); },
+      "navTest": function() { _showContents('navTest');},
+      "navAdmin": function() { _showContents('navAdmin'); },
+      "navGoogle": function() { _handleGoogleSignIn(); },
+      "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
       "navSignout": function() { _doLogout();},
@@ -210,7 +259,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navSites', 'navMailer', 'navCron', 'navDatabase', 'navTest']);
+    var mainOptions = new Set(['navTest', 'navAdmin']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);
@@ -238,14 +287,88 @@ const app = function () {
     _setDirtyBit(false);
   }
   
+  function _handleGoogleSignIn() {
+    settings.google.obj.trySignIn();
+  }
+  
+  function _handleGoogleSignout() {
+    settings.google.obj.signout();
+  }
+  
+  async function _signInChangeForGoogle(isSignedIn) {
+    console.log('_signInChangeForGoogle ' + isSignedIn);
+    settings.google.isSignedIn = isSignedIn;
+    
+    _setMainUIEnable(settings.google.isSignedIn);
+    _setMainNavbarEnable(settings.google.isSignedIn);   
+
+    if (isSignedIn) {    
+      //settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
+    }
+    
+    _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
+  }
+
+  function _handleToggleAdmin() {
+    settings.adminDisable = !settings.adminDisable;
+    _setAdminMenu();
+  }
+    
   async function _handleTest() {
-    await _doTest(); 
+    await _doTest();
   }
         
+  //----------------------------------------
+  // report posting
+  //----------------------------------------
+  /*
+  async function _enrollmentReportPost(url, fileToPost) {
+    const METHOD_TITLE = '_enrollmentReportPost';
+    
+    var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
+    var data = new FormData();
+    data.append('file', fileToPost)
+
+    try {
+      const resp = await fetch(
+        url, 
+        {
+          method: 'post', 
+          //headers: {'Content-Type': 'multipart/form-data; charset=utf-8'}, //browser will fill in appropriately (?)
+          body: data
+        }
+      );
+      const json = await resp.json();
+      //console.log(json);
+      
+      if (!json.success) {
+        var errmsg = '*ERROR: in ' + METHOD_TITLE + ', ' + JSON.stringify(json.details);
+        console.log(errmsg);
+        //console.log('url: ' + url);
+        //console.log('postData: ' + JSON.stringify(postData));
+        result.details = errmsg;
+      } else {
+        result = json;
+      }
+      
+    } catch (error) {
+      var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
+      console.log(errmsg);
+      result.details = errmsg;
+    }
+    
+    return result;
+  }
+  */
+  
   //---------------------------------------
   // DB interface
   //----------------------------------------  
-  
+
+  //--------------------------------------------------------------------------
+  // admin
+  //--------------------------------------------------------------------------
+
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------  
