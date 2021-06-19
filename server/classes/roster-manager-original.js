@@ -1,12 +1,12 @@
 "use strict";
 //---------------------------------------------------------------
-// server-side for roster manager 
+// server-side for roster manager (original)
 //---------------------------------------------------------------
 // TODO: optionally strip _MENTOR from emails?
 //---------------------------------------------------------------
 const internal = {};
 
-module.exports = internal.RosterManager = class {
+module.exports = internal.RosterManagerOriginal = class {
   constructor(params) {
     this._tempFileManager = params.tempFileManager;
     this._formManager = params.formManager;

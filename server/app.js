@@ -17,6 +17,7 @@ const MARIA_DBNAME_FAQCOMPOSER = getEnv('MARIA_DBNAME_FAQCOMPOSER', true);
 const MARIA_DBNAME_WALKTHROUGH = getEnv('MARIA_DBNAME_WALKTHROUGH', true);
 const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
 const MARIA_DBNAME_ENDDATEMANAGER = getEnv('MARIA_DBNAME_ENDDATEMANAGER', true);
+const MARIA_DBNAME_ROSTERMANAGER = getEnv('MARIA_DBNAME_ROSTERMANAGER', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -27,9 +28,6 @@ const SESSION_SECRET = getEnv('SESSION_SECRET', true);
 const INSTRUCTORTIPS_URL = getEnv('INSTRUCTORTIPS_URL', true);
 
 const PASSWORD_SALT = getEnv('PASSWORD_SALT', true);
-
-const EMAIL_USER = getEnv('EMAIL_USER', true);
-const EMAIL_PASSWORD = getEnv('EMAIL_PASSWORD', true);
 
 function getEnv(varName, required) {
   var value = process.env[varName];
@@ -185,6 +183,15 @@ const mariadbParams_ASAdmin = {
     connectionLimit: 5 */
 };
 
+const mariadbParams_RosterManager = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_ROSTERMANAGER /*, 
+    connectionLimit: 5 */
+};
+
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
@@ -196,6 +203,7 @@ const mariaDBManager_Walkthrough = new mariaDBManagerClass(mariadbParams_Walkthr
 const mariaDBManager_CommentBuddy = new mariaDBManagerClass(mariadbParams_CommentBuddy);
 const mariaDBManager_EndDateManager = new mariaDBManagerClass(mariadbParams_EndDateManager);
 const mariaDBManager_ASAdmin = new mariaDBManagerClass(mariadbParams_ASAdmin);
+const mariaDBManager_RosterManager = new mariaDBManagerClass(mariadbParams_RosterManager);
     
 //------------------------------------------
 // session management
@@ -262,10 +270,6 @@ const tmp = require('tmp');
 //------------------------------------------
 // email management
 //------------------------------------------
-//var nodemailer = require('nodemailer');
-//const gMailerClass_old = require('./classes/gmailer_old');
-//const gMailer_old = new gMailerClass_old(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD, fileServices: fileservices});
-
 const gMailerClass = require('./classes/gmailer');
 const gMailer = new gMailerClass({"google": google});
 
@@ -329,6 +333,14 @@ const formidable = require('formidable');
 const exceljs = require('exceljs');
 const rosterManagerOriginalClass = require('./classes/roster-manager-original')
 const rosterManagerOriginal = new rosterManagerOriginalClass({tempFileManager: tmp, formManager: formidable});
+
+const rosterManagerClass = require('./classes/roster-manager')
+const rosterManager = new rosterManagerClass({
+  "dbManager": mariaDBManager_RosterManager,
+  "userManagement": userManagement,  
+  "tempFileManager": tmp, 
+  "formManager": formidable
+});
 
 //------------------------------------------
 // InstructorTips general query objects
@@ -456,7 +468,8 @@ var dbManagerLookup = {
   "faqcomposer": dbFAQComposer,
   "walkthrough": dbWalkthrough,
   "commentbuddy": dbCommentBuddy,
-  "enddate-manager": endDateManager
+  "enddate-manager": endDateManager,
+  "roster-manager": rosterManager
 };
 
 var appLookup = {
@@ -529,6 +542,13 @@ var appLookup = {
     appName: 'Aardvark Studios admin',
     routePug: 'as-admin/pug/as-admin.pug',
     loginReRoute: 'as-admin/admin'
+  }, 
+
+  "roster-manager" : {
+    appDescriptor: 'roster-manager',
+    appName: 'Roster Manager',
+    routePug: 'roster-manager/pug/roster-manager.pug',
+    loginReRoute: 'roster-manager/manager'
   }, 
 
   "commentbuddy" : {
@@ -992,18 +1012,6 @@ app.get('/basic-web-design/:app', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-/*  
-app.get('/countdown/scripts/:script', function (req, res) {
-  var scriptFileName = path.join(__dirname, 'private', 'countdown/scripts/' + req.params.script);
-  res.sendFile(scriptFileName);
-})
-
-app.get('/countdown/styles/:style', function (req, res) {
-  var styleFileName = path.join(__dirname, 'private', 'countdown/styles/' + req.params.style);
-  res.sendFile(styleFileName);
-})
-*/
-
 app.get('/countdown/:app', function (req, res) {
   const appParams = {params: url.parse(req.url,true).query};
   
@@ -1035,6 +1043,10 @@ app.get('/image-flipper/help', function (req, res) {
 app.get('/mathml/testbed', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'mathml/pug/mathml.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/roster-manager', function (req, res) {
+  routeIfLoggedIn(req, res, 'roster-manager');
 })
 
 app.get('/roster-manager-original', function (req, res) {
