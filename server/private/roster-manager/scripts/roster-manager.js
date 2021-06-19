@@ -20,7 +20,8 @@ const app = function () {
       obj: null,
       appId: 'aardvarkstudios-rostermanager',
       discoveryDocs: [
-        'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
+        'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+        'https://sheets.googleapis.com/$discovery/rest?version=v4'
       ],  
       clientId:  '980213956279-rk5mjllkulhip472ooqmgnavog9c0s58.apps.googleusercontent.com',
       scopes: 'https://www.googleapis.com/auth/docs https://www.googleapis.com/auth/drive.file',
@@ -126,6 +127,8 @@ const app = function () {
   
   function _renderTest() {
     page.navTest = page.contents.getElementsByClassName('contents-navTest')[0];
+
+    page.navTest.getElementsByClassName('btnTestPicker')[0].addEventListener('click', (e) => { _handleTestPicker(e); });
   }
     
   function _renderAdmin() {
@@ -205,34 +208,26 @@ const app = function () {
     }
   }
   
-  async function _doTest() {
-    console.log('_doTest');
-    //console.log('**stub');
-    //alert('There is currently no action for this choice');
-
-  /*
-    var result = await SQLDBInterface.doGetQuery('roster-manager/query', 'test', page.notice);
-    console.log(result);
-
-    var msg = '_doTest result';
-    if (result.success) {
-      msg += '\nsuccess';
-      msg += '\ndata: ' + JSON.stringify(result.data);
-    } else {
-      msg += '\nfail';
-    }
-    alert(msg);
-  */
-  
-    settings.googleDrive.test();
-    
+  async function _doTestPicker() {
+    console.log('_doTestPicker');
+    settings.googleDrive.pickFile(_pickFileCallback);
   }
 
+  async function _doTest() {
+    console.log('_doTest');
+    console.log('**stub');
+    alert('There is currently no action for this choice');
+  }
 
-  
   //--------------------------------------------------------------------------
   // callbacks
 	//--------------------------------------------------------------------------  
+  function _pickFileCallback(result) {
+    console.log('_pickFileCallback');
+    if (result) {
+      settings.googleDrive.testReadFile(result);
+    }
+  }
   
   //--------------------------------------------------------------------------
   // handlers
@@ -298,7 +293,6 @@ const app = function () {
   }
   
   async function _signInChangeForGoogle(isSignedIn) {
-    console.log('_signInChangeForGoogle ' + isSignedIn);
     settings.google.isSignedIn = isSignedIn;
     
     _setMainUIEnable(settings.google.isSignedIn);
@@ -316,10 +310,13 @@ const app = function () {
     _setAdminMenu();
   }
     
+  async function _handleTestPicker() {
+    await _doTestPicker();
+  }
+            
   async function _handleTest() {
     await _doTest();
   }
-        
   //----------------------------------------
   // report posting
   //----------------------------------------
