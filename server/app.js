@@ -327,8 +327,8 @@ const cronScheduler = new cronSchedulerClass({
 //------------------------------------------
 const formidable = require('formidable');
 const exceljs = require('exceljs');
-const rosterManagerClass = require('./classes/roster-manager')
-const rosterManager = new rosterManagerClass({tempFileManager: tmp, formManager: formidable});
+const rosterManagerOriginalClass = require('./classes/roster-manager-original')
+const rosterManagerOriginal = new rosterManagerOriginalClass({tempFileManager: tmp, formManager: formidable});
 
 //------------------------------------------
 // InstructorTips general query objects
@@ -1037,13 +1037,13 @@ app.get('/mathml/testbed', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.get('/roster-manager', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
+app.get('/roster-manager-original', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager-original.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.post('/roster-manager/:formname', function (req, res) {
-  rosterManager.processUploadedFile(req, res, processRosterManagerResult); 
+app.post('/roster-manager-original/:formname', function (req, res) {
+  rosterManagerOriginal.processUploadedFile(req, res, processRosterManagerOriginalResult); 
 })
 
 app.get('/roster-manager/help', function (req, res) {
@@ -1051,7 +1051,7 @@ app.get('/roster-manager/help', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-async function processRosterManagerResult(req, res, result) {
+async function processRosterManagerOriginalResult(req, res, result) {
   if (result.success) {
     var fileName = result.targetfilename;
 

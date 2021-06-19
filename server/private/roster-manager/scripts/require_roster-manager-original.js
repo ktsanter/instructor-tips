@@ -6,7 +6,7 @@ define(function (require) {
   //require('/scripts/clipboard_copy.js');
   require('/scripts/create_element.js');  
   
-  require('roster-manager');
+  require('roster-manager-original');
 
   document.addEventListener('DOMContentLoaded', app.init());
 });
