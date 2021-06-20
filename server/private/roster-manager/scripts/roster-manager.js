@@ -132,8 +132,10 @@ const app = function () {
     page.elemFileInfo.setAttribute('filedata', null);
 
     page.navTest.getElementsByClassName('btnTestPicker')[0].addEventListener('click', (e) => { _handleTestPicker(e); });
+    page.navTest.getElementsByClassName('btnTestSSInfo')[0].addEventListener('click', (e) => { _handleTestGetSSInfo(e); });
     page.navTest.getElementsByClassName('btnTestFileRead')[0].addEventListener('click', (e) => { _handleTestFileRead(e); });
     page.navTest.getElementsByClassName('btnTestAddSheet')[0].addEventListener('click', (e) => { _handleTestAddSheet(e); });
+    page.navTest.getElementsByClassName('btnTestFileWrite')[0].addEventListener('click', (e) => { _handleTestFileWrite(e); });
   }
     
   function _renderAdmin() {
@@ -214,30 +216,86 @@ const app = function () {
   }
   
   async function _doTestPicker() {
-    console.log('_doTestPicker');
     settings.googleDrive.pickFile(_pickFileCallback);
   }
   
-  async function _doTestFileRead() {
-    console.log('_doTestFileRead');
+  async function _doTestGetSSInfo() {
     var fileData = JSON.parse(page.elemFileInfo.getAttribute('filedata'));
     if (!fileData) {
       console.log('file data is null');
       return;
     }
     
-    settings.googleDrive.testReadFile(fileData);
+    var result = await settings.googleDrive.testGetSSInfo(fileData);
+    if (result.success) {
+      console.log('title: ' + result.properties.title);
+      console.log('id: ' + result.spreadsheetId);
+      console.log('number of sheets: ' + result.sheets.length);
+      for (var i = 0; i < result.sheets.length; i++) {
+        var sheet = result.sheets[i];
+        console.log(' - ' + sheet.properties.title);
+      }
+
+    } else {
+      console.log('*** Error - _doTestGetSSInfo failed: ' + result.message);
+    }
+  }
+  
+  async function _doTestFileRead() {
+    var fileData = JSON.parse(page.elemFileInfo.getAttribute('filedata'));
+    if (!fileData) {
+      console.log('file data is null');
+      return;
+    }
+    
+    var result = await settings.googleDrive.testReadFile(fileData);
+    if (result.success) {
+      console.log('range: ' + result.range);
+      var rows = result.values;
+      for (var i = 0; i < result.values.length; i++) {
+        var row = result.values[i];
+        console.log(row);
+      }
+      
+    } else {
+      console.log('*** Error - _doTestFileRead failed: ' + result.message);
+    }
   }
 
   async function _doTestAddSheet() {
-    console.log('_doTestAddSheet');
     var fileData = JSON.parse(page.elemFileInfo.getAttribute('filedata'));
     if (!fileData) {
       console.log('file data is null');
       return;
     }
     
-    settings.googleDrive.testAddSheet(fileData);
+    var result = await settings.googleDrive.testAddSheet(fileData);
+    if (result.success) {
+      var reply = result.replies[0];
+      console.log('title: ' + reply.addSheet.properties.title);
+
+    } else {
+      console.log('*** Error - _doTestAddSheet failed: ' + result.message);
+    }
+  }
+
+  async function _doTestFileWrite() {
+    var fileData = JSON.parse(page.elemFileInfo.getAttribute('filedata'));
+    if (!fileData) {
+      console.log('file data is null');
+      return;
+    }
+    
+    var result = await settings.googleDrive.testWriteFile(fileData);
+    if (result.success) {
+      console.log('updated range: ' + result.updatedRange);
+      console.log('updated rows: ' + result.updatedRows);
+      console.log('updated columns: ' + result.updatedColumns);
+      console.log('updated cells: ' + result.updatedCells);
+
+    } else {
+      console.log('*** Error - _doTestFileWrite failed: ' + result.message);
+    }
   }
 
   async function _doTest() {
@@ -250,9 +308,7 @@ const app = function () {
   // callbacks
 	//--------------------------------------------------------------------------  
   function _pickFileCallback(result) {
-    console.log('_pickFileCallback');
     if (result) {
-      //settings.googleDrive.testReadFile(result);
       page.elemFileInfo.setAttribute('filedata', JSON.stringify(result));
       page.elemFileInfo.innerHTML = result.name;
     }
@@ -342,6 +398,10 @@ const app = function () {
   async function _handleTestPicker() {
     await _doTestPicker();
   }
+  
+  async function _handleTestGetSSInfo() {
+    await _doTestGetSSInfo();
+  }
             
   async function _handleTestFileRead() {
     await _doTestFileRead();
@@ -349,6 +409,10 @@ const app = function () {
             
   async function _handleTestAddSheet() {
     await _doTestAddSheet();
+  }
+            
+  async function _handleTestFileWrite() {
+    await _doTestFileWrite();
   }
             
   async function _handleTest() {
