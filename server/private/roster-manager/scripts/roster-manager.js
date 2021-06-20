@@ -127,8 +127,13 @@ const app = function () {
   
   function _renderTest() {
     page.navTest = page.contents.getElementsByClassName('contents-navTest')[0];
+    
+    page.elemFileInfo = page.navTest.getElementsByClassName('file-info')[0];
+    page.elemFileInfo.setAttribute('filedata', null);
 
     page.navTest.getElementsByClassName('btnTestPicker')[0].addEventListener('click', (e) => { _handleTestPicker(e); });
+    page.navTest.getElementsByClassName('btnTestFileRead')[0].addEventListener('click', (e) => { _handleTestFileRead(e); });
+    page.navTest.getElementsByClassName('btnTestAddSheet')[0].addEventListener('click', (e) => { _handleTestAddSheet(e); });
   }
     
   function _renderAdmin() {
@@ -212,6 +217,28 @@ const app = function () {
     console.log('_doTestPicker');
     settings.googleDrive.pickFile(_pickFileCallback);
   }
+  
+  async function _doTestFileRead() {
+    console.log('_doTestFileRead');
+    var fileData = JSON.parse(page.elemFileInfo.getAttribute('filedata'));
+    if (!fileData) {
+      console.log('file data is null');
+      return;
+    }
+    
+    settings.googleDrive.testReadFile(fileData);
+  }
+
+  async function _doTestAddSheet() {
+    console.log('_doTestAddSheet');
+    var fileData = JSON.parse(page.elemFileInfo.getAttribute('filedata'));
+    if (!fileData) {
+      console.log('file data is null');
+      return;
+    }
+    
+    settings.googleDrive.testAddSheet(fileData);
+  }
 
   async function _doTest() {
     console.log('_doTest');
@@ -225,7 +252,9 @@ const app = function () {
   function _pickFileCallback(result) {
     console.log('_pickFileCallback');
     if (result) {
-      settings.googleDrive.testReadFile(result);
+      //settings.googleDrive.testReadFile(result);
+      page.elemFileInfo.setAttribute('filedata', JSON.stringify(result));
+      page.elemFileInfo.innerHTML = result.name;
     }
   }
   
@@ -312,6 +341,14 @@ const app = function () {
     
   async function _handleTestPicker() {
     await _doTestPicker();
+  }
+            
+  async function _handleTestFileRead() {
+    await _doTestFileRead();
+  }
+            
+  async function _handleTestAddSheet() {
+    await _doTestAddSheet();
   }
             
   async function _handleTest() {
