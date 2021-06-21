@@ -80,6 +80,11 @@ body {
   cursor: pointer;
 }
 
+.contents .contents-navManage .upload-result {
+  display: inline-block;
+  font-style: italic;
+}
+
 /*------------------------------------------------------------------------------
  * contents - navConfigure
  *------------------------------------------------------------------------------*/

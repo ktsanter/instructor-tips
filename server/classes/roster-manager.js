@@ -13,6 +13,40 @@ module.exports = internal.RosterManager = class {
     this._tempFileManager = params.tempFileManager;
     this._formManager = params.formManager;
     this._apiKey = params.apiKey;
+        
+    this.colEnrollment_Student = 'Student';
+    this.colEnrollment_Section = 'Section';
+    this.colEnrollment_Email = 'StudentEmail';
+    this.colEnrollment_StartDate = 'StartDate';
+    this.colEnrollment_EndDate = 'EndDate';
+    this.colEnrollment_Affiliation = 'Affiliation';
+    this.colEnrollment_Term = 'LMSTerm';
+
+    this.colMentor_Student = 'Student_Name';
+    this.colMentor_Section = 'Section_Name';
+    this.colMentor_Term = 'Term_Name';
+    this.colMentor_Role = 'Role';
+    this.colMentor_Name = 'Mentor/Guardian';
+    this.colMentor_Email = 'Mentor Email';
+
+    this._requiredColumns_Enrollment = new Set([
+      this.colEnrollment_Student,
+      this.colEnrollment_Section,
+      this.colEnrollment_Email,
+      this.colEnrollment_StartDate,
+      this.colEnrollment_EndDate,
+      this.colEnrollment_Affiliation,
+      this.colEnrollment_Term
+    ]);    
+
+    this._requiredColumns_Mentor = new Set([
+      this.colMentor_Student,
+      this.colMentor_Section,
+      this.colMentor_Term,
+      this.colMentor_Role,
+      this.colMentor_Name,
+      this.colMentor_Email
+    ]);    
   }
   
 //---------------------------------------------------------------
@@ -20,7 +54,7 @@ module.exports = internal.RosterManager = class {
 //---------------------------------------------------------------  
   async renderManagerPage(res, me, pugFileName, renderAndSendPug, userManagement, userInfo) {
     var dbResult = await me._getGoogleFileId(userInfo);
-    if (!dbResult.success) me._renderFail(res);
+    if (!dbResult.success) me._sendFail(res, 'cannot access page: roster manager');
     
     var googleFileId = '[none]';
     if (dbResult.data.length > 0) googleFileId = dbResult.data[0].googlefileid;
@@ -32,24 +66,16 @@ module.exports = internal.RosterManager = class {
     renderAndSendPug(res, 'rostermanager', pugFileName, {params: pugOptions});    
   }
 
-  async processUploadedFile(req, res, uploadType) {
-    var result = {
-      success: false,
-      details: 'unspecified error in processUploadedFile',
-      data: null
-    };
-    
+  processUploadedFile(req, res, uploadType) {
     if (uploadType == 'enrollment') {
-      result = await this._processEnrollmentFile(req);
+      this._processExcelFile(req, res, uploadType);
       
     } else if (uploadType == 'mentor') {
-      result = await this._processMentorFile(req);
+      this._processExcelFile(req, res, uploadType);
       
     } else {
-      result.details = 'unrecognized upload type: ' + uploadType;
+      this._sendFail(res, 'unrecognized upload type: ' + uploadType);
     }
-    
-    res.send(result);
   }
   
 //---------------------------------------------------------------
@@ -111,46 +137,125 @@ module.exports = internal.RosterManager = class {
   }
   
 //---------------------------------------------------------------
-// private methods
+// private methods - file processing
 //--------------------------------------------------------------- 
-  _failureCallback(req, res, errorDescription, callback) {
-    var result = {
-      sucess: false,
-      formname: req.params.formname,
-      description: errorDescription,
-      workbook: null,
-      targetfilename: ''
-    };
+  async _processExcelFile(req, res, uploadType) {
+    var thisObj = this;
     
-    callback(req, res, result);
-  }
-  
-  _successCallback(req, res, message, workbookToSend, targetFileName, callback) {
-    var result = {
-      success: true,
-      formname: req.params.formname,
-      description: message,
-      workbook: workbookToSend,
-      targetfilename: targetFileName
-    };
-    
-    callback(req, res, result);
-  }
-  
-  async _processEnrollmentFile(req) {
-    var result = this._dbManager.queryFailureResult(); 
+    var form = new this._formManager.IncomingForm();
+    form.parse(req, async function(err, fields, files) {
+      if (err) {
+        thisObj._sendFail(req, res, 'error in form.parse: ' + JSON.stringify(err));
+        return;
+      }
+      
+      var origFileName = files.file.name;
+      var filePath = files.file.path;
+      
+      const exceljs = require('exceljs');
+      var workbook = new exceljs.Workbook();
+      await workbook.xlsx.readFile(filePath);
+      if (workbook.worksheets.length == 0) {
+        thisObj._sendFail(req, res, 'missing first worksheet');
+        return;
+      }    
+      
+      workbook.clearThemes();
+      var worksheet = workbook.getWorksheet(1);
 
+      if (uploadType == 'enrollment') {
+        thisObj._processEnrollmentFile(res, thisObj, worksheet);
+        
+      } else if (uploadType == 'mentor') {
+        thisObj._processMentorFile(res, thisObj, worksheet);
+        
+      } else {
+        thisObj._sendFail(res, 'unrecognized upload type: ' + uploadType);
+      }
+    });
+  }
+  
+  async _processEnrollmentFile(res, thisObj, worksheet) {    
+    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Enrollment);
+    if (!validate.success) {
+      thisObj._sendFail(res, 'missing one or more required columns');
+      return;
+    }
+    
+    var packagedValues = thisObj._packageEnrollmentValues(thisObj, worksheet, validate.columnInfo);
+    
+    if (!packagedValues.success) {
+      thisObj._sendFail(req, res, 'failed to package enrollment values');
+      return;
+    }
+    
+    thisObj._sendSuccess(res, 'upload succeeded', packagedValues.data);
+  }
+  
+  async _processMentorFile(res, thisObj, worksheet) {
+    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Mentor);
+    if (!validate.success) {
+      thisObj._sendFail(res, 'missing one or more required columns');
+      return;
+    }
+
+    var packagedValues = thisObj._packageMentorValues(thisObj, worksheet, validate.columnInfo);
+    
+    if (!packagedValues.success) {
+      thisObj._sendFail(req, res, 'failed to package enrollment values');
+      return;
+    }
+    
+    thisObj._sendSuccess(res, 'upload succeeded', packagedValues.data);
+  }
+  
+  _packageEnrollmentValues(thisObj, worksheet, columnInfo) {
+    var result = {success: false, data: null};
+    
+    var enrollments = [];
+    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
+      var student = row.getCell(columnInfo[thisObj.colEnrollment_Student]).value;
+
+      if (student != thisObj.colEnrollment_Student) {
+        enrollments.push({
+          "student": student,
+          "term": row.getCell(columnInfo[thisObj.colEnrollment_Term]).value,
+          "section": row.getCell(columnInfo[thisObj.colEnrollment_Section]).value,
+          "startdate": row.getCell(columnInfo[thisObj.colEnrollment_StartDate]).value,
+          "enddate": row.getCell(columnInfo[thisObj.colEnrollment_EndDate]).value,
+          "email": row.getCell(columnInfo[thisObj.colEnrollment_Email]).value,
+          "affiliation": row.getCell(columnInfo[thisObj.colEnrollment_Affiliation]).value
+        });
+      }
+    });
+    
     result.success = true;
-    result.details = 'processed enrollment file';
+    result.data = enrollments;
     
     return result;
   }
   
-  async _processMentorFile(req) {
-    var result = this._dbManager.queryFailureResult(); 
+  _packageMentorValues(thisObj, worksheet, columnInfo) {
+    var result = {success: false, data: null};
+    
+    var enrollments = [];
+    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
+      var student = row.getCell(columnInfo[thisObj.colMentor_Student]).value;
+
+      if (student != thisObj.colMentor_Student) {
+        enrollments.push({
+          "student": student,
+          "term": row.getCell(columnInfo[thisObj.colMentor_Term]).value,
+          "section": row.getCell(columnInfo[thisObj.colMentor_Section]).value,
+          "role": row.getCell(columnInfo[thisObj.colMentor_Role]).value,
+          "name": row.getCell(columnInfo[thisObj.colMentor_Name]).value,
+          "email": row.getCell(columnInfo[thisObj.colMentor_Email]).value
+        });
+      }
+    });
     
     result.success = true;
-    result.details = 'processed mentor file';
+    result.data = enrollments;
     
     return result;
   }
@@ -237,15 +342,29 @@ module.exports = internal.RosterManager = class {
     return result;
   }
 
-//------------------------------------------------------------------------------
-// 
-//------------------------------------------------------------------------------
-
 //----------------------------------------------------------------------
 // utility
 //----------------------------------------------------------------------  
-  _renderFail(res) {
-    res.send('cannot access page: roster manager')    
+  _sendFail(res, failMessage) {
+    var result = {
+      sucess: false,
+      details: failMessage,
+      data: null
+    };
+    
+    res.send(result);
+  }
+  
+  _sendSuccess(res, successMessage, dataValues) {
+    if (!dataValues) dataValues = null;
+    
+    var result = {
+      success: true,
+      details: successMessage,
+      data: dataValues
+    };
+    
+    res.send(result);
   }  
   
   _verifyHeaderRow(headerRow, requiredColumns) {
@@ -297,14 +416,5 @@ module.exports = internal.RosterManager = class {
     var fDate = new Date(d);
     
     return fDate;
-  }
-  
-  _createOrReplaceSheet(workbook, sheetId) {
-    var sheet = workbook.getWorksheet(sheetId);
-  
-    if (sheet) workbook.removeWorksheet(sheetId);   
-    sheet = workbook.addWorksheet(sheetId);
-      
-    return sheet;
   }
 }

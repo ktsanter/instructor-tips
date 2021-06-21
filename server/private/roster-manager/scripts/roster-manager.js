@@ -301,7 +301,15 @@ const app = function () {
   async function _doFileUpload(uploadType, file) {
     var url = '/usermanagement/routeToApp/roster-manager/upload/' + uploadType;    
     var result = await settings.reportPoster.post(url, file);
+    
+    var resultElems = page.navManage.getElementsByClassName('upload-result');
+    for (var i = 0; i < resultElems.length; i++) {
+      resultElems[i].innerHTML = '';
+    }
+    
+    var elemResult = page.navManage.getElementsByClassName('upload-result ' + uploadType)[0];
     console.log(result);
+    elemResult.innerHTML = result.details;
   }
   
   async function _doTest() {
