@@ -54,12 +54,30 @@ body {
 .contents .contents-navManage {}
 
 .contents .contents-navManage .googlefile-notselected {
+  display: inline-block;
   font-style: italic;
-  background-color: #ddd
 }
 
-.contents .contents-navManage .googlefile-pick {
+.contents .contents-navManage .googlefile-link {
+  display: inline-block;
+}
+
+.contents .contents-navManage .btn-secondary {
   vertical-align: top;
+  min-width: 10.0em;
+}
+
+.contents .contents-navManage .uploadfile {
+  opacity: 0;
+  z-index: -1;
+  position: absolute; /* don't let it take up space */
+}
+
+.contents .contents-navManage .uploadfile-label {
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--bgPrimary);
+  cursor: pointer;
 }
 
 /*------------------------------------------------------------------------------

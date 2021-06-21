@@ -6,7 +6,6 @@ include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-manage.pug
 include ./mixins/mixins-configure.pug
-include ./mixins/mixins-test.pug
 include ./mixins/mixins-admin.pug
 
 doctype html
@@ -36,7 +35,6 @@ html(lang="en")
         items: [
           {id: "navManage", type: "link", label: "manage"},
           {id: "navConfigure", type: "link", label: "configure"},
-          {id: "navTest", type: "link", label: "test"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
             {id: "navHelp", type: "link", label: "help"},
@@ -62,9 +60,6 @@ html(lang="en")
         
       .container-fluid(class="contents-container contents-navConfigure hide-me disable-container")
         +configureContainer()
-        
-      .container-fluid(class="contents-container contents-navTest hide-me disable-container")
-        +testContainer()
         
       .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
         +adminContainer()     

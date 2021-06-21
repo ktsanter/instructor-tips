@@ -1071,6 +1071,10 @@ app.get('/roster-manager/help', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.post('/usermanagement/routeToApp/roster-manager/upload/:uploadType', function (req, res) {
+  rosterManager.processUploadedFile(req, res, req.params.uploadType); 
+})
+
 async function processRosterManagerOriginalResult(req, res, result) {
   if (result.success) {
     var fileName = result.targetfilename;

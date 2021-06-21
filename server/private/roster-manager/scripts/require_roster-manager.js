@@ -12,6 +12,7 @@ define(function (require) {
   const libsodiumWrappers = require('libsodium-wrappers');
    
   require('classGoogleDrive');
+  require('classReportPoster');
   require('roster-manager');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

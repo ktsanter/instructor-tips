@@ -32,10 +32,24 @@ module.exports = internal.RosterManager = class {
     renderAndSendPug(res, 'rostermanager', pugFileName, {params: pugOptions});    
   }
 
-  processUploadedFile(req, res) {
-    console.log('RosterManager.processUploadedFile');
-    console.log(req.params);
-    res.send('RosterManager.processUploadedFile');
+  async processUploadedFile(req, res, uploadType) {
+    var result = {
+      success: false,
+      details: 'unspecified error in processUploadedFile',
+      data: null
+    };
+    
+    if (uploadType == 'enrollment') {
+      result = await this._processEnrollmentFile(req);
+      
+    } else if (uploadType == 'mentor') {
+      result = await this._processMentorFile(req);
+      
+    } else {
+      result.details = 'unrecognized upload type: ' + uploadType;
+    }
+    
+    res.send(result);
   }
   
 //---------------------------------------------------------------
@@ -60,8 +74,8 @@ module.exports = internal.RosterManager = class {
   async doInsert(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._insertDummy(params, postData, userInfo);
+    if (params.queryName == 'googlefileid') {
+      dbResult = await this._replaceGoogleFileId(params, postData, userInfo);
   
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -123,6 +137,24 @@ module.exports = internal.RosterManager = class {
     callback(req, res, result);
   }
   
+  async _processEnrollmentFile(req) {
+    var result = this._dbManager.queryFailureResult(); 
+
+    result.success = true;
+    result.details = 'processed enrollment file';
+    
+    return result;
+  }
+  
+  async _processMentorFile(req) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    result.success = true;
+    result.details = 'processed mentor file';
+    
+    return result;
+  }
+  
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
@@ -150,33 +182,7 @@ module.exports = internal.RosterManager = class {
 
     return result;
   }
-  
-  async _getTest(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult(); 
     
-    var query, queryResults;
-    
-    var queryList = {
-      'test': 
-        'select ' +
-          'a.userid, a.testname ' +
-        'from test as a '
-    };
-    
-    queryResults = await this._dbManager.dbQueries(queryList);   
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = queryResults.data;
-      
-    } else {
-      result.details = queryResults.details;
-    }
-
-    return result;
-  }
-  
   async _getAdminAllowed(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
     
@@ -197,7 +203,41 @@ module.exports = internal.RosterManager = class {
     return result;
   }  
   
-  //------------------------------------------------------------------------------
+  async _replaceGoogleFileId(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      "delete":
+        'delete ' +
+        'from rosterfile ' +
+        'where userid = ' + userInfo.userId,
+        
+      "insert": 
+        'insert ' +
+        'into rosterfile(userid, googlefileid) ' + 
+        'values (' + 
+          userInfo.userId + ', ' +
+          '"' + postData.googlefileid + '"' +
+        ') '
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);   
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
+//------------------------------------------------------------------------------
 // 
 //------------------------------------------------------------------------------
 
