@@ -13,15 +13,15 @@ USE rostermanager;
 select "creating tables" as comment;
 
 #----------------------------------------------------------------------
-create table test
+create table rosterfile
 (
-  testid                int unsigned not null AUTO_INCREMENT,
+  rosterfileid          int unsigned not null AUTO_INCREMENT,
   userid                int unsigned not null,
-  testname              varchar(200) not null,
+  googlefileid          varchar(200) not null,
   
-  primary key (testid),
+  primary key (rosterfileid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
-  constraint unique(userid, testname)
+  constraint unique(userid, googlefileid)
 );
 
 #--------------------------------------------------------------------------

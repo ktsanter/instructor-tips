@@ -13,6 +13,8 @@ const app = function () {
     logoutURL: '/usermanagement/logout/roster-manager',
     
     dirtyBit: {
+      "navManage": false,
+      "navConfigure": false,
       "navTest": false
     },
     
@@ -63,10 +65,8 @@ const app = function () {
   async function _setAdminMenu() {
     _enableNavOption('navAdmin', false, false);
     
-    dbResult = await SQLDBInterface.doGetQuery('roster-manager/query', 'admin-allowed', page.notice);
-    if (!dbResult.success) return;
+    var adminAllowed = await _checkAdminAllowed();
     
-    var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
     _enableNavOption('navAdmin', adminAllowed, adminAllowed);
   }
   
@@ -121,9 +121,25 @@ const app = function () {
   function _renderContents() {
     _enableNavOption('navGoogle', false, false);
     
+    _renderManage();
+    _renderConfigure();
     _renderTest();
     _renderAdmin();
   }
+  
+  function _renderManage() {
+    page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
+    
+    page.targetId = page.navManage.getElementsByClassName('googlefile-id')[0];
+    page.targetContainer = page.navManage.getElementsByClassName('googlefile-container')[0];
+    
+    var pickButtons = page.navManage.getElementsByClassName('googlefile-pick');
+    for (var i = 0; i < pickButtons.length; i++) {
+      pickButtons[i].addEventListener('click', (e) => { _handleTargetFilePick(e); });
+    }
+  }
+  
+  function _renderConfigure() {}
   
   function _renderTest() {
     page.navTest = page.contents.getElementsByClassName('contents-navTest')[0];
@@ -159,12 +175,18 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
+    if (contentsId == 'navManage') _showManage();
+    if (contentsId == 'navConfigure') _showConfigure();
     if (contentsId == 'navTest') _showTest();
     if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
   }
+  
+  function _showManage() {}
+  
+  function _showConfigure() {}
   
   function _showTest() {}
   
@@ -199,8 +221,12 @@ const app = function () {
   function _setMainUIEnable(enable) {
     var containers = page.contents.getElementsByClassName('contents-container');
     for (var i = 0; i < containers.length; i++) {
-      if (containers[i].classList.contains('contents-navTest') ||
-          containers[i].classList.contains('contents-navAdmin')) {
+      if (
+        containers[i].classList.contains('contents-navManage') ||
+        containers[i].classList.contains('contents-navConfigure') ||
+        containers[i].classList.contains('contents-navTest') ||
+        containers[i].classList.contains('contents-navAdmin')
+      ) {
         UtilityKTS.setClass(containers[i], 'disable-container', !enable);
         containers[i].disabled = !enable;   
       }
@@ -208,15 +234,77 @@ const app = function () {
   }
       
   function _setMainNavbarEnable(enable) {
-    var menuIds = ['navTest', 'navAdmin'];
+    var menuIds = ['navManage', 'navConfigure', 'navTest', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
       UtilityKTS.setClass(elem, 'disabled', !enable);
     }
   }
   
+  async function _setTargetFileInfo() {
+    var targetId = _getTargetFileId();
+
+    var targetFilePicked = page.targetContainer.getElementsByClassName('file-chosen')[0];
+    var targetFileNotPicked = page.targetContainer.getElementsByClassName('file-notchosen')[0];
+    var targetLink = page.targetContainer.getElementsByClassName('googlefile-link')[0];
+    
+    UtilityKTS.setClass(targetFilePicked, settings.hideClass, true);
+    UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, true);
+    
+    if (targetId) {
+      var result =  await settings.googleDrive.getSpreadsheetInfo({"id": targetId});
+      if (!result.success) {
+        page.notice.setNotice('Error: unable to get file info');
+        
+      } else {
+        targetLink.href = result.url;
+        targetLink.innerHTML = result.title;
+        UtilityKTS.setClass(targetFilePicked, settings.hideClass, false);
+      }
+      
+    } else {
+      UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, false);
+    }
+  }
+  
+  async function _doTargetFilePick(pickType) {
+    if (pickType == 'replace') {
+      var msg = 'All of the data in the current file will be copied to the new one.';
+      msg += '\n\nChoose "Okay" to continue.';
+      if (!confirm(msg)) return;
+    }
+    
+    var params = {
+      "callback": _callbackTargetFilePick,
+      "includeFileInfo": false
+    };
+    
+    settings.googleDrive.pickFile(params);
+  }
+  
+  function _getTargetFileId() {
+    var targetId = page.targetId.innerHTML;
+    if (targetId == '[none]') targetId = null;
+    return targetId;
+  }
+  
+  async function _saveTargetFileId(targetId) {
+    console.log('_saveTargetFileId');
+    
+    console.log('save to DB');
+    
+    page.targetId.innerHTML = targetId;
+    
+    return true;
+  }
+  
   async function _doTestPicker() {
-    settings.googleDrive.pickFile(_pickFileCallback);
+    var params = {
+      "callback": _testpickFileCallback,
+      "includeFileInfo": true
+    };
+    
+    settings.googleDrive.pickFile(params);
   }
   
   async function _doTestGetSSInfo() {
@@ -226,14 +314,13 @@ const app = function () {
       return;
     }
     
-    var result = await settings.googleDrive.testGetSSInfo(fileData);
+    var result = await settings.googleDrive.getSpreadsheetInfo(fileData);
     if (result.success) {
-      console.log('title: ' + result.properties.title);
-      console.log('id: ' + result.spreadsheetId);
-      console.log('number of sheets: ' + result.sheets.length);
-      for (var i = 0; i < result.sheets.length; i++) {
-        var sheet = result.sheets[i];
-        console.log(' - ' + sheet.properties.title);
+      console.log('title: ' + result.title);
+      console.log('id: ' + result.id);
+      console.log('number of sheets: ' + result.sheetInfo.length);
+      for (var i = 0; i < result.sheetInfo.length; i++) {
+        console.log(' - ' + result.sheetInfo[i].title);
       }
 
     } else {
@@ -301,17 +388,7 @@ const app = function () {
   async function _doTest() {
     console.log('_doTest');
     console.log('**stub');
-    alert('There is currently no action for this choice');
-  }
-
-  //--------------------------------------------------------------------------
-  // callbacks
-	//--------------------------------------------------------------------------  
-  function _pickFileCallback(result) {
-    if (result) {
-      page.elemFileInfo.setAttribute('filedata', JSON.stringify(result));
-      page.elemFileInfo.innerHTML = result.name;
-    }
+    alert('There is currently no action for this choice');  
   }
   
   //--------------------------------------------------------------------------
@@ -327,6 +404,8 @@ const app = function () {
     _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
+      "navManage": function() { _showContents('navManage');},
+      "navConfigure": function() { _showContents('navConfigure');},
       "navTest": function() { _showContents('navTest');},
       "navAdmin": function() { _showContents('navAdmin'); },
       "navGoogle": function() { _handleGoogleSignIn(); },
@@ -341,7 +420,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navTest', 'navAdmin']);
+    var mainOptions = new Set(['navManage', 'navConfigure', 'navTest', 'navAdmin']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);
@@ -377,17 +456,10 @@ const app = function () {
     settings.google.obj.signout();
   }
   
-  async function _signInChangeForGoogle(isSignedIn) {
-    settings.google.isSignedIn = isSignedIn;
-    
-    _setMainUIEnable(settings.google.isSignedIn);
-    _setMainNavbarEnable(settings.google.isSignedIn);   
-
-    if (isSignedIn) {    
-      //settings.google.objCalendar.getCalendarInfo(_calendarInfoCallback);
-    }
-    
-    _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
+  async function _handleTargetFilePick(e) {
+    var param = 'replace';
+    if (!e.target.classList.contains('pick-replace')) param = 'new';
+    await _doTargetFilePick(param);
   }
 
   function _handleToggleAdmin() {
@@ -418,6 +490,56 @@ const app = function () {
   async function _handleTest() {
     await _doTest();
   }
+
+  //----------------------------------------
+  // callbacks
+  //----------------------------------------
+  async function _signInChangeForGoogle(isSignedIn) {
+    settings.google.isSignedIn = isSignedIn;
+    
+    _setMainUIEnable(settings.google.isSignedIn);
+    _setMainNavbarEnable(settings.google.isSignedIn);   
+
+    if (isSignedIn) {    
+      await _setTargetFileInfo();
+    }
+    
+    _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
+  }
+  
+  async function _callbackTargetFilePick(result) {
+    if (!result) return;
+    
+    var saveResult = await _saveTargetFileId(result.id);
+    await _setTargetFileInfo();
+  }
+   
+  function _testpickFileCallback(result) {
+    if (result) {
+      page.elemFileInfo.setAttribute('filedata', JSON.stringify(result));
+      
+      var elemLink = page.elemFileInfo.getElementsByClassName('file-url')[0];
+      elemLink.href = result.url;
+      elemLink.innerHTML = result.title;
+      UtilityKTS.setClass(elemLink, settings.hideClass, false);
+
+      page.elemFileInfo.getElementsByClassName('file-id')[0].innerHTML = 'id: ' + result.id;
+      
+      if (result.fileInfo) {
+        var sheetInfo = result.fileInfo.sheetInfo;
+        var elemNumSheets = page.elemFileInfo.getElementsByClassName('file-numsheets')[0];
+        var elemSheets = page.elemFileInfo.getElementsByClassName('file-sheetnames')[0];
+        
+        elemNumSheets.innerHTML = 'number of sheets: ' + sheetInfo.length;
+        
+        UtilityKTS.removeChildren(elemSheets);
+        for (var i = 0; i < sheetInfo.length; i++) {
+          elemSheets.appendChild(CreateElement.createDiv(null, null, '&nbsp;&nbsp;- ' + sheetInfo[i].title));
+        }
+      }
+    }
+  }  
+  
   //----------------------------------------
   // report posting
   //----------------------------------------
@@ -464,7 +586,14 @@ const app = function () {
   //---------------------------------------
   // DB interface
   //----------------------------------------  
-
+  async function _checkAdminAllowed() {
+    dbResult = await SQLDBInterface.doGetQuery('roster-manager/query', 'admin-allowed', page.notice);
+    if (!dbResult.success) return false;
+    
+    var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
+    return adminAllowed;
+  }
+  
   //--------------------------------------------------------------------------
   // admin
   //--------------------------------------------------------------------------

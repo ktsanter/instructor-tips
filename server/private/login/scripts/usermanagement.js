@@ -46,7 +46,6 @@ class UserManagement {
   }
   
   sessionAppName() {
-    console.log(this);
     return this._appName;
   }
   

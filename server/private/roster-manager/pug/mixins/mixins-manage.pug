@@ -1,0 +1,19 @@
+mixin manageContainer()
+  - var googlefileid = params.googlefileid
+
+  .row(class="py-2")
+    .col-sm(class="googlefile-container")
+      .googlefile-id(class="hide-me")=googlefileid
+
+      .file-chosen(class="hide-me")
+        label(for="fileLink") target file
+        a(class="googlefile-link mx-2 px-2 py-1" href="#0" target="_blank")
+        button(class="googlefile-pick pick-replace btn btn-secondary py-0" title="choose a new target file to replace the current one") pick
+        
+      .file-notchosen(class="hide-me")
+        label(for="fileNotChosen") target file
+        span(id="fileNotChosen" class="googlefile-notselected mx-2 px-2 py-1") [no file selected]
+        button(class="googlefile-pick pick-new btn btn-secondary py-0" title="choose a target file") pick
+
+      
+        

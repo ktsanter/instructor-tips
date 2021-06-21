@@ -552,8 +552,11 @@ var appLookup = {
   "roster-manager" : {
     appDescriptor: 'roster-manager',
     appName: 'Roster Manager',
-    routePug: 'roster-manager/pug/roster-manager.pug',
-    loginReRoute: 'roster-manager/manager'
+    //routePug: 'roster-manager/pug/roster-manager.pug',
+    //loginReRoute: 'roster-manager/manager'
+    routeFunction: dbManagerLookup['roster-manager'].renderManagerPage,
+    routeData: 'roster-manager/pug/roster-manager.pug',
+    loginReRoute: 'roster-manager/manage'
   }, 
 
   "commentbuddy" : {

@@ -18,6 +18,20 @@ module.exports = internal.RosterManager = class {
 //---------------------------------------------------------------
 // public methods
 //---------------------------------------------------------------  
+  async renderManagerPage(res, me, pugFileName, renderAndSendPug, userManagement, userInfo) {
+    var dbResult = await me._getGoogleFileId(userInfo);
+    if (!dbResult.success) me._renderFail(res);
+    
+    var googleFileId = '[none]';
+    if (dbResult.data.length > 0) googleFileId = dbResult.data[0].googlefileid;
+    
+    var pugOptions = {
+      "googlefileid": googleFileId
+    };
+    
+    renderAndSendPug(res, 'rostermanager', pugFileName, {params: pugOptions});    
+  }
+
   processUploadedFile(req, res) {
     console.log('RosterManager.processUploadedFile');
     console.log(req.params);
@@ -112,6 +126,31 @@ module.exports = internal.RosterManager = class {
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
+  async _getGoogleFileId(userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select ' +
+        'googlefileid ' +
+      'from rosterfile ' +
+      'where userid = ' + userInfo.userId;
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+  
   async _getTest(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
@@ -165,6 +204,10 @@ module.exports = internal.RosterManager = class {
 //----------------------------------------------------------------------
 // utility
 //----------------------------------------------------------------------  
+  _renderFail(res) {
+    res.send('cannot access page: roster manager')    
+  }  
+  
   _verifyHeaderRow(headerRow, requiredColumns) {
     var result = {
       success: false,
