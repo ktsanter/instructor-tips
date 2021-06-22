@@ -56,10 +56,10 @@ const app = function () {
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     _renderContents();
-    _initializeReportPoster();
     await _initializeGoogleStuff();
+    _initializeReportManagement();
 
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
   }
   
   async function _setAdminMenu() {
@@ -104,8 +104,11 @@ const app = function () {
     });
   }
   
-  function _initializeReportPoster() {
+  function _initializeReportManagement() {
     settings.reportPoster = new ReportPoster({});
+    settings.dataIntegrator = new DataIntegrator({
+      "googleDrive": settings.googleDrive
+    });
   }
   
   //-----------------------------------------------------------------------------
@@ -132,22 +135,25 @@ const app = function () {
   
   function _renderManage() {
     page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
+  }
+  
+  function _renderConfigure() {
+    page.navConfigure = page.contents.getElementsByClassName('contents-navConfigure')[0];
     
-    page.targetId = page.navManage.getElementsByClassName('googlefile-id')[0];
-    page.targetContainer = page.navManage.getElementsByClassName('googlefile-container')[0];
+    page.targetId = page.navConfigure.getElementsByClassName('googlefile-id')[0];
+    page.targetContainer = page.navConfigure.getElementsByClassName('googlefile-container')[0];
     
-    var pickButtons = page.navManage.getElementsByClassName('googlefile-pick');
+    var pickButtons = page.navConfigure.getElementsByClassName('googlefile-pick');
     for (var i = 0; i < pickButtons.length; i++) {
       pickButtons[i].addEventListener('click', (e) => { _handleTargetFilePick(e); });
     }
     
-    var fileUploads = page.navManage.getElementsByClassName('uploadfile');
+    var fileUploads = page.navConfigure.getElementsByClassName('uploadfile');
     for (var i = 0; i < fileUploads.length; i++) {
       fileUploads[i].addEventListener('change', (e) => { _handleFileUpload(e); });
     }
+    
   }
-  
-  function _renderConfigure() {}
   
   function _renderAdmin() {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
@@ -240,8 +246,8 @@ const app = function () {
     var targetLink = page.targetContainer.getElementsByClassName('googlefile-link')[0];
     var msgNoSelection = page.targetContainer.getElementsByClassName('googlefile-notselected')[0];
     
-    var uploadEnrollment = page.navManage.getElementsByClassName('uploadfile-label-enrollment')[0];
-    var uploadMentor = page.navManage.getElementsByClassName('uploadfile-label-mentor')[0];
+    var uploadEnrollment = page.navConfigure.getElementsByClassName('uploadfile-label-enrollment')[0];
+    var uploadMentor = page.navConfigure.getElementsByClassName('uploadfile-label-mentor')[0];
     
     UtilityKTS.setClass(targetFilePicked, settings.hideClass, true);
     UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, true);
@@ -302,14 +308,22 @@ const app = function () {
     var url = '/usermanagement/routeToApp/roster-manager/upload/' + uploadType;    
     var result = await settings.reportPoster.post(url, file);
     
-    var resultElems = page.navManage.getElementsByClassName('upload-result');
+    var resultElems = page.navConfigure.getElementsByClassName('upload-result');
     for (var i = 0; i < resultElems.length; i++) {
       resultElems[i].innerHTML = '';
     }
     
-    var elemResult = page.navManage.getElementsByClassName('upload-result ' + uploadType)[0];
-    console.log(result);
+    var elemResult = page.navConfigure.getElementsByClassName('upload-result ' + uploadType)[0];
+    
+    if (!result.success) {
+      elemResult.innerHTML = result.details;
+      return;
+    }
+    
+    page.notice.setNotice('loading...', true);
+    var result = await settings.dataIntegrator.applyReportData(uploadType, result.data, _getTargetFileId());
     elemResult.innerHTML = result.details;
+    page.notice.setNotice('');
   }
   
   async function _doTest() {

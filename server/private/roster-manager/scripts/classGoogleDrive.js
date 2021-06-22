@@ -61,14 +61,18 @@ class GoogleDrive {
   }
   
   async getSpreadsheetInfo(fileData) {
+    const METHODNAME = 'GoogleDrive._batchGet';
+    var thisObj = this;
+
     var params = {
       spreadsheetId: fileData.id
     };
     
     return await gapi.client.sheets.spreadsheets.get(params)
       .then(
-        function(response) {
+        (response) => {
           var sheetInfo = [];
+          var sheetSet = new Set();
           for (var i = 0; i < response.result.sheets.length; i++) {
             var sheet = response.result.sheets[i];
             sheetInfo.push({
@@ -76,22 +80,121 @@ class GoogleDrive {
               "index": sheet.properties.index,
               "id": sheet.properties.sheetId
             });
+            sheetSet.add(sheet.properties.title);
           }
           
           var resultData = {
             "title": response.result.properties.title,
             "id": response.result.spreadsheetId,
             "url": response.result.spreadsheetUrl,
-            "sheetInfo": sheetInfo
+            "sheetInfo": sheetInfo,
+            "sheetSet": sheetSet
           };
             
           return {success: true, ...resultData};
 
-        },       
-        function(err) {
-          return {success: false, message: err.result.error.message};
+        },   
+        
+        (err) => {
+          return thisObj._failResult('** error: ' + METHODNAME + ' failed - ' + err.result.error.message);
         }
       );    
+  }
+  
+  async getRanges(spreadsheetId, ranges) {
+    const METHODNAME = 'GoogleDrive.getRanges';
+    
+    var params = {
+      "spreadsheetId": spreadsheetId,
+      "ranges": ranges
+    }
+
+    return gapi.client.sheets.spreadsheets.values.batchGet(params)
+    .then(
+      (response) => {
+        return {success: true, details: METHODNAME + ' succeeded', data: response.result.valueRanges};
+      },
+      
+      (err) => {
+        return  this._failResult('**error: ' + METHODNAME + ' failed - ' + err.result.error.message);
+      }
+    );
+  }
+  
+  async addSheet(spreadsheetId, sheetName) {
+    const METHODNAME = 'GoogleDrive.addSheet';
+    
+    var thisObj = this;
+    
+    var resource = { requests: [{ 'addSheet': { 'properties'  : { 'title': sheetName } } } ] };
+    
+    var params = {
+      "spreadsheetId": spreadsheetId,
+      "resource": resource
+    };      
+    
+    return await gapi.client.sheets.spreadsheets.batchUpdate(params)
+      .then(
+        (response) => {
+          return {success: true, ...response.result};
+        },
+        
+        (err) => {
+          return thisObj._failResult('** error: ' + METHODNAME + ' failed - ' + err.result.error.message);
+        }
+      );
+  }
+  
+  async clearRange(spreadsheetId, range) {
+    const METHODNAME = 'GoogleDrive.clearSheet';
+
+    var params = {
+      "spreadsheetId": spreadsheetId,
+      "range": range,
+      "resource": {}
+    };      
+    
+    return await gapi.client.sheets.spreadsheets.values.clear(params)
+      .then(
+        (response) => {
+          return {success: true, ...response.result};
+        },
+        
+        (err) => {
+          return thisObj._failResult('** error: ' + METHODNAME + ' failed - ' + err.result.error.message);
+        }
+      );
+  }
+  
+  async writeRange(spreadsheetId, range, values) {
+    const METHODNAME = 'GoogleDrive.writeRange';
+    
+    var myRange = 'FOO!B3';
+    
+    var resource = {
+      "range": range,
+      "values": values
+    };
+    
+    var params = {
+      "spreadsheetId": spreadsheetId,
+      "range": range,
+      "resource": resource,
+      "valueInputOption": 'USER_ENTERED'
+    };
+    
+    var valueRangeBody = {};
+    
+    return await gapi.client.sheets.spreadsheets.values.update(params, valueRangeBody)
+      .then(
+        (response) => {
+          return {success: true, ...response.result};
+        },
+        
+        (err) => {
+          return thisObj._failResult('** error: ' + METHODNAME + ' failed - ' + err.result.error.message);
+        }
+      );
   }
   
   //--------------------------------------------------------------
@@ -109,5 +212,13 @@ class GoogleDrive {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  
+  _failResult(msg, methodName) {
+    if (methodName) msg += ' in ' + methodName;
+    
+    return {
+      success: false,
+      details: msg,
+      data: null
+    };
+  }  
 }

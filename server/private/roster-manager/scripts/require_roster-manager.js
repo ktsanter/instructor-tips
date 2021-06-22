@@ -13,6 +13,7 @@ define(function (require) {
    
   require('classGoogleDrive');
   require('classReportPoster');
+  require('classDataIntegrator');
   require('roster-manager');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

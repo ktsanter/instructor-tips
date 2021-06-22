@@ -1,4 +1,28 @@
 mixin configureContainer()
+  - var googlefileid = params.googlefileid
+
   .row(class="py-2")
     .col-sm
-      |configure(TBD) - support setup for infoDeck?
+      .googlefile-id(class="hide-me")=googlefileid
+      .googlefile-container
+        .file-chosen(class="hide-me")
+          button(class="googlefile-pick pick-replace btn btn-secondary" title="choose a Google spreadsheet to replace the current one") set target
+          a(class="googlefile-link ms-3 mt-1" href="#0" target="_blank")
+          
+        .file-notchosen(class="hide-me")
+          button(class="googlefile-pick pick-new btn btn-secondary" title="choose a Google spreadsheet") set target
+          span(id="fileNotChosen" class="googlefile-notselected ms-3 mt-1") no file selected
+        
+  .row(class="py-2")
+    .col-sm
+        label(for="file-upload-enrollment" class="uploadfile-label uploadfile-label-enrollment btn btn-secondary hide-me" title="choose enrollment report file to upload and process") enrollment
+        input(type="file" class="uploadfile uploadfile-enrollment" id="file-upload-enrollment" accept=".xlsx")
+        span(class="upload-result enrollment ms-3")
+
+  .row(class="py-2")
+    .col-sm
+      div
+        label(for="file-upload-mentor" class="uploadfile-label uploadfile-label-mentor btn btn-secondary hide-me" title="choose mentor/guardian report file to upload and process") mentor/guardian
+        input(type="file" class="uploadfile uploadfile-mentor" id="file-upload-mentor" accept=".xlsx")
+        span(class="upload-result mentor ms-3")
+

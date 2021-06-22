@@ -23,11 +23,14 @@ module.exports = internal.RosterManager = class {
     this.colEnrollment_Term = 'LMSTerm';
 
     this.colMentor_Student = 'Student_Name';
-    this.colMentor_Section = 'Section_Name';
     this.colMentor_Term = 'Term_Name';
+    this.colMentor_Section = 'Section_Name';
     this.colMentor_Role = 'Role';
     this.colMentor_Name = 'Mentor/Guardian';
+    this.colMentor_Affiliation = 'Affilation_Name';
     this.colMentor_Email = 'Mentor Email';
+    this.colMentor_Phone = 'Mentor Phone';
+    this.colMentor_AffiliationPhone = 'Affiliation Phone';
 
     this._requiredColumns_Enrollment = new Set([
       this.colEnrollment_Student,
@@ -41,11 +44,14 @@ module.exports = internal.RosterManager = class {
 
     this._requiredColumns_Mentor = new Set([
       this.colMentor_Student,
-      this.colMentor_Section,
       this.colMentor_Term,
+      this.colMentor_Section,
       this.colMentor_Role,
       this.colMentor_Name,
-      this.colMentor_Email
+      this.colMentor_Email,
+      this.colMentor_Affiliation,
+      this.colMentor_Phone,
+      this.colMentor_AffiliationPhone
     ]);    
   }
   
@@ -215,12 +221,16 @@ module.exports = internal.RosterManager = class {
     var enrollments = [];
     worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
       var student = row.getCell(columnInfo[thisObj.colEnrollment_Student]).value;
+      var term = row.getCell(columnInfo[thisObj.colEnrollment_Term]).value;
+      var section = row.getCell(columnInfo[thisObj.colEnrollment_Section]).value;
+      var term_section = term + '\t' + section;
 
       if (student != thisObj.colEnrollment_Student) {
         enrollments.push({
           "student": student,
-          "term": row.getCell(columnInfo[thisObj.colEnrollment_Term]).value,
-          "section": row.getCell(columnInfo[thisObj.colEnrollment_Section]).value,
+          "term": term,
+          "section": section,
+          "term_section": term_section,
           "startdate": row.getCell(columnInfo[thisObj.colEnrollment_StartDate]).value,
           "enddate": row.getCell(columnInfo[thisObj.colEnrollment_EndDate]).value,
           "email": row.getCell(columnInfo[thisObj.colEnrollment_Email]).value,
@@ -229,8 +239,15 @@ module.exports = internal.RosterManager = class {
       }
     });
     
+    var enrollmentsByStudent = thisObj.collateObjectArray(enrollments, 'student');
+    var enrollmentsByTermSection = thisObj.collateObjectArray(enrollments, 'term_section');
+    
     result.success = true;
-    result.data = enrollments;
+    result.data = {
+      "enrollments": enrollments,
+      "enrollmentsByStudent": enrollmentsByStudent,
+      "enrollmentsByTermSection": enrollmentsByTermSection
+    };
     
     return result;
   }
@@ -238,24 +255,48 @@ module.exports = internal.RosterManager = class {
   _packageMentorValues(thisObj, worksheet, columnInfo) {
     var result = {success: false, data: null};
     
-    var enrollments = [];
+    var entries = [];
+    
     worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
-      var student = row.getCell(columnInfo[thisObj.colMentor_Student]).value;
+      var student = row.getCell(columnInfo[thisObj.colMentor_Student]).value;    
+      var term = row.getCell(columnInfo[thisObj.colMentor_Term]).value;    
+      var section = row.getCell(columnInfo[thisObj.colMentor_Section]).value;
+      var term_section = term + '\t' + section;      
 
       if (student != thisObj.colMentor_Student) {
-        enrollments.push({
-          "student": student,
-          "term": row.getCell(columnInfo[thisObj.colMentor_Term]).value,
-          "section": row.getCell(columnInfo[thisObj.colMentor_Section]).value,
+        entries.push({
+          "student": thisObj._formatName(student),
+          "term": term,
+          "section": section,
+          "term_section": term_section,
           "role": row.getCell(columnInfo[thisObj.colMentor_Role]).value,
-          "name": row.getCell(columnInfo[thisObj.colMentor_Name]).value,
-          "email": row.getCell(columnInfo[thisObj.colMentor_Email]).value
+          "name": thisObj._formatName(row.getCell(columnInfo[thisObj.colMentor_Name]).value),
+          "email": row.getCell(columnInfo[thisObj.colMentor_Email]).value,
+          "affiliation": row.getCell(columnInfo[thisObj.colMentor_Affiliation]).value,
+          "phone": row.getCell(columnInfo[thisObj.colMentor_Phone]).value,
+          "affiliationphone": row.getCell(columnInfo[thisObj.colMentor_AffiliationPhone]).value
         });
       }
     });
     
+    var mentors = entries.filter(function(item) { return item.role == 'MENTOR' } );
+    var mentorsNoStudentInfo = thisObj._reduceObjectArray(mentors, 'student', (item) => { return item.term_section + '\t' + item.name; });
+    var mentorsByTermSection = thisObj.collateObjectArray(mentorsNoStudentInfo, 'term_section');
+    mentors = thisObj._removeDuplicates(mentors, function(item) { return item.student + '\t' + item.name; });
+    var mentorsByStudent = thisObj.collateObjectArray(mentors, 'student');    
+    
+    var guardians = entries.filter(function(item) { return item.role == 'GUARDIAN' } );
+    guardians = thisObj._removeDuplicates(guardians, function(item) { return item.student + '\t' + item.name; });
+    var guardiansByStudent = thisObj.collateObjectArray(guardians, 'student');
+    
     result.success = true;
-    result.data = enrollments;
+    result.data = {
+      "mentors": mentors,
+      "mentorsByStudent": mentorsByStudent,
+      "mentorsByTermSection": mentorsByTermSection,
+      "guardians": guardians,
+      "guardiansByStudent": guardiansByStudent
+    }
     
     return result;
   }
@@ -395,26 +436,67 @@ module.exports = internal.RosterManager = class {
     return result;
   }
 
-  _formatStudentName(origStudent) {
-    var student = origStudent;
+  _formatName(origName) {
+    var name = origName;
     
-    var splitName = student.split(' ');
+    var splitName = name.split(' ');
     if (splitName.length == 2) {
-      student = splitName[1] + ', ' + splitName[0];
+      name = splitName[1] + ', ' + splitName[0];
       
     } else if (splitName.length == 3) {
-      student = splitName[2] + ', ' + splitName[0] + ' ' + splitName[1];
+      name = splitName[2] + ', ' + splitName[0] + ' ' + splitName[1];
       
     } else if (splitName.length == 4) {
-      student = splitName[3] + ', ' + splitName[0] + ' ' + splitName[1] + ' ' + splitName[2];
+      name = splitName[3] + ', ' + splitName[0] + ' ' + splitName[1] + ' ' + splitName[2];
     }
     
-    return student;
+    return name;
   }
   
-  _formatDate(d) {
-    var fDate = new Date(d);
+  collateObjectArray(objectArray, collationKey) {
+    var collated = {};
+    for (var i = 0; i < objectArray.length; i++) {
+      var item = objectArray[i];
+      var keyval = item[collationKey];
+      if (!collated.hasOwnProperty(keyval)) {
+        collated[keyval] = [];
+      }
+      collated[keyval].push(item);
+    }
     
-    return fDate;
+    return collated;
+  }
+  
+  _reduceObjectArray(objectArray, keyToRemove, funcMakeIndex) {
+    var result = [];
+    var map = new Map();
+    
+    for (var item of objectArray) {
+      var indexVal = funcMakeIndex(item);
+      
+      if(!map.has(indexVal)){
+        map.set(indexVal, true);
+        var reducedItem = JSON.parse(JSON.stringify(item));
+        delete reducedItem.student;
+        result.push(reducedItem);
+      }
+    }
+
+    return result;
+  }
+  
+  _removeDuplicates(list, funcKey) {
+    var result = [];
+    var keyList = new Set();
+    for (var i = 0; i < list.length; i++) {
+      var item = list[i];
+      var key = funcKey(item);
+      if (!keyList.has(key)) {
+        result.push(item);
+      }
+      keyList.add(key);
+    }
+    
+    return result;
   }
 }
