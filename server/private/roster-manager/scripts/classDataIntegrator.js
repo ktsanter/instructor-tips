@@ -37,10 +37,12 @@ class DataIntegrator {
     if (!result.success) return this._failResult(result.details);
     
     var studentData = this._packageEnrollmentData(reportData.enrollments);
-    console.log('add formatting updates for student sheet');
     
     result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], studentData);
     if (!result.success) return this._failResult(result.details);
+    
+    result = await this._formatSheets(targetFileId, targetSheets);
+    if (!result.success) return this._failResult(result.details);    
     
     return {success: true, details: 'enrollment report uploaded successfully', data: null};
   }
@@ -55,7 +57,6 @@ class DataIntegrator {
     result = await this._addOrClearSheets(targetFileId, targetSheets, result.sheetSet);
     if (!result.success) return this._failResult(result.details);
     
-    console.log('add formatting to mentor sheets');
     var mentorByStudentData = this._packageMentorByStudentData(reportData.mentorsByStudent);
     result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], mentorByStudentData);
     if (!result.success) return this._failResult(result.details);
@@ -68,6 +69,9 @@ class DataIntegrator {
     result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[2], guardianData);
     if (!result.success) return this._failResult(result.details);
 
+    result = await this._formatSheets(targetFileId, targetSheets);
+    if (!result.success) return this._failResult(result.details);    
+    
     return {success: true, details: 'mentor/guardian report uploaded successfully', data: null};
   }
   
@@ -89,11 +93,14 @@ class DataIntegrator {
   _packageEnrollmentData(enrollments) {
     var studentData = [];
     var studentProperties = ['student', 'term', 'section', 'startdate', 'enddate', 'affiliation', 'email'];
+    var dateProperties = new Set(['startdate', 'enddate']);
     for (var i = 0; i < enrollments.length; i++) {
       var enrollment = enrollments[i];
       var rowData = [];
       for (var j = 0; j < studentProperties.length; j++) {
-        rowData.push( enrollment[studentProperties[j]] );
+        var val = enrollment[studentProperties[j]]
+        if (dateProperties.has(studentProperties[j])) val = val.slice(0,10);
+        rowData.push(val);
       }
       studentData.push(rowData);
     }
@@ -143,23 +150,28 @@ class DataIntegrator {
     
     var mentorBySectionData = [];
     var mentorBySectionProperties = ['name', 'email'];
+    
+    mentorBySectionData.push(['term', 'section', 'name', 'email']);
 
     for (var i = 0; i < termList.length; i++) {
       var term = termList[i];
-      mentorBySectionData.push([term]);
-      
       var sectionList = termSections[term].sort();
       for (var j = 0; j < sectionList.length; j++) {
         var section = sectionList[j];
-        mentorBySectionData.push([section]);
+        var sectionData = [];
+        var sectionEmails = '';
         
         var mentorData = mentorsBySection[term + '\t' + section];
         for (var k = 0; k < mentorData.length; k++) {
           var mentorInfo = mentorData[k];
-          mentorBySectionData.push([mentorInfo.name, mentorInfo.email]);
+          sectionData.push([term, section, mentorInfo.name, mentorInfo.email]);
+          sectionEmails += mentorInfo.email + '; ';
         }
         
-        mentorBySectionData.push([]);
+        sectionData.unshift([term, section, 'all', sectionEmails]);
+        sectionData.push([]);
+        
+        mentorBySectionData = mentorBySectionData.concat(sectionData);
       }
     }
         
@@ -189,6 +201,25 @@ class DataIntegrator {
     return guardianData;    
   }
   
+  async _formatSheets(spreadsheetId, sheetTitles) {
+    var result = await this.config.googleDrive.getSpreadsheetInfo({id: spreadsheetId});
+    if (!result.success) return this._failResult(result.details);
+    var sheetInfo = result.sheetInfo;
+     
+    for (var i = 0; i < sheetTitles.length  && result.success; i++) {
+      var sheetId = this._getSheetId(sheetTitles[i], sheetInfo);
+      result = await this.config.googleDrive.formatHeaderRow(spreadsheetId, sheetId);
+    }
+    return result;;
+  }
+
+  _getSheetId(sheetTitle, sheetInfo) {
+    var id = null;
+    for (var i = 0; i < sheetInfo.length && !id; i++) {
+      if (sheetInfo[i].title == sheetTitle) id = sheetInfo[i].id;
+    }
+    return id;
+  }
   
   //--------------------------------------------------------------
   // callbacks

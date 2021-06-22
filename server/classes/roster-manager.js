@@ -452,7 +452,7 @@ module.exports = internal.RosterManager = class {
     
     return name;
   }
-  
+    
   collateObjectArray(objectArray, collationKey) {
     var collated = {};
     for (var i = 0; i < objectArray.length; i++) {

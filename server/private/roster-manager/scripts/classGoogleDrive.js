@@ -103,6 +103,7 @@ class GoogleDrive {
   
   async getRanges(spreadsheetId, ranges) {
     const METHODNAME = 'GoogleDrive.getRanges';
+    var thisObj = this;
     
     var params = {
       "spreadsheetId": spreadsheetId,
@@ -116,14 +117,13 @@ class GoogleDrive {
       },
       
       (err) => {
-        return  this._failResult('**error: ' + METHODNAME + ' failed - ' + err.result.error.message);
+        return  thisObj._failResult('**error: ' + METHODNAME + ' failed - ' + err.result.error.message);
       }
     );
   }
   
   async addSheet(spreadsheetId, sheetName) {
     const METHODNAME = 'GoogleDrive.addSheet';
-    
     var thisObj = this;
     
     var resource = { requests: [{ 'addSheet': { 'properties'  : { 'title': sheetName } } } ] };
@@ -147,6 +147,7 @@ class GoogleDrive {
   
   async clearRange(spreadsheetId, range) {
     const METHODNAME = 'GoogleDrive.clearSheet';
+    var thisObj = this;
 
     var params = {
       "spreadsheetId": spreadsheetId,
@@ -168,6 +169,7 @@ class GoogleDrive {
   
   async writeRange(spreadsheetId, range, values) {
     const METHODNAME = 'GoogleDrive.writeRange';
+    var thisObj = this;
     
     var myRange = 'FOO!B3';
     
@@ -197,10 +199,73 @@ class GoogleDrive {
       );
   }
   
+  async formatHeaderRow(spreadsheetId, sheetId) {
+    const METHODNAME = 'GoogleDrive.batchUpdate';
+
+    var requests = [];
+    
+    requests.push({
+      "repeatCell": {
+        "range": {
+          "sheetId": sheetId,
+          "startRowIndex": 0,
+          "endRowIndex": 1
+        },
+        "cell": {
+          "userEnteredFormat": {
+            "backgroundColor": {
+              "red": 0.8,
+              "green": 0.8,
+              "blue": 0.8
+            },
+            "textFormat": {
+              "bold": true
+            }
+          }
+        },
+        "fields": "userEnteredFormat(backgroundColor,textFormat)"
+      }     
+    });
+    
+    requests.push({
+      "updateSheetProperties": {
+        "properties": {
+          "sheetId": sheetId,
+          "gridProperties": {
+            "frozenRowCount": 1
+          }
+        },
+        "fields": "gridProperties.frozenRowCount"
+      }
+    });
+    
+    return await this._batchUpdate(spreadsheetId, requests);
+  }
+  
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
-  
+  async _batchUpdate(spreadsheetId, requests) {
+    const METHODNAME = 'GoogleDrive.batchUpdate';
+    var thisObj = this;
+        
+    var params = {
+      "spreadsheetId": spreadsheetId,
+      "resource": {"requests": requests}
+    }
+    
+    return await gapi.client.sheets.spreadsheets.batchUpdate(params)
+      .then(
+        (response) => {
+          return {success: true, ...response.result};
+        },
+        
+        (err) => {
+          return thisObj._failResult('** error: ' + METHODNAME + ' failed - ' + err.result.error.message);
+        }
+      );
+  }
+    
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
