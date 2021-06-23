@@ -274,16 +274,6 @@ const app = function () {
     }
   }
   
-  async function _readCurrentSheetInfo() {
-    var targetId = _getTargetFileId();
-    
-    var result = await settings.dataIntegrator.readCurrentSheetInfo(targetId);
-    console.log(result);
-    if (!result.success) return;
-    
-    settings.currentSheetInfo = result.data;
-  }
-  
   async function _doTargetFilePick(pickType) {
     if (pickType == 'replace') {
       var msg = 'All of the data in the current file will be copied to the new one.';
@@ -315,6 +305,12 @@ const app = function () {
   }
   
   async function _doFileUpload(uploadType, file) {
+    page.notice.setNotice('loading...', true);
+
+    var elemResult = page.navConfigure.getElementsByClassName('upload-result ' + uploadType)[0];
+    var elemChanges = page.navConfigure.getElementsByClassName('changed-data')[0];
+    UtilityKTS.removeChildren(elemChanges);
+    
     var url = '/usermanagement/routeToApp/roster-manager/upload/' + uploadType;    
     var result = await settings.reportPoster.post(url, file);
     
@@ -323,17 +319,56 @@ const app = function () {
       resultElems[i].innerHTML = '';
     }
     
-    var elemResult = page.navConfigure.getElementsByClassName('upload-result ' + uploadType)[0];
-    
     if (!result.success) {
       elemResult.innerHTML = result.details;
+      page.notice.setNotice('');
       return;
     }
     
-    page.notice.setNotice('loading...', true);
     var result = await settings.dataIntegrator.applyReportData(uploadType, result.data, _getTargetFileId());
     elemResult.innerHTML = result.details;
+    if (result.success) _displayChanges(result.data, elemChanges);
+
     page.notice.setNotice('');
+  }
+  
+  function _displayChanges(changes, container) {
+    console.log('_displayChanges');
+
+    UtilityKTS.removeChildren(container);
+    var numChanges = 0;
+    for (key in changes) {
+      numChanges += changes[key].differences.length;
+    }
+    
+    if (numChanges == 0) {
+      container.appendChild(CreateElement.createDiv(null, null, 'no changes'));
+      
+    } else {
+      for (var changeKey in changes) {
+        var differences = changes[changeKey].differences;
+        var headers = ['reason'].concat(changes[changeKey].headers);
+        
+        if (differences.length > 0) {
+          container.appendChild(CreateElement.createDiv(null, null, 'changes in ' + changeKey));
+
+          var cellList = [];
+          for (var i = 0; i < differences.length; i++) {
+            var splitKey = differences[i].key.split('\t');
+            var rowData = [differences[i].reason];
+
+            for (var j = 0; j < splitKey.length; j++) {
+              rowData.push(splitKey[j]);
+            }
+            cellList.push(rowData);
+          }
+
+          var table = CreateElement.createTable(null, 'table table-striped table-hover table-sm mb-4', headers, cellList);
+          container.appendChild(table);
+          table.getElementsByTagName('thead')[0].classList.add('table-primary');
+        }
+      }
+    }
   }
   
   async function _doTest() {
@@ -442,7 +477,6 @@ const app = function () {
 
     if (isSignedIn) {    
       await _setTargetFileInfo();
-      await _readCurrentSheetInfo();
     }
     
     _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
