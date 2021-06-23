@@ -242,6 +242,26 @@ class GoogleDrive {
     return await this._batchUpdate(spreadsheetId, requests);
   }
   
+  async hideSheets(spreadsheetId, sheetIdList, hide) {
+    const METHODNAME = 'GoogleDrive.batchUpdate';
+
+    var requests = [];
+    
+    for (var i = 0; i < sheetIdList.length; i++) {
+      requests.push({
+        'updateSheetProperties': {
+            'properties': {
+            'sheetId': sheetIdList[i],
+            'hidden': hide
+          },
+          'fields': 'hidden'
+        }
+      });
+    }
+    
+    return await this._batchUpdate(spreadsheetId, requests);
+  }
+
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   

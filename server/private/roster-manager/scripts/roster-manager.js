@@ -59,7 +59,7 @@ const app = function () {
     await _initializeGoogleStuff();
     _initializeReportManagement();
 
-    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[2].click();
   }
   
   async function _setAdminMenu() {
@@ -238,6 +238,10 @@ const app = function () {
     }
   }
   
+  function _setConfigureEnable(enable) {
+    UtilityKTS.setClass(page.navConfigure, 'disable-container', !enable);
+  }
+  
   async function _setTargetFileInfo() {
     var targetId = _getTargetFileId();
 
@@ -272,12 +276,19 @@ const app = function () {
       msgNoSelection = '[no file selected]';
       UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, false);
     }
+    
+    var elemResultEnrollment = page.navConfigure.getElementsByClassName('upload-result enrollment')[0];
+    var elemResultMentor = page.navConfigure.getElementsByClassName('upload-result mentor')[0];
+    var elemChanges = page.navConfigure.getElementsByClassName('changed-data')[0];
+    elemResultEnrollment.innerHTML = '';
+    elemResultMentor.innerHTML = '';
+    UtilityKTS.removeChildren(elemChanges);
   }
   
   async function _doTargetFilePick(pickType) {
     if (pickType == 'replace') {
-      var msg = 'All of the data in the current file will be copied to the new one.';
-      msg += '\n\nChoose "Okay" to continue.';
+      var msg = 'Please confirm that you want to use a new target file.';
+      msg += '\n\nChoose "OK" to confirm.';
       if (!confirm(msg)) return;
     }
     
@@ -333,8 +344,6 @@ const app = function () {
   }
   
   function _displayChanges(changes, container) {
-    console.log('_displayChanges');
-
     UtilityKTS.removeChildren(container);
     var numChanges = 0;
     for (key in changes) {
@@ -373,8 +382,25 @@ const app = function () {
   
   async function _doTest() {
     console.log('_doTest');
-    console.log('**stub');
-    alert('There is currently no action for this choice');  
+    //console.log('**stub');
+    //alert('There is currently no action for this choice');  
+
+    var spreadsheetId = _getTargetFileId();    
+    var result = await settings.googleDrive.getSpreadsheetInfo({"id": spreadsheetId});
+    if (!result.success) {
+      console.log('** fail');
+      console.log(result);
+      return;
+    }
+    var sheetSet = new Set(['raw_enrollment_data', 'raw_mentor_data', 'raw_guardian_data']);
+    var sheetList = [];
+    for (var i = 0; i < result.sheetInfo.length; i++) {
+      var sheet = result.sheetInfo[i];
+      if (sheetSet.has(sheet.title)) sheetList.push(sheet.id);
+    }
+    
+    result = await settings.googleDrive.hideSheets(spreadsheetId, sheetList, true);
+    console.log(result);
   }
   
   //--------------------------------------------------------------------------
@@ -450,11 +476,15 @@ const app = function () {
   async function _handleFileUpload(e) {
     if (e.target.files.length == 0) return;
     
+    _setConfigureEnable(false);
+    
     var param = 'enrollment';
     if (!e.target.classList.contains('uploadfile-enrollment')) param = 'mentor';
     
     await _doFileUpload(param, e.target.files[0]);
     e.target.value = null;
+    
+    _setConfigureEnable(true);
   }
 
   function _handleToggleAdmin() {

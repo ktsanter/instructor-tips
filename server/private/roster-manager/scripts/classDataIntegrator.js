@@ -111,6 +111,9 @@ class DataIntegrator {
     if (!result.success) return this._failResult(result.details);
     
     result = await this._formatSheets(targetFileId, targetSheets);
+    if (!result.success) return this._failResult(result.details); 
+
+    result = await this._hideSheets(targetFileId, ['raw_enrollment_data']);
     if (!result.success) return this._failResult(result.details);    
     
     return {
@@ -168,6 +171,9 @@ class DataIntegrator {
     if (!result.success) return this._failResult(result.details);
     
     result = await this._formatSheets(targetFileId, targetSheets);
+    if (!result.success) return this._failResult(result.details);    
+    
+    result = await this._hideSheets(targetFileId, ['raw_mentor_data', 'raw_guardian_data']);
     if (!result.success) return this._failResult(result.details);    
     
     return {
@@ -402,9 +408,25 @@ class DataIntegrator {
       var sheetId = this._getSheetId(sheetTitles[i], sheetInfo);
       result = await this.config.googleDrive.formatHeaderRow(spreadsheetId, sheetId);
     }
-    return result;;
+    return result;
   }
 
+  async _hideSheets(spreadsheetId, sheetTitles) {
+    var result = await this.config.googleDrive.getSpreadsheetInfo({id: spreadsheetId});
+    if (!result.success) return this._failResult(result.details);
+    var sheetInfo = result.sheetInfo;
+     
+    var sheetTitleSet = new Set(sheetTitles);
+    var sheetIds = [];
+    for (var i = 0; i < sheetInfo.length; i++) {
+      if (sheetTitleSet.has(sheetInfo[i].title)) sheetIds.push(sheetInfo[i].id);
+    }
+    
+    result = await this.config.googleDrive.hideSheets(spreadsheetId, sheetIds, true);
+    
+    return result;
+  }
+  
   _getSheetId(sheetTitle, sheetInfo) {
     var id = null;
     for (var i = 0; i < sheetInfo.length && !id; i++) {
@@ -412,6 +434,8 @@ class DataIntegrator {
     }
     return id;
   }
+  
+  
   
   //--------------------------------------------------------------
   // callbacks
