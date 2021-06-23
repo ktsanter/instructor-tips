@@ -13,7 +13,7 @@ const app = function () {
     logoutURL: '/usermanagement/logout/roster-manager',
     
     dirtyBit: {
-      "navManage": false,
+      "navView": false,
       "navConfigure": false
     },
     
@@ -51,15 +51,14 @@ const app = function () {
     
     await _initializeProfile(sodium);
     
-    page.notice.setNotice('');
-    
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     _renderContents();
     await _initializeGoogleStuff();
     _initializeReportManagement();
 
-    page.navbar.getElementsByClassName(settings.navItemClass)[2].click();
+    settings.currentInfo = null;
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
   
   async function _setAdminMenu() {
@@ -128,13 +127,13 @@ const app = function () {
   function _renderContents() {
     _enableNavOption('navGoogle', false, false);
     
-    _renderManage();
+    _renderView();
     _renderConfigure();
     _renderAdmin();
   }
   
-  function _renderManage() {
-    page.navManage = page.contents.getElementsByClassName('contents-navManage')[0];
+  function _renderView() {
+    page.navView = page.contents.getElementsByClassName('contents-navView')[0];
   }
   
   function _renderConfigure() {
@@ -176,7 +175,7 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navManage') _showManage();
+    if (contentsId == 'navView') _showView();
     if (contentsId == 'navConfigure') _showConfigure();
     if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
@@ -184,7 +183,31 @@ const app = function () {
     _setNavOptions();
   }
   
-  function _showManage() {}
+  function _showView() {
+    console.log('_showView');
+    UtilityKTS.setClass(page.navView, 'container-disabled', true);
+    
+    var elemStatus = page.navView.getElementsByClassName('status')[0];
+    var elemStatusMsg = elemStatus.getElementsByClassName('status-message')[0];
+    var elemContent = page.navView.getElementsByClassName('view-content')[0];
+
+    var statusMsg = '';
+    var spreadsheetId = _getTargetFileId();
+
+    if (_getTargetFileId() == null) {
+      statusMsg = 'no target file selected';
+    } else if (settings.currentInfo == null) {
+      statusMsg = ' '; // non-blank intentionally
+    } else {
+      _updateView(settings.currentInfo);
+    }
+    
+    elemStatusMsg.innerHTML = statusMsg;
+    
+    UtilityKTS.setClass(elemStatus, settings.hideClass, statusMsg == '');
+    UtilityKTS.setClass(elemContent, settings.hideClass, statusMsg != '');
+    UtilityKTS.setClass(page.navView, 'disable-container', false);
+  }
   
   function _showConfigure() {}
   
@@ -220,7 +243,7 @@ const app = function () {
     var containers = page.contents.getElementsByClassName('contents-container');
     for (var i = 0; i < containers.length; i++) {
       if (
-        containers[i].classList.contains('contents-navManage') ||
+        containers[i].classList.contains('contents-navView') ||
         containers[i].classList.contains('contents-navConfigure') ||
         containers[i].classList.contains('contents-navAdmin')
       ) {
@@ -231,7 +254,7 @@ const app = function () {
   }
       
   function _setMainNavbarEnable(enable) {
-    var menuIds = ['navManage', 'navConfigure', 'navAdmin'];
+    var menuIds = ['navView', 'navConfigure', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
       UtilityKTS.setClass(elem, 'disabled', !enable);
@@ -240,6 +263,30 @@ const app = function () {
   
   function _setConfigureEnable(enable) {
     UtilityKTS.setClass(page.navConfigure, 'disable-container', !enable);
+  }
+  
+  async function _getCurrentInfo() {
+    settings.currentInfo = null;
+    var spreadsheetId = _getTargetFileId();
+    if (!spreadsheetId) return;
+    
+    var result = await settings.dataIntegrator.readCurrentSheetInfo(spreadsheetId);
+    if (result.success) {
+      settings.currentInfo = result.data;
+      if (settings.currentNavOption == 'navView') _showView();
+    }
+  }
+  
+  function _updateView(currentInfo) {
+    var container = page.navView.getElementsByClassName('view-content')[0];
+    var enrollments = currentInfo.raw_enrollment_data;
+    var mentors = currentInfo.raw_mentor_data;
+    var guardians = currentInfo.raw_guardian_data;
+    
+    UtilityKTS.removeChildren(container);
+    container.appendChild(CreateElement.createDiv(null, null, 'enrollments: ' + enrollments.length));
+    container.appendChild(CreateElement.createDiv(null, null, 'mentors: ' + mentors.length));
+    container.appendChild(CreateElement.createDiv(null, null, 'guardians: ' + guardians.length));
   }
   
   async function _setTargetFileInfo() {
@@ -338,7 +385,10 @@ const app = function () {
     
     var result = await settings.dataIntegrator.applyReportData(uploadType, result.data, _getTargetFileId());
     elemResult.innerHTML = result.details;
-    if (result.success) _displayChanges(result.data, elemChanges);
+    if (result.success) {
+      _displayChanges(result.data, elemChanges);
+      await _getCurrentInfo();
+    }
 
     page.notice.setNotice('');
   }
@@ -382,25 +432,8 @@ const app = function () {
   
   async function _doTest() {
     console.log('_doTest');
-    //console.log('**stub');
-    //alert('There is currently no action for this choice');  
-
-    var spreadsheetId = _getTargetFileId();    
-    var result = await settings.googleDrive.getSpreadsheetInfo({"id": spreadsheetId});
-    if (!result.success) {
-      console.log('** fail');
-      console.log(result);
-      return;
-    }
-    var sheetSet = new Set(['raw_enrollment_data', 'raw_mentor_data', 'raw_guardian_data']);
-    var sheetList = [];
-    for (var i = 0; i < result.sheetInfo.length; i++) {
-      var sheet = result.sheetInfo[i];
-      if (sheetSet.has(sheet.title)) sheetList.push(sheet.id);
-    }
-    
-    result = await settings.googleDrive.hideSheets(spreadsheetId, sheetList, true);
-    console.log(result);
+    console.log('**stub');
+    alert('There is currently no action for this choice');  
   }
   
   //--------------------------------------------------------------------------
@@ -416,7 +449,7 @@ const app = function () {
     _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
-      "navManage": function() { _showContents('navManage');},
+      "navView": function() { _showContents('navView');},
       "navConfigure": function() { _showContents('navConfigure');},
       "navAdmin": function() { _showContents('navAdmin'); },
       "navGoogle": function() { _handleGoogleSignIn(); },
@@ -431,7 +464,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navManage', 'navConfigure', 'navAdmin']);
+    var mainOptions = new Set(['navView', 'navConfigure', 'navAdmin']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);
@@ -505,8 +538,10 @@ const app = function () {
     _setMainUIEnable(settings.google.isSignedIn);
     _setMainNavbarEnable(settings.google.isSignedIn);   
 
-    if (isSignedIn) {    
+    if (isSignedIn) {
+      page.notice.setNotice('');      
       await _setTargetFileInfo();
+      await _getCurrentInfo();
     }
     
     _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
@@ -517,6 +552,7 @@ const app = function () {
     
     var saveResult = await _saveTargetFileId(result.id);
     await _setTargetFileInfo();
+    await _getCurrentInfo();
   } 
 
   //---------------------------------------
