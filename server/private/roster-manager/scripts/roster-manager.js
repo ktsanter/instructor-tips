@@ -56,9 +56,12 @@ const app = function () {
     _renderContents();
     await _initializeGoogleStuff();
     _initializeReportManagement();
+    _initializeRosterViewer();
 
     settings.currentInfo = null;
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    
+    page.notice.setNotice('');
   }
   
   async function _setAdminMenu() {
@@ -104,9 +107,18 @@ const app = function () {
   }
   
   function _initializeReportManagement() {
-    settings.reportPoster = new ReportPoster({});
+    settings.reportPoster = new ReportPoster({
+      // no params
+    });
+    
     settings.dataIntegrator = new DataIntegrator({
       "googleDrive": settings.googleDrive
+    });
+  }
+  
+  function _initializeRosterViewer() {
+    settings.rosterViewer = new RosterViewer({
+      "container": page.navView
     });
   }
   
@@ -184,12 +196,10 @@ const app = function () {
   }
   
   function _showView() {
-    console.log('_showView');
-    UtilityKTS.setClass(page.navView, 'container-disabled', true);
+    UtilityKTS.setClass(page.navView, 'disable-container', true);
     
     var elemStatus = page.navView.getElementsByClassName('status')[0];
     var elemStatusMsg = elemStatus.getElementsByClassName('status-message')[0];
-    var elemContent = page.navView.getElementsByClassName('view-content')[0];
 
     var statusMsg = '';
     var spreadsheetId = _getTargetFileId();
@@ -199,13 +209,12 @@ const app = function () {
     } else if (settings.currentInfo == null) {
       statusMsg = ' '; // non-blank intentionally
     } else {
-      _updateView(settings.currentInfo);
+      settings.rosterViewer.update(settings.currentInfo);
     }
     
     elemStatusMsg.innerHTML = statusMsg;
     
     UtilityKTS.setClass(elemStatus, settings.hideClass, statusMsg == '');
-    UtilityKTS.setClass(elemContent, settings.hideClass, statusMsg != '');
     UtilityKTS.setClass(page.navView, 'disable-container', false);
   }
   
@@ -272,21 +281,40 @@ const app = function () {
     
     var result = await settings.dataIntegrator.readCurrentSheetInfo(spreadsheetId);
     if (result.success) {
-      settings.currentInfo = result.data;
+      settings.currentInfo = _packageStudentInfo(result.data);
       if (settings.currentNavOption == 'navView') _showView();
     }
   }
   
-  function _updateView(currentInfo) {
-    var container = page.navView.getElementsByClassName('view-content')[0];
-    var enrollments = currentInfo.raw_enrollment_data;
-    var mentors = currentInfo.raw_mentor_data;
-    var guardians = currentInfo.raw_guardian_data;
+  function _packageStudentInfo(rawData) {
+    var students = {};
     
-    UtilityKTS.removeChildren(container);
-    container.appendChild(CreateElement.createDiv(null, null, 'enrollments: ' + enrollments.length));
-    container.appendChild(CreateElement.createDiv(null, null, 'mentors: ' + mentors.length));
-    container.appendChild(CreateElement.createDiv(null, null, 'guardians: ' + guardians.length));
+    for (var i = 0; i < rawData.raw_enrollment_data.length; i++) {
+      var item = rawData.raw_enrollment_data[i];
+      var student = item.student;
+      if (!students.hasOwnProperty(student)) students[student] = {"enrollments": [], "mentors": [], "guardians": []};
+      students[student].enrollments.push(item);
+    }
+    
+    for (var i = 0; i < rawData.raw_mentor_data.length; i++) {
+      var item = rawData.raw_mentor_data[i];
+      var student = item.student;
+      students[student].mentors.push(item);
+    }
+
+    for (var i = 0; i < rawData.raw_guardian_data.length; i++) {
+      var item = rawData.raw_guardian_data[i];
+      var student = item.student;
+      students[student].guardians.push(item);
+    }
+
+    var studentList = [];
+    for (var key in students) studentList.push(key);
+    
+    return {
+      "students": students,
+      "studentList": studentList.sort()
+    };
   }
   
   async function _setTargetFileInfo() {

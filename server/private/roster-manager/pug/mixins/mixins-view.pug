@@ -4,5 +4,29 @@ mixin viewContainer()
       .status-message
 
   .row(class="py-2")
+    .col-sm-5
+      .dropdown(class="student-select input-group")
+        span(for="dropdownMenuInput" class="input-group-text") student
+        input(type="text" class="form-control dropdown-toggle" id="dropdownMenuInput" data-bs-toggle="dropdown" aria-expanded="false")
+
+        ul(class="dropdown-menu" aria-labelledby="dropdownMenuInput")
+
+  .row(class="py-2")
     .col-sm
-      .view-content(class="hide-me")
+      .container-fluid(class="view-content")
+        .row
+          .col-sm-1
+            .item-label email
+          .col-sm
+            .email
+            
+        .row
+          .col-sm-1
+            .item-label affiliation
+          .col-sm
+            .affiliation
+
+        .row
+          .col-sm           
+            .enrollments
+
