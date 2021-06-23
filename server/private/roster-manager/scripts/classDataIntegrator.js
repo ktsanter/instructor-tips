@@ -11,7 +11,20 @@ class DataIntegrator {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
+  async readCurrentSheetInfo(targetFileId) {
+    var sheetsToRead = ['raw_enrollment_data', 'raw_mentor_data', 'raw_guardian_data'];
+    var result = await this._readSheetData(targetFileId, sheetsToRead);
+    if (!result.success) return this._failResult(result.details);
+    
+    console.log(result);
+    console.log('what to do if sheet does not exist yet?');
+    console.log('turn raw data into object format like what comes from server');
+    
+    return {success: true, details: 'so far, so good', data: null};
+  }
+  
   async applyReportData(reportType, reportData, targetFileId) {
+    console.log('compare to current and report differences');
     if (reportType == 'enrollment') {
       return await this._applyEnrollmentReportData(reportData, targetFileId);
       
@@ -24,11 +37,29 @@ class DataIntegrator {
   }
   
   //--------------------------------------------------------------
-  // private methods
+  // private methods - read sheet info
+  //--------------------------------------------------------------   
+  async _readSheetData(targetFileId, sheetsToRead) {
+    const METHODNAME = 'DataIntegrator._readSheetData';
+    
+    var result = await this.config.googleDrive.getRanges(targetFileId, sheetsToRead);
+    if (!result.success) return result;
+    
+    var sheetData = {};
+    for (var i = 0; i < sheetsToRead.length; i++) {
+      sheetData[sheetsToRead[i]] = result.data[i];
+    }
+    result.data = sheetData;
+    
+    return result;
+  }
+  
+  //--------------------------------------------------------------
+  // private methods - apply report data
   //--------------------------------------------------------------   
   async _applyEnrollmentReportData(reportData, targetFileId) {
     const METHODNAME = 'DataIntegrator._applyEnrollmentReportData';
-    var targetSheets = ['students'];
+    var targetSheets = ['students', 'raw_enrollment_data'];
     
     var result = await this.config.googleDrive.getSpreadsheetInfo({id: targetFileId});
     if (!result.success) return this._failResult(result.details);
@@ -36,9 +67,12 @@ class DataIntegrator {
     result = await this._addOrClearSheets(targetFileId, targetSheets, result.sheetSet);
     if (!result.success) return this._failResult(result.details);
     
-    var studentData = this._packageEnrollmentData(reportData.enrollments);
-    
+    var studentData = this._packageEnrollmentData(reportData.enrollments);    
     result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], studentData);
+    if (!result.success) return this._failResult(result.details);
+    
+    var rawEnrollmentData = this._packageRawData(reportData.enrollments);
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[1], rawEnrollmentData);
     if (!result.success) return this._failResult(result.details);
     
     result = await this._formatSheets(targetFileId, targetSheets);
@@ -48,8 +82,9 @@ class DataIntegrator {
   }
   
   async _applyMentorReportData(reportData, targetFileId) {
+    console.log(reportData);
     const METHODNAME = 'DataIntegrator._applyMentorReportData';
-    var targetSheets = ['mentors by student', 'mentors by section', 'guardians'];
+    var targetSheets = ['mentors by student', 'mentors by section', 'guardians', 'raw_mentor_data', 'raw_guardian_data'];
 
     var result = await this.config.googleDrive.getSpreadsheetInfo({id: targetFileId});
     if (!result.success) return this._failResult(result.details);
@@ -69,6 +104,14 @@ class DataIntegrator {
     result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[2], guardianData);
     if (!result.success) return this._failResult(result.details);
 
+    var rawMentorData = this._packageRawData(reportData.mentors);
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[3], rawMentorData);
+    if (!result.success) return this._failResult(result.details);
+    
+    var rawGuardianData = this._packageRawData(reportData.guardians);
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[4], rawGuardianData);
+    if (!result.success) return this._failResult(result.details);
+    
     result = await this._formatSheets(targetFileId, targetSheets);
     if (!result.success) return this._failResult(result.details);    
     
@@ -88,6 +131,29 @@ class DataIntegrator {
     }
     
     return result;
+  }
+  
+  _packageRawData(rawData) {
+    var  packageRawData = [];
+    
+    if (rawData.length == 0) return packageRawData;
+    
+    var rawDataProperties = [];
+    var firstRow = rawData[0];
+    for (var key in firstRow) {
+      rawDataProperties.push(key);
+    }
+    
+    packageRawData.push(rawDataProperties);
+    for (var i = 0; i < rawData.length; i++) {
+      var rowData = [];
+      for (var j = 0; j < rawDataProperties.length; j++) {
+        rowData.push(rawData[i][rawDataProperties[j]]);
+      }
+      packageRawData.push(rowData);
+    }
+    
+    return packageRawData;
   }
   
   _packageEnrollmentData(enrollments) {

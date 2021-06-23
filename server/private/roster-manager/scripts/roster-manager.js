@@ -274,6 +274,16 @@ const app = function () {
     }
   }
   
+  async function _readCurrentSheetInfo() {
+    var targetId = _getTargetFileId();
+    
+    var result = await settings.dataIntegrator.readCurrentSheetInfo(targetId);
+    console.log(result);
+    if (!result.success) return;
+    
+    settings.currentSheetInfo = result.data;
+  }
+  
   async function _doTargetFilePick(pickType) {
     if (pickType == 'replace') {
       var msg = 'All of the data in the current file will be copied to the new one.';
@@ -432,6 +442,7 @@ const app = function () {
 
     if (isSignedIn) {    
       await _setTargetFileInfo();
+      await _readCurrentSheetInfo();
     }
     
     _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
