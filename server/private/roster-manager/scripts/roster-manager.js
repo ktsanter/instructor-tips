@@ -198,23 +198,8 @@ const app = function () {
   function _showView() {
     UtilityKTS.setClass(page.navView, 'disable-container', true);
     
-    var elemStatus = page.navView.getElementsByClassName('status')[0];
-    var elemStatusMsg = elemStatus.getElementsByClassName('status-message')[0];
-
-    var statusMsg = '';
-    var spreadsheetId = _getTargetFileId();
-
-    if (_getTargetFileId() == null) {
-      statusMsg = 'no target file selected';
-    } else if (settings.currentInfo == null) {
-      statusMsg = ' '; // non-blank intentionally
-    } else {
-      settings.rosterViewer.update(settings.currentInfo);
-    }
+    if (settings.google.isSignedIn) settings.rosterViewer.update(settings.currentInfo);
     
-    elemStatusMsg.innerHTML = statusMsg;
-    
-    UtilityKTS.setClass(elemStatus, settings.hideClass, statusMsg == '');
     UtilityKTS.setClass(page.navView, 'disable-container', false);
   }
   
