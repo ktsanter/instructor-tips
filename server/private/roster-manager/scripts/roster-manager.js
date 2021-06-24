@@ -36,8 +36,8 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {    
-    console.log('source for home-schooled?');
-    console.log('add fields for preferred name and notes');
+    console.log('source for home-schooled? use basic search report?');
+    console.log('add create/update/delete for notes');
     
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
@@ -121,7 +121,8 @@ const app = function () {
   
   function _initializeRosterViewer() {
     settings.rosterViewer = new RosterViewer({
-      "container": page.navView
+      "container": page.navView,
+      "callbackChange": _callbackRosterViewerChange
     });
   }
   
@@ -174,6 +175,11 @@ const app = function () {
     page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
     page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });
     
+    page.labelEditEnable = page.navAdmin.getElementsByClassName('check-editenable-label')[0];
+    page.checkEditEnable = page.navAdmin.getElementsByClassName('check-editenable')[0];
+    
+    page.checkEditEnable.addEventListener('click', (e) => { _handleEditEnableToggle(e); });
+
     page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
   }
     
@@ -200,7 +206,7 @@ const app = function () {
   function _showView() {
     UtilityKTS.setClass(page.navView, 'disable-container', true);
     
-    if (settings.google.isSignedIn) settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType());
+    if (settings.google.isSignedIn) settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType(), _getRosterViewerEditEnable());
     
     UtilityKTS.setClass(page.navView, 'disable-container', false);
   }
@@ -266,14 +272,21 @@ const app = function () {
     var spreadsheetId = _getTargetFileId();
     if (!spreadsheetId) return;
     
+    var result = await _getStudentPropertiesFromDB();
+    if (!result.success) {
+      console.log('failed to get student properties from DB');
+      return;
+    }
+    var currentDBInfo = result.data;
+    
     var result = await settings.dataIntegrator.readCurrentSheetInfo(spreadsheetId);
     if (result.success) {
-      settings.currentInfo = _packageStudentInfo(result.data);
+      settings.currentInfo = _packageStudentInfo(result.data, currentDBInfo);
       if (settings.currentNavOption == 'navView') _showView();
     }
   }
   
-  function _packageStudentInfo(rawData) {
+  function _packageStudentInfo(rawData, infoFromDB) {
     var students = {};
     
     for (var i = 0; i < rawData.raw_enrollment_data.length; i++) {
@@ -284,7 +297,9 @@ const app = function () {
         "mentors": [], 
         "guardians": [],
         "iep": false,
-        "504": false
+        "504": false,
+        "preferredname": '',
+        "notes": []
       };
       students[student].enrollments.push(item);
     }
@@ -311,6 +326,18 @@ const app = function () {
       var item = rawData.raw_504_data[i];
       var student = item.student;
       students[student]["504"] = true;
+    }
+
+    for (var i = 0; i < infoFromDB.preferredname.length; i++) {
+      var item = infoFromDB.preferredname[i];
+      var student = item.studentname;
+      if (students.hasOwnProperty(student)) students[student].preferredname = item.preferredname;
+    }
+      
+    for (var i = 0; i < infoFromDB.notes.length; i++) {
+      var item = infoFromDB.notes[i];
+      var student = item.studentname;
+      if (students.hasOwnProperty(student)) students[student].notes.push({"datestamp": item.datestamp, "notetext": item.notetext});
     }
 
     var studentList = [];
@@ -485,6 +512,10 @@ const app = function () {
     return value;
   }
   
+  function _getRosterViewerEditEnable() {
+    return page.checkEditEnable.checked;
+  }
+  
   async function _doTest() {
     console.log('_doTest');
     console.log('**stub');
@@ -589,6 +620,10 @@ const app = function () {
     _setAdminMenu();
   }
   
+  function _handleEditEnableToggle(e) {
+    page.labelEditEnable.innerHTML = e.target.checked ? 'field editing is ENABLED' : 'field editing is DISABLED';
+  }
+  
   async function _handleTest() {
     await _doTest();
   }
@@ -618,6 +653,21 @@ const app = function () {
     await _setTargetFileInfo();
     await _getCurrentInfo();
   } 
+  
+  async function _callbackRosterViewerChange(params) {
+    console.log('_callbackRosterViewerChange');
+    var result = await _saveStudentPropertyToDB(params);
+    if (!result.success) return result;
+    
+    var property = params.property;
+    var value = params.value;
+    var student = params.student;
+    
+    settings.currentInfo.students[student][property] = value;
+    settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType(), _getRosterViewerEditEnable());
+    
+    return result;
+  }
 
   //---------------------------------------
   // DB interface
@@ -635,6 +685,21 @@ const app = function () {
     return dbResult.success;
   }
 
+  async function _getStudentPropertiesFromDB() {
+    dbResult = await SQLDBInterface.doGetQuery('roster-manager/query', 'student-properties', page.notice);
+    if (!dbResult.success) return false;
+
+    return dbResult;
+  }
+  
+  async function _saveStudentPropertyToDB(params) {
+    console.log('_saveStudentPropertyToDB');
+    console.log(params);
+    dbResult = await SQLDBInterface.doPostQuery('roster-manager/insert', 'student-property', params, page.notice);
+    
+    return dbResult
+  }
+  
   //--------------------------------------------------------------------------
   // admin
   //--------------------------------------------------------------------------

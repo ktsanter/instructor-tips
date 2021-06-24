@@ -9,7 +9,10 @@ class RosterViewer {
     this.settings = {
       hideClass: 'hide-me',
       currentInfo: null,
-      renderType: 'plain'
+      renderType: 'plain',
+      editingEnabled: true,
+      editIconClasses: 'fas fa-edit',
+      selectedStudentInfo: null
     }
     
     this._initUI();
@@ -18,9 +21,12 @@ class RosterViewer {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------  
-  update(currentInfo, renderType) {
+  update(currentInfo, renderType, editingEnabled) {
     this.settings.currentInfo = currentInfo;
     this.settings.renderType = renderType;
+    this.settings.editingEnabled = editingEnabled;
+    this.settings.selectedStudentInfo = null;
+    
     this._updateUI();
   }
   
@@ -108,6 +114,7 @@ class RosterViewer {
     this.studentSelectInput.value = studentName;
     
     var info = this.settings.currentInfo.students[studentName];
+    this.settings.selectedStudentInfo = info;
     
     UtilityKTS.setClass(this.studentImages, this.settings.hideClass, false);
 
@@ -117,13 +124,16 @@ class RosterViewer {
     UtilityKTS.setClass(this.studentImageIEP, this.settings.hideClass, !info.iep);       
     UtilityKTS.setClass(this.studentImage504, this.settings.hideClass, !info["504"]);
 
-    var infoTitle = this._determineStudentInfo(info);
+    var infoTitle = this._determineStudentInfoMessage(info);
     this.studentImageInfo.title = infoTitle;
     UtilityKTS.setClass(this.studentImageInfo, this.settings.hideClass, infoTitle == '');    
     
     this.studentContent.appendChild(this._renderProperty("affiliation", info.enrollments[0].affiliation));
     this.studentContent.appendChild(this._renderProperty('email', info.enrollments[0].email));
-    console.log('add preferred name');
+    
+    var handler = null;
+    if (this.settings.editingEnabled) handler = (a, b, c) => { this._handlePropertyEdit(a, b, c); };
+    this.studentContent.appendChild(this._renderProperty('preferred name', info.preferredname, 'preferredname', handler));
 
     this._renderPropertyArray(
       ['term', 'section', 'startdate', 'enddate'], 
@@ -146,37 +156,44 @@ class RosterViewer {
       this.studentContent
     );
     
-    console.log('add notes');
+    this._renderPropertyArray(
+      ['datestamp', 'notetext'], 
+      ['note', 'note text'],
+      info.notes, 
+      this.studentContent
+    );
   }
   
-  _determineStudentInfo(info) {
+  _determineStudentInfoMessage(info) {
+    // figure out what to do with this (if anything)
     return '';
   }
   
-  _renderProperty(label, value) {
+  _renderProperty(label, value, property, handler) {
     var row = CreateElement.createDiv(null, 'row');
     
-    var col = CreateElement.createDiv(null, 'col-sm-2');
-    row.appendChild(col);
-    col.appendChild(CreateElement.createDiv(null, 'item-label', label));
+    var col1 = CreateElement.createDiv(null, 'col-sm-3');
+    row.appendChild(col1);
+    col1.appendChild(CreateElement.createSpan(null, 'item-label', label));
     
-    col = CreateElement.createDiv(null, 'col-sm');
-    row.appendChild(col);
-    col.appendChild(CreateElement.createDiv(null, null, value));
+    var col2 = CreateElement.createDiv(null, 'col-sm');
+    row.appendChild(col2);
+    var elem = CreateElement.createSpan(null, null, value);
+    col2.appendChild(elem);
 
+    if (handler) {
+      var classList = this.settings.editIconClasses + ' icon editicon ms-1';
+      var wrapperHandler = this._makePropertyEditHandler(label, property, elem, handler);
+      col1.appendChild(CreateElement.createIcon(null, classList, 'edit ' + label, wrapperHandler));
+    }
+    
     return row;
   }
   
-  _renderPropertyImage(imageURL, title) {
-    var row = CreateElement.createDiv(null, 'row');
-    
-    //createImage(id, classList, src, title, handler, dblclickhandler)
-    var col = CreateElement.createDiv(null, 'col-sm-2');
-    row.appendChild(col);
-    
-    col.appendChild(CreateElement.createImage(null, 'item-image', imageURL, title));
-
-    return row;
+  _makePropertyEditHandler(label, property, targetElement, origHandler) {
+    return function() {
+      origHandler(label, property, targetElement);
+    }
   }
     
   _renderPropertyArray(propertyArray, labelArray, source, container) {
@@ -218,6 +235,25 @@ class RosterViewer {
     }
   }
 
+  async _doPropertyEdit(label, property, targetElement) {
+    var currentValue = targetElement.innerHTML;
+
+    var msg = 'Please enter a value for "' + label + '"';
+    var result = prompt(msg, currentValue);
+    if (!result || result == currentValue) return;
+    
+    var studentName;
+    if (this.settings.selectedStudentInfo.enrollments.length > 0) {
+      studentName = this.settings.selectedStudentInfo.enrollments[0].student;
+    }
+    if (!studentName) return;
+    
+    var result = await this.config.callbackChange({"student": studentName, "property": property, "value": result});
+    if (!result.success) return;
+    
+    console.log('_doPropertyEdit result', result.data);
+  }
+  
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
@@ -231,6 +267,10 @@ class RosterViewer {
   
   _handleDropDownItemClick(e) {
     this._selectStudent(e.target.innerHTML);
+  }
+  
+  async _handlePropertyEdit(label, property, targetElement) {
+    await this._doPropertyEdit(label, property, targetElement);
   }
   
   //--------------------------------------------------------------

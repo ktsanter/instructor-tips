@@ -8,8 +8,6 @@ mixin adminContainer()
       button(class="btnSignout" title="sign out from Google") Google signout
       
   .row(class="py-2")
-    .col-sm-1 render type
-    
     .col-sm
       div(class="form-check form-check-inline")
         input(class="form-check-input check-rendertype rendertype-plain" type="radio" name="checkRenderType" id="checkRenderTypePlain" value="plain")
@@ -18,8 +16,13 @@ mixin adminContainer()
       div(class="form-check form-check-inline")
         input(class="form-check-input check-rendertype rendertype-table" type="radio" name="checkRenderType" id="checkRenderTypeTable" value="table" checked)
         label(class="form-check-label check-rendertype-label" for="checkRenderTypeTable") table
+        
+  .row(class="py-2")
+    .col-sm
+       div(class="form-check form-switch")
+        input(class="form-check-input check-editenable" type="checkbox" id="checkEditEnable" checked)
+        label(class="form-check-label check-editenable-label" for="checkEditEnable") field editing is ENABLED
    
   .row(class="py-2")
     .col-sm
       button(class="btnTest") test
-

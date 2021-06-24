@@ -52,15 +52,26 @@ body {
   cursor: pointer;
 }
 
+.contents .form-check-input + label{
+  cursor: pointer;
+}
+
 .contents .form-check-input:checked {
   background-color: var(--bgPrimary);
   border-color: var(--bgPrimary);
 }
 
-.contents .form-check-input + label{
-  cursor: pointer;
+.contents .form-check-input.check-edittype:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e"); 
+  box-shadow: none;
+  border-color: var(--borderPrimary);  
 }
 
+.contents .form-check-input.check-edittype:checked {
+  background-color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
 
 /*------------------------------------------------------------------------------
  * contents - navView
@@ -76,6 +87,10 @@ body {
 .contents .contents-navView img.item-image {
   width: 2.3em;
   height: auto;
+}
+
+.contents .contents-navView .icon {
+  color: var(--bgPrimary);
 }
 
 /*------------------------------------------------------------------------------

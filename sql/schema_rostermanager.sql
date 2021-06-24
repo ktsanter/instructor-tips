@@ -24,6 +24,30 @@ create table rosterfile
   constraint unique(userid, googlefileid)
 );
 
+create table preferredname
+(
+  preferrednameid      int unsigned not null AUTO_INCREMENT,
+  userid               int unsigned not null,
+  studentname          varchar(200) not null,
+  preferredname        varchar(200) not null,
+  
+  primary key (preferrednameid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid, studentname)
+);
+
+create table note
+(
+  noteid               int unsigned not null AUTO_INCREMENT,
+  userid               int unsigned not null,
+  studentname          varchar(200) not null,
+  datestamp            varchar(10) not null,
+  notetext             varchar(2000) not null,
+  
+  primary key (noteid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------

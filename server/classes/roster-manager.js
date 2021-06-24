@@ -122,6 +122,9 @@ module.exports = internal.RosterManager = class {
     } else if (params.queryName == 'apikey') {
       dbResult = await this._getAPIKey(params, postData, userInfo);
       
+    } else if (params.queryName == 'student-properties') {
+      dbResult = await this._getStudentProperties(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -134,6 +137,9 @@ module.exports = internal.RosterManager = class {
     
     if (params.queryName == 'googlefileid') {
       dbResult = await this._replaceGoogleFileId(params, postData, userInfo);
+      
+    } else if (params.queryName == 'student-property') {
+      dbResult = await this._replaceStudentProperty(params, postData, userInfo);
   
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -477,6 +483,36 @@ module.exports = internal.RosterManager = class {
     return result;
   }  
   
+  async _getStudentProperties(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "preferredname":
+        'select p.studentname, p.preferredname ' +
+        'from preferredname as p ' +
+        'where p.userid = ' + userInfo.userId,
+        
+      "notes": 
+        'select n.noteid, n.studentname, n.datestamp, n.notetext ' +
+        'from note as n ' +
+        'where n.userid = ' + userInfo.userId,
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);   
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+  
   async _replaceGoogleFileId(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
@@ -503,6 +539,49 @@ module.exports = internal.RosterManager = class {
       result.success = true;
       result.details = 'query succeeded';
       result.data = queryResults.data;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+
+  async _replaceStudentProperty(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    console.log(params);
+    console.log(postData);
+    var queryList, queryResults;
+    
+    if (postData.property == 'preferredname') {
+      queryList = {
+        "delete":
+          'delete ' +
+          'from preferredname ' +
+          'where userid = ' + userInfo.userId + ' ' +
+            'and studentname = "' + postData.student + '" ',
+          
+        "insert": 
+          'insert ' +
+          'into preferredname(userid, studentname, preferredname) ' + 
+          'values (' + 
+            userInfo.userId + ', ' +
+            '"' + postData.student + '", ' +
+            '"' + postData.value + '"' +
+          ') '
+      };
+      
+    } else {
+      result.details = 'invalid property: ' + postData.property;
+      return result;
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList);   
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = postData;
       
     } else {
       result.details = queryResults.details;
