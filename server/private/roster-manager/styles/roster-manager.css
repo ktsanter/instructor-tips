@@ -48,10 +48,35 @@ body {
   border-color: var(--bgPrimary);
 }
 
+.contents .form-check-input {
+  cursor: pointer;
+}
+
+.contents .form-check-input:checked {
+  background-color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+}
+
+.contents .form-check-input + label{
+  cursor: pointer;
+}
+
+
 /*------------------------------------------------------------------------------
- * contents - navManage
+ * contents - navView
  *------------------------------------------------------------------------------*/
-.contents .contents-navManage {}
+.contents .contents-navView {}
+
+.contents .contents-navView .view-content {}
+
+.contents .contents-navView .view-content .item-label {
+  font-weight: bold;
+}
+
+.contents .contents-navView img.item-image {
+  width: 2.3em;
+  height: auto;
+}
 
 /*------------------------------------------------------------------------------
  * contents - navConfigure

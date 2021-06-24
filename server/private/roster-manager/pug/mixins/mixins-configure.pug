@@ -15,17 +15,27 @@ mixin configureContainer()
         
   .row(class="py-2")
     .col-sm
-        label(for="file-upload-enrollment" class="uploadfile-label uploadfile-label-enrollment btn btn-secondary hide-me" title="choose enrollment report file to upload and process") enrollment
-        input(type="file" class="uploadfile uploadfile-enrollment" id="file-upload-enrollment" accept=".xlsx")
-        span(class="upload-result enrollment ms-3")
+      label(for="file-upload-enrollment" class="uploadfile-label uploadfile-label-enrollment btn btn-secondary hide-me" title="choose enrollment report file to upload and process") enrollment
+      input(type="file" class="uploadfile uploadfile-enrollment" id="file-upload-enrollment" accept=".xlsx")
+      span(class="upload-result enrollment ms-3")
 
   .row(class="py-2")
     .col-sm
-      div
-        label(for="file-upload-mentor" class="uploadfile-label uploadfile-label-mentor btn btn-secondary hide-me" title="choose mentor/guardian report file to upload and process") mentor/guardian
-        input(type="file" class="uploadfile uploadfile-mentor" id="file-upload-mentor" accept=".xlsx")
-        span(class="upload-result mentor ms-3")
+      label(for="file-upload-mentor" class="uploadfile-label uploadfile-label-mentor btn btn-secondary hide-me" title="choose mentor/guardian report file to upload and process") mentor/guardian
+      input(type="file" class="uploadfile uploadfile-mentor" id="file-upload-mentor" accept=".xlsx")
+      span(class="upload-result mentor ms-3")
 
+  .row(class="py-2")
+    .col-sm
+      label(for="file-upload-iep" class="uploadfile-label uploadfile-label-iep btn btn-secondary hide-me" title="choose IEP report file to upload and process") IEP
+      input(type="file" class="uploadfile uploadfile-iep" id="file-upload-iep" accept=".xlsx")
+      span(class="upload-result iep ms-3")
+
+  .row(class="py-2")
+    .col-sm
+      label(for="file-upload-504" class="uploadfile-label uploadfile-label-504 btn btn-secondary hide-me" title="choose 504 report file to upload and process") 504
+      input(type="file" class="uploadfile uploadfile-504" id="file-upload-504" accept=".xlsx")
+      span(class="upload-result 504 ms-3")
 
   .row(class="py-2")
     .col-sm

@@ -32,6 +32,14 @@ module.exports = internal.RosterManager = class {
     this.colMentor_Phone = 'Mentor Phone';
     this.colMentor_AffiliationPhone = 'Affiliation Phone';
 
+    this.colIEP_Student = 'Name';
+    this.colIEP_Term = 'Term Name';
+    this.colIEP_Section = 'Section Name';
+
+    this.col504_Student = 'Name';
+    this.col504_Term = 'Term Name';
+    this.col504_Section = 'Section Name';
+
     this._requiredColumns_Enrollment = new Set([
       this.colEnrollment_Student,
       this.colEnrollment_Section,
@@ -52,6 +60,18 @@ module.exports = internal.RosterManager = class {
       this.colMentor_Affiliation,
       this.colMentor_Phone,
       this.colMentor_AffiliationPhone
+    ]);    
+
+    this._requiredColumns_IEP = new Set([
+      this.colIEP_Student,
+      this.colIEP_Term,
+      this.colIEP_Section
+    ]);    
+
+    this._requiredColumns_504 = new Set([
+      this.col504_Student,
+      this.col504_Term,
+      this.col504_Section
     ]);    
   }
   
@@ -77,6 +97,12 @@ module.exports = internal.RosterManager = class {
       this._processExcelFile(req, res, uploadType);
       
     } else if (uploadType == 'mentor') {
+      this._processExcelFile(req, res, uploadType);
+      
+    } else if (uploadType == 'iep') {
+      this._processExcelFile(req, res, uploadType);
+      
+    } else if (uploadType == '504') {
       this._processExcelFile(req, res, uploadType);
       
     } else {
@@ -175,6 +201,12 @@ module.exports = internal.RosterManager = class {
       } else if (uploadType == 'mentor') {
         thisObj._processMentorFile(res, thisObj, worksheet);
         
+      } else if (uploadType == 'iep') {
+        thisObj._processIEPFile(res, thisObj, worksheet);
+        
+      } else if (uploadType == '504') {
+        thisObj._process504File(res, thisObj, worksheet);
+        
       } else {
         thisObj._sendFail(res, 'unrecognized upload type: ' + uploadType);
       }
@@ -206,6 +238,40 @@ module.exports = internal.RosterManager = class {
     }
 
     var packagedValues = thisObj._packageMentorValues(thisObj, worksheet, validate.columnInfo);
+    
+    if (!packagedValues.success) {
+      thisObj._sendFail(req, res, 'failed to package enrollment values');
+      return;
+    }
+    
+    thisObj._sendSuccess(res, 'upload succeeded', packagedValues.data);
+  }
+  
+  async _processIEPFile(res, thisObj, worksheet) {    
+    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_IEP);
+    if (!validate.success) {
+      thisObj._sendFail(res, 'missing one or more required columns');
+      return;
+    }
+    
+    var packagedValues = thisObj._packageIEPValues(thisObj, worksheet, validate.columnInfo);
+    
+    if (!packagedValues.success) {
+      thisObj._sendFail(req, res, 'failed to package enrollment values');
+      return;
+    }
+    
+    thisObj._sendSuccess(res, 'upload succeeded', packagedValues.data);
+  }
+  
+  async _process504File(res, thisObj, worksheet) {    
+    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_504);
+    if (!validate.success) {
+      thisObj._sendFail(res, 'missing one or more required columns');
+      return;
+    }
+    
+    var packagedValues = thisObj._package504Values(thisObj, worksheet, validate.columnInfo);
     
     if (!packagedValues.success) {
       thisObj._sendFail(req, res, 'failed to package enrollment values');
@@ -297,6 +363,68 @@ module.exports = internal.RosterManager = class {
       "guardians": guardians,
       "guardiansByStudent": guardiansByStudent
     }
+    
+    return result;
+  }
+  
+  _packageIEPValues(thisObj, worksheet, columnInfo) {
+    var result = {success: false, data: null};
+    
+    var iepInfo = [];
+    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
+      var student = row.getCell(columnInfo[thisObj.colIEP_Student]).value;
+      var term = row.getCell(columnInfo[thisObj.colIEP_Term]).value;
+      var section = row.getCell(columnInfo[thisObj.colIEP_Section]).value;
+      var term_section = term + '\t' + section;
+
+      if (student != thisObj.colIEP_Student) {
+        iepInfo.push({
+          "student": student,
+          "term": term,
+          "section": section,
+          "term_section": term_section
+        });
+      }
+    });
+    
+    var iepsByStudent = thisObj.collateObjectArray(iepInfo, 'student');
+    
+    result.success = true;
+    result.data = {
+      "iep": iepInfo,
+      "iepsByStudent": iepsByStudent
+    };
+    
+    return result;
+  }
+  
+  _package504Values(thisObj, worksheet, columnInfo) {
+    var result = {success: false, data: null};
+    
+    var info504 = [];
+    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
+      var student = row.getCell(columnInfo[thisObj.col504_Student]).value;
+      var term = row.getCell(columnInfo[thisObj.col504_Term]).value;
+      var section = row.getCell(columnInfo[thisObj.col504_Section]).value;
+      var term_section = term + '\t' + section;
+
+      if (student != thisObj.col504_Student) {
+        info504.push({
+          "student": student,
+          "term": term,
+          "section": section,
+          "term_section": term_section
+        });
+      }
+    });
+    
+    var info504ByStudent = thisObj.collateObjectArray(info504, 'student');
+    
+    result.success = true;
+    result.data = {
+      "504": info504,
+      "504ByStudent": info504ByStudent
+    };
     
     return result;
   }

@@ -36,9 +36,8 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {    
-    console.log('add IEP report');
-    console.log('add 504 report');
-    console.log('eliminate sheets except for raw data');
+    console.log('source for home-schooled?');
+    console.log('add fields for preferred name and notes');
     
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
@@ -64,7 +63,7 @@ const app = function () {
 
     settings.currentInfo = null;
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
-    
+
     page.notice.setNotice('');
   }
   
@@ -167,7 +166,6 @@ const app = function () {
     for (var i = 0; i < fileUploads.length; i++) {
       fileUploads[i].addEventListener('change', (e) => { _handleFileUpload(e); });
     }
-    
   }
   
   function _renderAdmin() {
@@ -202,7 +200,7 @@ const app = function () {
   function _showView() {
     UtilityKTS.setClass(page.navView, 'disable-container', true);
     
-    if (settings.google.isSignedIn) settings.rosterViewer.update(settings.currentInfo);
+    if (settings.google.isSignedIn) settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType());
     
     UtilityKTS.setClass(page.navView, 'disable-container', false);
   }
@@ -281,7 +279,13 @@ const app = function () {
     for (var i = 0; i < rawData.raw_enrollment_data.length; i++) {
       var item = rawData.raw_enrollment_data[i];
       var student = item.student;
-      if (!students.hasOwnProperty(student)) students[student] = {"enrollments": [], "mentors": [], "guardians": []};
+      if (!students.hasOwnProperty(student)) students[student] = {
+        "enrollments": [], 
+        "mentors": [], 
+        "guardians": [],
+        "iep": false,
+        "504": false
+      };
       students[student].enrollments.push(item);
     }
     
@@ -295,6 +299,18 @@ const app = function () {
       var item = rawData.raw_guardian_data[i];
       var student = item.student;
       students[student].guardians.push(item);
+    }
+
+    for (var i = 0; i < rawData.raw_iep_data.length; i++) {
+      var item = rawData.raw_iep_data[i];
+      var student = item.student;
+      students[student].iep = true;
+    }
+
+    for (var i = 0; i < rawData.raw_504_data.length; i++) {
+      var item = rawData.raw_504_data[i];
+      var student = item.student;
+      students[student]["504"] = true;
     }
 
     var studentList = [];
@@ -316,11 +332,15 @@ const app = function () {
     
     var uploadEnrollment = page.navConfigure.getElementsByClassName('uploadfile-label-enrollment')[0];
     var uploadMentor = page.navConfigure.getElementsByClassName('uploadfile-label-mentor')[0];
+    var uploadIEP = page.navConfigure.getElementsByClassName('uploadfile-label-iep')[0];
+    var upload504 = page.navConfigure.getElementsByClassName('uploadfile-label-504')[0];
     
     UtilityKTS.setClass(targetFilePicked, settings.hideClass, true);
     UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, true);
     UtilityKTS.setClass(uploadEnrollment, settings.hideClass, true);
     UtilityKTS.setClass(uploadMentor, settings.hideClass, true);
+    UtilityKTS.setClass(uploadIEP, settings.hideClass, true);
+    UtilityKTS.setClass(upload504, settings.hideClass, true);
     
     if (targetId) {
       var result =  await settings.googleDrive.getSpreadsheetInfo({"id": targetId});
@@ -334,6 +354,8 @@ const app = function () {
         UtilityKTS.setClass(targetFilePicked, settings.hideClass, false);
         UtilityKTS.setClass(uploadEnrollment, settings.hideClass, false);
         UtilityKTS.setClass(uploadMentor, settings.hideClass, false);
+        UtilityKTS.setClass(uploadIEP, settings.hideClass, false);
+        UtilityKTS.setClass(upload504, settings.hideClass, false);
       }
       
     } else {
@@ -343,9 +365,14 @@ const app = function () {
     
     var elemResultEnrollment = page.navConfigure.getElementsByClassName('upload-result enrollment')[0];
     var elemResultMentor = page.navConfigure.getElementsByClassName('upload-result mentor')[0];
+    var elemResultIEP = page.navConfigure.getElementsByClassName('upload-result iep')[0];
+    var elemResult504 = page.navConfigure.getElementsByClassName('upload-result 504')[0];
     var elemChanges = page.navConfigure.getElementsByClassName('changed-data')[0];
+    
     elemResultEnrollment.innerHTML = '';
     elemResultMentor.innerHTML = '';
+    elemResultIEP.innerHTML = '';
+    elemResult504.innerHTML = '';
     UtilityKTS.removeChildren(elemChanges);
   }
   
@@ -399,7 +426,7 @@ const app = function () {
       page.notice.setNotice('');
       return;
     }
-    
+
     var result = await settings.dataIntegrator.applyReportData(uploadType, result.data, _getTargetFileId());
     elemResult.innerHTML = result.details;
     if (result.success) {
@@ -445,6 +472,17 @@ const app = function () {
         }
       }
     }
+  }
+  
+  function _getRosterViewerRenderType() {
+    var value = null;
+    
+    var elems = page.navAdmin.getElementsByClassName('check-rendertype');
+    for (var i = 0; i < elems.length && !value; i++) {
+      if (elems[i].checked) value = elems[i].value;
+    }
+    
+    return value;
   }
   
   async function _doTest() {
@@ -528,8 +566,17 @@ const app = function () {
     
     _setConfigureEnable(false);
     
-    var param = 'enrollment';
-    if (!e.target.classList.contains('uploadfile-enrollment')) param = 'mentor';
+    var classToParamMap = {
+      'uploadfile-enrollment': 'enrollment',
+      'uploadfile-mentor': 'mentor',
+      'uploadfile-iep': 'iep',
+      'uploadfile-504': '504'      
+    };
+
+    var param = null;
+    for (var key in classToParamMap) {
+      if (e.target.classList.contains(key)) param = classToParamMap[key];
+    }
     
     await _doFileUpload(param, e.target.files[0]);
     e.target.value = null;
@@ -541,7 +588,7 @@ const app = function () {
     settings.adminDisable = !settings.adminDisable;
     _setAdminMenu();
   }
-         
+  
   async function _handleTest() {
     await _doTest();
   }

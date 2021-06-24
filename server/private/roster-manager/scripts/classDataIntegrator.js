@@ -5,14 +5,14 @@
 //-------------------------------------------------------------------
 class DataIntegrator {
   constructor(config) {
-    this.config = config
+    this.config = config;
   }
   
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
   async readCurrentSheetInfo(targetFileId) {
-    var sheetsToRead = ['raw_enrollment_data', 'raw_mentor_data', 'raw_guardian_data'];
+    var sheetsToRead = ['raw_enrollment_data', 'raw_mentor_data', 'raw_guardian_data', 'raw_iep_data', 'raw_504_data'];
     var result = await this._readSheetData(targetFileId, sheetsToRead);
     if (!result.success) return this._failResult(result.details);
     
@@ -28,6 +28,12 @@ class DataIntegrator {
       
     } else if (reportType == 'mentor') {
       return await this._applyMentorReportData(reportData, targetFileId, result.data);
+      
+    } else if (reportType == 'iep') {
+      return await this._applyIEPReportData(reportData, targetFileId, result.data);
+      
+    } else if (reportType == '504') {
+      return await this._apply504ReportData(reportData, targetFileId, result.data);
       
     } else {
       return {success: false, details: 'unrecognized report type: ' + reportType, data: null};
@@ -88,16 +94,12 @@ class DataIntegrator {
   //--------------------------------------------------------------   
   async _applyEnrollmentReportData(reportData, targetFileId, currentFileData) {
     const METHODNAME = 'DataIntegrator._applyEnrollmentReportData';
-    var targetSheets = ['students', 'raw_enrollment_data'];
+    var targetSheets = ['raw_enrollment_data'];
     
     var result = await this.config.googleDrive.getSpreadsheetInfo({id: targetFileId});
     if (!result.success) return this._failResult(result.details);
     
     result = await this._addOrClearSheets(targetFileId, targetSheets, result.sheetSet);
-    if (!result.success) return this._failResult(result.details);
-    
-    var studentData = this._packageEnrollmentData(reportData.enrollments);    
-    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], studentData);
     if (!result.success) return this._failResult(result.details);
     
     var enrollmentDifferences = this._packageDifferences(
@@ -107,14 +109,8 @@ class DataIntegrator {
     );
     
     var rawEnrollmentData = this._packageRawData(reportData.enrollments);
-    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[1], rawEnrollmentData);
-    if (!result.success) return this._failResult(result.details);
-    
-    result = await this._formatSheets(targetFileId, targetSheets);
-    if (!result.success) return this._failResult(result.details); 
-
-    result = await this._hideSheets(targetFileId, ['raw_enrollment_data']);
-    if (!result.success) return this._failResult(result.details);    
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], rawEnrollmentData);
+    if (!result.success) return this._failResult(result.details);   
     
     return {
       success: true, 
@@ -130,24 +126,12 @@ class DataIntegrator {
   
   async _applyMentorReportData(reportData, targetFileId, currentFileData) {
     const METHODNAME = 'DataIntegrator._applyMentorReportData';
-    var targetSheets = ['mentors by student', 'mentors by section', 'guardians', 'raw_mentor_data', 'raw_guardian_data'];
+    var targetSheets = ['raw_mentor_data', 'raw_guardian_data'];
 
     var result = await this.config.googleDrive.getSpreadsheetInfo({id: targetFileId});
     if (!result.success) return this._failResult(result.details);
    
     result = await this._addOrClearSheets(targetFileId, targetSheets, result.sheetSet);
-    if (!result.success) return this._failResult(result.details);
-    
-    var mentorByStudentData = this._packageMentorByStudentData(reportData.mentorsByStudent);
-    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], mentorByStudentData);
-    if (!result.success) return this._failResult(result.details);
-    
-    var mentorBySectionData = this._packageMentorBySectionData(reportData.mentorsByTermSection);
-    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[1], mentorBySectionData);
-    if (!result.success) return this._failResult(result.details);
-    
-    var guardianData = this._packageGuardianData(reportData.guardiansByStudent);
-    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[2], guardianData);
     if (!result.success) return this._failResult(result.details);
 
     var mentorDifferences = this._packageDifferences(
@@ -163,18 +147,12 @@ class DataIntegrator {
     );
 
     var rawMentorData = this._packageRawData(reportData.mentors);
-    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[3], rawMentorData);
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], rawMentorData);
     if (!result.success) return this._failResult(result.details);
     
     var rawGuardianData = this._packageRawData(reportData.guardians);
-    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[4], rawGuardianData);
-    if (!result.success) return this._failResult(result.details);
-    
-    result = await this._formatSheets(targetFileId, targetSheets);
-    if (!result.success) return this._failResult(result.details);    
-    
-    result = await this._hideSheets(targetFileId, ['raw_mentor_data', 'raw_guardian_data']);
-    if (!result.success) return this._failResult(result.details);    
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[1], rawGuardianData);
+    if (!result.success) return this._failResult(result.details);   
     
     return {
       success: true, 
@@ -192,6 +170,72 @@ class DataIntegrator {
     };
   }
   
+  async _applyIEPReportData(reportData, targetFileId, currentFileData) {
+    const METHODNAME = 'DataIntegrator._applyIEPReportData';
+    
+    var targetSheets = ['raw_iep_data'];
+    
+    var result = await this.config.googleDrive.getSpreadsheetInfo({id: targetFileId});
+    if (!result.success) return this._failResult(result.details);
+    
+    result = await this._addOrClearSheets(targetFileId, targetSheets, result.sheetSet);
+    if (!result.success) return this._failResult(result.details);
+    
+    var differences = this._packageDifferences(
+      currentFileData.raw_iep_data, 
+      reportData.iep,
+      (item) => {return item.student + '\t' + item.term_section}
+    );
+    
+    var rawIEPData = this._packageRawData(reportData.iep);
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], rawIEPData);
+    if (!result.success) return this._failResult(result.details);   
+    
+    return {
+      success: true, 
+      details: 'IEP report uploaded successfully', 
+      data: {
+        "students": {
+          "differences": differences, 
+          "headers": ['student', 'term', 'section']
+        }
+      }
+    };
+  }
+  
+  async _apply504ReportData(reportData, targetFileId, currentFileData) {
+    const METHODNAME = 'DataIntegrator._apply504ReportData';
+    
+    var targetSheets = ['raw_504_data'];
+    
+    var result = await this.config.googleDrive.getSpreadsheetInfo({id: targetFileId});
+    if (!result.success) return this._failResult(result.details);
+    
+    result = await this._addOrClearSheets(targetFileId, targetSheets, result.sheetSet);
+    if (!result.success) return this._failResult(result.details);
+    
+    var differences = this._packageDifferences(
+      currentFileData.raw_504_data, 
+      reportData["504"],
+      (item) => {return item.student + '\t' + item.term_section}
+    );
+    
+    var raw504Data = this._packageRawData(reportData["504"]);
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], raw504Data);
+    if (!result.success) return this._failResult(result.details);   
+    
+    return {
+      success: true, 
+      details: '504 report uploaded successfully', 
+      data: {
+        "students": {
+          "differences": differences, 
+          "headers": ['student', 'term', 'section']
+        }
+      }
+    };
+  }
+
   async _addOrClearSheets(targetFileId, targetSheets, existingSheetSet) {
     var result = {success: true, details: 'no sheets to add or clear', data: null};
     
@@ -434,9 +478,7 @@ class DataIntegrator {
     }
     return id;
   }
-  
-  
-  
+    
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   

@@ -4,10 +4,15 @@ mixin viewContainer()
       .status-message(class="hide-me")
 
       .dropdown(class="student-select input-group hide-me")
-        span(for="dropdownMenuInput" class="input-group-text") student
-        input(type="text" class="form-control dropdown-toggle" id="dropdownMenuInput" data-bs-toggle="dropdown" aria-expanded="false")
+        span(for="studentName" class="input-group-text") student
+        input(type="text" class="form-control dropdown-toggle" id="studentName" name="studentName" data-bs-toggle="dropdown" aria-expanded="false" autocomplete="one-time-code")
 
-        ul(class="dropdown-menu" aria-labelledby="dropdownMenuInput")
+        ul(class="dropdown-menu" aria-labelledby="studentName")
+        
+    .col-sm(class="item-images")
+      img(class="item-image image-iep hide-me" title="student has IEP" src="https://res.cloudinary.com/ktsanter/image/upload/v1624542890/Roster%20Manager/iep.png")
+      img(class="item-image image-504 hide-me" title="student has 504" src="https://res.cloudinary.com/ktsanter/image/upload/v1624542890/Roster%20Manager/504.png")
+      img(class="item-image image-info hide-me" src="https://res.cloudinary.com/ktsanter/image/upload/v1624542890/Roster%20Manager/info.png")
 
   .row(class="py-2")
     .col-sm
