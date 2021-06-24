@@ -97,31 +97,76 @@ class RosterViewer {
     
     UtilityKTS.removeChildren(this.studentContent);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false);
-    
-    this.studentContent.appendChild(CreateElement.createDiv(null, null, JSON.stringify(info.enrollments)))
-    this.studentContent.appendChild(CreateElement.createDiv(null, null, JSON.stringify(info.mentors)))
-    this.studentContent.appendChild(CreateElement.createDiv(null, null, JSON.stringify(info.guardians)))
-    /*
-            .row
-          .col-sm-1
-            .item-label email
-          .col-sm
-            .email
-            */
+        
+    this.studentContent.appendChild(this._renderProperty("affiliation", info.enrollments[0].affiliation));
+    this.studentContent.appendChild(this._renderProperty('email', info.enrollments[0].email));
+    console.log('add preferred name');
 
-/*
-    var enrollments = info.enrollments;
-    this.studentContent.getElementsByClassName('email')[0].innerHTML = enrollments[0].email;
-    this.studentContent.getElementsByClassName('affiliation')[0].innerHTML = enrollments[0].affiliation;
+    this.studentContent.appendChild(this._renderEmptyRow());
     
-    var container = this.studentContent.getElementsByClassName('enrollments')[0];
-    UtilityKTS.removeChildren(container);
-    for (var i = 0; i < enrollments.length; i++) {
-      var enrollment = enrollments[i];
-      var val = enrollment.term + ' | ' + enrollment.section + ' | ' + this._formatDate(enrollment.startdate) + ' | ' + this._formatDate(enrollment.enddate);
-      container.appendChild(CreateElement.createDiv(null, null, val));
+    this._renderPropertyArray(
+      ['term', 'section', 'startdate', 'enddate'], 
+      ['term', 'section', 'start date', 'end date'],
+      info.enrollments, 
+      this.studentContent
+    );
+
+    this.studentContent.appendChild(this._renderEmptyRow());
+    
+    this._renderPropertyArray(
+      ['name', 'email', 'phone', 'affiliationphone'], 
+      ['mentor', 'email', 'phone', 'affiliation phone'],
+      info.mentors, 
+      this.studentContent
+    );
+
+    this.studentContent.appendChild(this._renderEmptyRow());
+    
+    this._renderPropertyArray(
+      ['name', 'email', 'phone'], 
+      ['guardian', 'email', 'phone'],
+      info.guardians, 
+      this.studentContent
+    );
+    
+    console.log('add notes');
+  }
+  
+  _renderProperty(label, value) {
+    var row = CreateElement.createDiv(null, 'row');
+    
+    var col = CreateElement.createDiv(null, 'col-sm-2');
+    row.appendChild(col);
+    col.appendChild(CreateElement.createDiv(null, 'item-label', label));
+    
+    col = CreateElement.createDiv(null, 'col-sm');
+    row.appendChild(col);
+    col.appendChild(CreateElement.createDiv(null, null, value));
+
+    return row;
+  }
+  
+  _renderEmptyRow() {
+    var row = CreateElement.createDiv(null, 'row');
+    row.appendChild(CreateElement.createDiv(null, 'col-sm-2', '&nbsp;'));
+
+    return row;
+  }    
+  
+  _renderPropertyArray(propertyArray, labelArray, source, container) {
+    console.log('use table instead?');
+    container.appendChild(CreateElement.createDiv(null, null, label));
+
+    for (var i = 0; i < source.length; i++) {
+      var item = source[i];
+      for (var j = 0; j < propertyArray.length; j++) {
+        var label = labelArray[j];
+        var property = propertyArray[j];
+        var value = item[property];
+        if (property == 'startdate' || property == 'enddate') value = value.slice(0, 10);
+        container.appendChild(this._renderProperty(label, value));
+      }
     }
-    */
   }
 
   //--------------------------------------------------------------

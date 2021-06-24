@@ -36,6 +36,10 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {    
+    console.log('add IEP report');
+    console.log('add 504 report');
+    console.log('eliminate sheets except for raw data');
+    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
