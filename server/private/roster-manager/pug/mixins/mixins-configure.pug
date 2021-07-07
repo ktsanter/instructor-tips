@@ -39,4 +39,10 @@ mixin configureContainer()
 
   .row(class="py-2")
     .col-sm
+      label(for="file-upload-homeschooled" class="uploadfile-label uploadfile-label-homeschooled btn btn-secondary hide-me" title="choose home schooled report file to upload and process") home schooled
+      input(type="file" class="uploadfile uploadfile-homeschooled" id="file-upload-homeschooled" accept=".xlsx")
+      span(class="upload-result homeschooled ms-3")
+
+  .row(class="py-2")
+    .col-sm
       .changed-data

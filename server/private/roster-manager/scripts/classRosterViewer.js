@@ -41,6 +41,7 @@ class RosterViewer {
     this.studentImages = this.config.container.getElementsByClassName('item-images')[0];
     this.studentImageIEP = this.studentImages.getElementsByClassName('item-image image-iep')[0];
     this.studentImage504 = this.studentImages.getElementsByClassName('item-image image-504')[0];
+    this.studentIconHomeSchooled = this.config.container.getElementsByClassName('item-icon icon-homeschooled')[0];
     this.studentImageInfo = this.studentImages.getElementsByClassName('item-image image-info')[0];
     
     this.studentSelect = this.config.container.getElementsByClassName('student-select')[0];
@@ -123,6 +124,7 @@ class RosterViewer {
 
     UtilityKTS.setClass(this.studentImageIEP, this.settings.hideClass, !info.iep);       
     UtilityKTS.setClass(this.studentImage504, this.settings.hideClass, !info["504"]);
+    UtilityKTS.setClass(this.studentIconHomeSchooled, this.settings.hideClass, !info.homeschooled);
 
     var infoTitle = this._determineStudentInfoMessage(info);
     this.studentImageInfo.title = infoTitle;

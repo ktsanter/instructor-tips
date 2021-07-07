@@ -36,7 +36,6 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {    
-    console.log('source for home-schooled? use basic search report?');
     console.log('add create/update/delete for notes');
     
 		page.body = document.getElementsByTagName('body')[0]; 
@@ -298,6 +297,7 @@ const app = function () {
         "guardians": [],
         "iep": false,
         "504": false,
+        "homeschooled": false,
         "preferredname": '',
         "notes": []
       };
@@ -326,6 +326,12 @@ const app = function () {
       var item = rawData.raw_504_data[i];
       var student = item.student;
       students[student]["504"] = true;
+    }
+
+    for (var i = 0; i < rawData.raw_homeschooled_data.length; i++) {
+      var item = rawData.raw_homeschooled_data[i];
+      var student = item.student;
+      students[student].homeschooled = true;
     }
 
     for (var i = 0; i < infoFromDB.preferredname.length; i++) {
@@ -361,6 +367,7 @@ const app = function () {
     var uploadMentor = page.navConfigure.getElementsByClassName('uploadfile-label-mentor')[0];
     var uploadIEP = page.navConfigure.getElementsByClassName('uploadfile-label-iep')[0];
     var upload504 = page.navConfigure.getElementsByClassName('uploadfile-label-504')[0];
+    var uploadHomeSchooled = page.navConfigure.getElementsByClassName('uploadfile-label-homeschooled')[0];
     
     UtilityKTS.setClass(targetFilePicked, settings.hideClass, true);
     UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, true);
@@ -368,6 +375,7 @@ const app = function () {
     UtilityKTS.setClass(uploadMentor, settings.hideClass, true);
     UtilityKTS.setClass(uploadIEP, settings.hideClass, true);
     UtilityKTS.setClass(upload504, settings.hideClass, true);
+    UtilityKTS.setClass(uploadHomeSchooled, settings.hideClass, true);
     
     if (targetId) {
       var result =  await settings.googleDrive.getSpreadsheetInfo({"id": targetId});
@@ -383,6 +391,7 @@ const app = function () {
         UtilityKTS.setClass(uploadMentor, settings.hideClass, false);
         UtilityKTS.setClass(uploadIEP, settings.hideClass, false);
         UtilityKTS.setClass(upload504, settings.hideClass, false);
+        UtilityKTS.setClass(uploadHomeSchooled, settings.hideClass, false);
       }
       
     } else {
@@ -394,12 +403,14 @@ const app = function () {
     var elemResultMentor = page.navConfigure.getElementsByClassName('upload-result mentor')[0];
     var elemResultIEP = page.navConfigure.getElementsByClassName('upload-result iep')[0];
     var elemResult504 = page.navConfigure.getElementsByClassName('upload-result 504')[0];
+    var elemResultHomeSchooled = page.navConfigure.getElementsByClassName('upload-result homeschooled')[0];
     var elemChanges = page.navConfigure.getElementsByClassName('changed-data')[0];
     
     elemResultEnrollment.innerHTML = '';
     elemResultMentor.innerHTML = '';
     elemResultIEP.innerHTML = '';
     elemResult504.innerHTML = '';
+    elemResultHomeSchooled.innerHTML = '';
     UtilityKTS.removeChildren(elemChanges);
   }
   
@@ -601,7 +612,8 @@ const app = function () {
       'uploadfile-enrollment': 'enrollment',
       'uploadfile-mentor': 'mentor',
       'uploadfile-iep': 'iep',
-      'uploadfile-504': '504'      
+      'uploadfile-504': '504',     
+      'uploadfile-homeschooled': 'homeschooled'      
     };
 
     var param = null;

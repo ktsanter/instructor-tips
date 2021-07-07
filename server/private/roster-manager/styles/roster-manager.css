@@ -80,6 +80,10 @@ body {
 
 .contents .contents-navView .view-content {}
 
+.contents .contents-navView .icon {
+  color: var(--bgPrimary);
+}
+
 .contents .contents-navView .view-content .item-label {
   font-weight: bold;
 }
@@ -89,8 +93,10 @@ body {
   height: auto;
 }
 
-.contents .contents-navView .icon {
+.contents .contents-navView .item-icon {
   color: var(--bgPrimary);
+  font-size: 1.4em;
+  vertical-align: middle;
 }
 
 /*------------------------------------------------------------------------------

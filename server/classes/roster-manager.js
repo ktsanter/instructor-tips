@@ -40,6 +40,10 @@ module.exports = internal.RosterManager = class {
     this.col504_Term = 'Term Name';
     this.col504_Section = 'Section Name';
 
+    this.colHomeSchooled_Student = 'Name';
+    this.colHomeSchooled_Term = 'Term Name';
+    this.colHomeSchooled_Section = 'Section Name';
+
     this._requiredColumns_Enrollment = new Set([
       this.colEnrollment_Student,
       this.colEnrollment_Section,
@@ -73,6 +77,12 @@ module.exports = internal.RosterManager = class {
       this.col504_Term,
       this.col504_Section
     ]);    
+
+    this._requiredColumns_HomeSchooled = new Set([
+      this.colHomeSchooled_Student,
+      this.colHomeSchooled_Term,
+      this.colHomeSchooled_Section
+    ]);    
   }
   
 //---------------------------------------------------------------
@@ -103,6 +113,9 @@ module.exports = internal.RosterManager = class {
       this._processExcelFile(req, res, uploadType);
       
     } else if (uploadType == '504') {
+      this._processExcelFile(req, res, uploadType);
+      
+    } else if (uploadType == 'homeschooled') {
       this._processExcelFile(req, res, uploadType);
       
     } else {
@@ -213,6 +226,9 @@ module.exports = internal.RosterManager = class {
       } else if (uploadType == '504') {
         thisObj._process504File(res, thisObj, worksheet);
         
+      } else if (uploadType == 'homeschooled') {
+        thisObj._processHomeSchooledFile(res, thisObj, worksheet);
+        
       } else {
         thisObj._sendFail(res, 'unrecognized upload type: ' + uploadType);
       }
@@ -246,7 +262,7 @@ module.exports = internal.RosterManager = class {
     var packagedValues = thisObj._packageMentorValues(thisObj, worksheet, validate.columnInfo);
     
     if (!packagedValues.success) {
-      thisObj._sendFail(req, res, 'failed to package enrollment values');
+      thisObj._sendFail(req, res, 'failed to package mentor values');
       return;
     }
     
@@ -263,7 +279,7 @@ module.exports = internal.RosterManager = class {
     var packagedValues = thisObj._packageIEPValues(thisObj, worksheet, validate.columnInfo);
     
     if (!packagedValues.success) {
-      thisObj._sendFail(req, res, 'failed to package enrollment values');
+      thisObj._sendFail(req, res, 'failed to package IEP values');
       return;
     }
     
@@ -280,7 +296,24 @@ module.exports = internal.RosterManager = class {
     var packagedValues = thisObj._package504Values(thisObj, worksheet, validate.columnInfo);
     
     if (!packagedValues.success) {
-      thisObj._sendFail(req, res, 'failed to package enrollment values');
+      thisObj._sendFail(req, res, 'failed to package 504 values');
+      return;
+    }
+    
+    thisObj._sendSuccess(res, 'upload succeeded', packagedValues.data);
+  }
+  
+  async _processHomeSchooledFile(res, thisObj, worksheet) {    
+    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_HomeSchooled);
+    if (!validate.success) {
+      thisObj._sendFail(res, 'missing one or more required columns');
+      return;
+    }
+    
+    var packagedValues = thisObj._packageHomeSchooledValues(thisObj, worksheet, validate.columnInfo);
+    
+    if (!packagedValues.success) {
+      thisObj._sendFail(req, res, 'failed to package home schooled values');
       return;
     }
     
@@ -435,6 +468,37 @@ module.exports = internal.RosterManager = class {
     return result;
   }
   
+  _packageHomeSchooledValues(thisObj, worksheet, columnInfo) {
+    var result = {success: false, data: null};
+    
+    var infoHomeSchooled = [];
+    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
+      var student = row.getCell(columnInfo[thisObj.colHomeSchooled_Student]).value;
+      var term = row.getCell(columnInfo[thisObj.colHomeSchooled_Term]).value;
+      var section = row.getCell(columnInfo[thisObj.colHomeSchooled_Section]).value;
+      var term_section = term + '\t' + section;
+
+      if (student != thisObj.colHomeSchooled_Student) {
+        infoHomeSchooled.push({
+          "student": student,
+          "term": term,
+          "section": section,
+          "term_section": term_section
+        });
+      }
+    });
+    
+    var infoHomeSchooledByStudent = thisObj.collateObjectArray(infoHomeSchooled, 'student');
+    
+    result.success = true;
+    result.data = {
+      "homeSchooled": infoHomeSchooled,
+      "homeSchooledByStudent": infoHomeSchooledByStudent
+    };
+    
+    return result;
+  }
+  
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------
@@ -549,8 +613,6 @@ module.exports = internal.RosterManager = class {
 
   async _replaceStudentProperty(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
-    console.log(params);
-    console.log(postData);
     var queryList, queryResults;
     
     if (postData.property == 'preferredname') {

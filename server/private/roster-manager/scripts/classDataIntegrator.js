@@ -12,7 +12,7 @@ class DataIntegrator {
   // public methods
   //--------------------------------------------------------------   
   async readCurrentSheetInfo(targetFileId) {
-    var sheetsToRead = ['raw_enrollment_data', 'raw_mentor_data', 'raw_guardian_data', 'raw_iep_data', 'raw_504_data'];
+    var sheetsToRead = ['raw_enrollment_data', 'raw_mentor_data', 'raw_guardian_data', 'raw_iep_data', 'raw_504_data', 'raw_homeschooled_data'];
     var result = await this._readSheetData(targetFileId, sheetsToRead);
     if (!result.success) return this._failResult(result.details);
     
@@ -34,6 +34,9 @@ class DataIntegrator {
       
     } else if (reportType == '504') {
       return await this._apply504ReportData(reportData, targetFileId, result.data);
+      
+    } else if (reportType == 'homeschooled') {
+      return await this._applyHomeSchooledReportData(reportData, targetFileId, result.data);
       
     } else {
       return {success: false, details: 'unrecognized report type: ' + reportType, data: null};
@@ -201,10 +204,11 @@ class DataIntegrator {
         }
       }
     };
-  }
+  }  
   
   async _apply504ReportData(reportData, targetFileId, currentFileData) {
     const METHODNAME = 'DataIntegrator._apply504ReportData';
+    console.log(reportData);
     
     var targetSheets = ['raw_504_data'];
     
@@ -227,6 +231,39 @@ class DataIntegrator {
     return {
       success: true, 
       details: '504 report uploaded successfully', 
+      data: {
+        "students": {
+          "differences": differences, 
+          "headers": ['student', 'term', 'section']
+        }
+      }
+    };
+  }
+
+  async _applyHomeSchooledReportData(reportData, targetFileId, currentFileData) {
+    const METHODNAME = 'DataIntegrator._applyHomeSchooledReportData';
+    
+    var targetSheets = ['raw_homeschooled_data'];
+    
+    var result = await this.config.googleDrive.getSpreadsheetInfo({id: targetFileId});
+    if (!result.success) return this._failResult(result.details);
+    
+    result = await this._addOrClearSheets(targetFileId, targetSheets, result.sheetSet);
+    if (!result.success) return this._failResult(result.details);
+    
+    var differences = this._packageDifferences(
+      currentFileData.raw_homeschooled_data, 
+      reportData.homeSchooled,
+      (item) => {return item.student + '\t' + item.term_section}
+    );
+    
+    var rawHomeSchooledData = this._packageRawData(reportData.homeSchooled);
+    result = await this.config.googleDrive.writeRange(targetFileId, targetSheets[0], rawHomeSchooledData);
+    if (!result.success) return this._failResult(result.details);   
+    
+    return {
+      success: true, 
+      details: 'homeschooled report uploaded successfully', 
       data: {
         "students": {
           "differences": differences, 
