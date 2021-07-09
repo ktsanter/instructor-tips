@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // Roster manager
 //-----------------------------------------------------------------------
-// TODO: 
+// TODO:
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -11,9 +11,10 @@ const app = function () {
 
     helpURL: '/roster-manager/help',
     logoutURL: '/usermanagement/logout/roster-manager',
+    enddateManagerURL: '/enddate-manager/manager',
     
     dirtyBit: {
-      "navView": false,
+      "navStudent": false,
       "navConfigure": false
     },
     
@@ -36,8 +37,6 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {    
-    console.log('add create/update/delete for notes');
-    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
@@ -59,6 +58,7 @@ const app = function () {
     await _initializeGoogleStuff();
     _initializeReportManagement();
     _initializeRosterViewer();
+    _initializeMentorViewer();
 
     settings.currentInfo = null;
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
@@ -120,8 +120,16 @@ const app = function () {
   
   function _initializeRosterViewer() {
     settings.rosterViewer = new RosterViewer({
-      "container": page.navView,
-      "callbackChange": _callbackRosterViewerChange
+      "container": page.navStudent,
+      "containerNoteEditor": page.contents.getElementsByClassName('edit-container')[0],
+      "callbackPropertyChange": _callbackRosterViewerPropertyChange,
+      "callbackNoteChange": _callbackRosterViewerNoteChange
+    });
+  }
+  
+  function _initializeMentorViewer() {
+    settings.mentorViewer = new MentorViewer({
+      "container": page.navMentor
     });
   }
   
@@ -142,13 +150,18 @@ const app = function () {
   function _renderContents() {
     _enableNavOption('navGoogle', false, false);
     
-    _renderView();
+    _renderStudent();
+    _renderMentor();
     _renderConfigure();
     _renderAdmin();
   }
   
-  function _renderView() {
-    page.navView = page.contents.getElementsByClassName('contents-navView')[0];
+  function _renderStudent() {
+    page.navStudent = page.contents.getElementsByClassName('contents-navStudent')[0];
+  }
+  
+  function _renderMentor() {
+    page.navMentor = page.contents.getElementsByClassName('contents-navMentor')[0];
   }
   
   function _renderConfigure() {
@@ -194,7 +207,8 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navView') _showView();
+    if (contentsId == 'navStudent') _showStudent();
+    if (contentsId == 'navMentor') _showMentor();
     if (contentsId == 'navConfigure') _showConfigure();
     if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
@@ -202,12 +216,22 @@ const app = function () {
     _setNavOptions();
   }
   
-  function _showView() {
-    UtilityKTS.setClass(page.navView, 'disable-container', true);
+  function _showStudent() {
+    UtilityKTS.setClass(page.navStudent, 'disable-container', true);
     
     if (settings.google.isSignedIn) settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType(), _getRosterViewerEditEnable());
     
-    UtilityKTS.setClass(page.navView, 'disable-container', false);
+    UtilityKTS.setClass(page.navStudent, 'disable-container', false);
+  }
+  
+  function _showMentor() {
+    UtilityKTS.setClass(page.navMentor, 'disable-container', true);
+    
+    if (settings.google.isSignedIn) {
+      settings.mentorViewer.update(settings.currentMentorInfo);
+    }
+    
+    UtilityKTS.setClass(page.navMentor, 'disable-container', false);
   }
   
   function _showConfigure() {}
@@ -227,6 +251,10 @@ const app = function () {
     }
   }
     
+  function _doEndDateManager() {
+    window.open(settings.enddateManagerURL, '_blank');
+  }
+  
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
   }
@@ -244,7 +272,8 @@ const app = function () {
     var containers = page.contents.getElementsByClassName('contents-container');
     for (var i = 0; i < containers.length; i++) {
       if (
-        containers[i].classList.contains('contents-navView') ||
+        containers[i].classList.contains('contents-navStudent') ||
+        containers[i].classList.contains('contents-navMentor') ||
         containers[i].classList.contains('contents-navConfigure') ||
         containers[i].classList.contains('contents-navAdmin')
       ) {
@@ -255,7 +284,7 @@ const app = function () {
   }
       
   function _setMainNavbarEnable(enable) {
-    var menuIds = ['navView', 'navConfigure', 'navAdmin'];
+    var menuIds = ['navStudent', 'navMentor', 'navConfigure', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
       UtilityKTS.setClass(elem, 'disabled', !enable);
@@ -281,7 +310,10 @@ const app = function () {
     var result = await settings.dataIntegrator.readCurrentSheetInfo(spreadsheetId);
     if (result.success) {
       settings.currentInfo = _packageStudentInfo(result.data, currentDBInfo);
-      if (settings.currentNavOption == 'navView') _showView();
+      settings.currentMentorInfo = _packageMentorInfo(result.data, currentDBInfo);
+      
+      if (settings.currentNavOption == 'navStudent') _showStudent();
+      if (settings.currentNavOption == 'navMentor') _showMentor();
     }
   }
   
@@ -343,7 +375,11 @@ const app = function () {
     for (var i = 0; i < infoFromDB.notes.length; i++) {
       var item = infoFromDB.notes[i];
       var student = item.studentname;
-      if (students.hasOwnProperty(student)) students[student].notes.push({"datestamp": item.datestamp, "notetext": item.notetext});
+      if (students.hasOwnProperty(student)) students[student].notes.push({
+        "datestamp": item.datestamp, 
+        "notetext": item.notetext,
+        "noteid": item.noteid
+      });
     }
 
     var studentList = [];
@@ -352,6 +388,18 @@ const app = function () {
     return {
       "students": students,
       "studentList": studentList.sort()
+    };
+  }
+  
+  function _packageMentorInfo(rawData, infoFromDB) {
+    var mentors = {};
+    
+    var mentorList = [];
+    for (var key in mentors) mentorList.push(key);
+    
+    return {
+      "mentors": mentors,
+      "mentorList": mentorList.sort()
     };
   }
   
@@ -546,9 +594,11 @@ const app = function () {
     _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
-      "navView": function() { _showContents('navView');},
+      "navStudent": function() { _showContents('navStudent');},
+      "navMentor": function() { _showContents('navMentor');},
       "navConfigure": function() { _showContents('navConfigure');},
       "navAdmin": function() { _showContents('navAdmin'); },
+      "navEndDateManager": function() { _doEndDateManager(); },
       "navGoogle": function() { _handleGoogleSignIn(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
@@ -561,7 +611,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navView', 'navConfigure', 'navAdmin']);
+    var mainOptions = new Set(['navStudent', 'navMentor', 'navConfigure', 'navAdmin']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);
@@ -646,15 +696,15 @@ const app = function () {
   async function _signInChangeForGoogle(isSignedIn) {
     settings.google.isSignedIn = isSignedIn;
     
-    _setMainUIEnable(settings.google.isSignedIn);
-    _setMainNavbarEnable(settings.google.isSignedIn);   
-
     if (isSignedIn) {
       page.notice.setNotice('');      
       await _setTargetFileInfo();
       await _getCurrentInfo();
     }
     
+    _setMainUIEnable(settings.google.isSignedIn);
+    _setMainNavbarEnable(settings.google.isSignedIn);   
+
     _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
   }
   
@@ -666,8 +716,8 @@ const app = function () {
     await _getCurrentInfo();
   } 
   
-  async function _callbackRosterViewerChange(params) {
-    console.log('_callbackRosterViewerChange');
+  async function _callbackRosterViewerPropertyChange(params) {
+    console.log('_callbackRosterViewerPropertyChange');
     var result = await _saveStudentPropertyToDB(params);
     if (!result.success) return result;
     
@@ -681,6 +731,24 @@ const app = function () {
     return result;
   }
 
+  async function _callbackRosterViewerNoteChange(params) {
+    var result = {success: false, details: 'unrecognized action', data: null};
+    
+    if (params.action == 'add') {
+      result = await _addNoteToDB(params);
+      
+    } else if (params.action == 'update') {
+      result = await _updateNoteInDB(params);
+      
+    } else if (params.action == 'delete') {
+      result = await _deleteNoteFromDB(params);
+    }
+    
+    if (result.success) await _getCurrentInfo();
+    
+    return result;
+  }
+  
   //---------------------------------------
   // DB interface
   //----------------------------------------  
@@ -705,13 +773,28 @@ const app = function () {
   }
   
   async function _saveStudentPropertyToDB(params) {
-    console.log('_saveStudentPropertyToDB');
-    console.log(params);
     dbResult = await SQLDBInterface.doPostQuery('roster-manager/insert', 'student-property', params, page.notice);
     
     return dbResult
   }
   
+  async function _addNoteToDB(params) {
+    dbResult = await SQLDBInterface.doPostQuery('roster-manager/insert', 'student-note', params, page.notice);
+    
+    return dbResult
+  }
+
+  async function _updateNoteInDB(params) {
+    dbResult = await SQLDBInterface.doPostQuery('roster-manager/update', 'student-note', params, page.notice);
+    
+    return dbResult
+  }
+
+  async function _deleteNoteFromDB(params) {
+    dbResult = await SQLDBInterface.doPostQuery('roster-manager/delete', 'student-note', params, page.notice);
+    
+    return dbResult
+  }
   //--------------------------------------------------------------------------
   // admin
   //--------------------------------------------------------------------------

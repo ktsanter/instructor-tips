@@ -1,7 +1,7 @@
 //-------------------------------------------------------------------
 // RosterViewer
 //-------------------------------------------------------------------
-// TODO:
+// TODO: 
 //-------------------------------------------------------------------
 class RosterViewer {
   constructor(config) {
@@ -50,7 +50,13 @@ class RosterViewer {
     this.studentContent = this.config.container.getElementsByClassName('view-content')[0];
         
     this.studentSelectInput.addEventListener('input', (e) => { this._handleDropDownInputChange(e); });
-  
+
+    var noteButton = this.config.containerNoteEditor.getElementsByClassName('button-editor-okay')[0];
+    noteButton.addEventListener('click', (e) => { this._finishNoteEdit(true); });
+    
+    noteButton = this.config.containerNoteEditor.getElementsByClassName('button-editor-cancel')[0];
+    noteButton.addEventListener('click', (e) => { this._finishNoteEdit(false); });
+
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
   }
 
@@ -94,6 +100,7 @@ class RosterViewer {
     }
     
     UtilityKTS.setClass(this.config.container, this.settings.hideClass, false);
+    this._setNoteEditVisiblity(false);    
   }
   
   _filterDropdownItems(searchVal) {
@@ -159,10 +166,12 @@ class RosterViewer {
     );
     
     this._renderPropertyArray(
-      ['datestamp', 'notetext'], 
-      ['note', 'note text'],
+      ['datestamp', 'notetext', '[edit-delete-icons]'], 
+      ['date', 'note', '[add-icon]'],
       info.notes, 
-      this.studentContent
+      this.studentContent,
+      'limit-second-col',
+      true
     );
   }
   
@@ -198,7 +207,7 @@ class RosterViewer {
     }
   }
     
-  _renderPropertyArray(propertyArray, labelArray, source, container) {
+  _renderPropertyArray(propertyArray, labelArray, source, container, extraClasses, renderIfEmpty) {
     container.appendChild(CreateElement.createDiv(null, null, label));
 
     if (this.settings.renderType == 'plain') {
@@ -217,22 +226,71 @@ class RosterViewer {
       
     } else if (this.settings.renderType == 'table') {
       var tableContents = [];
+      var itemValues = [];
+      
       for (var i = 0; i < source.length; i++) {
         var item = source[i];
         var rowContents = [];
+        itemValues.push(item);
+        
         for (var j = 0; j < propertyArray.length; j++) {
           var property = propertyArray[j];
           var value = item[property];
           if (property == 'startdate' || property == 'enddate') value = value.slice(0, 10);
+          if (property == '[edit-delete-icons]') value = property;
           rowContents.push(value);
         }
+        
         tableContents.push(rowContents);
       }
       
-      if (source.length > 0) {
-        var table = CreateElement.createTable(null, 'table table-striped table-hover table-sm mt-3', labelArray, tableContents);
+      if (source.length > 0 || renderIfEmpty) {
+        var classes = 'table table-striped table-hover table-sm mt-3';
+        if (extraClasses) classes += ' ' + extraClasses;
+        var table = CreateElement.createTable(null, classes, labelArray, tableContents);
         container.append(table);
         table.getElementsByTagName('thead')[0].classList.add('table-primary');
+
+        this._replaceTableIconElements(table, itemValues);
+      }
+    }
+  }
+  
+  _replaceTableIconElements(table, itemValues) {
+    var commonClasses = 'rosterviewer-icon ps-1 py-1';
+
+    var headers = table.getElementsByTagName('th');
+    var handler = (e) => { this._handleTableEdit(e, 'add', table); };
+    
+    for (var i = 0; i < headers.length; i++) {
+      var headerCell = headers[i];
+      if (headerCell.innerHTML == '[add-icon]') {
+        headerCell.innerHTML = '';
+        var icon = CreateElement.createIcon(null, commonClasses + ' far fa-plus-square', null, handler);
+        headerCell.appendChild(icon);
+      }
+    }
+
+    var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    for (var r = 0; r < rows.length; r++) {
+      var row = rows[r];
+      var item = itemValues[r];
+      
+      var cells = row.getElementsByTagName('td');    
+      for (var i = 0; i < cells.length; i++) {
+        var bodyCell = cells[i];
+        if (bodyCell.innerHTML == '[edit-delete-icons]') {          
+          bodyCell.innerHTML = '';
+          var handler = (e) => { this._handleTableEdit(e, 'delete', table); };
+          var icon = CreateElement.createIcon(null, commonClasses + ' fas fa-trash-alt', null, handler);
+          bodyCell.appendChild(icon);
+          icon.setAttribute('item', JSON.stringify(item));
+          
+          var handler = (e) => { this._handleTableEdit(e, 'edit', table); };
+          icon = CreateElement.createIcon(null, commonClasses + ' fas fa-edit', null, handler);
+          bodyCell.appendChild(icon);
+          icon.setAttribute('item', JSON.stringify(item));        
+        }
       }
     }
   }
@@ -243,6 +301,8 @@ class RosterViewer {
     var msg = 'Please enter a value for "' + label + '"';
     var result = prompt(msg, currentValue);
     if (!result || result == currentValue) return;
+    result = this._sanitizeText(result);
+    console.log('sanitized: |' + result + '|');
     
     var studentName;
     if (this.settings.selectedStudentInfo.enrollments.length > 0) {
@@ -250,10 +310,65 @@ class RosterViewer {
     }
     if (!studentName) return;
     
-    var result = await this.config.callbackChange({"student": studentName, "property": property, "value": result});
+    var result = await this.config.callbackPropertyChange({"student": studentName, "property": property, "value": result});
     if (!result.success) return;
+  }
+  
+  _beginNoteEdit(student, item) {
+    var elemStudent = this.config.containerNoteEditor.getElementsByClassName('input-student')[0];
+    var elemNote = this.config.containerNoteEditor.getElementsByClassName('input-note')[0];
     
-    console.log('_doPropertyEdit result', result.data);
+    elemStudent.value = student;
+    elemNote.setAttribute('item', JSON.stringify({"student": student, ...item}));
+    
+    var noteText = '';
+    if (item) noteText = item.notetext;
+    elemNote.value = noteText;
+    
+    this._setNoteEditVisiblity(true);
+  }
+  
+  async _finishNoteEdit(saveResults) {
+    if (saveResults) {
+      var elemNote = this.config.containerNoteEditor.getElementsByClassName('input-note')[0];
+      var item = JSON.parse(elemNote.getAttribute('item'));
+
+      var params = {};
+      params.student = item.student;
+      params.notetext = this._sanitizeText(elemNote.value);
+      params.datestamp = this._shortDateStamp();
+      
+      if (item.noteid) {
+        params.action = 'update';
+        params.noteid = item.noteid;
+
+      } else {
+        params.action = 'add';
+        params.noteid = null;
+      }
+      
+      var result = await this.config.callbackNoteChange(params);
+      if (!result.success) return;
+    }
+    
+    this._setNoteEditVisiblity(false);
+  }
+  
+  async _deleteNote(student, item) {
+    var msg = 'This note for ' + student + ' will be permanently deleted';
+    msg += '\n"' + item.notetext + '"';
+    msg += '\n\nChoose "OK" to continue';
+    if (!confirm(msg)) return;
+    
+    var result = await this.config.callbackNoteChange({"action": 'delete', ...item});
+    if (!result.success) return;
+  }
+  
+  _setNoteEditVisiblity(visible) {
+    var mainView = this.config.container;
+    var editView = this.config.containerNoteEditor;
+    UtilityKTS.setClass(mainView, this.settings.hideClass, visible);
+    UtilityKTS.setClass(editView, this.settings.hideClass, !visible);
   }
   
   //--------------------------------------------------------------
@@ -275,6 +390,21 @@ class RosterViewer {
     await this._doPropertyEdit(label, property, targetElement);
   }
   
+  _handleTableEdit(e, editType, table) {
+    var student = this.studentSelectInput.value;
+    var item = JSON.parse(e.target.getAttribute('item'));
+    
+    if (editType == 'add') {
+      this._beginNoteEdit(student, null);
+
+    } else if (editType == 'edit') {
+      this._beginNoteEdit(student, item);
+      
+    } else if (editType == 'delete') {
+      this._deleteNote(student, item);
+    }
+  }
+  
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
@@ -290,5 +420,22 @@ class RosterViewer {
   
   _formatDate(str) {
     return str.slice(0, 10);
+  }
+  
+  _shortDateStamp() {
+     var now = new Date();
+     var y = String(now.getFullYear()).padStart(4, '0');
+     var m = String(now.getMonth() + 1).padStart(2, '0');
+     var d = String(now.getDate()).padStart(2, '0');
+     
+     return y + '-' + m + '-' + d;
+  }
+  
+  _sanitizeText(str) {
+    var sanitized = str;
+    
+    sanitized = sanitized.replace(/[^A-Za-z\s'\.]/g, '');
+    
+    return sanitized;
   }
 }

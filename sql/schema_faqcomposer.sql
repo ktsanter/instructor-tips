@@ -16,7 +16,7 @@ create table project
 (
   projectid             int unsigned not null AUTO_INCREMENT,
   userid                int unsigned not null,
-  hierarchy             varchar(20000) null,
+  hierarchy             mediumtext null,
   
   primary key (projectid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
@@ -27,7 +27,7 @@ create table faqset
   faqsetid             int unsigned not null AUTO_INCREMENT,
   projectid            int unsigned not null,
   faqsetname           varchar(200) not null,
-  faqsetdata           varchar(20000) null,
+  faqsetdata           mediumtext null,
   
   primary key (faqsetid),
   constraint foreign key (projectid) references project (projectid) on delete cascade,

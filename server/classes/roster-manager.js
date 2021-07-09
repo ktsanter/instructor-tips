@@ -154,6 +154,9 @@ module.exports = internal.RosterManager = class {
     } else if (params.queryName == 'student-property') {
       dbResult = await this._replaceStudentProperty(params, postData, userInfo);
   
+    } else if (params.queryName == 'student-note') {
+      dbResult = await this._addStudentNote(params, postData, userInfo);
+  
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -164,8 +167,8 @@ module.exports = internal.RosterManager = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._updateDummy(params, postData, userInfo);
+    if (params.queryName == 'student-note') {
+      dbResult = await this._updateStudentNote(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -177,8 +180,8 @@ module.exports = internal.RosterManager = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._deleteDummy(params, postData, userInfo);
+    if (params.queryName == 'student-note') {
+      dbResult = await this._deleteStudentNote(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -560,7 +563,8 @@ module.exports = internal.RosterManager = class {
       "notes": 
         'select n.noteid, n.studentname, n.datestamp, n.notetext ' +
         'from note as n ' +
-        'where n.userid = ' + userInfo.userId,
+        'where n.userid = ' + userInfo.userId + ' ' +
+        'order by n.datestamp ',
     };
 
     queryResults = await this._dbManager.dbQueries(queryList);   
@@ -651,7 +655,90 @@ module.exports = internal.RosterManager = class {
 
     return result;
   }
+  
+  async _addStudentNote(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "insert": 
+        'insert ' +
+        'into note(userid, studentname, datestamp, notetext) ' + 
+        'values (' + 
+          userInfo.userId + ', ' +
+          '"' + postData.student + '", ' +
+          '"' + postData.datestamp + '", ' +
+          '"' + postData.notetext + '" ' +
+        ') '
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);   
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = postData;
+      
+    } else {
+      result.details = queryResults.details;
+    }
 
+    return result;
+  }  
+  
+  async _updateStudentNote(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "update": 
+        'update note ' +
+        'set ' + 
+          'notetext = "' + postData.notetext + '", ' +
+          'datestamp = "' + postData.datestamp + '" ' +
+        'where ' +        
+          'noteid = ' + postData.noteid
+    };
+     
+    queryResults = await this._dbManager.dbQueries(queryList);   
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = postData;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+  
+  async _deleteStudentNote(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "delete": 
+        'delete from note ' +
+        'where ' +        
+          'noteid = ' + postData.noteid
+    };
+         
+    queryResults = await this._dbManager.dbQueries(queryList);   
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = postData;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+  
 //----------------------------------------------------------------------
 // utility
 //----------------------------------------------------------------------  

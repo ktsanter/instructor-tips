@@ -4,7 +4,9 @@ include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/profile-mixins.pug
 
-include ./mixins/mixins-view.pug
+include ./mixins/mixins-student.pug
+include ./mixins/mixins-mentor.pug
+include ./mixins/mixins-edit.pug
 include ./mixins/mixins-configure.pug
 include ./mixins/mixins-admin.pug
 
@@ -33,10 +35,13 @@ html(lang="en")
     +makeNavbar("Roster manager", 
       {
         items: [
-          {id: "navView", type: "link", label: "view"},
+          {id: "navStudent", type: "link", label: "students"},
+          {id: "navMentor", type: "link", label: "mentors"},
           {id: "navConfigure", type: "link", label: "configure"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
+            {id: "navEndDateManager", type: "link", label: "end date manager"},
+            {type: "divider"},
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
           ]}
@@ -55,8 +60,14 @@ html(lang="en")
     .contents
       .error-container
       
-      .container-fluid(class="contents-container contents-navView hide-me disable-container")
-        +viewContainer()
+      .container-fluid(class="contents-container contents-navStudent hide-me disable-container")
+        +studentContainer()
+        
+      .container-fluid(class="edit-container hide-me")  
+        +editContainer()
+        
+      .container-fluid(class="contents-container contents-navMentor hide-me disable-container")
+        +mentorContainer()
         
       .container-fluid(class="contents-container contents-navConfigure hide-me disable-container")
         +configureContainer()

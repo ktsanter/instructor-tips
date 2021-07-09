@@ -99,10 +99,36 @@ body {
   vertical-align: middle;
 }
 
+.contents .contents-navView .rosterviewer-icon {
+  color: var(--bgPrimary);
+  float: right;
+  cursor: pointer;
+}
+
+.contents .contents-navView .limit-second-col th:nth-child(2) {
+  width: 80%;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - note editor
+ *------------------------------------------------------------------------------*/
+.contents .edit-container {}
+
+.contents .edit-container .input-note {
+  height: 15.0em;
+}
+
 /*------------------------------------------------------------------------------
  * contents - navConfigure
  *------------------------------------------------------------------------------*/
 .contents .contents-navConfigure {}
+
+.contents .contents-navConfigure .configure-fieldset legend {
+  font-size: 1.0em;
+  font-weight: 500;
+  float: none; 
+  padding: inherit; 
+}
 
 .contents .contents-navConfigure .googlefile-notselected {
   display: inline-block;
