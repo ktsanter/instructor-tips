@@ -74,38 +74,38 @@ body {
 }
 
 /*------------------------------------------------------------------------------
- * contents - navView
+ * contents - navStudent
  *------------------------------------------------------------------------------*/
-.contents .contents-navView {}
+.contents .contents-navStudent {}
 
-.contents .contents-navView .view-content {}
+.contents .contents-navStudent .view-content {}
 
-.contents .contents-navView .icon {
+.contents .contents-navStudent .icon {
   color: var(--bgPrimary);
 }
 
-.contents .contents-navView .view-content .item-label {
+.contents .contents-navStudent .view-content .item-label {
   font-weight: bold;
 }
 
-.contents .contents-navView img.item-image {
+.contents .contents-navStudent img.item-image {
   width: 2.3em;
   height: auto;
 }
 
-.contents .contents-navView .item-icon {
+.contents .contents-navStudent .item-icon {
   color: var(--bgPrimary);
   font-size: 1.4em;
   vertical-align: middle;
 }
 
-.contents .contents-navView .rosterviewer-icon {
+.contents .contents-navStudent .rosterviewer-icon {
   color: var(--bgPrimary);
   float: right;
   cursor: pointer;
 }
 
-.contents .contents-navView .limit-second-col th:nth-child(2) {
+.contents .contents-navStudent .limit-second-col th:nth-child(2) {
   width: 80%;
 }
 
@@ -117,6 +117,35 @@ body {
 .contents .edit-container .input-note {
   height: 15.0em;
 }
+
+/*------------------------------------------------------------------------------
+ * contents - navMentor
+ *------------------------------------------------------------------------------*/
+.contents .contents-navMentor {}
+
+.contents .contents-navMentor .term-label {
+  display: inline-block;
+  font-weight: bold;
+  border: 1px solid var(--bgPrimary);
+  background-color: var(--bgShaded);
+}
+
+.contents .contents-navMentor .section-label { 
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.contents .contents-navMentor .email-column { 
+  cursor: pointer;
+}
+
+.contents .contents-navMentor .colwidth-0 { width: 15%; }
+
+.contents .contents-navMentor .colwidth-1 { width: 25%; }
+
+.contents .contents-navMentor .colwidth-2 { width: 15%; }
+
+.contents .contents-navMentor .colwidth-3 { width: 25%; }
 
 /*------------------------------------------------------------------------------
  * contents - navConfigure

@@ -3,7 +3,7 @@ mixin configureContainer()
   
   .row
     .col-sm
-      fieldset(class="border configure-fieldset")
+      fieldset(class="border configure-fieldset required")
         legend(class="w-auto") required
         
         .container-fluid
@@ -26,7 +26,7 @@ mixin configureContainer()
               span(class="upload-result enrollment ms-3")
               
     .col-sm
-      fieldset(class="border configure-fieldset")
+      fieldset(class="border configure-fieldset optional")
         legend(class="w-auto") optional
         
         .container-fluid

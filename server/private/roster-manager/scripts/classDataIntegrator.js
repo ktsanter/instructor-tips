@@ -208,7 +208,6 @@ class DataIntegrator {
   
   async _apply504ReportData(reportData, targetFileId, currentFileData) {
     const METHODNAME = 'DataIntegrator._apply504ReportData';
-    console.log(reportData);
     
     var targetSheets = ['raw_504_data'];
     

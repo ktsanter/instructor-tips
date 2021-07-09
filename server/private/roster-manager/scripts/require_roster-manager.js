@@ -5,6 +5,7 @@ define(function (require) {
   require('/scripts/sqldbinterface');
   require('/scripts/classProfile');
   require('/scripts/usermanagement');
+  require('/scripts/clipboard_copy');  
   require('/scripts/classGoogleManagement');
 
   

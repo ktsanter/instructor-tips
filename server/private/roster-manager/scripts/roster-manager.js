@@ -298,7 +298,11 @@ const app = function () {
   async function _getCurrentInfo() {
     settings.currentInfo = null;
     var spreadsheetId = _getTargetFileId();
-    if (!spreadsheetId) return;
+    if (!spreadsheetId) {
+      if (settings.currentNavOption == 'navStudent') _showStudent();
+      if (settings.currentNavOption == 'navMentor') _showMentor();
+      return;
+    }
     
     var result = await _getStudentPropertiesFromDB();
     if (!result.success) {
@@ -393,12 +397,39 @@ const app = function () {
   
   function _packageMentorInfo(rawData, infoFromDB) {
     var mentors = {};
+    var mentorsByTermAndSection = {};
+
+    for (var i = 0; i < rawData.raw_mentor_data.length; i++) {
+      var item = rawData.raw_mentor_data[i];
+      var name = item.name;
+      var term = item.term;
+      var section = item.section;
+      
+      if (!mentors.hasOwnProperty(name)) mentors[name] = {
+        "name": name,
+        "email": item.email,
+        "phone": item.phone,
+        "affiliation": item.affiliation,
+        "affiliationphone": item.affiliationphone,
+      }
+      
+      if (!mentorsByTermAndSection.hasOwnProperty(term)) mentorsByTermAndSection[term] = {};
+      if (!mentorsByTermAndSection[term].hasOwnProperty(section)) mentorsByTermAndSection[term][section] = {};
+      if (!mentorsByTermAndSection[term][section].hasOwnProperty(name)) mentorsByTermAndSection[term][section][name] = {
+        "name": name,
+        "email": item.email,
+        "phone": item.phone,
+        "affiliation": item.affiliation,
+        "affiliationphone": item.affiliationphone,
+      };
+    }
     
     var mentorList = [];
     for (var key in mentors) mentorList.push(key);
     
     return {
       "mentors": mentors,
+      "mentorsByTermAndSection": mentorsByTermAndSection,
       "mentorList": mentorList.sort()
     };
   }
@@ -411,6 +442,7 @@ const app = function () {
     var targetLink = page.targetContainer.getElementsByClassName('googlefile-link')[0];
     var msgNoSelection = page.targetContainer.getElementsByClassName('googlefile-notselected')[0];
     
+    var uploadOptionalContainer = page.navConfigure.getElementsByClassName('configure-fieldset optional')[0];
     var uploadEnrollment = page.navConfigure.getElementsByClassName('uploadfile-label-enrollment')[0];
     var uploadMentor = page.navConfigure.getElementsByClassName('uploadfile-label-mentor')[0];
     var uploadIEP = page.navConfigure.getElementsByClassName('uploadfile-label-iep')[0];
@@ -419,6 +451,8 @@ const app = function () {
     
     UtilityKTS.setClass(targetFilePicked, settings.hideClass, true);
     UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, true);
+
+    UtilityKTS.setClass(uploadOptionalContainer, settings.hideClass, true);
     UtilityKTS.setClass(uploadEnrollment, settings.hideClass, true);
     UtilityKTS.setClass(uploadMentor, settings.hideClass, true);
     UtilityKTS.setClass(uploadIEP, settings.hideClass, true);
@@ -435,6 +469,7 @@ const app = function () {
         targetLink.href = result.url;
         targetLink.innerHTML = result.title;
         UtilityKTS.setClass(targetFilePicked, settings.hideClass, false);
+        UtilityKTS.setClass(uploadOptionalContainer, settings.hideClass, false);
         UtilityKTS.setClass(uploadEnrollment, settings.hideClass, false);
         UtilityKTS.setClass(uploadMentor, settings.hideClass, false);
         UtilityKTS.setClass(uploadIEP, settings.hideClass, false);
@@ -700,6 +735,7 @@ const app = function () {
       page.notice.setNotice('');      
       await _setTargetFileInfo();
       await _getCurrentInfo();
+      //xxxx
     }
     
     _setMainUIEnable(settings.google.isSignedIn);
@@ -717,7 +753,6 @@ const app = function () {
   } 
   
   async function _callbackRosterViewerPropertyChange(params) {
-    console.log('_callbackRosterViewerPropertyChange');
     var result = await _saveStudentPropertyToDB(params);
     if (!result.success) return result;
     

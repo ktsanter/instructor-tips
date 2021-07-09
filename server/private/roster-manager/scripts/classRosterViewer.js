@@ -69,13 +69,13 @@ class RosterViewer {
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
 
     UtilityKTS.removeChildren(this.studentSelectList);    
-
+    
     if (!this.settings.currentInfo) {
       this.statusMessage.innerHTML = 'no target file selected';
       UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
       
     } else if (this.settings.currentInfo.studentList.length == 0) {
-      this.statusMessage.innerHTML = 'no data in target file';
+      this.statusMessage.innerHTML = 'no student data in target file';
       UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
 
     } else {
@@ -302,7 +302,6 @@ class RosterViewer {
     var result = prompt(msg, currentValue);
     if (!result || result == currentValue) return;
     result = this._sanitizeText(result);
-    console.log('sanitized: |' + result + '|');
     
     var studentName;
     if (this.settings.selectedStudentInfo.enrollments.length > 0) {
