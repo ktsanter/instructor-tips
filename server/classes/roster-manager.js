@@ -9,6 +9,7 @@ const internal = {};
 module.exports = internal.RosterManager = class {
   constructor(params) {
     this._dbManager = params.dbManager;
+    this._dbManager_enddate = params.dbManager_enddate;
     this._userManagement = params.userManagement;    
     this._tempFileManager = params.tempFileManager;
     this._formManager = params.formManager;
@@ -567,15 +568,31 @@ module.exports = internal.RosterManager = class {
         'order by n.datestamp ',
     };
 
-    queryResults = await this._dbManager.dbQueries(queryList);   
+    queryResults = await this._dbManager.dbQueries(queryList); 
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
     
-    if (queryResults.success) {
+    var queryList2, queryResults2;
+    queryList2 = {
+      "eventoverride":
+        'select e.student, e.section, e.enddate, e.notes ' +
+        'from eventoverride as e, configuration as c ' + 
+        'where e.configurationid = c.configurationid ' +
+          'and c.userid = ' + userInfo.userId
+    }
+    
+    queryResults2 = await this._dbManager_enddate.dbQueries(queryList2);    
+    
+    if (queryResults2.success) {
       result.success = true;
       result.details = 'query succeeded';
-      result.data = queryResults.data;
+      result.data = {...queryResults.data, ...queryResults2.data};
       
     } else {
-      result.details = queryResults.details;
+      result.details = queryResults2.details;
     }
 
     return result;

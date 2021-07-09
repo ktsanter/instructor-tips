@@ -335,7 +335,8 @@ const app = function () {
         "504": false,
         "homeschooled": false,
         "preferredname": '',
-        "notes": []
+        "notes": [],
+        "enddateoverride": []
       };
       students[student].enrollments.push(item);
     }
@@ -384,6 +385,12 @@ const app = function () {
         "notetext": item.notetext,
         "noteid": item.noteid
       });
+    }
+    
+    for (var i = 0; i < infoFromDB.eventoverride.length; i++) {
+      var item = infoFromDB.eventoverride[i];
+      var student = item.student;
+      students[student].enddateoverride.push(item);
     }
 
     var studentList = [];

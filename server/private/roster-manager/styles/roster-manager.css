@@ -105,6 +105,10 @@ body {
   cursor: pointer;
 }
 
+.contents .contents-navStudent .rosterviewer-infoicon {
+  color: var(--bgPrimary);
+}
+
 .contents .contents-navStudent .limit-second-col th:nth-child(2) {
   width: 80%;
 }

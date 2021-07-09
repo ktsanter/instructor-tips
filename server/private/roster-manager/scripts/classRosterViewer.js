@@ -144,12 +144,13 @@ class RosterViewer {
     if (this.settings.editingEnabled) handler = (a, b, c) => { this._handlePropertyEdit(a, b, c); };
     this.studentContent.appendChild(this._renderProperty('preferred name', info.preferredname, 'preferredname', handler));
 
-    this._renderPropertyArray(
+    var enrollmentTable = this._renderPropertyArray(
       ['term', 'section', 'startdate', 'enddate'], 
       ['term', 'section', 'start date', 'end date'],
       info.enrollments, 
       this.studentContent
     );
+    if (enrollmentTable) this._addEndDateOverrides(enrollmentTable, info.enddateoverride);
 
     this._renderPropertyArray(
       ['name', 'email', 'phone', 'affiliationphone'], 
@@ -208,8 +209,6 @@ class RosterViewer {
   }
     
   _renderPropertyArray(propertyArray, labelArray, source, container, extraClasses, renderIfEmpty) {
-    container.appendChild(CreateElement.createDiv(null, null, label));
-
     if (this.settings.renderType == 'plain') {
       for (var i = 0; i < source.length; i++) {
         var item = source[i];
@@ -253,6 +252,8 @@ class RosterViewer {
 
         this._replaceTableIconElements(table, itemValues);
       }
+      
+      return table;
     }
   }
   
@@ -290,6 +291,22 @@ class RosterViewer {
           icon = CreateElement.createIcon(null, commonClasses + ' fas fa-edit', null, handler);
           bodyCell.appendChild(icon);
           icon.setAttribute('item', JSON.stringify(item));        
+        }
+      }
+    }
+  }
+  
+  _addEndDateOverrides(table, overrides) {
+    for (var i = 0; i < overrides.length; i++) {
+      var override = overrides[i];
+      var bodyRows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+      for (var j = 0; j < bodyRows.length; j++) {
+        var cols = bodyRows[j].getElementsByTagName('td');
+        if (cols[1].innerHTML == override.section) {
+          var origDate = cols[3].innerHTML;
+          cols[3].innerHTML = override.enddate;
+          var infoIcon = CreateElement.createIcon(null, 'fas fa-info-circle rosterviewer-infoicon ps-1', 'original end date ' + origDate);
+          cols[3].appendChild(infoIcon);
         }
       }
     }

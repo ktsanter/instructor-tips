@@ -340,6 +340,7 @@ const rosterManagerOriginal = new rosterManagerOriginalClass({tempFileManager: t
 const rosterManagerClass = require('./classes/roster-manager')
 const rosterManager = new rosterManagerClass({
   "dbManager": mariaDBManager_RosterManager,
+  "dbManager_enddate": mariaDBManager_EndDateManager,
   "userManagement": userManagement,  
   "tempFileManager": tmp, 
   "formManager": formidable,
