@@ -21,8 +21,10 @@ const app = function () {
     
     google: {
       obj: null,
+      discoveryDocs: [
+        'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'
+      ],
       clientId:  '780404244540-nug55q7bnd7daf3dpj5k5g8qob9uqv41.apps.googleusercontent.com',
-      apiKey: 'AIzaSyDOa6Dc0pWvBBCmsQYShBaWuYsBEEFMIlI',
       scopes: 'https://www.googleapis.com/auth/calendar.events',
       isSignedIn: false,
       objCalendar: null
@@ -68,7 +70,7 @@ const app = function () {
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     _renderContents();
-    _initializeGoogleStuff();
+    await _initializeGoogleStuff();
 
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
@@ -99,10 +101,14 @@ const app = function () {
     await settings.profile.init();
   }
     
-  function _initializeGoogleStuff() {
+  async function _initializeGoogleStuff() {
+    var result = await SQLDBInterface.doGetQuery('enddate-manager/query', 'apikey', page.notice);
+    if (!result.success) return;
+    
     settings.google.obj = new GoogleManagement({
+      "discoveryDocs": settings.google.discoveryDocs,
       "clientId": settings.google.clientId,
-      "apiKey": settings.google.apiKey,
+      "apiKey": result.data,
       "scopes": settings.google.scopes,
       "signInChange": _signInChangeForGoogle
     });

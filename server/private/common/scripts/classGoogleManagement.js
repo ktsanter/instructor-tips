@@ -1,6 +1,7 @@
 //-------------------------------------------------------------------
 // Google authorization
 //-------------------------------------------------------------------
+// TODO: auth doesn't seem to work on Android
 // TODO: standardize/generalize error handling and display
 //-------------------------------------------------------------------
 class GoogleManagement {
@@ -8,8 +9,7 @@ class GoogleManagement {
     this._config = config;
     
     this._config.isSignedIn = false;
-    this._config.discoveryDocs = ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'];
-    
+
     gapi.load('client:auth2', this._callInitClient(this));
   }
   
@@ -37,6 +37,7 @@ class GoogleManagement {
       me._updateSigninStatus();
       
     }, function(error) {
+      alert(JSON.stringify(error));
       console.log('GoogleAuth: gapi.client.init error');
       console.log(error);
     });  
@@ -63,6 +64,7 @@ class GoogleManagement {
 
       function(objErr) {
         console.log(objErr);
+        alert(JSON.stringify(objErr));
         if (objErr.error == 'popup_closed_by_user') {
           console.log('popup closed by user - ignore');
         } else {
@@ -73,6 +75,10 @@ class GoogleManagement {
   
   signout() {
     gapi.auth2.getAuthInstance().signOut();
+  }
+  
+  getOAuthToken() {
+    return gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token;
   }
   
   //--------------------------------------------------------------

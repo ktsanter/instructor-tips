@@ -1,0 +1,19 @@
+mixin editContainer()
+  .row(class="my-3")
+    .col-sm-6
+      .form-floating
+        input(type="text" class="form-control input-student" id="inputStudent" disabled)
+        label(for="inputStudent") student
+
+  .row(class="mb-3")
+    .col-sm-6
+      .form-floating
+        textarea(class="form-control input-note" id="inputNote" maxlength="2000")
+        label(for="inputNotes") note    
+
+  .row(class="mb-3")
+    .col-sm-6
+      button(class="btn btn-secondary button-editor-okay me-2 py-1") okay
+      button(class="btn btn-secondary button-editor-cancel py-1") cancel      
+
+

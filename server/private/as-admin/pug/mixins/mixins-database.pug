@@ -1,0 +1,39 @@
+mixin databaseContainer()   
+  .row
+    .col-sm-3
+      .form-floating
+        select(class="form-select db-selection" id="selectDB" aria-label="select course")
+        label(for="selectDB") database
+          
+  .row(class="mt-2")
+    .col-sm-3
+      .form-floating
+        select(class="form-select table-selection" id="selectTable" aria-label="select table")
+        label(for="selectTable") table
+          
+          
+  .row(class="mt-2")
+    .col-sm
+      table(class="table table-striped table-hover table-sm")
+        thead(class="table-primary")
+          tr
+            th(class="header") column
+            th(class="header") type
+            th(class="header") key
+            th(class="header") nullable
+            th(class="header") private
+        
+        tbody(class="columndata-body")
+          
+  .row(class="mt-2")
+    .col-sm
+      table(class="table table-striped table-hover table-sm")
+        thead(class="table-primary rowdata-head")        
+        tbody(class="rowdata-body")
+          
+  .row(class="mt-2 hide-me")
+    .col-sm
+      div
+        button(class="btn btn-primary btnDBTest") DB test
+      
+      

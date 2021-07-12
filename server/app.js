@@ -17,6 +17,7 @@ const MARIA_DBNAME_FAQCOMPOSER = getEnv('MARIA_DBNAME_FAQCOMPOSER', true);
 const MARIA_DBNAME_WALKTHROUGH = getEnv('MARIA_DBNAME_WALKTHROUGH', true);
 const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
 const MARIA_DBNAME_ENDDATEMANAGER = getEnv('MARIA_DBNAME_ENDDATEMANAGER', true);
+const MARIA_DBNAME_ROSTERMANAGER = getEnv('MARIA_DBNAME_ROSTERMANAGER', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -24,12 +25,12 @@ const SESSION_PASSWORD = getEnv('SESSION_PASSWORD', true);
 const SESSION_DBNAME = getEnv('SESSION_DBNAME', true);
 const SESSION_SECRET = getEnv('SESSION_SECRET', true);
 
+const APIKEY_ENDDATEMANAGER = getEnv('APIKEY_ENDDATEMANAGER', true);
+const APIKEY_ROSTERMANAGER = getEnv('APIKEY_ROSTERMANAGER', true);
+
 const INSTRUCTORTIPS_URL = getEnv('INSTRUCTORTIPS_URL', true);
 
 const PASSWORD_SALT = getEnv('PASSWORD_SALT', true);
-
-const EMAIL_USER = getEnv('EMAIL_USER', true);
-const EMAIL_PASSWORD = getEnv('EMAIL_PASSWORD', true);
 
 function getEnv(varName, required) {
   var value = process.env[varName];
@@ -56,7 +57,6 @@ if ((process.env.NODE_ENV || 'development') == 'development') {
     app.use(cors(corsOptions));
 }
 
-
 //------------------------------------------
 // configure favicon
 //------------------------------------------
@@ -67,7 +67,7 @@ app.use(favicon('favicon.ico'));
 // body parsers
 //------------------------------------------
 var bodyParser = require('body-parser');
-app.use(bodyParser.json()); 
+app.use(bodyParser.json({limit: '50mb', extended: true})); 
 app.use(bodyParser.urlencoded({ extended: true })); // for form data
 
 //------------------------------------------
@@ -85,6 +85,11 @@ const sendFileDefaultOptions = {
   root: path.join(__dirname, 'private'),
   dotfiles: 'deny'
 };
+
+//------------------------------------------
+// Google APIs
+//------------------------------------------
+const {google} = require('googleapis');
 
 //------------------------------------------
 // mariadb management
@@ -163,13 +168,30 @@ const mariadbParams_CommentBuddy = {
     connectionLimit: 5 */
 };
 
-
 const mariadbParams_EndDateManager = {
     reqd: mariadb,
     host: MARIA_HOST,
     user: MARIA_USER,
     password: MARIA_PASSWORD,
     dbName: MARIA_DBNAME_ENDDATEMANAGER /*, 
+    connectionLimit: 5 */
+};
+
+const mariadbParams_ASAdmin = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: 'information_schema' /*, 
+    connectionLimit: 5 */
+};
+
+const mariadbParams_RosterManager = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_ROSTERMANAGER /*, 
     connectionLimit: 5 */
 };
 
@@ -183,6 +205,8 @@ const mariaDBManager_FAQComposer = new mariaDBManagerClass(mariadbParams_FAQComp
 const mariaDBManager_Walkthrough = new mariaDBManagerClass(mariadbParams_Walkthrough);
 const mariaDBManager_CommentBuddy = new mariaDBManagerClass(mariadbParams_CommentBuddy);
 const mariaDBManager_EndDateManager = new mariaDBManagerClass(mariadbParams_EndDateManager);
+const mariaDBManager_ASAdmin = new mariaDBManagerClass(mariadbParams_ASAdmin);
+const mariaDBManager_RosterManager = new mariaDBManagerClass(mariadbParams_RosterManager);
     
 //------------------------------------------
 // session management
@@ -208,13 +232,30 @@ var sessionStore = new MySQLStore({
   mysqlPool
 );
 
-app.use(session({
-  secret: SESSION_SECRET,
-  cookie: {maxAge: 24 * MS_PER_HOUR}, 
-  resave: false,
-  saveUninitialized: true,
-  store: sessionStore
-}))
+if ((process.env.NODE_ENV || 'development') == 'development') {
+  app.use(session({
+    secret: SESSION_SECRET,
+    cookie: {
+      maxAge: 24 * MS_PER_HOUR,
+      secure: false
+    }, 
+    resave: false,
+    saveUninitialized: true,
+    store: sessionStore
+  }))
+} else {
+  app.use(session({
+    secret: SESSION_SECRET,
+    proxy: true,
+    cookie: {
+      maxAge: 24 * MS_PER_HOUR,
+      secure: true
+    }, 
+    resave: false,
+    saveUninitialized: true,
+    store: sessionStore
+  }))
+}
 
 app.use(function (req, res, next) {
   if (!req.session.userInfo) {
@@ -232,9 +273,8 @@ const tmp = require('tmp');
 //------------------------------------------
 // email management
 //------------------------------------------
-var nodemailer = require('nodemailer');
 const gMailerClass = require('./classes/gmailer');
-const gMailer = new gMailerClass(nodemailer, {user: EMAIL_USER, password: EMAIL_PASSWORD, fileServices: fileservices});
+const gMailer = new gMailerClass({"google": google});
 
 //------------------------------------------
 // Pug management
@@ -253,7 +293,7 @@ var commonmark = require('commonmark');
 const messageManagementClass = require('./classes/messagemanagement')
 const messageManagement = new messageManagementClass({
   "dbManager": mariaDBManager_InstructorTips, 
-  "mailer": gMailer, 
+  "mailer": gMailer,
   "commonmark": commonmark, 
   "pug": pug, 
   "appURL": INSTRUCTORTIPS_URL, 
@@ -294,23 +334,18 @@ const cronScheduler = new cronSchedulerClass({
 //------------------------------------------
 const formidable = require('formidable');
 const exceljs = require('exceljs');
+const rosterManagerOriginalClass = require('./classes/roster-manager-original')
+const rosterManagerOriginal = new rosterManagerOriginalClass({tempFileManager: tmp, formManager: formidable});
+
 const rosterManagerClass = require('./classes/roster-manager')
-const rosterManager = new rosterManagerClass({tempFileManager: tmp, formManager: formidable});
-
-//------------------------------------------
-// InstructorTips admin query objects
-//------------------------------------------
-const dbAdminQueryClass = require('./classes/dbadmin_query')
-const dbAdminQuery = new dbAdminQueryClass(userManagement, mariaDBManager_InstructorTips);
-
-const dbAdminInsertClass = require('./classes/dbadmin_insert')
-const dbAdminInsert = new dbAdminInsertClass(userManagement, mariaDBManager_InstructorTips);
-
-const dbAdminUpdateClass = require('./classes/dbadmin_update')
-const dbAdminUpdate = new dbAdminUpdateClass(userManagement, mariaDBManager_InstructorTips);
-
-const dbAdminDeleteClass = require('./classes/dbadmin_delete')
-const dbAdminDelete = new dbAdminDeleteClass(userManagement, mariaDBManager_InstructorTips);
+const rosterManager = new rosterManagerClass({
+  "dbManager": mariaDBManager_RosterManager,
+  "dbManager_enddate": mariaDBManager_EndDateManager,
+  "userManagement": userManagement,  
+  "tempFileManager": tmp, 
+  "formManager": formidable,
+  "apiKey": APIKEY_ROSTERMANAGER
+});
 
 //------------------------------------------
 // InstructorTips general query objects
@@ -404,14 +439,25 @@ const dbCommentBuddy = new dbCommentBuddyClass({
 });
 
 //------------------------------------------
-// EndDateManager general query objects (DB not added yet)
+// EndDateManager general query objects
 //------------------------------------------
 const endDateManagerClass = require('./classes/enddate-manager')
 const endDateManager = new endDateManagerClass({
   "dbManager": mariaDBManager_EndDateManager,
   "userManagement": userManagement,
   tempFileManager: tmp, 
-  formManager: formidable
+  formManager: formidable,
+  "apiKey": APIKEY_ENDDATEMANAGER
+});
+
+//------------------------------------------
+// ASAdmin general query objects
+//------------------------------------------
+const ASAdminClass = require('./classes/as-admin');
+const ASAdmin = new ASAdminClass({
+  "gMailer": gMailer, 
+  "cronScheduler": cronScheduler,
+  "dbManager": mariaDBManager_ASAdmin
 });
 
 //------------------------------------------
@@ -428,10 +474,18 @@ var dbManagerLookup = {
   "faqcomposer": dbFAQComposer,
   "walkthrough": dbWalkthrough,
   "commentbuddy": dbCommentBuddy,
-  "enddate-manager": endDateManager
+  "enddate-manager": endDateManager,
+  "roster-manager": rosterManager
 };
 
 var appLookup = {
+  "as-default": {
+    appDescriptor: 'as-default',
+    appName: 'Aardvark Studios',
+    routePug: 'default/pug/default.pug',
+    loginReRoute: 'default'
+  },
+  
   "instructortips" : {
     appDescriptor: 'instructortips',
     appName: 'InstructorTips',
@@ -486,7 +540,24 @@ var appLookup = {
     appDescriptor: 'enddate-manager',
     appName: 'End date manager',
     routePug: 'enddate-manager/pug/enddate-manager.pug',
-    loginReRoute: 'endate-manager/manager'
+    loginReRoute: 'enddate-manager/manager'
+  }, 
+
+  "as-admin" : {
+    appDescriptor: 'as-admin',
+    appName: 'Aardvark Studios admin',
+    routePug: 'as-admin/pug/as-admin.pug',
+    loginReRoute: 'as-admin/admin'
+  }, 
+
+  "roster-manager" : {
+    appDescriptor: 'roster-manager',
+    appName: 'Roster Manager',
+    //routePug: 'roster-manager/pug/roster-manager.pug',
+    //loginReRoute: 'roster-manager/manager'
+    routeFunction: dbManagerLookup['roster-manager'].renderManagerPage,
+    routeData: 'roster-manager/pug/roster-manager.pug',
+    loginReRoute: 'roster-manager/manage'
   }, 
 
   "commentbuddy" : {
@@ -521,6 +592,8 @@ app.get('/', function (req, res) {
 app.get('/marco', function (req, res) {
     res.send('polo');
 });
+
+app.get('/default', function (req, res) { routeIfLoggedIn(req, res, 'as-default'); })
 
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
 
@@ -688,7 +761,7 @@ app.get('/welcomeletter/help', function (req, res) {
 app.get('/usermanagement/routeToApp/:app', async function (req, res) {
   var appDescriptor = req.params.app;
   var appInfo = appLookup[appDescriptor];
-
+  
   var loggedIn = userManagement.isLoggedIn(req.session);
   if (!loggedIn) {
     userManagement.setAppInfoForSession(req.session, appInfo);
@@ -698,6 +771,12 @@ app.get('/usermanagement/routeToApp/:app', async function (req, res) {
     res.redirect(appInfo.routeRedirect);
 
   } else if (appInfo && appInfo.routePug) {
+    var userInfo = userManagement.getUserInfo(req.session);    
+    if (appInfo.appDescriptor == 'as-admin' && !userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
+      res.send('unauthorized');
+      return;
+    } 
+
     var pugFileName = path.join(__dirname, 'private', appInfo.routePug);
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
     
@@ -710,16 +789,10 @@ app.get('/usermanagement/routeToApp/:app', async function (req, res) {
   }
 });
 
-/*
-app.get('/login', function (req, res) {
-  res.sendFile(path.join(__dirname, 'private', '/login/html/login.html'))
-})
-*/
-
 app.post('/usermanagement/login_attempt', async function (req, res) {
   var loginSuccess = await userManagement.attemptLogin(req.session, req.body.userName, req.body.hashedPassword);
   
-  var appInfo = userManagement.getAppInfoForSession(req.session);
+  var appInfo = userManagement.getAppInfoForSession(req.session) || {appDescriptor: 'default'};
   
   if (loginSuccess) {
     res.redirect('/usermanagement/routeToApp/' + appInfo.appDescriptor);
@@ -801,10 +874,12 @@ app.get('/usermanagement/passwordsalt', function (req, res) { // note this is no
 })  
 
 app.get('/usermanagement/sessionappname', function (req, res) { // note this is not privilege protected
+  var appStuff = userManagement.getAppInfoForSession(req.session);
+  
   var result = {
     success: true,
     details: 'query succeeded',
-    data: {appname: userManagement.getAppInfoForSession(req.session).appName}
+    data: {appname: appStuff ? appStuff.appName : 'Aardvark Studios'}
   };
   
   res.send(result);  
@@ -904,6 +979,30 @@ app.get('/jsgd/:app', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.get('/as-admin', function (req, res) {
+  routeIfLoggedIn(req, res, 'as-admin');
+})
+
+app.get('/as-admin/admin/:task', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
+    res.send(await ASAdmin.adminTask(req.params.task, req.body, userInfo));
+  } else {
+    res.send({success: false, data: null, details: 'unauthorized'});
+  }
+})
+
+app.post('/as-admin/admin/:task', async function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);
+
+  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
+    res.send(await ASAdmin.adminTask(req.params.task, req.body, userInfo));
+  } else {
+    res.send({success: false, data: null, details: 'unauthorized'});
+  }
+})
+
 app.get('/support-tool-index', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'support-tool-index/pug/support-tool-index.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
@@ -921,18 +1020,6 @@ app.get('/basic-web-design/:app', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'basic-web-design/pug/' + req.params.app + '.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
-
-/*  
-app.get('/countdown/scripts/:script', function (req, res) {
-  var scriptFileName = path.join(__dirname, 'private', 'countdown/scripts/' + req.params.script);
-  res.sendFile(scriptFileName);
-})
-
-app.get('/countdown/styles/:style', function (req, res) {
-  var styleFileName = path.join(__dirname, 'private', 'countdown/styles/' + req.params.style);
-  res.sendFile(styleFileName);
-})
-*/
 
 app.get('/countdown/:app', function (req, res) {
   const appParams = {params: url.parse(req.url,true).query};
@@ -968,12 +1055,16 @@ app.get('/mathml/testbed', function (req, res) {
 })
 
 app.get('/roster-manager', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager.pug');
+  routeIfLoggedIn(req, res, 'roster-manager');
+})
+
+app.get('/roster-manager-original', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager-original.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.post('/roster-manager/:formname', function (req, res) {
-  rosterManager.processUploadedFile(req, res, processRosterManagerResult); 
+app.post('/roster-manager-original/:formname', function (req, res) {
+  rosterManagerOriginal.processUploadedFile(req, res, processRosterManagerOriginalResult); 
 })
 
 app.get('/roster-manager/help', function (req, res) {
@@ -981,7 +1072,11 @@ app.get('/roster-manager/help', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-async function processRosterManagerResult(req, res, result) {
+app.post('/usermanagement/routeToApp/roster-manager/upload/:uploadType', function (req, res) {
+  rosterManager.processUploadedFile(req, res, req.params.uploadType); 
+})
+
+async function processRosterManagerOriginalResult(req, res, result) {
   if (result.success) {
     var fileName = result.targetfilename;
 
@@ -1048,90 +1143,6 @@ app.get('/subpage/:app/:helptype', function (req, res) {
 //------------------------------------------------------
 // protected queries
 //------------------------------------------------------
-app.get('/admin/query/:queryName',  async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'instructor') && req.params.queryName == 'navbar') {
-    res.send(await dbAdminQuery.doQuery(req.params, res, userInfo));
-
-  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus') {
-    res.send({
-      success: true, 
-      details: 'cronstatus', 
-      data: {
-        scheduleNotificationsRunning: cronScheduler.isRunning('schedulepush'),
-        clearExpiredRequestisRunning: cronScheduler.isRunning('clearexpiredrequests'),
-        mailerDebugMode: gMailer.isDebugModeOn()
-      }});
-
-  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus-forcepush') {
-    await messageManagement.sendSchedulePushNotifications();
-    res.send({success: true, details: 'forced push notifications'});
-
-  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
-    res.send(await dbAdminQuery.doQuery(req.params, res, userInfo));
-    
-  } else {
-    res.send(_failedRequest('get'));
-  }
-})
-
-app.post('/admin/insert/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
-    res.send(await dbAdminInsert.doInsert(req.params, req.body));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-app.post('/admin/update/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin') && req.params.queryName == 'cronstatus') {
-    if (req.body.enablePushNotifications) {
-      cronScheduler.startJob('schedulepush');
-    } else {
-      cronScheduler.stopJob('schedulepush');
-    }
-    if (req.body.enableClearExpired) {
-      cronScheduler.startJob('clearexpiredrequests');
-    } else {
-      cronScheduler.stopJob('clearexpiredrequests');
-    }
-
-    gMailer.setDebugMode(req.body.setMailerDebugMode);
-    res.send({
-      success: true, 
-      details: 'cronstatus', 
-      data: {
-        enablePushNotifications: cronScheduler.isRunning('schedulepush'),
-        enableClearExpired: cronScheduler.isRunning('clearexpiredrequests'),
-        setMailerDebugMode: gMailer.isDebugModeOn()
-      }
-    });
-
-  } else if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
-    res.send(await dbAdminUpdate.doUpdate(req.params, req.body));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
-app.post('/admin/delete/:queryName', async function (req, res) {
-  var userInfo = userManagement.getUserInfo(req.session);
-  
-  if (userManagement.isAtLeastPrivilegeLevel(userInfo, 'admin')) {
-    res.send(await dbAdminDelete.doDelete(req.params, req.body));
-
-  } else {
-    res.send(_failedRequest('post'));
-  }
-})
-
 app.get('/:app/query/:queryName', async function (req, res) {
   var userInfo = userManagement.getUserInfo(req.session);
 

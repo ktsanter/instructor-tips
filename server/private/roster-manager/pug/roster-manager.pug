@@ -1,73 +1,78 @@
 include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/profile-mixins.pug
+
+include ./mixins/mixins-student.pug
+include ./mixins/mixins-mentor.pug
+include ./mixins/mixins-edit.pug
+include ./mixins/mixins-configure.pug
+include ./mixins/mixins-admin.pug
 
 doctype html
 html(lang="en")
   head
-    title roster manager
+    title Roster manager
     meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
     
-    +fontawesome() 
+    +fontawesome()
     +bootstrapstyle()
-
+    
+    script(src="/scripts/commonmark_min.js")
+    script(src="https://apis.google.com/js/api.js")
+    
     style
-      include ../../common/styles/sliderswitch.css
-      include ../../common/styles/select.css
-      include ../../common/styles/navbar-overrides.css          
+      include ../../common/styles/classProfile.css
+      include ../../common/styles/navbar-overrides.css
       include ../styles/roster-manager.css
     
-    script(data-main="/scripts/roster-manager/require_roster-manager", src="/scripts/require.js")    
-      
+    +addJQuery()
+    script(data-main="/scripts/roster-manager/require_roster-manager", src="/scripts/require.js")      \
+    
   body(class="colorscheme")
-    +makeNavbar("Roster Manager", 
+    +makeNavbar("Roster manager", 
       {
-        items: [],        
-        buttons: [],        
-        profile: false,
-        helpbutton: true
+        items: [
+          {id: "navStudent", type: "link", label: "students"},
+          {id: "navMentor", type: "link", label: "mentors"},
+          {id: "navConfigure", type: "link", label: "configure"},
+          {id: "navAdmin", type: "link", label: "admin"},
+          {type: "dropdown", label: "other", items: [
+            {id: "navEndDateManager", type: "link", label: "end date manager"},
+            {type: "divider"},
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navGoogle', label: 'authorize'},
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}        
+        ],
+        
+        profile: true
       }
     )
     
-    .container-fluid              
-      .row: .col-sm            
-        form(class="userform enrollmentform" action="roster-manager/enrollment" enctype="multipart/form-data" method="post")
-          .form-row
-            .form-col0
-              |enrollment report file
-              
-            .form-col1
-              input(type="file" class="file-select" name="enrollment-report-file" accept=".xlsx" required title="enrollment report file to process")
-              
-            .form-col2.submit-region
-              input(class="form-submit btn btn-outline-primary" type="submit" value="process")
-            
-          .form-row
-            .form-col0
-              input(type="checkbox" id="chkEnrollmentCompare" class="check-compare check-enrollment-compare" title="optionally compare to older file")
-              span(class="diminish-me label-enrollment-compare") compare to...
-              
-            .form-col1
-              input(type="file" class="file-select enrollment-report-file2 hide-me" name="enrollment-report-file2" accept=".xlsx" disabled title="older enrollment report file for comparison")
-            
+    .contents
+      .error-container
       
-      .row: .col-sm      
-        form(class="userform mentorform" action="roster-manager/mentor" enctype="multipart/form-data" method="post")
-          .form-row
-            .form-col0
-              |mentor/guardian report file
-
-            .form-col1
-              input(type="file" class="file-select" name="mentor-report-file" accept=".xlsx" required title="mentor/guardian report file to process")
-            
-            .form-col2.submit-region
-              input(class="form-submit btn btn-outline-primary" type="submit" value="process")
-            
-          .form-row
-            .form-col0
-              input(type="checkbox" id="chkMentorCompare" class="check-compare check-mentor-compare" title="optionally compare to older file")
-              span(class="label-mentor-compare diminish-me") compare to...
-              
-            .form-col1
-              input(type="file" class="file-select mentor-report-file2 hide-me" name="mentor-report-file2" accept=".xlsx" disabled title="older mentor/guardian report file for comparison")
+      .container-fluid(class="contents-container contents-navStudent hide-me disable-container")
+        +studentContainer()
         
+      .container-fluid(class="edit-container hide-me")  
+        +editContainer()
+        
+      .container-fluid(class="contents-container contents-navMentor hide-me disable-container")
+        +mentorContainer()
+        
+      .container-fluid(class="contents-container contents-navConfigure hide-me disable-container")
+        +configureContainer()
+        
+      .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
+        +adminContainer()     
+        
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

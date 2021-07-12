@@ -17,10 +17,8 @@ const app = function () {
     
     navOptions: [
       'scheduling', 'share', 'notification', 'editing',
-      'privileges', 'users', 'userprivileges', 'tips', 'categories', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates', 'cron',
       'profile'
-    ],
-    adminTypes: ['privileges', 'users', 'userprivileges', 'categories', 'tips', 'tipcategories', 'admin_schedules', 'scheduletips', 'controlstates', 'cron']
+    ]
   };
   
 	//---------------------------------------
@@ -77,14 +75,6 @@ const app = function () {
   }
   
   async function _renderNavbar() {
-    var queryResults = await SQLDBInterface.doGetQuery('admin/query', 'navbar');
-
-    if (!queryResults.success) {
-      return CreateElement.createDiv(null, null, queryResults.details);
-    }
-
-    var allowAdmin = queryResults.data.navbar.allowadmin;
-
     var navConfig = {
       title: appInfo.appName,
       
@@ -101,25 +91,6 @@ const app = function () {
         {label: 'sign out', markselected: false, callback: _doLogout}
       ]      
     };
-    
-    if (allowAdmin) {
-      navConfig.items.push(
-        {label: 'Admin', callback: null, 
-          subitems: [
-            {label: 'User', callback: () => {return _navDispatch('users');}},
-            {label: 'Privilege', callback: () => {return _navDispatch('privileges');}},
-            {label: 'UserPrivilege', callback: () => {return _navDispatch('userprivileges');}},
-            {label: 'Category', callback: () => {return _navDispatch('categories');}},
-            {label: 'Tip', callback: () => {return _navDispatch('tips');}},
-            {label: 'TipCategory', callback: () => {return _navDispatch('tipcategories');}},
-            {label: 'Schedule', callback: () => {return _navDispatch('admin_schedules');}},
-            {label: 'ScheduleTip', callback: () => {return _navDispatch('scheduletips');}},
-            {label: 'ControlState', callback: () => {return _navDispatch('controlstates');}},
-            {label: 'Cron', callback: () => {return _navDispatch('cron');}}
-          ]
-        }
-      );
-    }
     
     settings.objNavbar = new NavigationBar(navConfig);
     
@@ -148,16 +119,6 @@ const app = function () {
       sodium: settings.sodium
     });
     container.appendChild(await settings.profile.render());
-
-    for (var i = 0; i < settings.adminTypes.length; i++) {
-      var type = settings.adminTypes[i];
-      if (type == 'cron') {
-        settings[type] = new TipCron();
-      } else {
-        settings[type] = new DBAdminContainer(type);
-      }
-      container.appendChild(await settings[type].render());
-    }
     
     return container;
   }

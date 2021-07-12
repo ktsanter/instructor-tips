@@ -1,13 +1,10 @@
-/*-------------------------------------------------------------------
- * styling for Roster Manager app
- *------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------
+ * Roster manager
+ *------------------------------------------------------------------------------*/
 .colorscheme {
-  --fgPrimary: black;
   --bgPrimary: rgba(66, 98, 150, 1.0);
-  --bgSecondary: rgba(66, 98, 150, 0.2);
-  --bgTertiary: #eee;
-  --borderPrimary: #bbb;
-  --diminished: #999;
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
 }
 
 body {
@@ -15,72 +12,216 @@ body {
 }
 
 .hide-me {
-  visibility: hidden;
+  display: none;
 }
 
-/*-------------------------------------------------------------------
- * forms
- *------------------------------------------------------------------*/
-.userform {
-  background-color: var(--bgSecondary);
-  border: 1px solid var(--borderPrimary);
+/*------------------------------------------------------------------------------
+ * navbar
+ *------------------------------------------------------------------------------*/
+.navbar-brand {
+  border: 1px solid white;
+  border-radius: 5px;
   padding-left: 0.2em;
-  margin-bottom: 0.6em;
+  padding-right: 0.2em;
+  font-size: 1.1em;
 }
 
-.userform .form-row {
-  margin-top: 0.1em;
-  margin-bottom: 0.2em;
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {}
+
+.contents .disable-container {
+  background-color: var(--bgShaded);
+  opacity: 50%;
+  pointer-events: none;
 }
 
-.userform .form-row .form-col0 {
-  display: inline-block;
-  width: 14.0em;
+.contents .btn-secondary {
+  background-color: var(--bgPrimary);
+  color: white;
 }
 
-.userform .form-row .form-col1 {
-  display: inline-block;
+.contents .btn-secondary:disabled {
+  background-color: white;
+  color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
 }
 
-.userform .form-row .form-col2 {
-  display: inline-block;
+.contents .form-check-input {
+  cursor: pointer;
+}
+
+.contents .form-check-input + label{
+  cursor: pointer;
+}
+
+.contents .form-check-input:checked {
+  background-color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+}
+
+.contents .form-check-input.check-edittype:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e"); 
+  box-shadow: none;
+  border-color: var(--borderPrimary);  
+}
+
+.contents .form-check-input.check-edittype:checked {
+  background-color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navStudent
+ *------------------------------------------------------------------------------*/
+.contents .contents-navStudent {}
+
+.contents .contents-navStudent .view-content {}
+
+.contents .contents-navStudent .icon {
+  color: var(--bgPrimary);
+}
+
+.contents .contents-navStudent .view-content .item-label {
+  font-weight: bold;
+}
+
+.contents .contents-navStudent img.item-image {
+  width: 2.3em;
+  height: auto;
+}
+
+.contents .contents-navStudent .item-icon {
+  color: var(--bgPrimary);
+  font-size: 1.4em;
+  vertical-align: middle;
+}
+
+.contents .contents-navStudent .rosterviewer-icon {
+  color: var(--bgPrimary);
   float: right;
+  cursor: pointer;
+}
+
+.contents .contents-navStudent .rosterviewer-infoicon {
+  color: var(--bgPrimary);
+}
+
+.contents .contents-navStudent .limit-second-col th:nth-child(2) {
+  width: 80%;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - note editor
+ *------------------------------------------------------------------------------*/
+.contents .edit-container {}
+
+.contents .edit-container .input-note {
+  height: 15.0em;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navMentor
+ *------------------------------------------------------------------------------*/
+.contents .contents-navMentor {}
+
+.contents .contents-navMentor .term-label {
+  display: inline-block;
+  font-weight: bold;
+  border: 1px solid var(--bgPrimary);
+  background-color: var(--bgShaded);
+}
+
+.contents .contents-navMentor .section-label { 
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.contents .contents-navMentor .email-column { 
+  cursor: pointer;
+}
+
+.contents .contents-navMentor .colwidth-0 { width: 15%; }
+
+.contents .contents-navMentor .colwidth-1 { width: 25%; }
+
+.contents .contents-navMentor .colwidth-2 { width: 15%; }
+
+.contents .contents-navMentor .colwidth-3 { width: 25%; }
+
+/*------------------------------------------------------------------------------
+ * contents - navConfigure
+ *------------------------------------------------------------------------------*/
+.contents .contents-navConfigure {}
+
+.contents .contents-navConfigure .configure-fieldset legend {
+  font-size: 1.0em;
+  font-weight: 500;
+  float: none; 
+  padding: inherit; 
+}
+
+.contents .contents-navConfigure .googlefile-notselected {
+  display: inline-block;
+  font-style: italic;
+}
+
+.contents .contents-navConfigure .googlefile-link {
+  display: inline-block;
+}
+
+.contents .contents-navConfigure .btn-secondary {
+  vertical-align: top;
+  min-width: 10.0em;
+}
+
+.contents .contents-navConfigure .uploadfile {
+  opacity: 0;
+  z-index: -1;
+  position: absolute; /* don't let it take up space */
+}
+
+.contents .contents-navConfigure .uploadfile-label {
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--bgPrimary);
+  cursor: pointer;
+}
+
+.contents .contents-navConfigure .upload-result {
+  display: inline-block;
+  font-style: italic;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navAdmin
+ *------------------------------------------------------------------------------*/
+.contents .contents-navAdmin {}
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
   margin-right: 0.2em;
 }
 
-.userform .form-row .check-compare {
-  transform: scale(1.3); 
-  margin-right: 0.4em;  
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
 }
+/*-- end of standard notice and error --*/
 
-.userform .form-row .diminish-me {
-  color: var(--diminished);
-}
-
-.userform .form-row .file-select {
-	font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-	font-size: 13px;  
-  width: 34.0em;
-}
-
-.userform .form-row.submit-region {
-  margin-top: 0.4em;
-}
-
-.btn.btn-outline-primary { /*-- override Bootstrap --*/
-  color: rgba(66, 98, 150, 1.0);
-  background-color: transparent;
-  border-color: rgba(66, 98, 150, 1.0);
-}
-
-.btn.btn-outline-primary:hover { /*-- override Bootstrap --*/
-  color: white;
-  background-color: rgba(66, 98, 150, 1.0);
-  border-color: white;
-}
-
-.btn-check:checked+.btn-outline-primary {
-  color: white;
-  background-color: rgba(66, 98, 150, 1.0);
-  border-color: rgba(66, 98, 150, 1.0);
-}

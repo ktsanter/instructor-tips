@@ -1,0 +1,22 @@
+mixin studentContainer()
+  .row(class="py-2")
+    .col-sm-5
+      .status-message(class="hide-me")
+
+      .dropdown(class="student-select input-group hide-me")
+        span(for="studentName" class="input-group-text") student
+        input(type="text" class="form-control dropdown-toggle" id="studentName" name="studentName" data-bs-toggle="dropdown" aria-expanded="false" autocomplete="one-time-code")
+
+        ul(class="dropdown-menu" aria-labelledby="studentName")
+        
+    .col-sm(class="item-images")
+      img(class="item-image image-iep me-1 hide-me" title="student has IEP" src="https://res.cloudinary.com/ktsanter/image/upload/v1625677834/Roster%20Manager/iep_standardized.png")
+      img(class="item-image image-504 me-1 hide-me" title="student has 504" src="https://res.cloudinary.com/ktsanter/image/upload/v1625677834/Roster%20Manager/504_standardized.png")
+      i(class="item-icon icon-homeschooled me-1 fas fa-home hide-me" title="student is homeschooled")
+      
+      img(class="item-image image-info hide-me" src="https://res.cloudinary.com/ktsanter/image/upload/v1625677834/Roster%20Manager/info_standardized.png")
+
+  .row(class="py-2")
+    .col-sm
+      .container-fluid(class="view-content hide-me")
+

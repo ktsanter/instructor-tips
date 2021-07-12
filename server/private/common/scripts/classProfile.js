@@ -142,8 +142,14 @@ class ASProfile {
   }
   
   _setNavbarProfilePic() {
+    this.elemPic.title = 'profile';
     var usePic = (this.userInfo && this.userInfo.profilepic);
-    if (usePic) this.elemPic.src = this.userInfo.profilepic;
+    if (usePic) {
+      this.elemPic.src = this.userInfo.profilepic;
+      this.elemPic.title = this.userInfo.displayname;
+    } else {
+      this.elemIcon.title = this.userInfo.displayname;
+    }
     UtilityKTS.setClass(this.elemIcon, 'hide-me', usePic);
     UtilityKTS.setClass(this.elemPic, 'hide-me', !usePic);
   }
@@ -333,34 +339,6 @@ class ASProfile {
 
     return queryResults;
   }
-  
-/*---
-  async _saveStateToDB(state) {
-    var queryResults = await SQLDBInterface.doPostQuery('tipmanager/update', 'profile', state, this._notice);
-    
-    return queryResults.success;
-  }
-  
-  async _saveNewPassword() {
-    var elemPassword = this._container.getElementsByClassName('password-new')[0];
- 
-    var hashedPassword = '';
-    var hashResult = this._userManagement.hashPassword(elemPassword.value);
-    if (hashResult.success) {
-      hashedPassword = hashResult.hashedPassword;
-    } else {
-      return hashResult;
-    }
-    
-    var params = {
-      passwordHash: hashedPassword
-    }
-    
-    var queryResults = await SQLDBInterface.doPostQuery('usermanagement/passwordchange', '', params, this._notice);
-    
-    return queryResults;
-  }
----*/
   
   //--------------------------------------------------------------
   // utility

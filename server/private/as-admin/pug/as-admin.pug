@@ -1,0 +1,70 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/profile-mixins.pug
+
+include ./mixins/mixins-mailer.pug
+include ./mixins/mixins-cron.pug
+include ./mixins/mixins-database.pug
+include ./mixins/mixins-test.pug
+
+doctype html
+html(lang="en")
+  head
+    title Aardvark Studios admin
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+    
+    style
+      include ../../common/styles/classProfile.css
+      include ../../common/styles/navbar-overrides.css
+      include ../styles/as-admin.css
+    
+    +addJQuery()
+    script(data-main="/scripts/as-admin/require_as-admin", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    +makeNavbar("Aardvark Studios admin", 
+      {
+        items: [
+          {id: "navSites", type: "link", label: "sites"},
+          {id: "navMailer", type: "link", label: "gmail"},
+          {id: "navCron", type: "link", label: "cron"},
+          {id: "navDatabase", type: "link", label: "database"},
+          {id: "navTest", type: "link", label: "test"},
+          {type: "dropdown", label: "other", items: [
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}        
+        ],
+        
+        profile: true
+      }
+    )
+    
+    .contents
+      .error-container
+      
+      .container-fluid(class="contents-container contents-navSites hide-me")       
+        
+      .container-fluid(class="contents-container contents-navMailer hide-me")
+        +mailerContainer()     
+        
+      .container-fluid(class="contents-container contents-navCron hide-me")
+        +cronContainer()     
+        
+      .container-fluid(class="contents-container contents-navDatabase hide-me")
+        +databaseContainer()     
+        
+      .container-fluid(class="contents-container contents-navTest hide-me")
+        +testContainer()     
+        
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

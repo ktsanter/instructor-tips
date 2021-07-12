@@ -5,19 +5,13 @@ define(function (require) {
   require('/scripts/sqldbinterface');
   require('/scripts/classProfile');
   require('/scripts/usermanagement');
-  require('/scripts/clipboard_copy');  
-  require('/scripts/classGoogleManagement');
+  require('/scripts/google_webapp_interface');  
 
-  
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
-  require('classGoogleDrive');
-  require('classReportPoster');
-  require('classDataIntegrator');
-  require('classRosterViewer');
-  require('classMentorViewer');
-  require('roster-manager');
+  require('classDBIntrospect');
+  require('as-admin');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));
 });
