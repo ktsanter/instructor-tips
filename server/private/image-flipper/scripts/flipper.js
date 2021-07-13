@@ -178,7 +178,7 @@ const app = function () {
 	//--------------------------------------------------------------
   async function _getConfigInfo(configkey) {
     var result = null;
-    console.log('_getConfigInfo');
+
     page.notice.setNotice('loading configuration...', true);
     if (configkey == 'preview') {
       var dbResult = await SQLDBInterface.doGetQuery('image-flipper/project', 'preview', page.notice);

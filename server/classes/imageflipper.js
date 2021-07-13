@@ -209,7 +209,6 @@ module.exports = internal.ImageFlipper = class {
   }
  
   async _getProjectPreview(userInfo) {
-    console.log('_getProjectPreview');
     var result = this._dbManager.queryFailureResult(); 
     
     var queryList, queryResults;
@@ -225,19 +224,8 @@ module.exports = internal.ImageFlipper = class {
     queryResults = await this._dbManager.dbQueries(queryList);
     
     var snapshot = queryResults.data.project[0].snapshot;
-    console.log(typeof snapshot);
-    console.log(typeof snapshot == 'string');
-    if (typeof snapshot == 'string') snapshot = JSON.parse(snapshot);
-    console.log(typeof snapshot);
-    console.log(snapshot);
-    
-    //console.log(queryResults);
-    //console.log(queryResults.data);
-    //console.log(queryResults.data.project);
-    //console.log(queryResults.data.project[0]);
-    //console.log(queryResults.data.project[0].snapshot);
-    //console.log(typeof queryResults.data.project[0].snapshot);
-    //console.log(JSON.parse(queryResults.data.project[0].snapshot));
+
+    if (typeof snapshot == 'string') snapshot = JSON.parse(snapshot); // hack: don't know why this is different between prod and dev
     
     if (queryResults.success) {
       result.success = true;
