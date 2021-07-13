@@ -43,10 +43,10 @@ class SQLDBInterface {
     try {
       const resp = await fetch(url);
       const json = await resp.json();
-      //console.log(json);
+      console.log(json);
 
       if (!json.success) {
-        var errmsg = '*ERROR: in ' + METHOD_TITLE + ', ' + JSON.stringify(json.details);
+        var errmsg = '*ERROR(1): in ' + METHOD_TITLE + ', ' + JSON.stringify(json.details);
         console.log(errmsg);
         result.details = errmsg;
       } else {
@@ -54,7 +54,7 @@ class SQLDBInterface {
       }
       
     } catch (error) {
-      var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
+      var errmsg = '**ERROR(2): in ' + METHOD_TITLE + ', ' + error;
       console.log(errmsg);
       result.details = errmsg;
     }
