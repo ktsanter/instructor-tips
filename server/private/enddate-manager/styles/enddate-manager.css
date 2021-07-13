@@ -77,6 +77,14 @@ body {
   cursor: pointer;
 }
 
+.contents .contents-navManage .eventlist-container .student-cell {
+  cursor: pointer;
+}
+
+.contents .contents-navManage .eventlist-container .student-cell:hover {
+  text-decoration: underline;
+}
+
 .contents .contents-navManage .event-icon {
   color: var(--bgPrimary);
   cursor: pointer;
@@ -84,12 +92,6 @@ body {
 
 .contents .contents-navManage .event-icon.event-exporticon {
   color: #379164;
-  background-color: white;
-  font-size: 1.1em;
-  float: right;
-}
-
-.contents .contents-navManage .event-icon.event-calendaricon {
   background-color: white;
   font-size: 1.1em;
   float: right;

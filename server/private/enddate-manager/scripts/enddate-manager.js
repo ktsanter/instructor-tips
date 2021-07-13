@@ -149,8 +149,7 @@ const app = function () {
       editorCancel: page.contents.getElementsByClassName('button-editor-cancel')[0],
       callbackEventChange: _callbackEditorEventChange,
       callbackModeChange: _callbackEditorModeChange,
-      callbackExport: _callbackEditorExport,
-      callbackOpenCalendar: _callbackOpenCalendar
+      callbackExport: _callbackEditorExport
     });
     settings.eventEditor.render();
   }
@@ -580,6 +579,7 @@ const app = function () {
     return await settings.google.objCalendar.executeBatch(batchParams);
   }
   
+/*
   function _openCurrentCalendar() {
     var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
@@ -589,7 +589,8 @@ const app = function () {
     
     var url = baseURL + '?' + qparamSrc + '&' + qparamTimeZone;
     window.open(url, '_blank');
-  }  
+  } 
+*/  
   
   //--------------------------------------------------------------------------
   // callbacks
@@ -698,10 +699,6 @@ const app = function () {
     var elemForm = page.navManage.getElementsByClassName('export-form')[0];
     elemForm.getElementsByClassName('export-data')[0].value = JSON.stringify(exportData);
     elemForm.submit();
-  }
-  
-  function _callbackOpenCalendar() {
-    _openCurrentCalendar(); 
   }
   
   function _setMainNavbarEnable(enable) {

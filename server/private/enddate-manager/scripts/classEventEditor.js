@@ -35,7 +35,6 @@ class EventEditor {
     this._config.eventContainer.getElementsByClassName('header-enddate')[0].addEventListener('click', (e) => { this._handleResort('enddate'); });
     
     this._config.eventContainer.getElementsByClassName('event-exporticon')[0].addEventListener('click', (e) => { this._handleExport(); });
-    this._config.eventContainer.getElementsByClassName('event-calendaricon')[0].addEventListener('click', (e) => { this._handleOpenCalendar(); });
     
     this._config.editorOkay.addEventListener('click', (e) => { this._handleEditEnd(true); });
     this._config.editorCancel.addEventListener('click', (e) => { this._handleEditEnd(false); });
@@ -106,12 +105,21 @@ class EventEditor {
     var elemRow = CreateElement._createElement('tr', null, this.rowClassList);
     
     elemRow.eventDataIndex = eventDataIndex;
-    elemRow.appendChild(this._rendeDataCell(eventData.student));
+    var studentCell = this._rendeDataCell(eventData.student);
+    elemRow.appendChild(studentCell);
+    studentCell.classList.add('student-cell');
+    studentCell.title = 'add/edit override';
+    studentCell.addEventListener('click', (e) => { this._editItem(e); });
+    
     elemRow.appendChild(this._rendeDataCell(eventData.section));
     elemRow.appendChild(this._rendeDataCell(eventData.enddate, eventData.override));
     elemRow.appendChild(this._renderControlCell(eventData));
     
     return elemRow;
+  }
+  
+  test(e) {
+    console.log(e.target);
   }
   
   _rendeDataCell(columnData, markAsAlert) {
@@ -126,13 +134,8 @@ class EventEditor {
   _renderControlCell(eventData) {
     var elemCell = CreateElement._createElement('td', null, null);
     
-    var icon = CreateElement.createIcon(null, this.editIconClassList, null);
-    icon.title = eventData.override ? 'edit override' : 'add override';
-    icon.addEventListener('click', (e) => { this._editItem(e); });
-    elemCell.appendChild(icon);
-    
     if (eventData.override) {
-      icon = CreateElement.createIcon(null, this.clearIconClassList, null);
+      var icon = CreateElement.createIcon(null, this.clearIconClassList, null);
       icon.title = 'clear override';
       icon.addEventListener('click', (e) => { this._clearItem(e); });
       elemCell.appendChild(icon);
@@ -217,10 +220,6 @@ class EventEditor {
     await this._config.callbackExport( this.getEventList() );
   }
       
-  _openCalendar() {
-    this._config.callbackOpenCalendar();
-  }
-
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------  
@@ -255,10 +254,6 @@ class EventEditor {
   
   _handleExport(e) {
     this._export();
-  }
-
-  _handleOpenCalendar(e) {
-    this._openCalendar();
   }
 
   //--------------------------------------------------------------
