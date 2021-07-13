@@ -16,6 +16,9 @@ module.exports = internal.ImageFlipper = class {
 // dispatchers
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo) {
+    console.log(params);
+    console.log(postData);
+    console.log(userInfo);
     var dbResult = this._dbManager.queryFailureResult();
 
     if (params.queryName == 'projectinfo') {
@@ -209,6 +212,7 @@ module.exports = internal.ImageFlipper = class {
   }
  
   async _getProjectPreview(userInfo) {
+    console.log('_getProjectPreview');
     var result = this._dbManager.queryFailureResult(); 
     
     var queryList, queryResults;
