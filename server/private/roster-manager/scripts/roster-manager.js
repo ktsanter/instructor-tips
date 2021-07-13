@@ -390,7 +390,11 @@ const app = function () {
     for (var i = 0; i < infoFromDB.eventoverride.length; i++) {
       var item = infoFromDB.eventoverride[i];
       var student = item.student;
-      students[student].enddateoverride.push(item);
+      if (students.hasOwnProperty(student)) {
+        students[student].enddateoverride.push(item);
+      } else {
+        console.log('override for unknown student', item);
+      }
     }
 
     var studentList = [];
