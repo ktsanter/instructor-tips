@@ -258,11 +258,11 @@ module.exports = internal.GMailer = class {
           
         })
         .catch(function(err) {
-          result.details = 'failed to send email';
+          result.details = 'failed to send email(1) ' + JSON.stringify(err);
         });
         
     } catch(err) {
-      result.details = 'failed to send email';
+      result.details = 'failed to send email(2) ' + JSON.stringify(err);
     }
       
     return result;
