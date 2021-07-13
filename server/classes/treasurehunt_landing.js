@@ -76,18 +76,14 @@ module.exports = internal.TreasureHuntLanding = class {
       result.details = 'query succeeded';
       
       var snapshot = queryResults.data.project[0].snapshot;
-      console.log(typeof snapshot);
       var parsed = snapshot;
       
+      // hack: don't know why this is different between prod and dev
       if (typeof snapshot == 'string') {
         var snapshot = this._unescapeSingleQuote(snapshot);
         parsed = JSON.parse(snapshot);
       }
-      console.log(typeof parsed);
-      console.log(parsed);
-        
-      //var unparsed = this._unescapeSingleQuote(queryResults.data.project[0].snapshot);
-      //var parsed = JSON.parse(unparsed); 
+
       result.data = {
         project: [parsed.project]
       };
