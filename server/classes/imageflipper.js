@@ -226,6 +226,9 @@ module.exports = internal.ImageFlipper = class {
     console.log(queryResults);
     console.log(queryResults.data);
     console.log(queryResults.data.project);
+    console.log(queryResults.data.project[0]);
+    console.log(queryResults.data.project[0].snapshot);
+    console.log(JSON.parse(queryResults.data.project[0].snapshot));
     
     if (queryResults.success) {
       result.success = true;
