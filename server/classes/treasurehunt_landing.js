@@ -74,8 +74,20 @@ module.exports = internal.TreasureHuntLanding = class {
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
-      var unparsed = this._unescapeSingleQuote(queryResults.data.project[0].snapshot);
-      var parsed = JSON.parse(unparsed); 
+      
+      var snapshot = queryResults.data.project[0].snapshot;
+      console.log(typeof snapshot);
+      var parsed = snapshot;
+      
+      if (typeof snapshot == 'string') {
+        var snapshot = this._unescapeSingleQuote(snapshot);
+        parsed = JSON.parse(snapshot);
+      }
+      console.log(typeof parsed);
+      console.log(parsed);
+        
+      //var unparsed = this._unescapeSingleQuote(queryResults.data.project[0].snapshot);
+      //var parsed = JSON.parse(unparsed); 
       result.data = {
         project: [parsed.project]
       };
