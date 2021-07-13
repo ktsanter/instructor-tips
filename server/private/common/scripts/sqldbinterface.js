@@ -39,9 +39,11 @@ class SQLDBInterface {
     
     var url = this.__buildApiUrl__(queryType, queryName);
     var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
+    console.log(url);
 
     try {
       const resp = await fetch(url);
+      console.log(resp);
       const json = await resp.json();
       console.log(json);
 
