@@ -36,6 +36,10 @@ body {
   max-width: 50%;
 }
 
+.helpsection .helpsection-content .icon {
+  color: var(--bgPrimary);
+}
+
 .helpsection .helpsection-imagelink { 
   display: inline-block;
   margin-left: 0.4em;
@@ -45,4 +49,13 @@ body {
 .helpsection .helpsection-imagecontainer img {
   border: 1px solid var(--borderPrimary);  
   width: 22.0em;
+}
+
+.helpsection .helpsection-content .helpsection-subcontent {
+  max-width: 55.0em;
+  margin-bottom: 0.4em;
+}
+
+.helpsection .helpsection-subcontent.demo-video {
+  max-width: 30%;
 }

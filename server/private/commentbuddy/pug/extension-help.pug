@@ -2,6 +2,10 @@ include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
 
+include ./mixins-extension-help/mixins-overvew.pug
+include ./mixins-extension-help/mixins-setup.pug
+include ./mixins-extension-help/mixins-searching.pug
+
 doctype html
 html(lang="en")
   head
@@ -17,7 +21,7 @@ html(lang="en")
       include ../styles/extension-help.css
 
   body(class="colorscheme")
-    +makeNavbar("CommentBuddy help", 
+    +makeNavbar("CBV3 extension help", 
       {
         items: [
           {id: "navOverview", type: "link", label: "overview"},
@@ -32,24 +36,16 @@ html(lang="en")
 
     .container-fluid
       .row: .col-sm 
-        .helpsection(id="anchorOverview") 
-          .helpsection-title overview
-          .helpsection-content 
-            |TBD
+        .helpsection(id="anchorOverview")
+           +helpcontent_Overview
         
       .row: .col-sm 
         .helpsection(id="anchorSetup") 
-          hr
-          .helpsection-title setup
-          .helpsection-content 
-            |TBD
+           +helpcontent_Setup
         
       .row: .col-sm 
         .helpsection(id="anchorSearch") 
-          hr
-          .helpsection-title searching
-          .helpsection-content 
-            |TBD
+           +helpcontent_Searching
             
     script
       include ../scripts/extension-help.js
