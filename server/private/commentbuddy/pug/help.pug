@@ -1,10 +1,16 @@
 include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+
+include ./mixins-help/mixins-overvew.pug
+include ./mixins-help/mixins-compose.pug
+include ./mixins-help/mixins-updownload.pug
+include ./mixins-help/mixins-other.pug
 
 doctype html
 html(lang="en")
   head
-    title help for CommentBuddy composer
+    title CommentBuddy help
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
 
@@ -12,7 +18,40 @@ html(lang="en")
     +bootstrapstyle()
     
     style
+      include ../../common/styles/navbar-overrides.css    
       include ../styles/help.css
 
-    body()
-      h4 CommentBuddy composer help (tbd)
+  body(class="colorscheme")
+    +makeNavbar("CBV3 help", 
+      {
+        items: [
+          {id: "navOverview", type: "link", label: "overview"},
+          {id: "navCompose", type: "link", label: "compose"},
+          {id: "navUpDownload", type: "link", label: "upload/download"},
+          {id: "navOther", type: "link", label: "other"}
+        ],
+        
+        buttons: [],        
+        profile: false
+      }
+    )    
+
+    .container-fluid
+      .row: .col-sm 
+        .helpsection(id="anchorOverview")
+           +helpcontent_Overview
+        
+      .row: .col-sm 
+        .helpsection(id="anchorCompose") 
+           +helpcontent_Compose
+        
+      .row: .col-sm 
+        .helpsection(id="anchorUpDownload") 
+           +helpcontent_UpDownload
+        
+      .row: .col-sm 
+        .helpsection(id="anchorOther") 
+           +helpcontent_Other
+            
+    script
+      include ../scripts/help.js

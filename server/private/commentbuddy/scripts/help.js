@@ -5,8 +5,9 @@ function setNavbarTargets() {
   var navbarElements = document.getElementsByClassName('use-handler');
   navMap = {
     "navOverview": "anchorOverview",
-    "navSetup": "anchorSetup",
-    "navSearch": "anchorSearch"
+    "navCompose": "anchorCompose",
+    "navUpDownload": "anchorUpDownload",
+    "navOther": "anchorOther"
   };
   
   for (var i = 0; i < navbarElements.length; i++) {
