@@ -114,7 +114,8 @@ const app = function () {
     });
     
     settings.dataIntegrator = new DataIntegrator({
-      "googleDrive": settings.googleDrive
+      "googleDrive": settings.googleDrive,
+      "notice": page.notice
     });
   }
   
@@ -304,24 +305,28 @@ const app = function () {
       return;
     }
     
-    var result = await _getStudentPropertiesFromDB();
+    var result = await settings.dataIntegrator.readRosterInfo();
     if (!result.success) {
-      console.log('failed to get student properties from DB');
+      console.log('failed to get roster info');
       return;
     }
-    var currentDBInfo = result.data;
-    
-    var result = await settings.dataIntegrator.readCurrentSheetInfo(spreadsheetId);
-    if (result.success) {
-      settings.currentInfo = _packageStudentInfo(result.data, currentDBInfo);
-      settings.currentMentorInfo = _packageMentorInfo(result.data, currentDBInfo);
-      
-      if (settings.currentNavOption == 'navStudent') _showStudent();
-      if (settings.currentNavOption == 'navMentor') _showMentor();
+    var rosterInfo = result.data;
+
+    result = await _getStudentPropertiesFromDB();
+    if (!result.success) {
+      console.log('failed to get extra student info');
+      return;
     }
+    var extraStudentInfo = result.data;
+
+    settings.currentInfo = _packageStudentInfo(rosterInfo, extraStudentInfo);
+    settings.currentMentorInfo = _packageMentorInfo(rosterInfo, extraStudentInfo);
+    
+    if (settings.currentNavOption == 'navStudent') _showStudent();
+    if (settings.currentNavOption == 'navMentor') _showMentor();
   }
   
-  function _packageStudentInfo(rawData, infoFromDB) {
+  function _packageStudentInfo(rawData, extraStudentInfo) {
     var students = {};
     
     for (var i = 0; i < rawData.raw_enrollment_data.length; i++) {
@@ -371,14 +376,14 @@ const app = function () {
       students[student].homeschooled = true;
     }
 
-    for (var i = 0; i < infoFromDB.preferredname.length; i++) {
-      var item = infoFromDB.preferredname[i];
+    for (var i = 0; i < extraStudentInfo.preferredname.length; i++) {
+      var item = extraStudentInfo.preferredname[i];
       var student = item.studentname;
       if (students.hasOwnProperty(student)) students[student].preferredname = item.preferredname;
     }
       
-    for (var i = 0; i < infoFromDB.notes.length; i++) {
-      var item = infoFromDB.notes[i];
+    for (var i = 0; i < extraStudentInfo.notes.length; i++) {
+      var item = extraStudentInfo.notes[i];
       var student = item.studentname;
       if (students.hasOwnProperty(student)) students[student].notes.push({
         "datestamp": item.datestamp, 
@@ -387,8 +392,8 @@ const app = function () {
       });
     }
     
-    for (var i = 0; i < infoFromDB.eventoverride.length; i++) {
-      var item = infoFromDB.eventoverride[i];
+    for (var i = 0; i < extraStudentInfo.eventoverride.length; i++) {
+      var item = extraStudentInfo.eventoverride[i];
       var student = item.student;
       if (students.hasOwnProperty(student)) {
         students[student].enddateoverride.push(item);
@@ -406,7 +411,7 @@ const app = function () {
     };
   }
   
-  function _packageMentorInfo(rawData, infoFromDB) {
+  function _packageMentorInfo(rawData, extraStudentInfo) {
     var mentors = {};
     var mentorsByTermAndSection = {};
 
@@ -560,6 +565,7 @@ const app = function () {
     }
 
     var result = await settings.dataIntegrator.applyReportData(uploadType, result.data, _getTargetFileId());
+
     elemResult.innerHTML = result.details;
     if (result.success) {
       _displayChanges(result.data, elemChanges);
@@ -571,11 +577,12 @@ const app = function () {
   
   function _displayChanges(changes, container) {
     UtilityKTS.removeChildren(container);
+
     var numChanges = 0;
     for (key in changes) {
       numChanges += changes[key].differences.length;
     }
-    
+
     if (numChanges == 0) {
       container.appendChild(CreateElement.createDiv(null, null, 'no changes'));
       

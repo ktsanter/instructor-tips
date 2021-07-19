@@ -1073,7 +1073,8 @@ app.get('/roster-manager/help', function (req, res) {
 })
 
 app.post('/usermanagement/routeToApp/roster-manager/upload/:uploadType', function (req, res) {
-  rosterManager.processUploadedFile(req, res, req.params.uploadType); 
+  var userInfo = userManagement.getUserInfo(req.session);  
+  rosterManager.processUploadedFile(req, res, req.params.uploadType, userInfo); 
 })
 
 async function processRosterManagerOriginalResult(req, res, result) {
