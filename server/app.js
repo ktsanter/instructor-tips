@@ -661,6 +661,10 @@ async function processEndDateManagerExportResult(req, res, result) {
   }
 }
 
+app.get('/rostermanager/extension-help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/extension-help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
 
 app.get('/commentbuddy/composer', function (req, res) { routeIfLoggedIn(req, res, 'commentbuddy'); })
 app.get('/commentbuddy/help', function (req, res) {
