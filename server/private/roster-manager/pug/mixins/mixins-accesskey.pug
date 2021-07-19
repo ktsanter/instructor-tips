@@ -1,0 +1,16 @@
+mixin accesskeyContainer()
+  .row(class="my-2")
+    .col-sm
+      .instructions
+        |In order to use the CommentBuddy Chrome extension you'll need to enter an access key.
+        br
+        | This provides the link to the comment information you create with this composer tool
+        
+  .row(class="mt-1")
+    .col-sm-6
+      .form-floating()
+        input(type="text" class="form-control text-accesskey" id="textAccessKey" disabled)
+        label(for="textAccessKey") access key
+        
+    .col-sm
+      button(class="btn btn-outline-primary button-accesskey") copy

@@ -91,6 +91,7 @@ module.exports = internal.RosterManager = class {
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
+    console.log('doQuery', params, postData);
 
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
@@ -101,6 +102,9 @@ module.exports = internal.RosterManager = class {
     } else if (params.queryName == 'rosterinfo') {
       dbResult = await this._getRosterInfo(params, postData, userInfo);
       
+    }else if (params.queryName == 'accesskey') {
+      dbResult = await this._getAccessKey(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -957,6 +961,72 @@ module.exports = internal.RosterManager = class {
     }
 
     return result;
+  }  
+  
+  async _getAccessKey(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var query, queryResults;
+    
+    query = 
+      'select ' +
+        'a.accesskey ' +
+      'from accesskey as a ' +
+      'where userid = ' + userInfo.userId;
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    if (queryResults.data.length == 0) {
+      if ( !(await this._generateAccessKey(userInfo.userId)) ) {
+        result.success = false;
+        result.details = 'failed to generate access key';
+        
+      } else {
+        queryResults = await this._dbManager.dbQuery(query);
+      }
+    }
+    
+    if (queryResults.success && queryResults.data.length > 0) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data[0];
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    console.log('_getAccessKey', result);
+    return result;
+  }
+  
+  async _generateAccessKey(userId) {
+    var charList = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+    var key = '';
+    for (var i = 0; i < 24; i++) {
+      if (i != 0 && i % 4 == 0) key += '-';
+      var randIndex = Math.floor(Math.random() * charList.length);
+      key += charList.charAt(randIndex);
+    }
+
+    var query, queryResults;
+    
+    query = 
+      'insert ' +
+      'into accesskey (accesskey, userid) ' +
+      'values (' +
+        '"' + key + '", ' +
+        userId +
+      ') ';
+      
+    queryResults = await this._dbManager.dbQuery(query);   
+    
+    return queryResults.success;
   }  
   
 //----------------------------------------------------------------------

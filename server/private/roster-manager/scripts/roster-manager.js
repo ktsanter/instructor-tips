@@ -39,6 +39,7 @@ const app = function () {
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
     await _initializeProfile(sodium);
+    if ( !(await _getAccessKey()) ) return;    
     
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
@@ -127,6 +128,7 @@ const app = function () {
     _renderStudent();
     _renderMentor();
     _renderConfigure();
+    _renderAccessKey();
     _renderAdmin();
   }
   
@@ -145,6 +147,15 @@ const app = function () {
     for (var i = 0; i < fileUploads.length; i++) {
       fileUploads[i].addEventListener('change', (e) => { _handleFileUpload(e); });
     }
+  }
+  
+  function _renderAccessKey() {
+    page.contentsAccessKey = page.contents.getElementsByClassName('contents-navAccessKey')[0];
+    page.elemAccessKey = page.contentsAccessKey.getElementsByClassName('text-accesskey')[0];
+    page.contentsAccessKey.getElementsByClassName('button-accesskey')[0].addEventListener('click', (e) => { _handleAccessKeyCopy(e); });
+
+    page.elemAccessKey.value = settings.accessKey;
+    
   }
   
   function _renderAdmin() {
@@ -552,6 +563,7 @@ const app = function () {
       "navStudent": function() { _showContents('navStudent');},
       "navMentor": function() { _showContents('navMentor');},
       "navConfigure": function() { _showContents('navConfigure');},
+      "navAccessKey": function() { _showContents('navAccessKey'); },      
       "navAdmin": function() { _showContents('navAdmin'); },
       "navEndDateManager": function() { _doEndDateManager(); },
       "navHelp": _doHelp,
@@ -592,7 +604,12 @@ const app = function () {
     
     _setDirtyBit(false);
   }
-  
+
+  function _handleAccessKeyCopy(e) {
+    _copyToClipboard(page.elemAccessKey.value);
+    alert('access key copied');
+  }
+    
   async function _handleFileUpload(e) {
     if (e.target.files.length == 0) return;
     
@@ -675,6 +692,23 @@ const app = function () {
     var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
     return adminAllowed;
   }
+  
+  async function _getAccessKey() {
+    page.notice.setNotice('loading access key...', true);
+    
+    settings.accessKey = null;
+    var result = await SQLDBInterface.doGetQuery('roster-manager/query', 'accesskey');
+    console.log(result);
+    if (result.success) {
+      settings.accessKey = result.data.accesskey;
+      page.notice.setNotice('');
+      
+    } else {
+      page.notice.setNotice('failed to load access key');
+    }
+    
+    return result.success;
+  }  
 
   async function _getStudentPropertiesFromDB() {
     dbResult = await SQLDBInterface.doGetQuery('roster-manager/query', 'student-properties', page.notice);
@@ -706,7 +740,16 @@ const app = function () {
     
     return dbResult
   }
-  
+
+  //---------------------------------------
+  // clipboard functions
+  //----------------------------------------
+  function _copyToClipboard(txt) {
+    if (!page._clipboard) page._clipboard = new ClipboardCopy(page.body, 'plain');
+
+    page._clipboard.copyToClipboard(txt);
+	}	
+    
   //--------------------------------------------------------------------------
   // admin
   //--------------------------------------------------------------------------

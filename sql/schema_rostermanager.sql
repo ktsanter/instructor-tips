@@ -123,6 +123,19 @@ create table note
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
 );
 
+create table accesskey
+(
+  accesskeyid    int unsigned not null AUTO_INCREMENT,
+  userid         int unsigned not null,
+  accesskey      varchar(200) not null,
+  
+  primary key (accesskeyid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid)
+);
+
+
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------
