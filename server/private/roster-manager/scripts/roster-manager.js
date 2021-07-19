@@ -17,18 +17,6 @@ const app = function () {
       "navStudent": false,
       "navConfigure": false
     },
-    
-    google: {
-      obj: null,
-      appId: 'aardvarkstudios-rostermanager',
-      discoveryDocs: [
-        'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
-        'https://sheets.googleapis.com/$discovery/rest?version=v4'
-      ],  
-      clientId:  '980213956279-rk5mjllkulhip472ooqmgnavog9c0s58.apps.googleusercontent.com',
-      scopes: 'https://www.googleapis.com/auth/docs https://www.googleapis.com/auth/drive.file',
-      isSignedIn: false
-    },
 
     adminDisable: false
   };
@@ -55,12 +43,18 @@ const app = function () {
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     _renderContents();
-    await _initializeGoogleStuff();
+
     _initializeReportManagement();
     _initializeRosterViewer();
     _initializeMentorViewer();
 
+    _setUploadFileInfo();
     settings.currentInfo = null;
+    await _getCurrentInfo();
+    
+    _setMainUIEnable(true);
+    _setMainNavbarEnable(true);
+    
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
 
     page.notice.setNotice('');
@@ -89,24 +83,6 @@ const app = function () {
 
     await settings.profile.init();
   }
-    
-  async function _initializeGoogleStuff() {    
-    var result = await SQLDBInterface.doGetQuery('roster-manager/query', 'apikey', page.notice);
-    if (!result.success) return;
-
-    settings.google.obj = new GoogleManagement({
-      "appId": settings.google.appId,
-      "discoveryDocs": settings.google.discoveryDocs,
-      "clientId": settings.google.clientId,
-      "apiKey": result.data,
-      "scopes": settings.google.scopes,
-      "signInChange": _signInChangeForGoogle
-    });
-    
-    settings.googleDrive = new GoogleDrive({
-      "googleManagement": settings.google.obj
-    });
-  }
   
   function _initializeReportManagement() {
     settings.reportPoster = new ReportPoster({
@@ -114,7 +90,6 @@ const app = function () {
     });
     
     settings.dataIntegrator = new DataIntegrator({
-      "googleDrive": settings.googleDrive,
       "notice": page.notice
     });
   }
@@ -149,8 +124,6 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
-    _enableNavOption('navGoogle', false, false);
-    
     _renderStudent();
     _renderMentor();
     _renderConfigure();
@@ -168,14 +141,6 @@ const app = function () {
   function _renderConfigure() {
     page.navConfigure = page.contents.getElementsByClassName('contents-navConfigure')[0];
     
-    page.targetId = page.navConfigure.getElementsByClassName('googlefile-id')[0];
-    page.targetContainer = page.navConfigure.getElementsByClassName('googlefile-container')[0];
-    
-    var pickButtons = page.navConfigure.getElementsByClassName('googlefile-pick');
-    for (var i = 0; i < pickButtons.length; i++) {
-      pickButtons[i].addEventListener('click', (e) => { _handleTargetFilePick(e); });
-    }
-    
     var fileUploads = page.navConfigure.getElementsByClassName('uploadfile');
     for (var i = 0; i < fileUploads.length; i++) {
       fileUploads[i].addEventListener('change', (e) => { _handleFileUpload(e); });
@@ -185,7 +150,6 @@ const app = function () {
   function _renderAdmin() {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
     
-    page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
     page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });
     
     page.labelEditEnable = page.navAdmin.getElementsByClassName('check-editenable-label')[0];
@@ -220,7 +184,7 @@ const app = function () {
   function _showStudent() {
     UtilityKTS.setClass(page.navStudent, 'disable-container', true);
     
-    if (settings.google.isSignedIn) settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType(), _getRosterViewerEditEnable());
+    settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType(), _getRosterViewerEditEnable());
     
     UtilityKTS.setClass(page.navStudent, 'disable-container', false);
   }
@@ -228,9 +192,7 @@ const app = function () {
   function _showMentor() {
     UtilityKTS.setClass(page.navMentor, 'disable-container', true);
     
-    if (settings.google.isSignedIn) {
-      settings.mentorViewer.update(settings.currentMentorInfo);
-    }
+    settings.mentorViewer.update(settings.currentMentorInfo);
     
     UtilityKTS.setClass(page.navMentor, 'disable-container', false);
   }
@@ -298,12 +260,6 @@ const app = function () {
   
   async function _getCurrentInfo() {
     settings.currentInfo = null;
-    var spreadsheetId = _getTargetFileId();
-    if (!spreadsheetId) {
-      if (settings.currentNavOption == 'navStudent') _showStudent();
-      if (settings.currentNavOption == 'navMentor') _showMentor();
-      return;
-    }
     
     var result = await settings.dataIntegrator.readRosterInfo();
     if (!result.success) {
@@ -332,7 +288,8 @@ const app = function () {
     for (var i = 0; i < rawData.raw_enrollment_data.length; i++) {
       var item = rawData.raw_enrollment_data[i];
       var student = item.student;
-      if (!students.hasOwnProperty(student)) students[student] = {
+      if (!students.hasOwnProperty(student)) {
+        students[student] = {
         "enrollments": [], 
         "mentors": [], 
         "guardians": [],
@@ -342,44 +299,66 @@ const app = function () {
         "preferredname": '',
         "notes": [],
         "enddateoverride": []
-      };
+      }}
       students[student].enrollments.push(item);
     }
     
     for (var i = 0; i < rawData.raw_mentor_data.length; i++) {
       var item = rawData.raw_mentor_data[i];
       var student = item.student;
-      students[student].mentors.push(item);
+      if (students.hasOwnProperty(student)) {
+        students[student].mentors.push(item);
+      } else {
+        console.log('mentor for unknown student', item);
+      }
     }
 
     for (var i = 0; i < rawData.raw_guardian_data.length; i++) {
       var item = rawData.raw_guardian_data[i];
       var student = item.student;
-      students[student].guardians.push(item);
+      if (students.hasOwnProperty(student)) {
+        students[student].guardians.push(item);
+      } else {
+        console.log('guardian for unknown student', item);
+      }
     }
 
     for (var i = 0; i < rawData.raw_iep_data.length; i++) {
       var item = rawData.raw_iep_data[i];
       var student = item.student;
-      students[student].iep = true;
+      if (students.hasOwnProperty(student)) {
+        students[student].iep = true;
+      } else {
+        console.log('IEP for unknown student', item);
+      }
     }
 
     for (var i = 0; i < rawData.raw_504_data.length; i++) {
       var item = rawData.raw_504_data[i];
       var student = item.student;
-      students[student]["504"] = true;
+      if (students.hasOwnProperty(student)) {
+        students[student]["504"] = true;
+      } else {
+        console.log('504 for unknown student', item);
+      }
     }
 
     for (var i = 0; i < rawData.raw_homeschooled_data.length; i++) {
       var item = rawData.raw_homeschooled_data[i];
       var student = item.student;
-      students[student].homeschooled = true;
+      if (students.hasOwnProperty(student)) {
+        students[student].homeschooled = true;
+      } else {
+        console.log('homeschooled for unknown student', item);
+      }
     }
 
     for (var i = 0; i < extraStudentInfo.preferredname.length; i++) {
       var item = extraStudentInfo.preferredname[i];
       var student = item.studentname;
-      if (students.hasOwnProperty(student)) students[student].preferredname = item.preferredname;
+      if (students.hasOwnProperty(student)) {
+        students[student].preferredname = item.preferredname;
+      }
     }
       
     for (var i = 0; i < extraStudentInfo.notes.length; i++) {
@@ -398,7 +377,7 @@ const app = function () {
       if (students.hasOwnProperty(student)) {
         students[student].enddateoverride.push(item);
       } else {
-        console.log('override for unknown student', item);
+        console.log('end date override for unknown student', item);
       }
     }
 
@@ -450,54 +429,7 @@ const app = function () {
     };
   }
   
-  async function _setTargetFileInfo() {
-    var targetId = _getTargetFileId();
-
-    var targetFilePicked = page.targetContainer.getElementsByClassName('file-chosen')[0];
-    var targetFileNotPicked = page.targetContainer.getElementsByClassName('file-notchosen')[0];
-    var targetLink = page.targetContainer.getElementsByClassName('googlefile-link')[0];
-    var msgNoSelection = page.targetContainer.getElementsByClassName('googlefile-notselected')[0];
-    
-    var uploadOptionalContainer = page.navConfigure.getElementsByClassName('configure-fieldset optional')[0];
-    var uploadEnrollment = page.navConfigure.getElementsByClassName('uploadfile-label-enrollment')[0];
-    var uploadMentor = page.navConfigure.getElementsByClassName('uploadfile-label-mentor')[0];
-    var uploadIEP = page.navConfigure.getElementsByClassName('uploadfile-label-iep')[0];
-    var upload504 = page.navConfigure.getElementsByClassName('uploadfile-label-504')[0];
-    var uploadHomeSchooled = page.navConfigure.getElementsByClassName('uploadfile-label-homeschooled')[0];
-    
-    UtilityKTS.setClass(targetFilePicked, settings.hideClass, true);
-    UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, true);
-
-    UtilityKTS.setClass(uploadOptionalContainer, settings.hideClass, true);
-    UtilityKTS.setClass(uploadEnrollment, settings.hideClass, true);
-    UtilityKTS.setClass(uploadMentor, settings.hideClass, true);
-    UtilityKTS.setClass(uploadIEP, settings.hideClass, true);
-    UtilityKTS.setClass(upload504, settings.hideClass, true);
-    UtilityKTS.setClass(uploadHomeSchooled, settings.hideClass, true);
-    
-    if (targetId) {
-      var result =  await settings.googleDrive.getSpreadsheetInfo({"id": targetId});
-      if (!result.success) {
-        msgNoSelection.innerHTML = '**error: unable to get file info';
-        UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, false);
-        
-      } else {
-        targetLink.href = result.url;
-        targetLink.innerHTML = result.title;
-        UtilityKTS.setClass(targetFilePicked, settings.hideClass, false);
-        UtilityKTS.setClass(uploadOptionalContainer, settings.hideClass, false);
-        UtilityKTS.setClass(uploadEnrollment, settings.hideClass, false);
-        UtilityKTS.setClass(uploadMentor, settings.hideClass, false);
-        UtilityKTS.setClass(uploadIEP, settings.hideClass, false);
-        UtilityKTS.setClass(upload504, settings.hideClass, false);
-        UtilityKTS.setClass(uploadHomeSchooled, settings.hideClass, false);
-      }
-      
-    } else {
-      msgNoSelection = '[no file selected]';
-      UtilityKTS.setClass(targetFileNotPicked, settings.hideClass, false);
-    }
-    
+  function _setUploadFileInfo() {
     var elemResultEnrollment = page.navConfigure.getElementsByClassName('upload-result enrollment')[0];
     var elemResultMentor = page.navConfigure.getElementsByClassName('upload-result mentor')[0];
     var elemResultIEP = page.navConfigure.getElementsByClassName('upload-result iep')[0];
@@ -512,37 +444,7 @@ const app = function () {
     elemResultHomeSchooled.innerHTML = '';
     UtilityKTS.removeChildren(elemChanges);
   }
-  
-  async function _doTargetFilePick(pickType) {
-    if (pickType == 'replace') {
-      var msg = 'Please confirm that you want to use a new target file.';
-      msg += '\n\nChoose "OK" to confirm.';
-      if (!confirm(msg)) return;
-    }
     
-    var params = {
-      "callback": _callbackTargetFilePick,
-      "includeFileInfo": false
-    };
-    
-    settings.googleDrive.pickFile(params);
-  }
-  
-  function _getTargetFileId() {
-    var targetId = page.targetId.innerHTML;
-    if (targetId == '[none]') targetId = null;
-    return targetId;
-  }
-  
-  async function _saveTargetFileId(targetId) {
-    var success = await _saveGoogleFileId(targetId);
-    if (success) {
-      page.targetId.innerHTML = targetId;
-    }
-    
-    return success;
-  }
-  
   async function _doFileUpload(uploadType, file) {
     page.notice.setNotice('loading...', true);
 
@@ -564,7 +466,7 @@ const app = function () {
       return;
     }
 
-    var result = await settings.dataIntegrator.applyReportData(uploadType, result.data, _getTargetFileId());
+    var result = await settings.dataIntegrator.applyReportData(uploadType, result.data);
 
     elemResult.innerHTML = result.details;
     if (result.success) {
@@ -652,7 +554,6 @@ const app = function () {
       "navConfigure": function() { _showContents('navConfigure');},
       "navAdmin": function() { _showContents('navAdmin'); },
       "navEndDateManager": function() { _doEndDateManager(); },
-      "navGoogle": function() { _handleGoogleSignIn(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
@@ -690,20 +591,6 @@ const app = function () {
     }
     
     _setDirtyBit(false);
-  }
-  
-  function _handleGoogleSignIn() {
-    settings.google.obj.trySignIn();
-  }
-  
-  function _handleGoogleSignout() {
-    settings.google.obj.signout();
-  }
-  
-  async function _handleTargetFilePick(e) {
-    var param = 'replace';
-    if (!e.target.classList.contains('pick-replace')) param = 'new';
-    await _doTargetFilePick(param);
   }
   
   async function _handleFileUpload(e) {
@@ -746,30 +633,6 @@ const app = function () {
   //----------------------------------------
   // callbacks
   //----------------------------------------
-  async function _signInChangeForGoogle(isSignedIn) {
-    settings.google.isSignedIn = isSignedIn;
-    
-    if (isSignedIn) {
-      page.notice.setNotice('');      
-      await _setTargetFileInfo();
-      await _getCurrentInfo();
-      //xxxx
-    }
-    
-    _setMainUIEnable(settings.google.isSignedIn);
-    _setMainNavbarEnable(settings.google.isSignedIn);   
-
-    _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
-  }
-  
-  async function _callbackTargetFilePick(result) {
-    if (!result) return;
-    
-    var saveResult = await _saveTargetFileId(result.id);
-    await _setTargetFileInfo();
-    await _getCurrentInfo();
-  } 
-  
   async function _callbackRosterViewerPropertyChange(params) {
     var result = await _saveStudentPropertyToDB(params);
     if (!result.success) return result;
@@ -812,11 +675,6 @@ const app = function () {
     var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
     return adminAllowed;
   }
-  
-  async function _saveGoogleFileId(googleFileId) {
-    dbResult = await SQLDBInterface.doPostQuery('roster-manager/insert', 'googlefileid', {"googlefileid": googleFileId}, page.notice);
-    return dbResult.success;
-  }
 
   async function _getStudentPropertiesFromDB() {
     dbResult = await SQLDBInterface.doGetQuery('roster-manager/query', 'student-properties', page.notice);
@@ -848,6 +706,7 @@ const app = function () {
     
     return dbResult
   }
+  
   //--------------------------------------------------------------------------
   // admin
   //--------------------------------------------------------------------------

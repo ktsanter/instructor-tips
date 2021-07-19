@@ -38,12 +38,8 @@ class MentorViewer {
     var container = this.settings.byTermAndSection;
     UtilityKTS.removeChildren(container);
     
-    if (!this.settings.currentInfo) {
-      this.statusMessage.innerHTML = 'no target file selected';
-      UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
-      
-    } else if (this.settings.currentInfo.mentorList.length == 0) {
-      this.statusMessage.innerHTML = 'no mentor data in target file';
+    if (!this.settings.currentInfo || this.settings.currentInfo.mentorList.length == 0) {
+      this.statusMessage.innerHTML = 'no mentor data available';
       UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
       
     } else {

@@ -99,17 +99,6 @@ create or replace table homeschooled
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
 );
 
-create table rosterfile
-(
-  rosterfileid          int unsigned not null AUTO_INCREMENT,
-  userid                int unsigned not null,
-  googlefileid          varchar(200) not null,
-  
-  primary key (rosterfileid),
-  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
-  constraint unique(userid, googlefileid)
-);
-
 create table preferredname
 (
   preferrednameid      int unsigned not null AUTO_INCREMENT,

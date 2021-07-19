@@ -21,7 +21,7 @@ class DataIntegrator {
     return dbResult;
   }
   
-  async applyReportData(reportType, reportData, targetFileId) {
+  async applyReportData(reportType, reportData) {
     if (reportType == 'enrollment') {
       return await this._applyEnrollmentReportData(reportData);
       

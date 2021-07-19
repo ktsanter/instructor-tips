@@ -5,14 +5,11 @@ define(function (require) {
   require('/scripts/sqldbinterface');
   require('/scripts/classProfile');
   require('/scripts/usermanagement');
-  require('/scripts/clipboard_copy');  
-  require('/scripts/classGoogleManagement');
-
+  //require('/scripts/clipboard_copy');  
   
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
-  require('classGoogleDrive');
   require('classReportPoster');
   require('classDataIntegrator');
   require('classRosterViewer');

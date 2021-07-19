@@ -26,7 +26,6 @@ const SESSION_DBNAME = getEnv('SESSION_DBNAME', true);
 const SESSION_SECRET = getEnv('SESSION_SECRET', true);
 
 const APIKEY_ENDDATEMANAGER = getEnv('APIKEY_ENDDATEMANAGER', true);
-const APIKEY_ROSTERMANAGER = getEnv('APIKEY_ROSTERMANAGER', true);
 
 const INSTRUCTORTIPS_URL = getEnv('INSTRUCTORTIPS_URL', true);
 
@@ -343,8 +342,7 @@ const rosterManager = new rosterManagerClass({
   "dbManager_enddate": mariaDBManager_EndDateManager,
   "userManagement": userManagement,  
   "tempFileManager": tmp, 
-  "formManager": formidable,
-  "apiKey": APIKEY_ROSTERMANAGER
+  "formManager": formidable
 });
 
 //------------------------------------------
@@ -553,10 +551,7 @@ var appLookup = {
   "roster-manager" : {
     appDescriptor: 'roster-manager',
     appName: 'Roster Manager',
-    //routePug: 'roster-manager/pug/roster-manager.pug',
-    //loginReRoute: 'roster-manager/manager'
-    routeFunction: dbManagerLookup['roster-manager'].renderManagerPage,
-    routeData: 'roster-manager/pug/roster-manager.pug',
+    routePug: 'roster-manager/pug/roster-manager.pug',
     loginReRoute: 'roster-manager/manage'
   }, 
 

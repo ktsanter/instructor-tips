@@ -13,7 +13,6 @@ module.exports = internal.RosterManager = class {
     this._userManagement = params.userManagement;    
     this._tempFileManager = params.tempFileManager;
     this._formManager = params.formManager;
-    this._apiKey = params.apiKey;
         
     // Excel column names for enrollments
     this.colEnrollment_Student = 'Student';
@@ -88,34 +87,6 @@ module.exports = internal.RosterManager = class {
   }
   
 //---------------------------------------------------------------
-// public methods
-//---------------------------------------------------------------  
-  async renderManagerPage(res, me, pugFileName, renderAndSendPug, userManagement, userInfo) {
-    var dbResult = await me._getGoogleFileId(userInfo);
-    if (!dbResult.success) me._sendFail(res, 'cannot access page: roster manager');
-    
-    var googleFileId = '[none]';
-    if (dbResult.data.length > 0) googleFileId = dbResult.data[0].googlefileid;
-    
-    var pugOptions = {
-      "googlefileid": googleFileId
-    };
-    
-    renderAndSendPug(res, 'rostermanager', pugFileName, {params: pugOptions});    
-  }
-
-  processUploadedFile(req, res, uploadType, userInfo) {
-    var validTypes = new Set(['enrollment', 'mentor', 'iep', '504', 'homeschooled']);
-
-    if (validTypes.has(uploadType)) {
-      this._processExcelFile(req, res, uploadType, userInfo);
-      
-    } else {
-      this._sendFail(res, 'unrecognized upload type: ' + uploadType);
-    }
-  }
-  
-//---------------------------------------------------------------
 // public: dispatchers
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
@@ -123,9 +94,6 @@ module.exports = internal.RosterManager = class {
 
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
-      
-    } else if (params.queryName == 'apikey') {
-      dbResult = await this._getAPIKey(params, postData, userInfo);
       
     } else if (params.queryName == 'student-properties') {
       dbResult = await this._getStudentProperties(params, postData, userInfo);
@@ -143,10 +111,7 @@ module.exports = internal.RosterManager = class {
   async doInsert(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'googlefileid') {
-      dbResult = await this._replaceGoogleFileId(params, postData, userInfo);
-      
-    } else if (params.queryName == 'student-property') {
+    if (params.queryName == 'student-property') {
       dbResult = await this._replaceStudentProperty(params, postData, userInfo);
   
     } else if (params.queryName == 'student-note') {
@@ -183,6 +148,20 @@ module.exports = internal.RosterManager = class {
     }
     
     return dbResult;
+  }
+  
+//---------------------------------------------------------------
+// other public methods
+//---------------------------------------------------------------  
+  processUploadedFile(req, res, uploadType, userInfo) {
+    var validTypes = new Set(['enrollment', 'mentor', 'iep', '504', 'homeschooled']);
+
+    if (validTypes.has(uploadType)) {
+      this._processExcelFile(req, res, uploadType, userInfo);
+      
+    } else {
+      this._sendFail(res, 'unrecognized upload type: ' + uploadType);
+    }
   }
   
 //---------------------------------------------------------------
@@ -748,48 +727,13 @@ module.exports = internal.RosterManager = class {
   
 //---------------------------------------------------------------
 // specific query methods
-//---------------------------------------------------------------
-  async _getGoogleFileId(userInfo) {
-    var result = this._dbManager.queryFailureResult(); 
-    
-    var query, queryResults;
-    
-    query = 
-      'select ' +
-        'googlefileid ' +
-      'from rosterfile ' +
-      'where userid = ' + userInfo.userId;
-      
-    queryResults = await this._dbManager.dbQuery(query);   
-
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = queryResults.data;
-      
-    } else {
-      result.details = queryResults.details;
-    }
-
-    return result;
-  }
-    
+//---------------------------------------------------------------    
   async _getAdminAllowed(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
     
     result.success = true;
     result.details = 'query succeeded';
     result.data = {adminallowed: funcCheckPrivilege(userInfo, 'admin')};
-
-    return result;
-  }  
-  
-  async _getAPIKey(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult(); 
-    
-    result.success = true;
-    result.details = 'query succeeded';
-    result.data = this._apiKey;
 
     return result;
   }  
@@ -891,40 +835,6 @@ module.exports = internal.RosterManager = class {
     return result;
   }
   
-  async _replaceGoogleFileId(params, postData, userInfo) {
-    var result = this._dbManager.queryFailureResult(); 
-    
-    var queryList, queryResults;
-    
-    queryList = {
-      "delete":
-        'delete ' +
-        'from rosterfile ' +
-        'where userid = ' + userInfo.userId,
-        
-      "insert": 
-        'insert ' +
-        'into rosterfile(userid, googlefileid) ' + 
-        'values (' + 
-          userInfo.userId + ', ' +
-          '"' + postData.googlefileid + '"' +
-        ') '
-    };
-
-    queryResults = await this._dbManager.dbQueries(queryList);   
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = queryResults.data;
-      
-    } else {
-      result.details = queryResults.details;
-    }
-
-    return result;
-  }
-
   async _replaceStudentProperty(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;

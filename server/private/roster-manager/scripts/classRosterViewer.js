@@ -70,12 +70,8 @@ class RosterViewer {
 
     UtilityKTS.removeChildren(this.studentSelectList);    
     
-    if (!this.settings.currentInfo) {
-      this.statusMessage.innerHTML = 'no target file selected';
-      UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
-      
-    } else if (this.settings.currentInfo.studentList.length == 0) {
-      this.statusMessage.innerHTML = 'no student data in target file';
+    if (!this.settings.currentInfo || this.settings.currentInfo.studentList.length == 0) {
+      this.statusMessage.innerHTML = 'no student data available';
       UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
 
     } else {
