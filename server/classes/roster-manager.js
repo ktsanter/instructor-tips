@@ -91,7 +91,6 @@ module.exports = internal.RosterManager = class {
 //---------------------------------------------------------------
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
-    console.log('doQuery', params, postData);
 
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
@@ -102,8 +101,11 @@ module.exports = internal.RosterManager = class {
     } else if (params.queryName == 'rosterinfo') {
       dbResult = await this._getRosterInfo(params, postData, userInfo);
       
-    }else if (params.queryName == 'accesskey') {
+    } else if (params.queryName == 'accesskey') {
       dbResult = await this._getAccessKey(params, postData, userInfo);
+            
+    } else if (params.app == 'infodeck' && params.queryName == 'infodeck-data') {
+      dbResult = await this._getInfoDeckData(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -760,7 +762,6 @@ module.exports = internal.RosterManager = class {
     };
 
     queryResults = await this._dbManager.dbQueries(queryList); 
-
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -1000,7 +1001,6 @@ module.exports = internal.RosterManager = class {
       result.details = queryResults.details;
     }
 
-    console.log('_getAccessKey', result);
     return result;
   }
   
@@ -1028,6 +1028,54 @@ module.exports = internal.RosterManager = class {
     
     return queryResults.success;
   }  
+  
+  async _getInfoDeckData(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var userId = await this._getUserIdFromAccessKey(postData.accesskey);
+    if (!userId) {
+      result.details = 'invalid access key';
+      return result;
+    }
+    
+    var rosterResult = await this._getRosterInfo(null, null, {"userId": userId});
+    if (!rosterResult.success) {
+      result.details = rosterResult.details;
+      return result;
+    }
+    
+    var propertiesResult = await this._getStudentProperties(null, null, {"userId": userId});
+    if (!propertiesResult.success) {
+      result.details = propertiesResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {
+      "rosterinfo": rosterResult.data,
+      "studentproperties": propertiesResult.data
+    }
+    
+    return result;
+  }
+  
+  async _getUserIdFromAccessKey(accesskey) {
+    var query, queryResults;
+    
+    var query =
+      'select ' + 
+        'a.userid ' +
+      'from accesskey as a ' +
+      'where a.accesskey = "' + accesskey + '"';
+       
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    var userId = null;
+    if (queryResults.success  && queryResults.data.length == 1) userId = queryResults.data[0].userid;
+    
+    return userId;
+  }
   
 //----------------------------------------------------------------------
 // utility

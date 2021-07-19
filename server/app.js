@@ -1158,6 +1158,10 @@ app.post('/:app/query/:queryName', async function (req, res) {
     var dbManager = dbManagerLookup[req.params.app];
     res.send(await dbManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
 
+  } else if (req.params.app == 'infodeck') {
+    var dbManager = dbManagerLookup['roster-manager'];
+    res.send(await dbManager.doQuery(req.params, req.body, userInfo, userManagement.isAtLeastPrivilegeLevel));
+
   } else {
     res.send(_failedRequest('post'));
   }
