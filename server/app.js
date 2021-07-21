@@ -665,6 +665,26 @@ app.get('/rostermanager/extension-help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/extension-help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
+app.post('/usermanagement/routeToApp/roster-manager/export/:exportType', function (req, res) {
+  rosterManager.exportToExcel(req, res, processRosterManagerExportResult); 
+})
+
+async function processRosterManagerExportResult(req, res, result) {
+  if (result.success) {
+    var fileName = result.targetfilename;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+    await result.workbook.xlsx.write(res);
+
+    res.end();
+    
+  } else {
+    var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/export-error.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {description: result.description}});
+  }
+}
 
 app.get('/commentbuddy/composer', function (req, res) { routeIfLoggedIn(req, res, 'commentbuddy'); })
 app.get('/commentbuddy/help', function (req, res) {

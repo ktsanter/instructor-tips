@@ -30,6 +30,14 @@ class RosterViewer {
     this._updateUI();
   }
   
+  exportToExcel(studentData) {
+    if (Object.keys(studentData).length == 0) return;
+    
+    var exportForm = this.config.container.getElementsByClassName('export-form')[0];
+    exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(studentData);
+    exportForm.submit();
+  }
+    
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
@@ -39,6 +47,7 @@ class RosterViewer {
     this.statusMessage = this.config.container.getElementsByClassName('status-message')[0];
     
     this.studentImages = this.config.container.getElementsByClassName('item-images')[0];
+    
     this.studentImageIEP = this.studentImages.getElementsByClassName('item-image image-iep')[0];
     this.studentImage504 = this.studentImages.getElementsByClassName('item-image image-504')[0];
     this.studentIconHomeSchooled = this.config.container.getElementsByClassName('item-icon icon-homeschooled')[0];
@@ -63,7 +72,7 @@ class RosterViewer {
   _updateUI() {
     UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, true);
 
-    UtilityKTS.setClass(this.studentImages, this.settings.hideClass, true);       
+    //UtilityKTS.setClass(this.studentImages, this.settings.hideClass, true);       
 
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
@@ -120,7 +129,7 @@ class RosterViewer {
     var info = this.settings.currentInfo.students[studentName];
     this.settings.selectedStudentInfo = info;
     
-    UtilityKTS.setClass(this.studentImages, this.settings.hideClass, false);
+    //UtilityKTS.setClass(this.studentImages, this.settings.hideClass, false);
 
     UtilityKTS.removeChildren(this.studentContent);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false);
@@ -457,7 +466,7 @@ class RosterViewer {
   _sanitizeText(str) {
     var sanitized = str;
     
-    sanitized = sanitized.replace(/[^A-Za-z0-9\s'\.]/g, '');
+    sanitized = sanitized.replace(/[^A-Za-z0-9\s'\.\/\-]/g, '');
     
     return sanitized;
   }

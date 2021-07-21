@@ -182,6 +182,63 @@ module.exports = internal.RosterManager = class {
     }
   }
   
+  exportToExcel(req, res, callback) {
+    var thisObj = this;
+    var result = {
+        "success": false,
+        "description": "export failed",
+        "workbook": null,
+        "targetfilename": ""
+      }
+      
+    var exportType = req.params.exportType;
+    var validExportTypes = new Set(['student', 'mentor']);
+    if (!validExportTypes.has(exportType)) {
+      result.description = 'invalid export type: ' + exportType;
+      callback(req, res, result);
+      return;
+    }
+
+    var form = new this._formManager.IncomingForm();
+    form.parse(req, async function(err, fields, files) {
+      if (err) {
+        result.description = 'error in form.parse: ' + JSON.stringify(err);
+        callback(erq, res, result);
+        return;
+      }
+      
+      if (!fields.hasOwnProperty('export-data')) {
+        result.description = 'missing export data field';
+        callback(erq, res, result);
+        return;
+      }
+      
+      var exportData = JSON.parse(fields['export-data']);
+      
+      const exceljs = require('exceljs');
+      var workbook = new exceljs.Workbook();
+      workbook.clearThemes();
+      
+      var exportFileName;
+      if (exportType == 'student') {
+        thisObj._writeStudentDataToWorkbook(exportData, workbook);
+        exportFileName = 'rostermanager-export-student.xlsx';
+        
+      } else if (exportType == 'mentor') {
+        thisObj._writeMentorDataToWorkbook(exportData, workbook);
+        exportFileName = 'rostermanager-export-mentor.xlsx';
+      }
+      
+      var result = {
+        "success": true,
+        "description": "success",
+        "workbook": workbook,
+        "targetfilename": exportFileName
+      }
+      callback(req, res, result);
+   });
+  }
+    
 //---------------------------------------------------------------
 // private methods - file processing
 //--------------------------------------------------------------- 
@@ -741,6 +798,77 @@ module.exports = internal.RosterManager = class {
     }
     
     return result;
+  }
+  
+//---------------------------------------------------------------
+// write export data to Excel workbook
+//---------------------------------------------------------------    
+  _writeStudentDataToWorkbook(studentData, workbook) {
+    console.log('_writeStudentDataToWorkbook', studentData);
+    
+    var sheet = workbook.addWorksheet('students');
+    for (var student in studentData) {
+      var item = studentData[item];
+      sheet.addRow([student]);
+    }
+
+    /*
+    sheet.columns = [ 
+      {width: 32}, 
+      {width: 58}, 
+      {width: 20, style: {alignment: {horizontal: 'center'}}}, 
+      {width: 20, style: {alignment: {horizontal: 'center'}}}, 
+      {width: 12, style: {alignment: {horizontal: 'center'}}},
+      {width: 50} 
+    ];
+    sheet.addRow(['student', 'section', 'end date', 'enrollment end date', 'override', 'notes']);
+    sheet.getRow(1).font = {bold: true};
+    sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+    
+    for (var i = 0; i < exportData.length; i++) {
+      var item = exportData[i];
+      sheet.addRow([
+        item.student,
+        item.section,
+        item.enddate,
+        item.enrollmentenddate,
+        item.override ? '☑' : '',
+        decodeURIComponent(item.notes)
+      ]);
+    }
+    */
+  }
+  
+  _writeMentorDataToWorkbook(mentorData, workbook) {
+    console.log('_writeMentorDataToWorkbook', mentorData);
+
+    var sheet = workbook.addWorksheet('mentors');
+    sheet.addRow(['test']);    
+    /*
+    sheet.columns = [ 
+      {width: 32}, 
+      {width: 58}, 
+      {width: 20, style: {alignment: {horizontal: 'center'}}}, 
+      {width: 20, style: {alignment: {horizontal: 'center'}}}, 
+      {width: 12, style: {alignment: {horizontal: 'center'}}},
+      {width: 50} 
+    ];
+    sheet.addRow(['student', 'section', 'end date', 'enrollment end date', 'override', 'notes']);
+    sheet.getRow(1).font = {bold: true};
+    sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+    
+    for (var i = 0; i < exportData.length; i++) {
+      var item = exportData[i];
+      sheet.addRow([
+        item.student,
+        item.section,
+        item.enddate,
+        item.enrollmentenddate,
+        item.override ? '☑' : '',
+        decodeURIComponent(item.notes)
+      ]);
+    }
+    */
   }
   
 //---------------------------------------------------------------

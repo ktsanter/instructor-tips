@@ -1,4 +1,8 @@
 mixin mentorContainer()
+  .row(class="hide-me")
+    form(id="formExport" class="export-form hide-me" action="roster-manager/export/mentor" enctype="multipart/form-data" method="post")
+      textarea(id="exportData" class="export-data" name="export-data")
+
   .row(class="py-2")
     .col-sm
       .status-message(class="hide-me")

@@ -229,6 +229,14 @@ const app = function () {
     window.open(settings.enddateManagerURL, '_blank');
   }
   
+  function _exportToExcel(exportType) {
+    if (exportType == 'student') {
+      settings.rosterViewer.exportToExcel(settings.currentInfo.students);
+    } else if (exportType == 'mentor') {
+      settings.mentorViewer.exportToExcel(settings.currentMentorInfo);
+    }
+  }
+  
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
   }
@@ -566,6 +574,8 @@ const app = function () {
       "navAccessKey": function() { _showContents('navAccessKey'); },      
       "navAdmin": function() { _showContents('navAdmin'); },
       "navEndDateManager": function() { _doEndDateManager(); },
+      "navExportStudent": function() { _exportToExcel('student'); },
+      "navExportMentor": function() { _exportToExcel('mentor'); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
@@ -698,7 +708,7 @@ const app = function () {
     
     settings.accessKey = null;
     var result = await SQLDBInterface.doGetQuery('roster-manager/query', 'accesskey');
-    console.log(result);
+
     if (result.success) {
       settings.accessKey = result.data.accesskey;
       page.notice.setNotice('');
