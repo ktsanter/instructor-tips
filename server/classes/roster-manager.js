@@ -105,7 +105,19 @@ module.exports = internal.RosterManager = class {
       dbResult = await this._getAccessKey(params, postData, userInfo);
             
     } else if (params.app == 'infodeck' && params.queryName == 'infodeck-data') {
-      dbResult = await this._getInfoDeckData(params, postData, userInfo);
+      dbResult = await this._infodeckGetData(params, postData, userInfo);
+            
+    } else if (params.app == 'infodeck' && params.queryName == 'infodeck-preferredname') {
+      dbResult = await this._infodeckUpdatePreferredName(params, postData, userInfo);
+            
+    } else if (params.app == 'infodeck' && params.queryName == 'infodeck-addnote') {
+      dbResult = await this._infodeckAddNote(params, postData, userInfo);
+            
+    } else if (params.app == 'infodeck' && params.queryName == 'infodeck-updatenote') {
+      dbResult = await this._infodeckUpdateNote(params, postData, userInfo);
+            
+    } else if (params.app == 'infodeck' && params.queryName == 'infodeck-deletenote') {
+      dbResult = await this._infodeckDeleteNote(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -842,7 +854,7 @@ module.exports = internal.RosterManager = class {
   
   async _replaceStudentProperty(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
-    var queryList, queryResults;
+    var queryList, queryResults;    
     
     if (postData.property == 'preferredname') {
       queryList = {
@@ -913,7 +925,7 @@ module.exports = internal.RosterManager = class {
   
   async _updateStudentNote(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
-    var queryList, queryResults;
+    var queryList, queryResults;   
     
     queryList = {
       "update": 
@@ -1029,7 +1041,7 @@ module.exports = internal.RosterManager = class {
     return queryResults.success;
   }  
   
-  async _getInfoDeckData(params, postData, userInfo) {
+  async _infodeckGetData(params, postData) {
     var result = this._dbManager.queryFailureResult(); 
     
     var userId = await this._getUserIdFromAccessKey(postData.accesskey);
@@ -1060,6 +1072,147 @@ module.exports = internal.RosterManager = class {
     return result;
   }
   
+  async _infodeckUpdatePreferredName(params, postData) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var userId = await this._getUserIdFromAccessKey(postData.accesskey);
+    if (!userId) {
+      result.details = 'invalid access key';
+      return result;
+    }
+
+    var updateResult = await this._replaceStudentProperty(
+      { "app": 'roster-manager', "queryName": 'student-property' },
+      {
+        "student": postData.student,
+        "property": 'preferredname',
+        "value": postData.preferredname
+      },
+      {"userId": userId}
+    );
+    
+    if (!updateResult.success) {
+      result.details = updateResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = postData;
+    
+    return result;
+  }
+
+  async _infodeckAddNote(params, postData) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var userId = await this._getUserIdFromAccessKey(postData.accesskey);
+    if (!userId) {
+      result.details = 'invalid access key';
+      return result;
+    }
+
+    var updateResult = await this._addStudentNote(
+      { "app": 'roster-manager', "queryName": 'student-note' },
+      {
+        "student": postData.student,
+        "notetext": postData.notetext,
+        "datestamp": postData.datestamp
+      },
+      {"userId": userId}
+    );
+    
+    if (!updateResult.success) {
+      result.details = updateResult.details;
+      return result;
+    }
+
+    var propertiesResult = await this._getNotesForStudent(userId, postData.student);
+    if (!propertiesResult.success) {
+      result.details = propertiesResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = propertiesResult.data;
+    
+    return result;
+  }
+
+  async _infodeckUpdateNote(params, postData) {
+    var result = this._dbManager.queryFailureResult(); 
+
+    var userId = await this._getUserIdFromAccessKey(postData.accesskey);
+    if (!userId) {
+      result.details = 'invalid access key';
+      return result;
+    }
+
+    var updateResult = await this._updateStudentNote(
+      { "app": 'roster-manager', "queryName": 'student-note' },
+      {
+        "noteid": postData.noteid,
+        "student": postData.student,
+        "notetext": postData.notetext,
+        "datestamp": postData.datestamp        
+      },
+      {"userId": userId}
+    );
+    
+    if (!updateResult.success) {
+      result.details = deleteResult.details;
+      return result;
+    }
+
+    var propertiesResult = await this._getNotesForStudent(userId, postData.student);
+    if (!propertiesResult.success) {
+      result.details = propertiesResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = propertiesResult.data;
+    
+    return result;
+  }
+
+  async _infodeckDeleteNote(params, postData) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var userId = await this._getUserIdFromAccessKey(postData.accesskey);
+    if (!userId) {
+      result.details = 'invalid access key';
+      return result;
+    }
+
+    var deleteResult = await this._deleteStudentNote(
+      { "app": 'roster-manager', "queryName": 'student-note' },
+      {
+        "noteid": postData.noteid
+      },
+      {"userId": userId}
+    );
+    
+    if (!deleteResult.success) {
+      result.details = deleteResult.details;
+      return result;
+    }
+
+    var propertiesResult = await this._getNotesForStudent(userId, postData.student);
+    if (!propertiesResult.success) {
+      result.details = propertiesResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = propertiesResult.data;
+    
+    return result;
+  }
+
   async _getUserIdFromAccessKey(accesskey) {
     var query, queryResults;
     
@@ -1075,6 +1228,17 @@ module.exports = internal.RosterManager = class {
     if (queryResults.success  && queryResults.data.length == 1) userId = queryResults.data[0].userid;
     
     return userId;
+  }
+  
+  async _getNotesForStudent(userId, student) {
+    var query = 
+      'select n.noteid, n.studentname, n.datestamp, n.notetext ' +
+      'from note as n ' +
+      'where n.userid = ' + userId + ' ' +
+        'and n.studentname = "' + student + '" ';
+      'order by n.datestamp ';
+
+    return this._dbManager.dbQuery(query);      
   }
   
 //----------------------------------------------------------------------
