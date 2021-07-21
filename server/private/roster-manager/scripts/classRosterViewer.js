@@ -138,7 +138,15 @@ class RosterViewer {
     
     var handler = null;
     if (this.settings.editingEnabled) handler = (a, b, c) => { this._handlePropertyEdit(a, b, c); };
-    this.studentContent.appendChild(this._renderProperty('preferred name', info.preferredname, 'preferredname', handler));
+    var elem = this._renderProperty('preferred name', info.preferredname, 'preferredname', handler);
+    this.studentContent.appendChild(elem);
+    var span = elem.getElementsByTagName('span')[1];
+    span.classList.add('hover-decorate');
+    span.title = 'edit preferred name';
+    if (info.preferredname.length == 0) {
+      span.innerHTML = 'no preferred name';
+      span.classList.add('no-preferredname');
+    }
 
     var enrollmentTable = this._renderPropertyArray(
       ['term', 'section', 'startdate', 'enddate'], 
@@ -186,13 +194,13 @@ class RosterViewer {
     
     var col2 = CreateElement.createDiv(null, 'col-sm');
     row.appendChild(col2);
+    
     var elem = CreateElement.createSpan(null, null, value);
     col2.appendChild(elem);
 
     if (handler) {
-      var classList = this.settings.editIconClasses + ' icon editicon ms-1';
       var wrapperHandler = this._makePropertyEditHandler(label, property, elem, handler);
-      col1.appendChild(CreateElement.createIcon(null, classList, 'edit ' + label, wrapperHandler));
+      elem.addEventListener('click', wrapperHandler);
     }
     
     return row;
@@ -284,9 +292,9 @@ class RosterViewer {
           icon.setAttribute('item', JSON.stringify(item));
           
           var handler = (e) => { this._handleTableEdit(e, 'edit', table); };
-          icon = CreateElement.createIcon(null, commonClasses + ' fas fa-edit', null, handler);
-          bodyCell.appendChild(icon);
-          icon.setAttribute('item', JSON.stringify(item));        
+          bodyCell.previousSibling.classList.add('hover-decorate');
+          bodyCell.previousSibling.addEventListener('click', handler);
+          bodyCell.previousSibling.setAttribute('item', JSON.stringify(item));
         }
       }
     }
@@ -399,6 +407,9 @@ class RosterViewer {
   }
   
   async _handlePropertyEdit(label, property, targetElement) {
+    console.log(label);
+    console.log(property);
+    console.log(targetElement);
     await this._doPropertyEdit(label, property, targetElement);
   }
   

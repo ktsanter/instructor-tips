@@ -109,8 +109,17 @@ body {
   color: var(--bgPrimary);
 }
 
+.contents .contents-navStudent .no-preferredname {
+  font-style: italic;
+}
+
 .contents .contents-navStudent .limit-second-col th:nth-child(2) {
   width: 80%;
+}
+
+.contents .contents-navStudent .hover-decorate:hover {
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 /*------------------------------------------------------------------------------
