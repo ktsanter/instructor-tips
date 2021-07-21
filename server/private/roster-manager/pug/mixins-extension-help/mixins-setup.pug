@@ -2,9 +2,35 @@ mixin helpcontent_Setup()
   .helpsection-title setup
 
   .helpsection-content
-    |In order to start using infoDeck you'll need to: 
+    |In order to start using 
+    .logotext infoDeck
+    |&nbsp;you'll need to: 
+    
     ol
       li use the 
-        a(href="composer" target="_blank") Comment Budy composer
-        |&nbsp;to write and save your comments. 
-        |Note you will need to create a free account the first time you use the composer.
+        a(class="rostermanager-link" href="" target="_blank") Roster Manager
+        |&nbsp;to upload and manipulate your roster information (students and mentors). 
+        |Note you will need to create a free account the first time you use the tool.
+
+  .helpsection-content
+    ol(start="2")
+      li obtain an access key from the Roster Manager
+        .helpsection-imagecontainer
+          img(src="https://res.cloudinary.com/ktsanter/image/upload/v1626889285/Roster%20Manager/infodeck_getaccesskey.png")
+
+  .helpsection-content
+    ol(start="3")
+      li enter the access key in the extension
+        .helpsection-imagecontainer
+          img(src="https://res.cloudinary.com/ktsanter/image/upload/v1626889407/Roster%20Manager/infodeck_setaccesskey.png")
+
+  .helpsection-content
+    br
+    
+  .helpsection-content
+    |Here's how to do that 
+
+    .helpsection-subcontent(class="demo-video ms-4")
+      div(class="ratio ratio-16x9")
+        |[video here]
+        //iframe(src="https://www.youtube.com/embed/9qv9wCXbanQ" allowfullscreen)

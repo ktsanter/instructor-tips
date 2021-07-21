@@ -1,4 +1,5 @@
 setNavbarTargets();
+setAppLinkTargets();
 document.getElementById('navOverview').click();
 
 function setNavbarTargets() {
@@ -6,7 +7,9 @@ function setNavbarTargets() {
   navMap = {
     "navOverview": "anchorOverview",
     "navSetup": "anchorSetup",
-    "navSearch": "anchorSearch"
+    "navStudents": "anchorStudents",
+    "navMentors": "anchorMentors",
+    "navOther": "anchorOther"
   };
   
   for (var i = 0; i < navbarElements.length; i++) {
@@ -17,4 +20,17 @@ function setNavbarTargets() {
       elem.href = '#' + anchorId;
     }
   }
+}
+
+function setAppLinkTargets() {
+  var appLinkElements = document.getElementsByClassName('rostermanager-link');
+  for (var i = 0; i < appLinkElements.length; i++) {
+    appLinkElements[i].href = window.location.origin + '/roster-manager';
+  }
+
+  var appLinkElements = document.getElementsByClassName('enddatemanager-link');
+  for (var i = 0; i < appLinkElements.length; i++) {
+    appLinkElements[i].href = window.location.origin + '/enddate-manager/manager';
+  }
+  
 }

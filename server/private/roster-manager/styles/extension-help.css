@@ -16,6 +16,15 @@ body {
   display: none;
 }
 
+.logotext {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--bgPrimary);
+  border-radius: 0.4em;  
+  padding: 0 0.2em;
+}
+
 /*-------------------------------------------------------------------
  * sections
  *------------------------------------------------------------------*/
