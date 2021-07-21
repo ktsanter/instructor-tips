@@ -2,6 +2,12 @@ include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
 
+include ./mixins-extension-help/mixins-overvew.pug
+include ./mixins-extension-help/mixins-setup.pug
+include ./mixins-extension-help/mixins-students.pug
+include ./mixins-extension-help/mixins-mentors.pug
+include ./mixins-extension-help/mixins-other.pug
+
 doctype html
 html(lang="en")
   head
@@ -11,7 +17,47 @@ html(lang="en")
 
     +fontawesome()
     +bootstrapstyle()
+    
+    style
+      include ../../common/styles/navbar-overrides.css    
+      include ../styles/extension-help.css
 
+  body(class="colorscheme")
+    +makeNavbar("CBV3 extension help", 
+      {
+        items: [
+          {id: "navOverview", type: "link", label: "overview"},
+          {id: "navSetup", type: "link", label: "setup"},
+          {id: "navStudents", type: "link", label: "students"},
+          {id: "navMentors", type: "link", label: "mentors"},
+          {id: "navOther", type: "link", label: "other"}
+        ],
+        
+        buttons: [],        
+        profile: false
+      }
+    )    
 
-  body
-    div infoDeck help (TBD)
+    .container-fluid
+      .row: .col-sm 
+        .helpsection(id="anchorOverview")
+           +helpcontent_Overview
+        
+      .row: .col-sm 
+        .helpsection(id="anchorSetup") 
+           +helpcontent_Setup
+        
+      .row: .col-sm 
+        .helpsection(id="anchorStudents") 
+           +helpcontent_Students
+                    
+      .row: .col-sm 
+        .helpsection(id="anchorMentors") 
+           +helpcontent_Mentors
+        
+      .row: .col-sm 
+        .helpsection(id="anchorOther") 
+           +helpcontent_Other
+
+    script
+      include ../scripts/extension-help.js
