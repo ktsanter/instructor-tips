@@ -233,7 +233,7 @@ const app = function () {
     if (exportType == 'student') {
       settings.rosterViewer.exportToExcel(settings.currentInfo.students);
     } else if (exportType == 'mentor') {
-      settings.mentorViewer.exportToExcel(settings.currentMentorInfo);
+      settings.mentorViewer.exportToExcel(settings.currentMentorInfo.mentorsByTermAndSection);
     }
   }
   
@@ -560,7 +560,8 @@ const app = function () {
 	//--------------------------------------------------------------------------
   function _navDispatch(e) {
     var dispatchTarget = e.target.id;
-
+    if (e.target.classList.contains('use-parentid')) dispatchTarget = e.target.parentNode.id;
+    
     if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
     if (dispatchTarget == settings.currentNavOption) return;
     

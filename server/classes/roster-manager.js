@@ -804,71 +804,125 @@ module.exports = internal.RosterManager = class {
 // write export data to Excel workbook
 //---------------------------------------------------------------    
   _writeStudentDataToWorkbook(studentData, workbook) {
-    console.log('_writeStudentDataToWorkbook', studentData);
-    
     var sheet = workbook.addWorksheet('students');
-    for (var student in studentData) {
-      var item = studentData[item];
-      sheet.addRow([student]);
-    }
-
-    /*
-    sheet.columns = [ 
-      {width: 32}, 
-      {width: 58}, 
-      {width: 20, style: {alignment: {horizontal: 'center'}}}, 
-      {width: 20, style: {alignment: {horizontal: 'center'}}}, 
-      {width: 12, style: {alignment: {horizontal: 'center'}}},
-      {width: 50} 
-    ];
-    sheet.addRow(['student', 'section', 'end date', 'enrollment end date', 'override', 'notes']);
+    sheet.addRow(['student', 'term', 'section', 'start date', 'end date', 'enrollment end date', 'email', 'affiliation', 'preferred', 'IEP', '504', 'homeshcooled', 'notes']);
     sheet.getRow(1).font = {bold: true};
     sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
-    
-    for (var i = 0; i < exportData.length; i++) {
-      var item = exportData[i];
-      sheet.addRow([
-        item.student,
-        item.section,
-        item.enddate,
-        item.enrollmentenddate,
-        item.override ? '☑' : '',
-        decodeURIComponent(item.notes)
-      ]);
+
+    sheet.columns = [ 
+      {width: 19, style: {alignment: {vertical: 'top'}}}, 
+      {width: 41, style: {alignment: {vertical: 'top'}}}, 
+      {width: 33, style: {alignment: {vertical: 'top'}}}, 
+      {width: 12, style: {alignment: {vertical: 'top', horizontal: 'center'}}}, 
+      {width: 12, style: {alignment: {vertical: 'top', horizontal: 'center'}}}, 
+      {width: 18, style: {alignment: {vertical: 'top', horizontal: 'center'}}}, 
+      {width: 25, style: {alignment: {vertical: 'top'}}}, 
+      {width: 35, style: {alignment: {vertical: 'top'}}}, 
+      {width: 12, style: {alignment: {vertical: 'top'}}}, 
+      {width: 8, style: {alignment: {vertical: 'top', horizontal: 'center'}}}, 
+      {width: 8, style: {alignment: {vertical: 'top', horizontal: 'center'}}}, 
+      {width: 13, style: {alignment: {vertical: 'top', horizontal: 'center'}}},
+      {width: 60, style: {alignment: {vertical: 'top'}}}
+    ]
+
+    var rowList = [];
+    for (var student in studentData) {
+      var studentItem = studentData[student];
+  
+      for (var i = 0; i < studentItem.enrollments.length; i++) {
+        var enrollment = studentItem.enrollments[i];
+
+        var endDate = this._getEndDate(enrollment, studentItem.enddateoverride);
+        
+        var row = [
+          student,
+          enrollment.term,
+          enrollment.section,
+          enrollment.startdate,
+          endDate,
+          enrollment.enddate,
+          enrollment.email,
+          enrollment.affiliation,
+          studentItem.preferredname,
+          studentItem.iep,
+          studentItem["504"],
+          studentItem.homeschooled
+        ];
+        
+        var notesCombined = ''
+        for (var j = 0; j < studentItem.notes.length; j++) {
+          var note = studentItem.notes[j];
+          if (notesCombined.length > 0) notesCombined += '\n';
+          notesCombined += note.datestamp + ': ' + note.notetext;
+        }
+        row.push(notesCombined);
+        
+        rowList.push(row);
+      }
     }
-    */
+    
+    rowList = rowList.sort((a,b) => {
+      return a[0].localeCompare(b[0]);
+    });
+    
+    for (var i = 0; i < rowList.length; i++) {
+      sheet.addRow(rowList[i]);
+    }
   }
   
   _writeMentorDataToWorkbook(mentorData, workbook) {
-    console.log('_writeMentorDataToWorkbook', mentorData);
-
     var sheet = workbook.addWorksheet('mentors');
-    sheet.addRow(['test']);    
-    /*
-    sheet.columns = [ 
-      {width: 32}, 
-      {width: 58}, 
-      {width: 20, style: {alignment: {horizontal: 'center'}}}, 
-      {width: 20, style: {alignment: {horizontal: 'center'}}}, 
-      {width: 12, style: {alignment: {horizontal: 'center'}}},
-      {width: 50} 
-    ];
-    sheet.addRow(['student', 'section', 'end date', 'enrollment end date', 'override', 'notes']);
-    sheet.getRow(1).font = {bold: true};
-    sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+    var rowCount = 0;
     
-    for (var i = 0; i < exportData.length; i++) {
-      var item = exportData[i];
-      sheet.addRow([
-        item.student,
-        item.section,
-        item.enddate,
-        item.enrollmentenddate,
-        item.override ? '☑' : '',
-        decodeURIComponent(item.notes)
-      ]);
+    sheet.columns = [ 
+      {width: 40, style: {alignment: {vertical: 'top'}}}, 
+      {width: 26, style: {alignment: {vertical: 'top'}}}, 
+      {width: 15, style: {alignment: {vertical: 'top'}}}, 
+      {width: 36, style: {alignment: {vertical: 'top'}}}, 
+      {width: 15, style: {alignment: {vertical: 'top'}}}
+    ];
+
+    for (var term in mentorData) {
+      var termItem = mentorData[term];
+      sheet.addRow([term]);
+      rowCount++;
+      sheet.getRow(rowCount).font = {"bold": true};
+      sheet.getRow(rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
+      
+      for (var section in termItem) {
+        var sectionItem = termItem[section];
+        sheet.addRow([section]);
+        rowCount++;
+        sheet.getRow(rowCount).font = {"bold": true};
+        
+        for (var mentor in sectionItem) {
+          var mentorItem = sectionItem[mentor];
+          sheet.addRow([
+            mentor,
+            mentorItem.email,
+            mentorItem.phone,
+            mentorItem.affiliation,
+            mentorItem.affiliationphone
+          ]);
+          rowCount++;
+        }
+        
+        sheet.addRow([]);
+        rowCount++;
+      }
+    } 
+  }
+  
+  _getEndDate(enrollment, enddateoverride) {
+    var endDate = enrollment.enddate;
+    for (var i = 0; i < enddateoverride.length; i++) {
+      if (enrollment.section == enddateoverride[i].section) {
+        endDate = enddateoverride[i].enddate;
+      }
     }
-    */
+    
+    return endDate;    
   }
   
 //---------------------------------------------------------------

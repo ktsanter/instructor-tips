@@ -24,7 +24,10 @@ class MentorViewer {
   }
   
   exportToExcel(mentorData) {
-    if (Object.keys(mentorData).length == 0) return;
+    if (Object.keys(mentorData).length == 0) {
+      alert('There is no mentor data available');
+      return;
+    }
     
     var exportForm = this.config.container.getElementsByClassName('export-form')[0];
     exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(mentorData);

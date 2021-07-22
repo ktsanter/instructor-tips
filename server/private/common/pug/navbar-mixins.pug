@@ -35,7 +35,15 @@ mixin makeNavbar(title, params)
                 ul(class="dropdown-menu" aria-labelledby="navbarDropdown")
                   each subItem in mainItem.items
                     if (subItem.type == "link")
-                        li: a(id=subItem.id class="dropdown-item use-handler" href="#")= subItem.label
+                        li
+                          if (subItem.icon)
+                            a(id=subItem.id class="dropdown-item use-handler" href="#")
+                              -var classList = subItem.icon + " use-parentid"
+                              i(class=classList)
+                              .dropdown-iconlabel(class="use-parentid")= subItem.label
+                          else
+                            a(id=subItem.id class="dropdown-item use-handler" href="#")= subItem.label
+
                     else if (subItem.type == "divider")
                         li: hr(id=subItem.id class="dropdown-divider")
 
