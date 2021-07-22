@@ -41,10 +41,11 @@ html(lang="en")
           {id: "navConfigure", type: "link", label: "configure"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
-            {id: "navAccessKey", type: "link", label: "get access key"},          
-            {id: "navEndDateManager", type: "link", label: "end date manager"},
             {id: "navExportStudent", type: "link", label: "download student data", icon: "excel-icon fas fa-file-excel"},
             {id: "navExportMentor", type: "link", label: "download mentor data", icon: "excel-icon fas fa-file-excel"},
+            {type: "divider"},
+            {id: "navAccessKey", type: "link", label: "get access key"},          
+            {id: "navEndDateManager", type: "link", label: "end date manager"},
             {type: "divider"},
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},

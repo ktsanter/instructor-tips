@@ -268,6 +268,15 @@ const app = function () {
       UtilityKTS.setClass(elem, 'disabled', !enable);
     }
   }
+
+  function _setExportUIEnable(params) {
+    console.log('_setExportUIEnable', params);
+    var elem = document.getElementById('navExportStudent');
+    UtilityKTS.setClass(elem, 'disabled', !params.student);
+
+    var elem = document.getElementById('navExportMentor');
+    UtilityKTS.setClass(elem, 'disabled', !params.mentor);
+  }
   
   function _setConfigureEnable(enable) {
     UtilityKTS.setClass(page.navConfigure, 'disable-container', !enable);
@@ -275,6 +284,8 @@ const app = function () {
   
   async function _getCurrentInfo() {
     settings.currentInfo = null;
+    
+    _setExportUIEnable({"student": false, "mentor": false});
     
     var result = await settings.dataIntegrator.readRosterInfo();
     if (!result.success) {
@@ -292,6 +303,11 @@ const app = function () {
 
     settings.currentInfo = _packageStudentInfo(rosterInfo, extraStudentInfo);
     settings.currentMentorInfo = _packageMentorInfo(rosterInfo, extraStudentInfo);
+    
+    _setExportUIEnable({
+      "student": settings.currentInfo.studentList.length > 0, 
+      "mentor": settings.currentMentorInfo.mentorList.length > 0
+    });
     
     if (settings.currentNavOption == 'navStudent') _showStudent();
     if (settings.currentNavOption == 'navMentor') _showMentor();

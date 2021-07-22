@@ -26,8 +26,12 @@ body {
   font-size: 1.1em;
 }
 
-.navbar .excel-icon {
+.navbar .dropdown-item .excel-icon {
   color: #379164;
+}
+
+.navbar .dropdown-item.disabled .excel-icon  {
+  color: #adb5bd;
 }
 
 /*------------------------------------------------------------------------------
