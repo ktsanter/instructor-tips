@@ -666,7 +666,7 @@ const app = function () {
     var student = params.student;
     
     settings.currentInfo.students[student][property] = value;
-    settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType(), _getRosterViewerEditEnable());
+    settings.rosterViewer.update(settings.currentInfo);
     
     return result;
   }
