@@ -9,8 +9,6 @@ class RosterViewer {
     this.settings = {
       hideClass: 'hide-me',
       currentInfo: null,
-      renderType: 'plain',
-      editingEnabled: true,
       editIconClasses: 'fas fa-edit',
       selectedStudentInfo: null
     }
@@ -21,10 +19,8 @@ class RosterViewer {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------  
-  update(currentInfo, renderType, editingEnabled) {
+  update(currentInfo) {
     this.settings.currentInfo = currentInfo;
-    this.settings.renderType = renderType;
-    this.settings.editingEnabled = editingEnabled;
     this.settings.selectedStudentInfo = null;
     
     this._updateUI();
@@ -148,8 +144,7 @@ class RosterViewer {
     this.studentContent.appendChild(this._renderProperty("affiliation", info.enrollments[0].affiliation));
     this.studentContent.appendChild(this._renderProperty('email', info.enrollments[0].email));
     
-    var handler = null;
-    if (this.settings.editingEnabled) handler = (a, b, c) => { this._handlePropertyEdit(a, b, c); };
+    var handler = (a, b, c) => { this._handlePropertyEdit(a, b, c); };
     var elem = this._renderProperty('preferred name', info.preferredname, 'preferredname', handler);
     this.studentContent.appendChild(elem);
     var span = elem.getElementsByTagName('span')[1];
@@ -225,52 +220,36 @@ class RosterViewer {
   }
     
   _renderPropertyArray(propertyArray, labelArray, source, container, extraClasses, renderIfEmpty) {
-    if (this.settings.renderType == 'plain') {
-      for (var i = 0; i < source.length; i++) {
-        var item = source[i];
-        for (var j = 0; j < propertyArray.length; j++) {
-          var label = labelArray[j];
-          var property = propertyArray[j];
-          var value = item[property];
-          if (property == 'startdate' || property == 'enddate') value = value.slice(0, 10);
-          var elemProperty = this._renderProperty(label, value);
-          container.appendChild(elemProperty);
-          if (j == 0) elemProperty.classList.add('mt-3');
-        }
+    var tableContents = [];
+    var itemValues = [];
+    
+    for (var i = 0; i < source.length; i++) {
+      var item = source[i];
+      var rowContents = [];
+      itemValues.push(item);
+      
+      for (var j = 0; j < propertyArray.length; j++) {
+        var property = propertyArray[j];
+        var value = item[property];
+        if (property == 'startdate' || property == 'enddate') value = value.slice(0, 10);
+        if (property == '[edit-delete-icons]') value = property;
+        rowContents.push(value);
       }
       
-    } else if (this.settings.renderType == 'table') {
-      var tableContents = [];
-      var itemValues = [];
-      
-      for (var i = 0; i < source.length; i++) {
-        var item = source[i];
-        var rowContents = [];
-        itemValues.push(item);
-        
-        for (var j = 0; j < propertyArray.length; j++) {
-          var property = propertyArray[j];
-          var value = item[property];
-          if (property == 'startdate' || property == 'enddate') value = value.slice(0, 10);
-          if (property == '[edit-delete-icons]') value = property;
-          rowContents.push(value);
-        }
-        
-        tableContents.push(rowContents);
-      }
-      
-      if (source.length > 0 || renderIfEmpty) {
-        var classes = 'table table-striped table-hover table-sm mt-3';
-        if (extraClasses) classes += ' ' + extraClasses;
-        var table = CreateElement.createTable(null, classes, labelArray, tableContents);
-        container.append(table);
-        table.getElementsByTagName('thead')[0].classList.add('table-primary');
-
-        this._replaceTableIconElements(table, itemValues);
-      }
-      
-      return table;
+      tableContents.push(rowContents);
     }
+    
+    if (source.length > 0 || renderIfEmpty) {
+      var classes = 'table table-striped table-hover table-sm mt-3';
+      if (extraClasses) classes += ' ' + extraClasses;
+      var table = CreateElement.createTable(null, classes, labelArray, tableContents);
+      container.append(table);
+      table.getElementsByTagName('thead')[0].classList.add('table-primary');
+
+      this._replaceTableIconElements(table, itemValues);
+    }
+    
+    return table;
   }
   
   _replaceTableIconElements(table, itemValues) {

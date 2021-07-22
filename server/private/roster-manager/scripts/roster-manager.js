@@ -161,13 +161,7 @@ const app = function () {
   function _renderAdmin() {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
     
-    page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });
-    
-    page.labelEditEnable = page.navAdmin.getElementsByClassName('check-editenable-label')[0];
-    page.checkEditEnable = page.navAdmin.getElementsByClassName('check-editenable')[0];
-    
-    page.checkEditEnable.addEventListener('click', (e) => { _handleEditEnableToggle(e); });
-
+    page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });    
     page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
   }
     
@@ -195,7 +189,7 @@ const app = function () {
   function _showStudent() {
     UtilityKTS.setClass(page.navStudent, 'disable-container', true);
     
-    settings.rosterViewer.update(settings.currentInfo, _getRosterViewerRenderType(), _getRosterViewerEditEnable());
+    settings.rosterViewer.update(settings.currentInfo);
     
     UtilityKTS.setClass(page.navStudent, 'disable-container', false);
   }
@@ -532,21 +526,6 @@ const app = function () {
         }
       }
     }
-  }
-  
-  function _getRosterViewerRenderType() {
-    var value = null;
-    
-    var elems = page.navAdmin.getElementsByClassName('check-rendertype');
-    for (var i = 0; i < elems.length && !value; i++) {
-      if (elems[i].checked) value = elems[i].value;
-    }
-    
-    return value;
-  }
-  
-  function _getRosterViewerEditEnable() {
-    return page.checkEditEnable.checked;
   }
   
   async function _doTest() {
