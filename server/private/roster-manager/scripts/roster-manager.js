@@ -270,7 +270,6 @@ const app = function () {
   }
 
   function _setExportUIEnable(params) {
-    console.log('_setExportUIEnable', params);
     var elem = document.getElementById('navExportStudent');
     UtilityKTS.setClass(elem, 'disabled', !params.student);
 

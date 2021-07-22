@@ -152,12 +152,15 @@ body {
 }
 
 .contents .contents-navMentor .section-label { 
-  font-weight: bold;
-  cursor: pointer;
+  font-weight: bold
 }
 
 .contents .contents-navMentor .email-column { 
   cursor: pointer;
+}
+
+.contents .contents-navMentor .email-column:hover { 
+  text-decoration: underline;
 }
 
 .contents .contents-navMentor .colwidth-0 { width: 15%; }

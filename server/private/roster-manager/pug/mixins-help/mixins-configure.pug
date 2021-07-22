@@ -1,0 +1,52 @@
+mixin helpcontent_Configure()  
+  .helpsection-title configure
+
+  .helpsection-content
+    |Use the  
+    em: strong configure 
+    |option to upload SLP reports with student and mentor information
+
+  .helpsection-content
+    br
+    
+  .helpsection-content
+    |Download each report from the SLP to an Excel file and choose the 
+    |corresponding option on this page to upload the file and add it
+    |to your data.
+    br
+    |The available choices are:
+    ul
+      li
+        em enrollment - 
+        |use the SLP enrollments tab to get data for all of your students and export it to Excel.  
+        |Note you may need to customize the columns - they must include 
+        em Student, Section, StudentEmail, StartDate, EndDate, Affiliation, LMSTerm 
+        |although the order doesn't matter
+        .helpsection-imagecontainer(class="bigger")
+          img(src="https://res.cloudinary.com/ktsanter/image/upload/v1626970156/Roster%20Manager/rostermanager_report_enrollments.png")
+        br
+        
+      li
+        em mentor/guardian - 
+        |use the SLP report titled 
+        em List of Students Mentor and Guardian
+        .helpsection-imagecontainer(class="bigger")
+          img(src="https://res.cloudinary.com/ktsanter/image/upload/v1626970573/Roster%20Manager/rostermanager_report_mentorguardian.png")
+        br
+        
+      li
+        em IEP, 504, homeschooled - 
+        |use the Basic Search feature on the SLP Student tab to retrieve and download the relevant data
+        .helpsection-imagecontainer(class="bigger")
+          img(src="https://res.cloudinary.com/ktsanter/image/upload/v1626971256/Roster%20Manager/rostermanager_report_other.png")
+
+  .helpsection-content
+    br
+    
+  .helpsection-content
+    |Here's a demonstration of the configure option
+    
+    .helpsection-subcontent(class="demo-video ms-4")
+      div(class="ratio ratio-16x9")
+        |[video here]
+        //iframe(src="https://www.youtube.com/embed/9qv9wCXbanQ" allowfullscreen)
