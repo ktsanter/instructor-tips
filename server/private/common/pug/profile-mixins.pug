@@ -24,18 +24,20 @@ mixin ASProfile(idName, selectClass, extraClasses)
       
     .row
       .col-sm
-        .form-floating
-          input(type="password" class="form-control navProfile-passwordnew" id="navProfile-passwordnew" placeholder="" autocomplete="off")
-          label(for="navProfile-passwordnew") new password
+        form(id="dummyProfileForm1")
+          .form-floating
+            input(type="password" class="form-control navProfile-passwordnew" id="navProfile-passwordnew" placeholder="" autocomplete="off")
+            label(for="navProfile-passwordnew") new password
 
       .col-sm
         .profile-error(class="err-passwordnew")
 
     .row
       .col-sm
-        .form-floating
-          input(type="password" class="form-control navProfile-passwordconfirm" id="navProfile-passwordconfirm" placeholder="" autocomplete="off")
-          label(for="navProfile-passwordconfirm") confirm password
+        form(id="dummyProfileForm2")
+          .form-floating
+            input(type="password" class="form-control navProfile-passwordconfirm" id="navProfile-passwordconfirm" placeholder="" autocomplete="off")
+            label(for="navProfile-passwordconfirm") confirm password
 
       .col-sm
         .profile-error(class="err-passwordconfirm")
