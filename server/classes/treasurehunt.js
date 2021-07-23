@@ -268,6 +268,7 @@ module.exports = internal.TreasureHunt = class {
     var queryList, queryResults;
     
     var snapshot = this._escapeProblems(JSON.stringify(postData));
+    console.log(snapshot);
     
     queryList = {
       project: 
@@ -280,7 +281,10 @@ module.exports = internal.TreasureHunt = class {
         ')'
     };
 
+    console.log('\n*************************************************************\n');
+    console.log(queryList.project);
     queryResults = await this._dbManager.dbQueries(queryList);
+    console.log(queryResults);
 
     if (queryResults.success) {
       result.success = true;

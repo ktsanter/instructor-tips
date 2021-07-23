@@ -8,6 +8,7 @@ include ../../common/pug/tinyMCE-mixins.pug
 include ./mixins/mixins-layout.pug
 include ./mixins/mixins-clues.pug
 include ./mixins/mixins-preview.pug
+include ./mixins/mixins-prompts.pug
 
 doctype html
 html
@@ -34,6 +35,7 @@ html
           {id: "navLayout", type: "link", label: "layout"},
           {id: "navClues", type: "link", label: "clues"},
           {id: "navPreview", type: "link", label: "preview"},
+          {id: "navPrompts", type: "link", label: "prompts"},
 
           {type: "dropdown", label: "other", items: [
             {id: "navRename", type: "link", label: "rename project"},
@@ -64,5 +66,8 @@ html
 
       .container-fluid(class="contents-container contents-navPreview hide-me")
         +previewContainer()
+
+      .container-fluid(class="contents-container contents-navPrompts hide-me")
+        +promptsContainer()
 
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me") 

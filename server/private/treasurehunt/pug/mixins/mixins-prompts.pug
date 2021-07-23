@@ -1,0 +1,10 @@
+mixin promptsContainer()
+  .row(class="mb-3")
+    .col-sm
+      .form-floating
+        select(class="form-select select-prompt w-50" id="selectPrompt" aria-label="select prompt")
+        label(for="selectPrompt") prompt
+        
+  .row(class="prompt-innercontainer mb-3 hide-me")
+    .col-sm-10
+      +makeTinyMCE("tinyPrompt")

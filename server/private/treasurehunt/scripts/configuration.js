@@ -86,18 +86,20 @@ const app = function () {
     var editorIdList = [
       'tinyGreeting', 
       'tinyResponsePositive', 
-      'tinyResponseNegative'
+      'tinyResponseNegative',
+      'tinyPrompt'
     ];
     this.tiny = {};
     
     for (var i = 0; i < editorIdList.length; i++) {
       var editorId = editorIdList[i];
+      var editorHeight = editorId == 'tinyPrompt' ? 400 : 200;
       
       this.tiny[editorId] = new MyTinyMCE({
         id: editorId,
         selector: '#' + editorId,
         changeCallback: _handleEditorChange,
-        height: 200,
+        height: editorHeight,
         escapeQuotes: true
       });
       
@@ -133,14 +135,23 @@ const app = function () {
 
     // clues
     settings.clueEditor = new ClueEditor({
-      hideClass: settings.hideClass,
-      callbackShowSaveReload: _handleShowSaveReload,
-      callbackClueChange: _handleClueChange
+      "hideClass": settings.hideClass,
+      "callbackShowSaveReload": _handleShowSaveReload,
+      "callbackClueChange": _handleClueChange
     });
     settings.clueEditor.render();
     
     // preview
     page.elemPreviewFrame = page.contentsPreview.getElementsByClassName('preview-frame')[0];
+    
+    // prompts
+    settings.promptEditor = new PromptEditor({
+      "hideClass": settings.hideClass,
+      "container": page.body.getElementsByClassName('contents-navPrompts')[0],
+      "editElement": this.tiny.tinyPrompt
+    });
+    
+    settings.promptEditor.render();
     
     _attachHandlers();
     
@@ -154,11 +165,6 @@ const app = function () {
     page.elemProjectDelete.addEventListener('click', (e) => { _deleteProject(e); });
     page.elemBannerPic.addEventListener('click', (e) => { _handleBannerPic(e); });
     page.elemBannerIcon.addEventListener('click', (e) => { _handleBannerPic(e); });
-    
-    // clues
-    
-    
-    // preview
   }
   
   //---------------------------------------
@@ -175,6 +181,7 @@ const app = function () {
     
     if (contentsId == 'navClues') _updateClues();
     if (contentsId == 'navPreview') await _updatePreview();
+    if (contentsId == 'navPrompts') _updatePrompts();
     if (contentsId == 'navProfile') await settings.profile.reload();
     
     _setNavOptions();
@@ -187,6 +194,7 @@ const app = function () {
     
     _enableNavOption('navClues', true, validProject);
     _enableNavOption('navPreview', true, validProject);
+    _enableNavOption('navPrompts', true, validProject);
     _enableNavOption('navShare', true, validProject);
     _enableNavOption('navRename', true, false);
 
@@ -200,11 +208,15 @@ const app = function () {
       UtilityKTS.setClass(page.elemProjectDelete, 'disabled', !validProject);
       
     } else if (opt == 'navClues') {
-      _enableNavOption('navSave', true, validProject && settings.dirtyBit.navLayout);
-      _enableNavOption('navReload', true, validProject && settings.dirtyBit.navLayout);
+      _enableNavOption('navSave', true, validProject && settings.dirtyBit.navClues);
+      _enableNavOption('navReload', true, validProject && settings.dirtyBit.navClues);
       
     } else if (opt == 'navPreview') {
+      // nothing
 
+    } else if (opt == 'navPrompts') {
+      // nothing
+      
     } else if (opt == 'navProfile') {
       var enable = settings.profile.isDirty();
       _enableNavOption('navSave', true, enable);
@@ -301,6 +313,18 @@ const app = function () {
     UtilityKTS.setClass(page.elemPreviewFrame, this.hideClass, false);  
   }
   
+  function _updatePrompts() {
+    var clueList = settings.projectInfo.clues[settings.currentProject.projectid];
+    var bannerPicURL = page.elemBannerPic.getAttribute('as-current-background');
+    var bannerPicURL = bannerPicURL.length > 0 ? bannerPicURL : null;
+    
+    settings.promptEditor.update({
+      "shareURL": _landingPageURL(),
+      "clueList": clueList,
+      "bannerPicURL": bannerPicURL
+    });
+  }
+  
   async function _saveProjectInfo(preview) {
     if (!settings.currentProject) return;
     
@@ -320,6 +344,16 @@ const app = function () {
     }
     
     var revisedClueList = settings.clueEditor.getClueList();
+    if (preview) {
+      for (var i = 0; i < revisedClueList.length; i++) {
+        var clue = revisedClueList[i];
+        for (var key in clue) {
+          if (typeof clue[key] == 'string') {
+            revisedClueList[i][key] = revisedClueList[i][key].replace(/'/g, 'singlequotereplacement');
+          }
+        }
+      }
+    }
     
     var params = {
       project: revisedProject,
@@ -420,6 +454,7 @@ const app = function () {
       "navLayout":    async function() { await _showContents(dispatchTarget); },
       "navClues":     async function() { await _showContents(dispatchTarget); },
       "navPreview":   async function() { await _showContents(dispatchTarget); },
+      "navPrompts":   async function() { await _showContents(dispatchTarget); },
       
       "navRename":     async function() { await _handleRename(e); },
       "navShare":     async function() { await _handleShare(e); },
