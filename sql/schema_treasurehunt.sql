@@ -19,9 +19,9 @@ create table project
   projectname           varchar(200) not null,
   imagename             varchar(200) not null,
   imagefullpage         boolean not null,
-  message               varchar(500) not null,
-  positiveresponse      varchar(500) not null,
-  negativeresponse      varchar(500) not null,
+  message               mediumtext not null,
+  positiveresponse      mediumtext not null,
+  negativeresponse      mediumtext not null,
   
   primary key (projectid),
   constraint unique(userid, projectname),
