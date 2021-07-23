@@ -29,6 +29,16 @@ class PromptEditor {
     this.bannerPicURL = params.bannerPicURL;
     this.shareURL = params.shareURL;
     
+    for (var i = 0; i < this.clueList.length; i++) {
+      var clue = this.clueList[i];
+      for (var key in clue) {
+        if (typeof clue[key] == 'string') {
+          this.clueList[i][key] = this.clueList[i][key].replace(/singlequotereplacement/g, '\'');
+        }
+      }
+    }
+  
+    
     UtilityKTS.removeChildren(this.elemPromptSelect);
     for (var i = 0; i < this.clueList.length; i++) {
       var clue = this.clueList[i];
