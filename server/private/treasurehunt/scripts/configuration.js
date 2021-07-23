@@ -148,7 +148,8 @@ const app = function () {
     settings.promptEditor = new PromptEditor({
       "hideClass": settings.hideClass,
       "container": page.body.getElementsByClassName('contents-navPrompts')[0],
-      "editElement": this.tiny.tinyPrompt
+      "editElement": this.tiny.tinyPrompt,
+      "copyToClipboard": _copyRenderedToClipboard
     });
     
     settings.promptEditor.render();

@@ -6,5 +6,9 @@ mixin promptsContainer()
         label(for="selectPrompt") prompt
         
   .row(class="prompt-innercontainer mb-3 hide-me")
-    .col-sm-10
+    .col-sm-8
       +makeTinyMCE("tinyPrompt")
+
+  .row(class="prompt-innercontainer mb-3 hide-me")
+    .col-sm
+      button(class="copy-promptcontent") copy

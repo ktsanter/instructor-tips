@@ -15,15 +15,18 @@ class PromptEditor {
     this.elemPromptSelect = this.config.container.getElementsByClassName('select-prompt')[0];
     this.elemPromptSelect.addEventListener('change', (e) => { this._handlePromptSelection(e); });
     
-    this.elemPromptInnerContainer = this.config.container.getElementsByClassName('prompt-innercontainer')[0];
+    this.elemPromptInnerContainer1 = this.config.container.getElementsByClassName('prompt-innercontainer')[0];
+    this.elemPromptInnerContainer2 = this.config.container.getElementsByClassName('prompt-innercontainer')[1];
+    
+    this.config.container.getElementsByClassName('copy-promptcontent')[0].addEventListener('click', (e) => { this._copyPromptContent(e); });
   }
     
-
   //--------------------------------------------------------------
   // updating
   //--------------------------------------------------------------
   update(params) {
-    UtilityKTS.setClass(this.elemPromptInnerContainer, this.config.hideClass, true);
+    UtilityKTS.setClass(this.elemPromptInnerContainer1, this.config.hideClass, true);
+    UtilityKTS.setClass(this.elemPromptInnerContainer2, this.config.hideClass, true);
     
     this.clueList = params.clueList;
     this.bannerPicURL = params.bannerPicURL;
@@ -38,19 +41,21 @@ class PromptEditor {
       }
     }
   
-    
     UtilityKTS.removeChildren(this.elemPromptSelect);
     for (var i = 0; i < this.clueList.length; i++) {
       var clue = this.clueList[i];
       var elem = CreateElement.createOption(null, 'prompt-selectoption', i, clue.prompt);
       this.elemPromptSelect.appendChild(elem);
     }
+    
     this.elemPromptSelect.selectedIndex = -1;
+    if (this.clueList.length > 0) {
+      this.elemPromptSelect.selectedIndex = 0;
+      this._loadPrompt(this.clueList[0]);
+    }    
   }
   
   _loadPrompt(clue) {
-    UtilityKTS.setClass(this.elemPromptInnerContainer, this.config.hideClass, false);
-    
     var elemMessage = CreateElement.createDiv(null, null);
 
     var elemImage = null;
@@ -74,6 +79,9 @@ class PromptEditor {
     elemMessage.appendChild(elemPrompt2);    
 
     this.config.editElement.setContent(elemMessage.outerHTML);
+
+    UtilityKTS.setClass(this.elemPromptInnerContainer1, this.config.hideClass, false);
+    UtilityKTS.setClass(this.elemPromptInnerContainer2, this.config.hideClass, false);
   }
 
   //--------------------------------------------------------------
@@ -83,7 +91,18 @@ class PromptEditor {
     this._loadPrompt(this.clueList[e.target.value]);
   }
 
+  _copyPromptContent() {
+    var promptContent = this.config.editElement.getContent();
+    promptContent = promptContent.replace(/\.\.\/\.\.\//g, window.origin + '/');
+    promptContent = promptContent.replace(/&quot;/g, '\'');
+    promptContent = promptContent.replace(/\\"/g, '"');
+    promptContent = promptContent.replace(/\\\'/g, '\'');
+    
+    this.config.copyToClipboard(promptContent);
+  }
+
   //--------------------------------------------------------------
   // utility
-  //--------------------------------------------------------------        
+  //-------------------------------------------------------------- 
+ 
 }
