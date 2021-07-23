@@ -1,7 +1,7 @@
 //-----------------------------------------------------------------------
 // End date manager
 //-----------------------------------------------------------------------
-// TODO: implement "_handleObsoleteDataCleanup"
+// TODO: 
 //-----------------------------------------------------------------------
 const app = function () {
 	const page = {};
@@ -177,7 +177,6 @@ const app = function () {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
     
     page.navAdmin.getElementsByClassName('btnSignout')[0].addEventListener('click', (e) => { _handleGoogleSignout(e); });
-    page.navAdmin.getElementsByClassName('btnCleanup')[0].addEventListener('click', (e) => { _handleObsoleteDataCleanup(e); });
     page.navAdmin.getElementsByClassName('btnRemoveEvents')[0].addEventListener('click', (e) => { _handleRemoveEvents(e); });
     page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });
     
@@ -290,7 +289,7 @@ const app = function () {
     _setMainNavbarEnable(settings.google.isSignedIn);   
   }
   
-  function _updateEventUI(eventList, overrideList) {
+  async function _updateEventUI(eventList, overrideList) {
     var reconciled = eventList;
 
     var reconciled = [];
@@ -309,7 +308,27 @@ const app = function () {
       reconciled.push(item);
     }
     
+    await _removeOrphanedOverrides(eventList, overrideList);
+    
     settings.eventEditor.update(reconciled);
+  }
+  
+  async function _removeOrphanedOverrides(eventList, overrideList) {
+    var orphanedList = [];
+    
+    for (var i = 0; i < overrideList.length; i++) {
+      var override = overrideList[i];
+      if (!_findMatchInList(override, eventList)) orphanedList.push(override);
+    }
+    
+    if (orphanedList.length > 0) {
+      console.log('orphaned override items', orphanedList);
+      var dbResult = await SQLDBInterface.doPostQuery('enddate-manager/update', 'orphaned-overrides', {"orphans": orphanedList});  
+      if (!dbResult.success) {
+        page.notice.setNotice('failed to remove orphaned overrides');
+        console.log(dbResult.details);
+      }
+    }
   }
   
   function _findMatchInList(item, list) {
@@ -787,11 +806,6 @@ const app = function () {
     _enableNavOption('navGoogle', !isSignedIn, !isSignedIn);    
   }
   
-  async function _handleObsoleteDataCleanup() {
-    console.log('_handleObsoleteDataCleanup');
-    alert('_handleObsoleteDataCleanup() not implemented yet');
-  }
-
   async function _handleToggleAdmin() {
     settings.adminDisable = !settings.adminDisable;
     _setAdminMenu();
@@ -826,15 +840,20 @@ const app = function () {
     page.notice.setNotice('loading...', true);
     _setMainUIEnable(false);
     var result = await _enrollmentReportPost('/usermanagement/routeToApp/enddate-manager/upload', fileList[0]);
-    if (result.success) {
-      var removeResult = await _removeCalendarEvents();
-      
-      var addResult = await _addEnrollmentListToCalendar(result.data);
-      
-      page.notice.setNotice('');
-      page.navbar.getElementsByClassName(settings.navItemClass)[0].click()
-      _reloadConfigurationAndEvents();
-    }  
+    if (!result.success) {
+      page.notice.setNotice(result.details);
+      alert(result.details);
+      _setMainUIEnable(true);
+      return;
+    }
+    
+    var removeResult = await _removeCalendarEvents();
+    
+    var addResult = await _addEnrollmentListToCalendar(result.data);
+    
+    page.notice.setNotice('');
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click()
+    _reloadConfigurationAndEvents();
   }
   
   async function _removeCalendarEvents() {

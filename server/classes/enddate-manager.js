@@ -73,6 +73,9 @@ module.exports = internal.EndDateManager = class {
     } else if (params.queryName == 'calendar') {
       dbResult = await this._updateCalendarInfo(params, postData, userInfo);
 
+    } else if (params.queryName == 'orphaned-overrides') {
+      dbResult = await this._updateOrphanedOverrides(params, postData, userInfo);
+
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -308,6 +311,32 @@ module.exports = internal.EndDateManager = class {
        
     queryResults = await this._dbManager.dbQuery(query);
     
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      
+    } else {
+      result.details = queryResults.details;
+    }    
+    
+    return result;
+  }  
+
+  async _updateOrphanedOverrides(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    var orphanedList = postData.orphans;
+    queryList = [];
+    for (var i = 0; i < orphanedList.length; i++) {
+      queryList.push(
+        'delete from eventoverride ' +
+        'where eventoverrideid = ' + orphanedList[i].overrideid
+      );
+    }
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'query succeeded';
