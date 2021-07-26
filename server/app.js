@@ -333,8 +333,6 @@ const cronScheduler = new cronSchedulerClass({
 //------------------------------------------
 const formidable = require('formidable');
 const exceljs = require('exceljs');
-const rosterManagerOriginalClass = require('./classes/roster-manager-original')
-const rosterManagerOriginal = new rosterManagerOriginalClass({tempFileManager: tmp, formManager: formidable});
 
 const rosterManagerClass = require('./classes/roster-manager')
 const rosterManager = new rosterManagerClass({
@@ -657,31 +655,6 @@ async function processEndDateManagerExportResult(req, res, result) {
     
   } else {
     var pugFileName = path.join(__dirname, 'private', 'enddate-manager/pug/export-error.pug');
-    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {description: result.description}});
-  }
-}
-
-app.get('/rostermanager/extension-help', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/extension-help.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
-})
-app.post('/usermanagement/routeToApp/roster-manager/export', function (req, res) {
-  rosterManager.exportToExcel(req, res, processRosterManagerExportResult); 
-})
-
-async function processRosterManagerExportResult(req, res, result) {
-  if (result.success) {
-    var fileName = result.targetfilename;
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
-
-    await result.workbook.xlsx.write(res);
-
-    res.end();
-    
-  } else {
-    var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/export-error.pug');
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {description: result.description}});
   }
 }
@@ -1077,17 +1050,13 @@ app.get('/roster-manager', function (req, res) {
   routeIfLoggedIn(req, res, 'roster-manager');
 })
 
-app.get('/roster-manager-original', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/roster-manager-original.pug');
+app.get('/roster-manager/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.post('/roster-manager-original/:formname', function (req, res) {
-  rosterManagerOriginal.processUploadedFile(req, res, processRosterManagerOriginalResult); 
-})
-
-app.get('/roster-manager/help', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/help.pug');
+app.get('/rostermanager/extension-help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/extension-help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
@@ -1096,7 +1065,11 @@ app.post('/usermanagement/routeToApp/roster-manager/upload/:uploadType', functio
   rosterManager.processUploadedFile(req, res, req.params.uploadType, userInfo); 
 })
 
-async function processRosterManagerOriginalResult(req, res, result) {
+app.post('/usermanagement/routeToApp/roster-manager/export', function (req, res) {
+  rosterManager.exportToExcel(req, res, processRosterManagerExportResult); 
+})
+
+async function processRosterManagerExportResult(req, res, result) {
   if (result.success) {
     var fileName = result.targetfilename;
 
@@ -1108,8 +1081,8 @@ async function processRosterManagerOriginalResult(req, res, result) {
     res.end();
     
   } else {
-    var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/error.pug');
-    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {formname: result.formname, description: result.description}});
+    var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/export-error.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {description: result.description}});
   }
 }
 
