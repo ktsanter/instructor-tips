@@ -25,8 +25,6 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {
-    console.log('update help');
-    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
@@ -225,12 +223,25 @@ const app = function () {
     window.open(settings.enddateManagerURL, '_blank');
   }
   
-  function _exportToExcel(exportType) {
-    if (exportType == 'student') {
-      settings.rosterViewer.exportToExcel(settings.currentInfo.students);
-    } else if (exportType == 'mentor') {
-      settings.mentorViewer.exportToExcel(settings.currentMentorInfo.mentorsByTermAndSection);
+  function _exportToExcel() {
+    var exportData = {
+      "studentExportData": settings.currentInfo.students,
+      "mentorExportData": settings.currentMentorInfo.mentorsByTermAndSection
+    };
+    
+    var exportForm = page.body.getElementsByClassName('export-form')[0];
+    exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(exportData);
+    exportForm.submit();
+
+/*
+    if (Object.keys(studentData).length == 0) {
+      alert('There is no student data available');
+      return;
     }
+    
+    var exportForm = this.config.container.getElementsByClassName('export-form')[0];
+    exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(studentData);
+    exportForm.submit();*/
   }
   
   function _doHelp() {
@@ -270,11 +281,8 @@ const app = function () {
   }
 
   function _setExportUIEnable(params) {
-    var elem = document.getElementById('navExportStudent');
+    var elem = document.getElementById('navExport');
     UtilityKTS.setClass(elem, 'disabled', !params.student);
-
-    var elem = document.getElementById('navExportMentor');
-    UtilityKTS.setClass(elem, 'disabled', !params.mentor);
   }
   
   function _setConfigureEnable(enable) {
@@ -571,8 +579,7 @@ const app = function () {
       "navAccessKey": function() { _showContents('navAccessKey'); },      
       "navAdmin": function() { _showContents('navAdmin'); },
       "navEndDateManager": function() { _doEndDateManager(); },
-      "navExportStudent": function() { _exportToExcel('student'); },
-      "navExportMentor": function() { _exportToExcel('mentor'); },
+      "navExport": function() { _exportToExcel(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },

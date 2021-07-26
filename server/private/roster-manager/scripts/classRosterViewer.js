@@ -25,17 +25,6 @@ class RosterViewer {
     
     this._updateUI();
   }
-  
-  exportToExcel(studentData) {
-    if (Object.keys(studentData).length == 0) {
-      alert('There is no student data available');
-      return;
-    }
-    
-    var exportForm = this.config.container.getElementsByClassName('export-form')[0];
-    exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(studentData);
-    exportForm.submit();
-  }
     
   //--------------------------------------------------------------
   // private methods

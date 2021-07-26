@@ -182,7 +182,7 @@ module.exports = internal.RosterManager = class {
     }
   }
   
-  exportToExcel(req, res, callback) {
+  exportToExcel(req, res, callback) {    
     var thisObj = this;
     var result = {
         "success": false,
@@ -190,14 +190,6 @@ module.exports = internal.RosterManager = class {
         "workbook": null,
         "targetfilename": ""
       }
-      
-    var exportType = req.params.exportType;
-    var validExportTypes = new Set(['student', 'mentor']);
-    if (!validExportTypes.has(exportType)) {
-      result.description = 'invalid export type: ' + exportType;
-      callback(req, res, result);
-      return;
-    }
 
     var form = new this._formManager.IncomingForm();
     form.parse(req, async function(err, fields, files) {
@@ -219,15 +211,8 @@ module.exports = internal.RosterManager = class {
       var workbook = new exceljs.Workbook();
       workbook.clearThemes();
       
-      var exportFileName;
-      if (exportType == 'student') {
-        thisObj._writeStudentDataToWorkbook(exportData, workbook);
-        exportFileName = 'rostermanager-export-student.xlsx';
-        
-      } else if (exportType == 'mentor') {
-        thisObj._writeMentorDataToWorkbook(exportData, workbook);
-        exportFileName = 'rostermanager-export-mentor.xlsx';
-      }
+      var exportFileName = 'roster-manager-export.xlsx';
+      thisObj._writeExportDataToWorkbook(thisObj, exportData, workbook);
       
       var result = {
         "success": true,
@@ -235,6 +220,7 @@ module.exports = internal.RosterManager = class {
         "workbook": workbook,
         "targetfilename": exportFileName
       }
+      
       callback(req, res, result);
    });
   }
@@ -803,6 +789,11 @@ module.exports = internal.RosterManager = class {
 //---------------------------------------------------------------
 // write export data to Excel workbook
 //---------------------------------------------------------------    
+  _writeExportDataToWorkbook(thisObj, exportData, workbook) {
+    thisObj._writeStudentDataToWorkbook(exportData.studentExportData, workbook);
+    thisObj._writeMentorDataToWorkbook(exportData.mentorExportData, workbook);
+  }
+
   _writeStudentDataToWorkbook(studentData, workbook) {
     var sheet = workbook.addWorksheet('students');
     sheet.addRow(['student', 'term', 'section', 'start date', 'end date', 'enrollment end date', 'email', 'affiliation', 'preferred', 'IEP', '504', 'homeshcooled', 'notes']);

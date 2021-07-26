@@ -41,11 +41,9 @@ html(lang="en")
           {id: "navConfigure", type: "link", label: "configure"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
-            {id: "navExportStudent", type: "link", label: "download student data", icon: "excel-icon fas fa-file-excel"},
-            {id: "navExportMentor", type: "link", label: "download mentor data", icon: "excel-icon fas fa-file-excel"},
-            {type: "divider"},
-            {id: "navAccessKey", type: "link", label: "get access key"},          
+            {id: "navExport", type: "link", label: "download data", icon: "excel-icon fas fa-file-excel"},
             {id: "navEndDateManager", type: "link", label: "end date manager"},
+            {id: "navAccessKey", type: "link", label: "get access key"},          
             {type: "divider"},
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
@@ -83,3 +81,8 @@ html(lang="en")
         +adminContainer()     
         
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")
+      
+      .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
+       .row(class="hide-me")
+        form(id="formExport" class="export-form hide-me" action="roster-manager/export" enctype="multipart/form-data" method="post")
+          textarea(id="exportData" class="export-data" name="export-data")     

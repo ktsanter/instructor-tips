@@ -23,17 +23,6 @@ class MentorViewer {
     this._updateUI();
   }
   
-  exportToExcel(mentorData) {
-    if (Object.keys(mentorData).length == 0) {
-      alert('There is no mentor data available');
-      return;
-    }
-    
-    var exportForm = this.config.container.getElementsByClassName('export-form')[0];
-    exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(mentorData);
-    exportForm.submit();
-  }  
-  
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   

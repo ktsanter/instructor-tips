@@ -665,7 +665,7 @@ app.get('/rostermanager/extension-help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/extension-help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
-app.post('/usermanagement/routeToApp/roster-manager/export/:exportType', function (req, res) {
+app.post('/usermanagement/routeToApp/roster-manager/export', function (req, res) {
   rosterManager.exportToExcel(req, res, processRosterManagerExportResult); 
 })
 
