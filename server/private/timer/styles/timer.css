@@ -1,0 +1,61 @@
+/*------------------------------------------------------------------------------
+ * Timer
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+}
+
+body {}
+
+.hide-me {
+  display: none;
+}
+
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {
+  margin-left: 0.2em;
+}
+
+.contents .control-button {
+  min-width: 5.0em;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - timer output
+ *------------------------------------------------------------------------------*/
+.timer-output {}
+
+.timer-output .timer-number {
+  font-size: 3.0em;  
+}
+
+.timer-output .timer-unit {
+  font-size: 1.5em;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - timer settings
+ *------------------------------------------------------------------------------*/
+.timer-settings {
+  position: absolute;
+  top: 0;
+}
+
+.timer-settings .control-number {
+  display: inline-block;
+  width: 4.0em;
+  font-size: 2.0em;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - timer control container
+ *------------------------------------------------------------------------------*/
+.timer-control-container {}
+
+.timer-control-container .control-button {
+  margin-left: 0.1em;
+}

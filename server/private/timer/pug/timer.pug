@@ -1,0 +1,40 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title AS timer
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+        
+    style
+      include ../styles/timer.css
+    
+    +addJQuery()
+    script(data-main="/scripts/timer/require_timer", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+  .contents
+    .timer-output
+      span(class="timer-number timer-number-hours hide-me") 00
+      span(class="timer-unit timer-unit-hours me-3 hide-me") h
+      
+      span(class="timer-number timer-number-minutes hide-me") 00
+      span(class="timer-unit timer-unit-minutes me-3 hide-me") m
+      
+      span(class="timer-number timer-number-seconds hide-me") 00
+      span(class="timer-unit timer-unit-seconds hide-me") s
+      
+    .timer-settings(class="hide-me")
+      input(type="number" class="form-control control-number control-hours" min="0" max="23" value="0")
+      input(type="number" class="form-control control-number control-minutes" min="0" max="59" value="0")
+      input(type="number" class="form-control control-number control-seconds" min="0" max="59" value="0")
+
+    .timer-control-container
+      button(class="control-button control-startstop btn btn-primary") start
+      button(class="control-button control-reset btn btn-light") reset
