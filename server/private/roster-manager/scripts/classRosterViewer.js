@@ -13,6 +13,7 @@ class RosterViewer {
       selectedStudentInfo: null
     }
     
+    console.log('rework student select dropdown to filter roster by name');
     this._initUI();
   }
   
@@ -42,11 +43,12 @@ class RosterViewer {
     this.studentImageInfo = this.studentImages.getElementsByClassName('item-image image-info')[0];
     
     this.studentSelect = this.config.container.getElementsByClassName('student-select')[0];
-    this.studentSelectInput = this.studentSelect.getElementsByClassName('dropdown-toggle')[0];
-    this.studentSelectList = this.studentSelect.getElementsByClassName('dropdown-menu')[0];
+    this.studentSelectInput = this.studentSelect.getElementsByClassName('student-filter')[0];
+    
+    this.rosterContent = this.config.container.getElementsByClassName('view-roster')[0];
     this.studentContent = this.config.container.getElementsByClassName('view-content')[0];
         
-    this.studentSelectInput.addEventListener('input', (e) => { this._handleDropDownInputChange(e); });
+    this.studentSelectInput.addEventListener('input', (e) => { this._handleStudentFilterChange(e); });
 
     var noteButton = this.config.containerNoteEditor.getElementsByClassName('button-editor-okay')[0];
     noteButton.addEventListener('click', (e) => { this._finishNoteEdit(true); });
@@ -58,14 +60,12 @@ class RosterViewer {
   }
 
   _updateUI() {
-    UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, true);
-
-    //UtilityKTS.setClass(this.studentImages, this.settings.hideClass, true);       
+    UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, true); 
 
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
 
-    UtilityKTS.removeChildren(this.studentSelectList);    
+    this._clearRosterTable();
     
     if (!this.settings.currentInfo || this.settings.currentInfo.studentList.length == 0) {
       this.statusMessage.innerHTML = 'no student data available';
@@ -76,7 +76,7 @@ class RosterViewer {
       var currentStudent = null;
       
       var studentList = this.settings.currentInfo.studentList;
-      
+      /*
       for (var i = 0; i < studentList.length; i++) {
         if (studentList[i] == currentStudentInput) currentStudent = currentStudentInput;
 
@@ -87,13 +87,142 @@ class RosterViewer {
         listItem.appendChild(span);
         span.addEventListener('click', (e) => { this._handleDropDownItemClick(e); });
       }
+      */
+
+      this._buildRosterTable();      
 
       if (currentStudent) this._selectStudent(currentStudent);  
-      UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, false);  
+      UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, false); 
     }
     
     UtilityKTS.setClass(this.config.container, this.settings.hideClass, false);
     this._setNoteEditVisiblity(false);    
+  }
+  
+  _clearRosterTable() {
+    UtilityKTS.removeChildren(this.rosterContent);    
+  }
+  
+  _buildRosterTable() {
+    var studentList = this.settings.currentInfo.studentList;
+    var rosterInfo = this.settings.currentInfo.students;
+    
+    var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'term'];
+    var tableClasses = 'table table-striped table-hover table-sm';
+    
+    var table = CreateElement.createTable(null, tableClasses, headerArray, []);
+    this.rosterContent.appendChild(table);
+    table.getElementsByTagName('thead')[0].classList.add('table-primary');
+    
+    var headerCells = table.getElementsByTagName('th');
+    for (var i = 0; i < headerCells.length; i++) {
+      var cell = headerCells[i];
+      var labelText = cell.innerHTML;
+      var span = CreateElement.createSpan(null, 'roster-headerlabel', labelText);
+      cell.innerHTML = '';
+      cell.appendChild(span);
+      
+      span.addEventListener('click', (e) => { this._handleSortBy(e); });
+      if (labelText == 'IEP' || labelText == '504' || labelText == 'home') {
+        //cell.appendChild(this._createFilterIcon(labelText));
+        console.log('filter icons disabled');
+      }
+    }
+    
+    var tbody = table.getElementsByTagName('tbody')[0];
+
+    for (var i = 0; i < studentList.length; i++) {
+      var studentName = studentList[i];
+      var studentInfo = rosterInfo[studentName];
+      var enrollmentList = studentInfo.enrollments;
+      
+      for (var j = 0; j < enrollmentList.length; j++) {
+        var enrollment = enrollmentList[j];
+        var row = CreateElement._createElement('tr');
+        tbody.appendChild(row);
+        
+        var cell = CreateElement._createElement('td', null, 'student-from-roster');
+        row.appendChild(cell);
+        cell.innerHTML = studentName;
+        cell.addEventListener('click', (e) => { this._handleRosterSelect(e); });
+        
+        cell = CreateElement._createElement('td', null, null);
+        row.appendChild(cell);
+        cell.innerHTML = enrollment.section;
+        
+        cell = CreateElement._createElement('td', null, null);
+        row.appendChild(cell);
+        cell.innerHTML = enrollment.startdate;
+        
+        cell = CreateElement._createElement('td', null, null);
+        row.appendChild(cell);
+        cell.innerHTML = enrollment.enddate;
+        var override = this._checkForOverride(enrollment.section, studentInfo.enddateoverride);
+        if (override) {
+          cell.innerHTML = override;
+          cell.appendChild(this._createOverrideIcon(enrollment.enddate));
+        }
+        
+        cell = CreateElement._createElement('td', null, null);
+        row.appendChild(cell);
+        if (studentInfo.iep) {
+          cell.classList.add('has-icon');
+          cell.appendChild(this._createCheckIcon('student has IEP'));
+        }
+        
+        cell = CreateElement._createElement('td', null, null);
+        row.appendChild(cell);
+        if (studentInfo['504']) {
+          cell.classList.add('has-icon');
+          cell.appendChild(this._createCheckIcon('student has 504'));
+        }
+        
+        cell = CreateElement._createElement('td', null, null);
+        row.appendChild(cell);
+        if (studentInfo.homeschooled) {
+          cell.classList.add('has-icon');
+          cell.appendChild(this._createCheckIcon('student is homeschooled'));
+        }
+        
+        cell = CreateElement._createElement('td', null, null);
+        row.appendChild(cell);
+        cell.innerHTML = enrollment.term;
+      }
+    }
+    
+    UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, false);
+    UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
+  }
+  
+  _createFilterIcon(filterType) {
+    var elem = CreateElement.createIcon(null, 'icon-rosterfilter filter-off fas fa-filter');
+    elem.addEventListener('click', (e) => { this._handleFilterBy(e, filterType); });
+    return elem;
+  }
+  
+  _createCheckIcon(titleText) {
+    var elem = CreateElement.createIcon(null, 'icon-rostercheck far fa-check-square');
+    elem.title = titleText;
+    return elem;
+  }
+  
+  _createOverrideIcon(originalEndDate) {
+    var elem = CreateElement.createIcon(null, 'icon-rosterinfo fas fa-info-circle');
+    elem.title = 'original end date ' + originalEndDate;
+    return elem;
+  }
+    
+  
+  _checkForOverride(section, overrideList) {
+    var overrideResult = null;
+    for (var i = 0; i < overrideList.length && !overrideResult; i++) {
+      var override = overrideList[i];
+      if (section == override.section) {
+        overrideResult = override.enddate;
+      }
+    }
+    
+    return overrideResult;  
   }
   
   _filterDropdownItems(searchVal) {
@@ -116,8 +245,6 @@ class RosterViewer {
     
     var info = this.settings.currentInfo.students[studentName];
     this.settings.selectedStudentInfo = info;
-    
-    //UtilityKTS.setClass(this.studentImages, this.settings.hideClass, false);
 
     UtilityKTS.removeChildren(this.studentContent);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false);
@@ -129,6 +256,8 @@ class RosterViewer {
     var infoTitle = this._determineStudentInfoMessage(info);
     this.studentImageInfo.title = infoTitle;
     UtilityKTS.setClass(this.studentImageInfo, this.settings.hideClass, infoTitle == '');    
+    
+    this.studentContent.appendChild(this._renderWindowClose());
     
     this.studentContent.appendChild(this._renderProperty("affiliation", info.enrollments[0].affiliation));
     this.studentContent.appendChild(this._renderProperty('email', info.enrollments[0].email));
@@ -174,6 +303,9 @@ class RosterViewer {
       'limit-second-col',
       true
     );
+    
+    UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, true);
+    UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false);    
   }
   
   _determineStudentInfoMessage(info) {
@@ -200,6 +332,12 @@ class RosterViewer {
     }
     
     return row;
+  }
+  
+  _renderWindowClose() {
+    var elem = CreateElement.createIcon(null, 'item-icon icon-close far fa-window-close');
+    elem.addEventListener('click', (e) => { this._handleStudentViewClose(e); });
+    return elem;
   }
   
   _makePropertyEditHandler(label, property, targetElement, origHandler) {
@@ -296,6 +434,14 @@ class RosterViewer {
     }
   }
 
+  _filterRosterBy(filterType, turnFilteringOn) {
+    console.log('_filterRosterBy', filterType, turnFilteringOn);
+  }
+  
+  _sortRosterBy(fieldToSortBy) {
+    console.log('_sortRosterBy', fieldToSortBy);
+  }
+  
   async _doPropertyEdit(label, property, targetElement) {
     var currentValue = targetElement.innerHTML;
 
@@ -378,6 +524,11 @@ class RosterViewer {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
+  _handleStudentFilterChange(e) {
+    console.log('_handleStudentFilterChange');
+  }
+  
+  /*
   _handleDropDownInputChange(e) {
     this._filterDropdownItems(e.target.value);
   }
@@ -385,7 +536,33 @@ class RosterViewer {
   _handleDropDownItemClick(e) {
     this._selectStudent(e.target.innerHTML);
   }
+  */
   
+  _handleFilterBy(e, filterType) {    
+    if (e.target.classList.contains('filter-off')) {
+      this._filterRosterBy(filterType, true);
+      UtilityKTS.setClass(e.target, 'filter-off', false);
+      
+    } else {
+      this._filterRosterBy(filterType, false);
+      UtilityKTS.setClass(e.target, 'filter-off', true);
+    }    
+  }
+  
+  _handleSortBy(e) {
+    this._sortRosterBy(e.target.innerHTML);
+  }  
+  
+  _handleRosterSelect(e) {
+    this._selectStudent(e.target.innerHTML);
+  }
+  
+  _handleStudentViewClose(e) {
+    this.studentSelectInput.value = '';
+    UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, false);
+    UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
+  }
+
   async _handlePropertyEdit(label, property, targetElement) {
     console.log(label);
     console.log(property);

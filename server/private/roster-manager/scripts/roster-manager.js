@@ -25,8 +25,6 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {
-    console.log('consider listing all students, with filtering and sorting options');
-    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     

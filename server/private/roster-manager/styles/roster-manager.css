@@ -107,6 +107,13 @@ body {
   vertical-align: middle;
 }
 
+.contents .contents-navStudent .item-icon.icon-close {
+  position: absolute;
+  right: 1.3em;
+  font-size: 2.0em;
+  color: #aaa;
+}
+
 .contents .contents-navStudent .rosterviewer-icon {
   color: var(--bgPrimary);
   float: right;
@@ -128,6 +135,40 @@ body {
 .contents .contents-navStudent .hover-decorate:hover {
   text-decoration: underline;
   cursor: pointer;
+}
+
+.contents .contents-navStudent .roster-headerlabel:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.contents .contents-navStudent .student-from-roster:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.contents .contents-navStudent .has-icon {
+  text-align: center;
+}
+
+.contents .contents-navStudent .icon-rosterfilter {
+  cursor: pointer;
+  color: var(--bgPrimary);
+  font-size: 0.8em;
+  padding-left: 0.1em;
+}
+
+.contents .contents-navStudent .icon-rosterfilter.filter-off {
+  color: #aaa;
+}
+
+.contents .contents-navStudent .icon-rostercheck {
+  color: var(--bgPrimary);
+}
+
+.contents .contents-navStudent .icon-rosterinfo {
+  color: var(--bgPrimary);
+  padding-left: 0.1em;
 }
 
 /*------------------------------------------------------------------------------
