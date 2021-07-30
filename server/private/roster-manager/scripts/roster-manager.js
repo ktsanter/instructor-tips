@@ -25,6 +25,8 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {
+    console.log('add real filtering by column (except for student)');
+    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
@@ -232,16 +234,6 @@ const app = function () {
     var exportForm = page.body.getElementsByClassName('export-form')[0];
     exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(exportData);
     exportForm.submit();
-
-/*
-    if (Object.keys(studentData).length == 0) {
-      alert('There is no student data available');
-      return;
-    }
-    
-    var exportForm = this.config.container.getElementsByClassName('export-form')[0];
-    exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(studentData);
-    exportForm.submit();*/
   }
   
   function _doHelp() {

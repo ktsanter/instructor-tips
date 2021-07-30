@@ -44,7 +44,7 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {    
-    console.log('add term somehow');
+    console.log('add filtering by column (except for student');
     
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
