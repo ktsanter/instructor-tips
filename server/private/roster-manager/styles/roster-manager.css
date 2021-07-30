@@ -37,7 +37,13 @@ body {
 /*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/
-.contents {}
+.contents {
+  font-size: 90%;
+}
+
+.contents .input-group-text, .contents #studentName {
+  font-size: 90%;
+}
 
 .contents .disable-container {
   background-color: var(--bgShaded);
@@ -155,7 +161,7 @@ body {
   cursor: pointer;
   color: var(--bgPrimary);
   font-size: 0.8em;
-  padding-left: 0.1em;
+  padding-left: 0.2em;
 }
 
 .contents .contents-navStudent .icon-rosterfilter.filter-off {
@@ -170,6 +176,16 @@ body {
   color: var(--bgPrimary);
   padding-left: 0.1em;
 }
+
+.contents .contents-navStudent .roster-headercol {}
+.contents .contents-navStudent .roster-headercol.roster-headercol-student      { width: 15%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-section      { width: 25%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-startdate    { width: 10%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-enddate      { width: 10%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-iep          { width: 5%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-504          { width: 5%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-homeschooled { width: 5%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-term         { }
 
 /*------------------------------------------------------------------------------
  * contents - note editor

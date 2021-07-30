@@ -10,23 +10,40 @@ class RosterViewer {
       hideClass: 'hide-me',
       currentInfo: null,
       editIconClasses: 'fas fa-edit',
-      selectedStudentInfo: null
+      selectedStudentInfo: null,
+      filtering: {
+        "student": false,
+        "iep": false,
+        "504": false,
+        "homeschooled": false
+      },
+      sorting: {
+        "field": 'student', 
+        "direction": 1
+      }
     }
     
-    console.log('rework student select dropdown to filter roster by name');
     this._initUI();
   }
   
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------  
-  update(currentInfo) {
-    this.settings.currentInfo = currentInfo;
-    this.settings.selectedStudentInfo = null;
+  update(updatedInfo) {
+    this.settings.currentInfo = updatedInfo;
+    if (this.settings.selectedStudentInfo) {
+      if (!updatedInfo.studentList.includes(this.settings.selectedStudentInfo.student)) {
+        this.settings.selectedStudentInfo = null;
+      }
+    }
     
     this._updateUI();
   }
     
+  closeDialogs() {
+    this._finishNoteEdit(false);
+  }
+  
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
@@ -36,7 +53,6 @@ class RosterViewer {
     this.statusMessage = this.config.container.getElementsByClassName('status-message')[0];
     
     this.studentImages = this.config.container.getElementsByClassName('item-images')[0];
-    
     this.studentImageIEP = this.studentImages.getElementsByClassName('item-image image-iep')[0];
     this.studentImage504 = this.studentImages.getElementsByClassName('item-image image-504')[0];
     this.studentIconHomeSchooled = this.config.container.getElementsByClassName('item-icon icon-homeschooled')[0];
@@ -72,27 +88,10 @@ class RosterViewer {
       UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
 
     } else {
-      var currentStudentInput = this.studentSelectInput.value;
-      var currentStudent = null;
-      
-      var studentList = this.settings.currentInfo.studentList;
-      /*
-      for (var i = 0; i < studentList.length; i++) {
-        if (studentList[i] == currentStudentInput) currentStudent = currentStudentInput;
-
-        var listItem = CreateElement._createElement('li');
-        this.studentSelectList.appendChild(listItem);
-        
-        var span = CreateElement.createSpan(null, 'dropdown-item', studentList[i]);
-        listItem.appendChild(span);
-        span.addEventListener('click', (e) => { this._handleDropDownItemClick(e); });
-      }
-      */
-
-      this._buildRosterTable();      
-
-      if (currentStudent) this._selectStudent(currentStudent);  
+      this._buildRosterTable();
       UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, false); 
+
+      if (this.settings.selectedStudentInfo) this._selectStudent(this.settings.selectedStudentInfo.student);  
     }
     
     UtilityKTS.setClass(this.config.container, this.settings.hideClass, false);
@@ -105,9 +104,10 @@ class RosterViewer {
   
   _buildRosterTable() {
     var studentList = this.settings.currentInfo.studentList;
-    var rosterInfo = this.settings.currentInfo.students;
+    var rosterInfo = this._filterAndSortRoster(this.settings.currentInfo.students);
     
     var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'term'];
+    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'term'];
     var tableClasses = 'table table-striped table-hover table-sm';
     
     var table = CreateElement.createTable(null, tableClasses, headerArray, []);
@@ -118,85 +118,187 @@ class RosterViewer {
     for (var i = 0; i < headerCells.length; i++) {
       var cell = headerCells[i];
       var labelText = cell.innerHTML;
+      var fieldName = headerFields[i];
+
+      cell.classList.add('roster-headercol');
+      cell.classList.add('roster-headercol-' + fieldName);
+      
       var span = CreateElement.createSpan(null, 'roster-headerlabel', labelText);
       cell.innerHTML = '';
       cell.appendChild(span);
+      span.setAttribute("field-name", fieldName);
       
       span.addEventListener('click', (e) => { this._handleSortBy(e); });
-      if (labelText == 'IEP' || labelText == '504' || labelText == 'home') {
-        //cell.appendChild(this._createFilterIcon(labelText));
-        console.log('filter icons disabled');
+      if (fieldName == 'iep' || fieldName == '504' || fieldName == 'homeschooled') {
+        cell.appendChild(this._createFilterIcon(fieldName));
       }
     }
     
     var tbody = table.getElementsByTagName('tbody')[0];
-
-    for (var i = 0; i < studentList.length; i++) {
-      var studentName = studentList[i];
-      var studentInfo = rosterInfo[studentName];
-      var enrollmentList = studentInfo.enrollments;
+    for (var i = 0; i < rosterInfo.length; i++) {
+      var rosterItem = rosterInfo[i];
+      var studentName = rosterItem.student;
+      var row = CreateElement._createElement('tr');
+      tbody.appendChild(row);
       
-      for (var j = 0; j < enrollmentList.length; j++) {
-        var enrollment = enrollmentList[j];
-        var row = CreateElement._createElement('tr');
-        tbody.appendChild(row);
+      var cell = CreateElement._createElement('td', 'test1', 'student-from-roster');
+      row.appendChild(cell);
+      cell.innerHTML = studentName;
+      cell.addEventListener('click', (e) => { this._handleRosterSelect(e); });
+
+      cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      cell.innerHTML = rosterItem.section;
+      
+      cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      cell.innerHTML = rosterItem.startdate;
+      
+      cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      cell.innerHTML = rosterItem.enddate;
+      var override = this._checkForOverride(rosterItem.section, rosterItem.enddateoverride);
+      if (override) {
+        cell.innerHTML = override;
+        cell.appendChild(this._createOverrideIcon(rosterItem.enddate));
+      }
+
+      cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      if (rosterItem.iep) {
+        cell.classList.add('has-icon');
+        cell.appendChild(this._createCheckIcon('student has IEP'));
+      }
+      
+      cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      if (rosterItem['504']) {
+        cell.classList.add('has-icon');
+        cell.appendChild(this._createCheckIcon('student has 504'));
+      }
+      
+      cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      if (rosterItem.homeschooled) {
+        cell.classList.add('has-icon');
+        cell.appendChild(this._createCheckIcon('student is homeschooled'));
+      }      
         
-        var cell = CreateElement._createElement('td', null, 'student-from-roster');
-        row.appendChild(cell);
-        cell.innerHTML = studentName;
-        cell.addEventListener('click', (e) => { this._handleRosterSelect(e); });
-        
-        cell = CreateElement._createElement('td', null, null);
-        row.appendChild(cell);
-        cell.innerHTML = enrollment.section;
-        
-        cell = CreateElement._createElement('td', null, null);
-        row.appendChild(cell);
-        cell.innerHTML = enrollment.startdate;
-        
-        cell = CreateElement._createElement('td', null, null);
-        row.appendChild(cell);
-        cell.innerHTML = enrollment.enddate;
-        var override = this._checkForOverride(enrollment.section, studentInfo.enddateoverride);
-        if (override) {
-          cell.innerHTML = override;
-          cell.appendChild(this._createOverrideIcon(enrollment.enddate));
-        }
-        
-        cell = CreateElement._createElement('td', null, null);
-        row.appendChild(cell);
-        if (studentInfo.iep) {
-          cell.classList.add('has-icon');
-          cell.appendChild(this._createCheckIcon('student has IEP'));
-        }
-        
-        cell = CreateElement._createElement('td', null, null);
-        row.appendChild(cell);
-        if (studentInfo['504']) {
-          cell.classList.add('has-icon');
-          cell.appendChild(this._createCheckIcon('student has 504'));
-        }
-        
-        cell = CreateElement._createElement('td', null, null);
-        row.appendChild(cell);
-        if (studentInfo.homeschooled) {
-          cell.classList.add('has-icon');
-          cell.appendChild(this._createCheckIcon('student is homeschooled'));
-        }
-        
-        cell = CreateElement._createElement('td', null, null);
-        row.appendChild(cell);
-        cell.innerHTML = enrollment.term;
+      cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      cell.innerHTML = rosterItem.term;
+    }
+
+    UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, false);
+    UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
+    UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
+  }
+  
+  _sortRosterBy(fieldToSortBy) {
+    var currentSorting = this.settings.sorting;
+    
+    if (!currentSorting || currentSorting.field != fieldToSortBy) {
+      this.settings.sorting = {
+        "field": fieldToSortBy,
+        "direction": 1
+      };
+      
+    } else {
+      this.settings.sorting.direction *= -1;
+    }
+    
+    this._updateUI();
+  }
+    
+  _filterRosterBy(filterType, turnFilteringOn) {
+    this.settings.filtering[filterType] = turnFilteringOn;
+    
+    this._updateUI();
+  }
+  
+  _filterAndSortRoster(rosterInfo) {
+    var flattened = [];
+    for (var studentName in rosterInfo) {
+      var rosterItem = {...rosterInfo[studentName]};
+      var enrollmentList = rosterItem.enrollments;
+      for (var i = 0; i < enrollmentList.length; i++) {
+        var enrollmentItem = enrollmentList[i];
+        var flattenedItem = rosterItem;
+        delete flattenedItem.enrollments;
+        flattenedItem = {
+          ...flattenedItem, 
+          ...enrollmentItem
+        };
+        flattened.push(flattenedItem);
       }
     }
     
-    UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, false);
-    UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
+    var activeFilters = {};
+    for (var fieldName in this.settings.filtering) {
+      if (this.settings.filtering[fieldName]) {
+        var filterValue, matchType;
+        
+        if (fieldName == 'student') {
+          filterValue = this.studentSelectInput.value;
+          matchType = 'like';
+          
+        } else {
+          filterValue = true
+          matchType = 'exact';
+        }
+        
+        activeFilters[fieldName] = {
+          "filterValue": filterValue,
+          "matchType": matchType
+        };
+      }
+    }
+    
+    var filtered = flattened.filter(function(a) {
+      var result = true;
+
+      for (var fieldName in activeFilters) {
+        var filter = activeFilters[fieldName];
+        var fieldVal = a[fieldName].toString().toLowerCase();
+        var filterVal = filter.filterValue.toString().toLowerCase();
+        
+        if (filter.matchType == 'like') {
+          result = result && fieldVal.includes(filterVal);
+          
+        } else if (filter.matchType == 'exact') {
+          result = result && (fieldVal == filterVal);
+        }
+      }
+      
+      return result;
+    });
+    
+    var sortField = this.settings.sorting.field;
+    var sortDirection = this.settings.sorting.direction;
+    var sorted = filtered.sort(function(a, b) {
+      var compare = sortDirection * a[sortField].toString().localeCompare(b[sortField].toString());
+
+      if (compare == 0) {
+        compare = a.student.localeCompare(b.student);
+        if (compare == 0) {
+          compare = a.term.localeCompare(b.term);
+          if (compare == 0) {
+            compare = a.section.localeCompare(b.section);
+          }
+        }
+      }
+
+      return compare;
+    });
+
+    return sorted;
   }
-  
+
   _createFilterIcon(filterType) {
     var elem = CreateElement.createIcon(null, 'icon-rosterfilter filter-off fas fa-filter');
     elem.addEventListener('click', (e) => { this._handleFilterBy(e, filterType); });
+    UtilityKTS.setClass(elem, 'filter-off', !this.settings.filtering[filterType]);
+    
     return elem;
   }
   
@@ -225,30 +327,14 @@ class RosterViewer {
     return overrideResult;  
   }
   
-  _filterDropdownItems(searchVal) {
-    var itemSpans = this.studentSelectList.getElementsByTagName('span');
-
-    try {
-      var reg = new RegExp(searchVal.toLowerCase());
-    } catch(err) {
-      var reg = /.*/;
-    }
-    
-    for (var i = 0; i < itemSpans.length; i++) {
-      var spanVal = itemSpans[i].innerHTML.toLowerCase();
-      UtilityKTS.setClass(itemSpans[i], 'hide-me', spanVal.match(reg) == null);
-    }
-  }    
-
   _selectStudent(studentName) {
-    this.studentSelectInput.value = studentName;
-    
     var info = this.settings.currentInfo.students[studentName];
-    this.settings.selectedStudentInfo = info;
+    this.settings.selectedStudentInfo = {...{"student": studentName, ...info}};
 
     UtilityKTS.removeChildren(this.studentContent);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false);
 
+/*
     UtilityKTS.setClass(this.studentImageIEP, this.settings.hideClass, !info.iep);       
     UtilityKTS.setClass(this.studentImage504, this.settings.hideClass, !info["504"]);
     UtilityKTS.setClass(this.studentIconHomeSchooled, this.settings.hideClass, !info.homeschooled);
@@ -256,9 +342,11 @@ class RosterViewer {
     var infoTitle = this._determineStudentInfoMessage(info);
     this.studentImageInfo.title = infoTitle;
     UtilityKTS.setClass(this.studentImageInfo, this.settings.hideClass, infoTitle == '');    
+*/
     
     this.studentContent.appendChild(this._renderWindowClose());
     
+    this.studentContent.appendChild(this._renderProperty("student", info.enrollments[0].student));
     this.studentContent.appendChild(this._renderProperty("affiliation", info.enrollments[0].affiliation));
     this.studentContent.appendChild(this._renderProperty('email', info.enrollments[0].email));
     
@@ -272,6 +360,8 @@ class RosterViewer {
       span.innerHTML = 'no preferred name';
       span.classList.add('no-preferredname');
     }
+
+    this.studentContent.appendChild(this._renderFlags(info));    
 
     var enrollmentTable = this._renderPropertyArray(
       ['term', 'section', 'startdate', 'enddate'], 
@@ -304,13 +394,9 @@ class RosterViewer {
       true
     );
     
+    UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);     
     UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, true);
-    UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false);    
-  }
-  
-  _determineStudentInfoMessage(info) {
-    // figure out what to do with this (if anything)
-    return '';
+    UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false); 
   }
   
   _renderProperty(label, value, property, handler) {
@@ -330,6 +416,23 @@ class RosterViewer {
       var wrapperHandler = this._makePropertyEditHandler(label, property, elem, handler);
       elem.addEventListener('click', wrapperHandler);
     }
+    
+    return row;
+  }
+  
+  _renderFlags(studentInfo) {
+    var row = CreateElement.createDiv(null, 'row');
+    
+    var col1 = CreateElement.createDiv(null, 'col-sm-3');
+    row.appendChild(col1);
+    col1.appendChild(CreateElement.createSpan(null, 'item-label', 'flags'));
+    
+    var col2 = CreateElement.createDiv(null, 'col-sm');
+    row.appendChild(col2);
+    
+    if (studentInfo.iep) col2.appendChild(this.studentImageIEP.cloneNode(true));
+    if (studentInfo['504']) col2.appendChild(this.studentImage504.cloneNode(true));
+    if (studentInfo.homeschooled) col2.appendChild(this.studentIconHomeSchooled.cloneNode(true));
     
     return row;
   }
@@ -434,14 +537,6 @@ class RosterViewer {
     }
   }
 
-  _filterRosterBy(filterType, turnFilteringOn) {
-    console.log('_filterRosterBy', filterType, turnFilteringOn);
-  }
-  
-  _sortRosterBy(fieldToSortBy) {
-    console.log('_sortRosterBy', fieldToSortBy);
-  }
-  
   async _doPropertyEdit(label, property, targetElement) {
     var currentValue = targetElement.innerHTML;
 
@@ -450,11 +545,7 @@ class RosterViewer {
     if (!result || result == currentValue) return;
     result = this._sanitizeText(result);
     
-    var studentName;
-    if (this.settings.selectedStudentInfo.enrollments.length > 0) {
-      studentName = this.settings.selectedStudentInfo.enrollments[0].student;
-    }
-    if (!studentName) return;
+    var studentName = this.settings.selectedStudentInfo.student;
     
     var result = await this.config.callbackPropertyChange({"student": studentName, "property": property, "value": result});
     if (!result.success) return;
@@ -525,20 +616,10 @@ class RosterViewer {
   // handlers
   //--------------------------------------------------------------   
   _handleStudentFilterChange(e) {
-    console.log('_handleStudentFilterChange');
+    this._filterRosterBy('student', e.target.value.length > 0);
   }
   
-  /*
-  _handleDropDownInputChange(e) {
-    this._filterDropdownItems(e.target.value);
-  }
-  
-  _handleDropDownItemClick(e) {
-    this._selectStudent(e.target.innerHTML);
-  }
-  */
-  
-  _handleFilterBy(e, filterType) {    
+  _handleFilterBy(e, filterType) {
     if (e.target.classList.contains('filter-off')) {
       this._filterRosterBy(filterType, true);
       UtilityKTS.setClass(e.target, 'filter-off', false);
@@ -550,7 +631,7 @@ class RosterViewer {
   }
   
   _handleSortBy(e) {
-    this._sortRosterBy(e.target.innerHTML);
+    this._sortRosterBy(e.target.getAttribute('field-name'));
   }  
   
   _handleRosterSelect(e) {
@@ -558,20 +639,18 @@ class RosterViewer {
   }
   
   _handleStudentViewClose(e) {
-    this.studentSelectInput.value = '';
+    this.settings.selectedStudentInfo = null;
+    UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, false);
     UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, false);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
   }
 
   async _handlePropertyEdit(label, property, targetElement) {
-    console.log(label);
-    console.log(property);
-    console.log(targetElement);
     await this._doPropertyEdit(label, property, targetElement);
   }
   
   _handleTableEdit(e, editType, table) {
-    var student = this.studentSelectInput.value;
+    var student = this.settings.selectedStudentInfo.student;
     var item = JSON.parse(e.target.getAttribute('item'));
     
     if (editType == 'add') {

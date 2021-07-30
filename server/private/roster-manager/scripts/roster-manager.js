@@ -568,6 +568,7 @@ const app = function () {
     
     if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
     if (dispatchTarget == settings.currentNavOption) return;
+    if (settings.currentNavOption == 'navStudent') settings.rosterViewer.closeDialogs();
     
     _emphasizeMenuOption(settings.currentNavOption, false);
     _emphasizeMenuOption(dispatchTarget, true);
