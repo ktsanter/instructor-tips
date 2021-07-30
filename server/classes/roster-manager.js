@@ -1536,7 +1536,7 @@ module.exports = internal.RosterManager = class {
     
     var y = String(theDate.getFullYear()).padStart(4, '0');
     var m = String(theDate.getMonth() + 1).padStart(2, '0');
-    var d = String(theDate.getDate() + 1).padStart(2, '0');
+    var d = String(theDate.getDate()).padStart(2, '0');
     
     console.log(y + '-' + m + '-' + d);
 

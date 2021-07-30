@@ -1135,8 +1135,15 @@ const app = function () {
       var parsedLine = descriptionLines[i].split(' | ');
       var student = parsedLine[0].trim();
       var section = parsedLine[1].trim();
-      var term = parsedLine[2].trim();
-      var enrollmentEndDate = parsedLine[3].trim().slice(-10);
+
+      var term, enrollmentEndDate;      
+      if (parsedLine.length < 4) {
+        term = '[unknown';
+        enrollmentEndDate = parsedLine[2].trim().slice(-10);
+      } else {
+        term = parsedLine[2].trim();
+        enrollmentEndDate = parsedLine[3].trim().slice(-10);
+      }
 
       studentList.push({
         "student": student, 
