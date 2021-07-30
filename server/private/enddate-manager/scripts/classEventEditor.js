@@ -33,8 +33,8 @@ class EventEditor {
     this._config.eventContainer.getElementsByClassName('header-student')[0].addEventListener('click', (e) => { this._handleResort('student'); });
     this._config.eventContainer.getElementsByClassName('header-section')[0].addEventListener('click', (e) => { this._handleResort('section'); });
     this._config.eventContainer.getElementsByClassName('header-enddate')[0].addEventListener('click', (e) => { this._handleResort('enddate'); });
-    
-    this._config.eventContainer.getElementsByClassName('event-exporticon')[0].addEventListener('click', (e) => { this._handleExport(); });
+    this._config.eventContainer.getElementsByClassName('header-term')[0].addEventListener('click', (e) => { this._handleResort('term'); });
+    this._config.eventContainer.getElementsByClassName('header-control')[0].addEventListener('click', (e) => { this._handleResort('control'); });
     
     this._config.editorOkay.addEventListener('click', (e) => { this._handleEditEnd(true); });
     this._config.editorCancel.addEventListener('click', (e) => { this._handleEditEnd(false); });
@@ -94,7 +94,15 @@ class EventEditor {
     var sortDirection = this.sortDirection;
     
     var sorted = eventList.sort(function(a, b) {
-      return sortDirection * a[sortBy].localeCompare(b[sortBy]);
+      var result;
+      if (sortBy == 'control') {
+        result = -1 * sortDirection * a.override.toString().localeCompare(b.override.toString());
+        
+      } else {
+        result = sortDirection * a[sortBy].localeCompare(b[sortBy]);
+      }
+      
+      return result;
     });
     
     return sorted;
@@ -111,15 +119,12 @@ class EventEditor {
     studentCell.title = 'add/edit override';
     studentCell.addEventListener('click', (e) => { this._editItem(e); });
     
-    elemRow.appendChild(this._rendeDataCell(eventData.section));
     elemRow.appendChild(this._rendeDataCell(eventData.enddate, eventData.override));
+    elemRow.appendChild(this._rendeDataCell(eventData.section));
+    elemRow.appendChild(this._rendeDataCell(eventData.term));
     elemRow.appendChild(this._renderControlCell(eventData));
     
     return elemRow;
-  }
-  
-  test(e) {
-    console.log(e.target);
   }
   
   _rendeDataCell(columnData, markAsAlert) {
@@ -172,6 +177,7 @@ class EventEditor {
     if (okay) {
       var editedData = this._getEventDataFromEditor();
       var eventData = this.eventList[this.editorEventIndex];
+      console.log('_endEventEditing1', eventData);
 
       var currentEndDate = eventData.enddate;
       var enrollmentEndDate = eventData.enrollmentenddate;
@@ -182,6 +188,7 @@ class EventEditor {
       eventData.currentenddate = currentEndDate;
       eventData.enrollmentenddate = enrollmentEndDate;
       eventData.notes = editedData.notes;
+      console.log('_endEventEditing2', eventData);
 
       await this._config.callbackEventChange({action: changeAction, data: eventData});
     }
@@ -203,7 +210,7 @@ class EventEditor {
   
   _loadEventDataIntoEditor(eventData) {
     this.elemStudent.value = eventData.student;
-    this.elemSection.value = eventData.section;
+    this.elemSection.value = eventData.term + ', ' + eventData.section;
     this.elemEndDate.value = eventData.enddate;
     this.elemNotes.value = decodeURIComponent(eventData.notes);
     this.elemEnrollmentEndDate.value = eventData.enrollmentenddate;
@@ -216,10 +223,6 @@ class EventEditor {
     };
   }
   
-  async _export() {
-    await this._config.callbackExport( this.getEventList() );
-  }
-      
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------  
@@ -252,10 +255,6 @@ class EventEditor {
     this.update(this.eventList);
   }
   
-  _handleExport(e) {
-    this._export();
-  }
-
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------        

@@ -7,11 +7,12 @@ mixin managerContainer()
         thead(class="table-primary")
           tr
             th(class="header header-student") student
-            th(class="header header-section") section
             th(class="header header-enddate") end date
-            th
-              i(class="event-icon event-exporticon fas fa-file-excel" title="export to Excel")
+            th(class="header header-section") section
+            th(class="header header-term") term
+            th(class="header header-control") 
               form(id="formExport" class="export-form hide-me" action="enddate-manager/export" enctype="multipart/form-data" method="post")
                 textarea(id="exportData" class="export-data" name="export-data")
+              |override
 
         tbody(class="eventlist-body")

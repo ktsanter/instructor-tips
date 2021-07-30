@@ -44,6 +44,8 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {    
+    console.log('add term somehow');
+    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
@@ -148,8 +150,7 @@ const app = function () {
       editorOkay: page.contents.getElementsByClassName('button-editor-okay')[0],
       editorCancel: page.contents.getElementsByClassName('button-editor-cancel')[0],
       callbackEventChange: _callbackEditorEventChange,
-      callbackModeChange: _callbackEditorModeChange,
-      callbackExport: _callbackEditorExport
+      callbackModeChange: _callbackEditorModeChange
     });
     settings.eventEditor.render();
   }
@@ -304,7 +305,7 @@ const app = function () {
         item.enddate = overrideItem.enddate;
         item.enrolmmentenddate = overrideItem.enrollmentenddate;
       }
-        
+
       reconciled.push(item);
     }
     
@@ -355,6 +356,7 @@ const app = function () {
           "enrollmentenddate": subItem.enrollmentenddate,
           "student": subItem.student,
           "section": subItem.section,
+          "term": subItem.term,
           "notes": '',
           "override": false,
           "overrideid": null
@@ -392,7 +394,7 @@ const app = function () {
     var description = 'Term end date scheduled for:';
     for (var i = 0; i < eventInfo.enrollments.length; i++) {
       var item = eventInfo.enrollments[i];
-      description += '\n' + item.student + ' | ' + item.section + ' | enrollment: ' + item.originalEndDate;
+      description += '\n' + item.student + ' | ' + item.section + ' | ' + item.term + ' | enrollment: ' + item.originalEndDate;
     }
     
     var reminders = [];
@@ -442,6 +444,7 @@ const app = function () {
       enrollments: [{
         student: eventParams.student,
         section: eventParams.section,
+        term: eventParams.term,
         originalEndDate: eventParams.enrollmentenddate
       }]
     };
@@ -457,6 +460,7 @@ const app = function () {
         objEventsToAdd[enddate].enrollments.push({
           student: item.student,
           section: item.section,
+          term: item.term,
           originalEndDate: item.enrollmentenddate
         });
       }
@@ -473,6 +477,7 @@ const app = function () {
         objEventsToAdd[enddate].enrollments.push({
           student: item.student,
           section: item.section,
+          term: item.term,
           originalEndDate: item.enrollmentenddate
         });
       }
@@ -589,27 +594,19 @@ const app = function () {
     for (var enddate in collated) {
       var item = collated[enddate];
       var formattedItem = _makeEndDateEventParams(item);
-      //console.log(formattedItem);
       formattedItem.calendarId = destCalendarId;
-      //console.log(formattedItem);
       batchParams.push({action: 'add', params: formattedItem});
     }
     
     return await settings.google.objCalendar.executeBatch(batchParams);
-  }
-  
-/*
-  function _openCurrentCalendar() {
-    var timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-    var baseURL = 'https://calendar.google.com/calendar/u/0/embed';
-    var qparamSrc = 'src=' + settings.configuration.calendarId;
-    var qparamTimeZone = 'ctz=' + timeZone;
-    
-    var url = baseURL + '?' + qparamSrc + '&' + qparamTimeZone;
-    window.open(url, '_blank');
   } 
-*/  
+  
+  function _exportToExcel() {
+    var exportData = settings.eventEditor.getEventList();
+    var elemForm = page.navManage.getElementsByClassName('export-form')[0];
+    elemForm.getElementsByClassName('export-data')[0].value = JSON.stringify(exportData);
+    elemForm.submit();    
+  }
   
   //--------------------------------------------------------------------------
   // callbacks
@@ -663,6 +660,7 @@ const app = function () {
   }
   
   async function _callbackEditorEventChange(params) {
+    console.log('_callbackEditorEventChange', params);
     var queryType = null;
     if (params.action == 'add') {
       queryType = 'insert';  
@@ -699,6 +697,7 @@ const app = function () {
       eventid: params.data.eventid,
       student: params.data.student,
       section: params.data.section,
+      term: params.data.term,
       enddate:( queryType == 'delete') ? params.data.enrollmentenddate : params.data.enddate,
       currentenddate: params.data.currentenddate,
       enrollmentenddate: params.data.enrollmentenddate
@@ -714,12 +713,6 @@ const app = function () {
     _setMainNavbarEnable(enable);
   }
   
-  async function _callbackEditorExport(exportData) {
-    var elemForm = page.navManage.getElementsByClassName('export-form')[0];
-    elemForm.getElementsByClassName('export-data')[0].value = JSON.stringify(exportData);
-    elemForm.submit();
-  }
-  
   function _setMainNavbarEnable(enable) {
     var menuIds = ['navManage', 'navOptions', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
@@ -733,19 +726,21 @@ const app = function () {
 	//--------------------------------------------------------------------------
   function _navDispatch(e) {
     var dispatchTarget = e.target.id;
+    if (e.target.classList.contains('use-parentid')) dispatchTarget = e.target.parentNode.id;
 
     if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
     if (dispatchTarget == settings.currentNavOption) return;
     
     _emphasizeMenuOption(settings.currentNavOption, false);
     _emphasizeMenuOption(dispatchTarget, true);
-    
+
     var dispatchMap = {
       "navManage": function() { _showContents('navManage');},
       "navOptions": function() { _showContents('navOptions'); },
       "navAdmin": function() { _showContents('navAdmin'); },
       "navGoogle": function() { _handleGoogleSignIn(); },
       "navCalendar": function() { _handleCalendarOpen(); },
+      "navExport": function() { _exportToExcel(); },
       "navOWA": function() { _handleOWAOpen(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
@@ -873,7 +868,6 @@ const app = function () {
   
   async function _addEnrollmentListToCalendar(enrollmentList) {
     var collated = _collateEnrollments(enrollmentList, _standardizeOverrides());
-    
     var batchParams = [];
     for (var enddate in collated) {
       var item = collated[enddate];
@@ -893,11 +887,13 @@ const app = function () {
 
     for (var i = 0; i < enrollmentList.length; i++) {
       var item = enrollmentList[i];
+      
       var standardizedItem = {
         "enddate": _formatAsShortDate(item.enddate),
         "enrollmentenddate": _formatAsShortDate(item.enddate),
         "student": item.student,
         "section": item.section,
+        "term": item.term,
         "notes": '',
         "override": false,
         "overrideid": null
@@ -941,7 +937,8 @@ const app = function () {
       collated[enddate].enrollments.push({
         "originalEndDate": item.enrollmentenddate,
         "section": item.section,
-        "student": item.student
+        "student": item.student,
+        "term": item.term
       });
     }
     
@@ -1138,9 +1135,16 @@ const app = function () {
       var parsedLine = descriptionLines[i].split(' | ');
       var student = parsedLine[0].trim();
       var section = parsedLine[1].trim();
-      var enrollmentEndDate = parsedLine[2].trim().slice(-10);
+      var term = parsedLine[2].trim();
+      var enrollmentEndDate = parsedLine[3].trim().slice(-10);
 
-      studentList.push({"student": student, "section": section, "enddate": item.end.date, "enrollmentenddate": enrollmentEndDate});
+      studentList.push({
+        "student": student, 
+        "section": section, 
+        "term": term,
+        "enddate": item.end.date, 
+        "enrollmentenddate": enrollmentEndDate
+      });
     }
 
     parsedItem.studentList = studentList;

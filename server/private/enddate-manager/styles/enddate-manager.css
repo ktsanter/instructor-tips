@@ -26,10 +26,20 @@ body {
   font-size: 1.1em;
 }
 
+.navbar .dropdown-item .excel-icon {
+  color: #379164;
+}
+
+.navbar .dropdown-item.disabled .excel-icon  {
+  color: #adb5bd;
+}
+
 /*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/
-.contents {}
+.contents {
+  font-size: 90%;
+}
 
 .contents .disable-container {
   background-color: var(--bgShaded);

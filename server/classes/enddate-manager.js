@@ -19,10 +19,12 @@ module.exports = internal.EndDateManager = class {
     this._colStudent = 'Student';
     this._colSection = 'Section';
     this._colEndDate = 'EndDate';
+    this._colTerm = 'LMSTerm';
     this._requiredColumns = new Set([
       this._colStudent,
       this._colSection,
-      this._colEndDate
+      this._colEndDate,
+      this._colTerm
     ]);
   }
   
@@ -455,12 +457,14 @@ module.exports = internal.EndDateManager = class {
       var student = row.getCell(columnMapping[thisObj._colStudent]).value;
       var section = row.getCell(columnMapping[thisObj._colSection]).value;
       var endDate = row.getCell(columnMapping[thisObj._colEndDate]).value;
+      var term = row.getCell(columnMapping[thisObj._colTerm]).value;
 
      if (student != thisObj._colStudent) {
         enrollments.push({
           "student": student,
           "section": section,
-          "enddate": endDate
+          "enddate": endDate,
+          "term": term
         });
      }
     });
