@@ -300,6 +300,7 @@ const app = function () {
       return;
     }
     var rosterInfo = result.data;
+    console.log('_getCurrentInfo', rosterInfo);
 
     result = await _getStudentPropertiesFromDB();
     if (!result.success) {
