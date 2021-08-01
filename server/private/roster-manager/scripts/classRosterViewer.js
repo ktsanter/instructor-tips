@@ -11,12 +11,7 @@ class RosterViewer {
       currentInfo: null,
       editIconClasses: 'fas fa-edit',
       selectedStudentInfo: null,
-      filtering: {
-        "student": false,
-        "iep": false,
-        "504": false,
-        "homeschooled": false
-      },
+      filtering: {},
       sorting: {
         "field": 'student', 
         "direction": 1
@@ -71,6 +66,8 @@ class RosterViewer {
     
     noteButton = this.config.containerNoteEditor.getElementsByClassName('button-editor-cancel')[0];
     noteButton.addEventListener('click', (e) => { this._finishNoteEdit(false); });
+    
+    this.settings.filterControls = this._createFilterControls(['section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'term']);
 
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
   }
@@ -89,6 +86,7 @@ class RosterViewer {
 
     } else {
       this._buildRosterTable();
+      this._updateFilterControls();
       UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, false); 
 
       if (this.settings.selectedStudentInfo) this._selectStudent(this.settings.selectedStudentInfo.student);  
@@ -97,7 +95,7 @@ class RosterViewer {
     UtilityKTS.setClass(this.config.container, this.settings.hideClass, false);
     this._setNoteEditVisiblity(false);    
   }
-  
+
   _clearRosterTable() {
     UtilityKTS.removeChildren(this.rosterContent);    
   }
@@ -122,6 +120,7 @@ class RosterViewer {
 
       cell.classList.add('roster-headercol');
       cell.classList.add('roster-headercol-' + fieldName);
+      cell.setAttribute('field-name', fieldName);
       
       var span = CreateElement.createSpan(null, 'roster-headerlabel', labelText);
       cell.innerHTML = '';
@@ -129,9 +128,6 @@ class RosterViewer {
       span.setAttribute("field-name", fieldName);
       
       span.addEventListener('click', (e) => { this._handleSortBy(e); });
-      if (fieldName == 'iep' || fieldName == '504' || fieldName == 'homeschooled') {
-        cell.appendChild(this._createFilterIcon(fieldName));
-      }
     }
     
     var tbody = table.getElementsByTagName('tbody')[0];
@@ -144,26 +140,32 @@ class RosterViewer {
       var cell = CreateElement._createElement('td', 'test1', 'student-from-roster');
       row.appendChild(cell);
       cell.innerHTML = studentName;
+      cell.setAttribute('filter-value', studentName);
       cell.addEventListener('click', (e) => { this._handleRosterSelect(e); });
 
       cell = CreateElement._createElement('td', null, null);
       row.appendChild(cell);
       cell.innerHTML = rosterItem.section;
+      cell.setAttribute('filter-value', rosterItem.section);
       
       cell = CreateElement._createElement('td', null, null);
       row.appendChild(cell);
       cell.innerHTML = rosterItem.startdate;
+      cell.setAttribute('filter-value', rosterItem.startdate);
       
       cell = CreateElement._createElement('td', null, null);
       row.appendChild(cell);
       cell.innerHTML = rosterItem.enddate;
+      cell.setAttribute('filter-value', rosterItem.enddate);
       var override = this._checkForOverride(rosterItem.section, rosterItem.enddateoverride);
       if (override) {
         cell.innerHTML = override;
+        cell.setAttribute('filter-value', override);
         cell.appendChild(this._createOverrideIcon(rosterItem.enddate));
       }
 
       cell = CreateElement._createElement('td', null, null);
+      cell.setAttribute('filter-value', rosterItem.iep);
       row.appendChild(cell);
       if (rosterItem.iep) {
         cell.classList.add('has-icon');
@@ -171,6 +173,7 @@ class RosterViewer {
       }
       
       cell = CreateElement._createElement('td', null, null);
+      cell.setAttribute('filter-value', rosterItem['504']);
       row.appendChild(cell);
       if (rosterItem['504']) {
         cell.classList.add('has-icon');
@@ -178,6 +181,7 @@ class RosterViewer {
       }
       
       cell = CreateElement._createElement('td', null, null);
+      cell.setAttribute('filter-value', rosterItem.homeschooled);
       row.appendChild(cell);
       if (rosterItem.homeschooled) {
         cell.classList.add('has-icon');
@@ -187,7 +191,11 @@ class RosterViewer {
       cell = CreateElement._createElement('td', null, null);
       row.appendChild(cell);
       cell.innerHTML = rosterItem.term;
+      cell.setAttribute('filter-value', rosterItem.term);
+
     }
+    
+    this._attachFilterControls(table);
 
     UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, false);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
@@ -210,13 +218,8 @@ class RosterViewer {
     this._updateUI();
   }
     
-  _filterRosterBy(filterType, turnFilteringOn) {
-    this.settings.filtering[filterType] = turnFilteringOn;
-    
-    this._updateUI();
-  }
-  
   _filterAndSortRoster(rosterInfo) {
+    console.log('_filterAndSortRoster', this.settings.filtering);
     var flattened = [];
     for (var studentName in rosterInfo) {
       var rosterItem = {...rosterInfo[studentName]};
@@ -235,23 +238,23 @@ class RosterViewer {
     
     var activeFilters = {};
     for (var fieldName in this.settings.filtering) {
-      if (this.settings.filtering[fieldName]) {
-        var filterValue, matchType;
+      var filterItem = this.settings.filtering[fieldName];
+      //console.log('filtering for', fieldName, filterItem);
+      var filterValue, matchType;
+      
+      if (fieldName == 'student') {
+        filterValue = this.studentSelectInput.value;
+        matchType = 'like';
         
-        if (fieldName == 'student') {
-          filterValue = this.studentSelectInput.value;
-          matchType = 'like';
-          
-        } else {
-          filterValue = true
-          matchType = 'exact';
-        }
-        
-        activeFilters[fieldName] = {
-          "filterValue": filterValue,
-          "matchType": matchType
-        };
+      } else {
+        filterValue = true
+        matchType = 'exact';
       }
+      
+      activeFilters[fieldName] = {
+        "filterValue": filterValue,
+        "matchType": matchType
+      };
     }
     
     var filtered = flattened.filter(function(a) {
@@ -263,10 +266,12 @@ class RosterViewer {
         var filterVal = filter.filterValue.toString().toLowerCase();
         
         if (filter.matchType == 'like') {
-          result = result && fieldVal.includes(filterVal);
+          if (filterVal.length > 0) {
+            result = result && fieldVal.includes(filterVal);
+          }
           
         } else if (filter.matchType == 'exact') {
-          result = result && (fieldVal == filterVal);
+          //result = result && (fieldVal == filterVal);
         }
       }
       
@@ -294,12 +299,67 @@ class RosterViewer {
     return sorted;
   }
 
-  _createFilterIcon(filterType) {
-    var elem = CreateElement.createIcon(null, 'icon-rosterfilter filter-off fas fa-filter');
-    elem.addEventListener('click', (e) => { this._handleFilterBy(e, filterType); });
-    UtilityKTS.setClass(elem, 'filter-off', !this.settings.filtering[filterType]);
+
+  _createFilterControls(fieldNameList) {
+    var filterControls = {};
+    for (var i = 0; i < fieldNameList.length; i++) {
+      var fieldName = fieldNameList[i];
+      filterControls[fieldName] = new FilterControl({
+        "fieldName": fieldName,
+        "valueSet": new Set(),
+        "callbackIconClick": (callingFilter) => { this._callbackFilterOpen(callingFilter, this.settings.filterControls); },
+        "callbackSelectChange": this._callbackFilterChange
+      })
+      
+      filterControls[fieldName].render();
+    }
     
-    return elem;
+    return filterControls;
+  }
+  
+  _updateFilterControls() {
+    console.log('_updateFilterControls');
+    var valueSets = {};
+    var studentInfo = this.settings.currentInfo.students;
+
+    // build value set for each control field
+    for (var fieldName in this.settings.filterControls) {
+      valueSets[fieldName] = new Set();      
+    }
+
+    for (var student in studentInfo) {
+      var studentItem = studentInfo[student];
+      for (var key in studentItem) {
+        if (valueSets.hasOwnProperty(key)) {
+          valueSets[key].add(studentItem[key]);
+        }
+      }
+      
+      for (var i = 0; i < studentItem.enrollments.length; i++) {
+        var enrollmentItem = studentItem.enrollments[i];
+        for (var enrollmentKey in enrollmentItem) {
+          if (valueSets.hasOwnProperty(enrollmentKey)) {
+            valueSets[enrollmentKey].add(enrollmentItem[enrollmentKey]);
+          }
+        }
+      }
+    }
+    
+    // update filter controls
+    for (var key in this.settings.filterControls) {
+      this.settings.filterControls[key].update(valueSets[key]);
+    }
+  }
+  
+  _attachFilterControls(table) {
+    var headerNodes = table.getElementsByTagName('thead')[0].getElementsByTagName('th');
+    for (var i = 0; i < headerNodes.length; i++) {
+      var node = headerNodes[i];
+      var fieldName = node.getAttribute('field-name');
+      if (this.settings.filterControls.hasOwnProperty(fieldName)) {
+        this.settings.filterControls[fieldName].attachTo(node, true);
+      }
+    }
   }
   
   _createCheckIcon(titleText) {
@@ -334,16 +394,6 @@ class RosterViewer {
     UtilityKTS.removeChildren(this.studentContent);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false);
 
-/*
-    UtilityKTS.setClass(this.studentImageIEP, this.settings.hideClass, !info.iep);       
-    UtilityKTS.setClass(this.studentImage504, this.settings.hideClass, !info["504"]);
-    UtilityKTS.setClass(this.studentIconHomeSchooled, this.settings.hideClass, !info.homeschooled);
-
-    var infoTitle = this._determineStudentInfoMessage(info);
-    this.studentImageInfo.title = infoTitle;
-    UtilityKTS.setClass(this.studentImageInfo, this.settings.hideClass, infoTitle == '');    
-*/
-    
     this.studentContent.appendChild(this._renderWindowClose());
     
     this.studentContent.appendChild(this._renderProperty("student", info.enrollments[0].student));
@@ -387,7 +437,7 @@ class RosterViewer {
     
     this._renderPropertyArray(
       ['datestamp', 'notetext', '[edit-delete-icons]'], 
-      ['date', 'note', '[add-icon]'],
+      ['date', 'note', '[add-_icon]'],
       info.notes, 
       this.studentContent,
       'limit-second-col',
@@ -611,23 +661,22 @@ class RosterViewer {
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
+  _callbackFilterChange(params) {
+    console.log('_callbackFilterChange', params);
+  }
   
+  _callbackFilterOpen(callingFilter, filterControlList) {
+    for (var key in filterControlList) filterControlList[key].closeFilter();
+    callingFilter.openFilter();
+  }
+    
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
   _handleStudentFilterChange(e) {
-    this._filterRosterBy('student', e.target.value.length > 0);
-  }
-  
-  _handleFilterBy(e, filterType) {
-    if (e.target.classList.contains('filter-off')) {
-      this._filterRosterBy(filterType, true);
-      UtilityKTS.setClass(e.target, 'filter-off', false);
-      
-    } else {
-      this._filterRosterBy(filterType, false);
-      UtilityKTS.setClass(e.target, 'filter-off', true);
-    }    
+    this.settings.filtering['student'] = this.studentSelectInput.value;
+    this._updateUI();
+
   }
   
   _handleSortBy(e) {

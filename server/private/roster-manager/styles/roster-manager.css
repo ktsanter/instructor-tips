@@ -75,6 +75,11 @@ body {
   border-color: var(--bgPrimary);
 }
 
+.contents .form-check-input:indeterminate {
+  background-color: #aaa;
+  border-color: var(--bgPrimary);
+}
+
 .contents .form-check-input.check-edittype:focus {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba%280, 0, 0, 0.25%29'/%3e%3c/svg%3e"); 
   box-shadow: none;
@@ -184,7 +189,7 @@ body {
 .contents .contents-navStudent .roster-headercol.roster-headercol-enddate      { width: 10%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-iep          { width: 5%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-504          { width: 5%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-homeschooled { width: 5%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-homeschooled { width: 6%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-term         { }
 
 /*------------------------------------------------------------------------------
@@ -221,11 +226,8 @@ body {
 }
 
 .contents .contents-navMentor .colwidth-0 { width: 15%; }
-
 .contents .contents-navMentor .colwidth-1 { width: 25%; }
-
 .contents .contents-navMentor .colwidth-2 { width: 15%; }
-
 .contents .contents-navMentor .colwidth-3 { width: 25%; }
 
 /*------------------------------------------------------------------------------
@@ -276,6 +278,61 @@ body {
  * contents - navAdmin
  *------------------------------------------------------------------------------*/
 .contents .contents-navAdmin {}
+
+/*------------------------------------------------------------------------------
+ * FilterControl
+ *------------------------------------------------------------------------------*/
+.filter-control {
+  position: absolute;
+  color: black;
+  background-color: white;
+  border: 1px solid #aaa;
+  font-weight: normal;
+}
+  
+.filter-control.filter-control-section      { width: 27%; }
+.filter-control.filter-control-startdate    { width: 15%; }
+.filter-control.filter-control-enddate      { width: 16%; }
+.filter-control.filter-control-iep          { width: 10%; }
+.filter-control.filter-control-504          { width: 10%; }
+.filter-control.filter-control-homeschooled { width: 10%; }
+.filter-control.filter-control-term         { width: 35%; }
+
+.filter-control.filter-control-list {
+  list-style-type:none;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 80%;
+  min-width: 8.0em;
+}
+
+.filter-control .form-check {
+  min-height: 0;
+  margin-bottom: 0;
+}
+
+.filter-control .divider {
+  margin: 0.3em 0;
+}
+
+.filter-control .filter-check {
+  vertical-align: middle;
+  padding-right: 0.2em;
+}
+
+.filter-control .filter-finalitem {
+  text-align: right;
+}
+
+.filter-control .filter-button {
+  color: var(--bgPrimary);
+  font-size: 130%;
+  margin-top: 0.4em;
+}
+
+.filter-control .filter-button.okay {
+  margin-right: 0.4em;
+}
 
 /*------------------------------------------------------------------
  * standard error and notice

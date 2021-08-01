@@ -25,8 +25,6 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {
-    console.log('add real filtering by column (except for student)');
-    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
@@ -292,7 +290,6 @@ const app = function () {
       return;
     }
     var rosterInfo = result.data;
-    console.log('_getCurrentInfo', rosterInfo);
 
     result = await _getStudentPropertiesFromDB();
     if (!result.success) {

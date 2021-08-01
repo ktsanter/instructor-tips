@@ -14,6 +14,7 @@ define(function (require) {
   require('classDataIntegrator');
   require('classRosterViewer');
   require('classMentorViewer');
+  require('classFilterControl');
   require('roster-manager');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));
