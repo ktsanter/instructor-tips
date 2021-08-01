@@ -125,6 +125,25 @@ body {
   color: #aaa;
 }
 
+.contents .contents-navStudent .clear-filter-container {}
+
+.contents .contents-navStudent .clear-filter-container .btn-clearfilter {
+  font-size: 36%;
+  background-color: white;
+}
+
+.contents .contents-navStudent .clear-filter-container .btn-clearfilter:hover {
+  background-color: #ddd;
+}
+
+.contents .contents-navStudent .clear-filter-container .filter-icon {
+  color: var(--bgPrimary);
+}
+
+.contents .contents-navStudent .clear-filter-container .ban-icon {
+  color: red;
+}
+
 .contents .contents-navStudent .rosterviewer-icon {
   color: var(--bgPrimary);
   float: right;

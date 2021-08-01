@@ -37,7 +37,6 @@ class FilterControl {
   }
 
   update(valueSet) {
-    console.log('FilterControl.update', this.config.fieldName, valueSet);
     this.config.valueSet = valueSet;
     
     UtilityKTS.removeChildren(this.container);
@@ -65,6 +64,30 @@ class FilterControl {
     }
     
     return Array.from(values);
+  }
+  
+  clearFilter() {
+    var itemNodes = this.container.getElementsByClassName('filter-check specific');
+    for (var key in this.settings.valueSelected) {
+      this.settings.valueSelected[key] = true;
+      
+      for (var i = 0; i < itemNodes.length; i++) {
+        if (key == itemNodes[i].value) {
+          itemNodes[i].checked = true;
+        }
+      }
+    }
+
+    this._setOverallControlState();
+    this._setIconState(this.settings.valueSelected);
+  }
+  
+  allChecked() {
+    for (var key in this.settings.valueSelected) {
+      if (!this.settings.valueSelected[key]) return false;
+    }
+    
+    return true;
   }
   
   //--------------------------------------------------------------
@@ -101,7 +124,7 @@ class FilterControl {
   _buildSpecificSelection(elemList, fieldName, valueSet) {
     var handler = (e) => { this._handleFilterSpecificSelection(e, fieldName); };
     
-    var valueList = Array.from(valueSet);
+    var valueList = Array.from(valueSet).sort();
     for (var i = 0; i < valueList.length; i++) {
       var value = valueList[i];
       this.settings.valueSelected[value] = true;
@@ -169,6 +192,7 @@ class FilterControl {
     
     var checkboxAll = this.container.getElementsByClassName('filter-check form-check-input overall')[0];
     checkboxAll.indeterminate = (!allChecked && !allUnchecked);
+    checkboxAll.checked = allChecked;
   }
   
   _setIconState(settings) {

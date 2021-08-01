@@ -11,7 +11,9 @@ class RosterViewer {
       currentInfo: null,
       editIconClasses: 'fas fa-edit',
       selectedStudentInfo: null,
-      filtering: {},
+      filtering: {
+        "student": {filterType: 'like', filterValue: ''}
+      },
       sorting: {
         "field": 'student', 
         "direction": 1
@@ -32,6 +34,7 @@ class RosterViewer {
       }
     }
     
+    this._updateFilterControls();
     this._updateUI();
   }
     
@@ -55,6 +58,10 @@ class RosterViewer {
     
     this.studentSelect = this.config.container.getElementsByClassName('student-select')[0];
     this.studentSelectInput = this.studentSelect.getElementsByClassName('student-filter')[0];
+    
+    this.clearFilterContainer = this.config.container.getElementsByClassName('clear-filter-container')[0]
+    this.clearFilterButton = this.clearFilterContainer.getElementsByClassName('btn-clearfilter')[0];
+    this.clearFilterButton.addEventListener('click', (e) => { this._handleClearFilters(e); });
     
     this.rosterContent = this.config.container.getElementsByClassName('view-roster')[0];
     this.studentContent = this.config.container.getElementsByClassName('view-content')[0];
@@ -86,10 +93,11 @@ class RosterViewer {
 
     } else {
       this._buildRosterTable();
-      this._updateFilterControls();
       UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, false); 
 
-      if (this.settings.selectedStudentInfo) this._selectStudent(this.settings.selectedStudentInfo.student);  
+      if (this.settings.selectedStudentInfo) this._selectStudent(this.settings.selectedStudentInfo.student); 
+
+      this._setClearFilterVisibility();      
     }
     
     UtilityKTS.setClass(this.config.container, this.settings.hideClass, false);
@@ -219,7 +227,6 @@ class RosterViewer {
   }
     
   _filterAndSortRoster(rosterInfo) {
-    console.log('_filterAndSortRoster', this.settings.filtering);
     var flattened = [];
     for (var studentName in rosterInfo) {
       var rosterItem = {...rosterInfo[studentName]};
@@ -237,24 +244,9 @@ class RosterViewer {
     }
     
     var activeFilters = {};
-    for (var fieldName in this.settings.filtering) {
-      var filterItem = this.settings.filtering[fieldName];
-      //console.log('filtering for', fieldName, filterItem);
-      var filterValue, matchType;
-      
-      if (fieldName == 'student') {
-        filterValue = this.studentSelectInput.value;
-        matchType = 'like';
-        
-      } else {
-        filterValue = true
-        matchType = 'exact';
-      }
-      
-      activeFilters[fieldName] = {
-        "filterValue": filterValue,
-        "matchType": matchType
-      };
+    activeFilters['student'] = {"filterType": 'like', "filterValue": this.studentSelectInput.value};
+    for (var fieldName in this.settings.filterControls) {
+      activeFilters[fieldName] = {"filterType": 'in', "filterValue": this.settings.filterControls[fieldName].getFilterSettings()};
     }
     
     var filtered = flattened.filter(function(a) {
@@ -265,13 +257,20 @@ class RosterViewer {
         var fieldVal = a[fieldName].toString().toLowerCase();
         var filterVal = filter.filterValue.toString().toLowerCase();
         
-        if (filter.matchType == 'like') {
+        if (fieldName == 'enddate' && a.enddateoverride.length > 0) {
+          for (var i = 0; i < a.enddateoverride.length; i++) {
+            var overrideItem = a.enddateoverride[i];
+            if (a.section == overrideItem.section) fieldVal = overrideItem[fieldName].toString().toLowerCase();
+          }
+        }
+        
+        if (filter.filterType == 'like') {
           if (filterVal.length > 0) {
             result = result && fieldVal.includes(filterVal);
           }
           
-        } else if (filter.matchType == 'exact') {
-          //result = result && (fieldVal == filterVal);
+        } else if (filter.filterType == 'in') {
+          result = result && filterVal.includes(fieldVal);
         }
       }
       
@@ -281,7 +280,23 @@ class RosterViewer {
     var sortField = this.settings.sorting.field;
     var sortDirection = this.settings.sorting.direction;
     var sorted = filtered.sort(function(a, b) {
-      var compare = sortDirection * a[sortField].toString().localeCompare(b[sortField].toString());
+      var aValue = a[sortField];
+      var bValue = b[sortField];
+      
+      if (sortField == 'enddate' && a.enddateoverride.length > 0) {
+        for (var i = 0; i < a.enddateoverride.length; i++) {
+          var overrideItem = a.enddateoverride[i];
+          if (a.section == overrideItem.section) aValue = overrideItem[sortField];
+        }
+      }
+      if (sortField == 'enddate' && b.enddateoverride.length > 0) {
+        for (var i = 0; i < b.enddateoverride.length; i++) {
+          var overrideItem = b.enddateoverride[i];
+          if (b.section == overrideItem.section) bValue = overrideItem[sortField];
+        }
+      }
+      
+      var compare = sortDirection * aValue.toString().localeCompare(bValue.toString());
 
       if (compare == 0) {
         compare = a.student.localeCompare(b.student);
@@ -299,7 +314,6 @@ class RosterViewer {
     return sorted;
   }
 
-
   _createFilterControls(fieldNameList) {
     var filterControls = {};
     for (var i = 0; i < fieldNameList.length; i++) {
@@ -308,7 +322,7 @@ class RosterViewer {
         "fieldName": fieldName,
         "valueSet": new Set(),
         "callbackIconClick": (callingFilter) => { this._callbackFilterOpen(callingFilter, this.settings.filterControls); },
-        "callbackSelectChange": this._callbackFilterChange
+        "callbackSelectChange": (params) => {this._callbackFilterChange(params); this._updateUI(); }
       })
       
       filterControls[fieldName].render();
@@ -318,7 +332,6 @@ class RosterViewer {
   }
   
   _updateFilterControls() {
-    console.log('_updateFilterControls');
     var valueSets = {};
     var studentInfo = this.settings.currentInfo.students;
 
@@ -339,7 +352,17 @@ class RosterViewer {
         var enrollmentItem = studentItem.enrollments[i];
         for (var enrollmentKey in enrollmentItem) {
           if (valueSets.hasOwnProperty(enrollmentKey)) {
-            valueSets[enrollmentKey].add(enrollmentItem[enrollmentKey]);
+            if (enrollmentKey == 'enddate'  && studentItem.enddateoverride.length > 0) {
+              var enddate = enrollmentItem[enrollmentKey];
+              for (var j = 0; j < studentItem.enddateoverride.length; j++) {
+                var overrideItem = studentItem.enddateoverride[j];
+                if (overrideItem.section = enrollmentItem.section) enddate = overrideItem.enddate;
+              }
+              valueSets[enrollmentKey].add(enddate);
+              
+            } else {
+              valueSets[enrollmentKey].add(enrollmentItem[enrollmentKey]);
+            }
           }
         }
       }
@@ -444,7 +467,8 @@ class RosterViewer {
       true
     );
     
-    UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);     
+    UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
+    UtilityKTS.setClass(this.clearFilterContainer, this.settings.hideClass, true);    
     UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, true);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, false); 
   }
@@ -658,15 +682,26 @@ class RosterViewer {
     UtilityKTS.setClass(editView, this.settings.hideClass, !visible);
   }
   
+  _setClearFilterVisibility() {
+    var noFilters = this.studentSelectInput.value.length == 0;
+    
+    for (var key in this.settings.filterControls) {
+      if (!noFilters) break;
+      noFilters = this.settings.filterControls[key].allChecked();
+    }
+    
+    UtilityKTS.setClass(this.clearFilterButton, this.settings.hideClass, noFilters);
+  }
+  
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
   _callbackFilterChange(params) {
-    console.log('_callbackFilterChange', params);
+    // handled by updateUI
   }
   
-  _callbackFilterOpen(callingFilter, filterControlList) {
-    for (var key in filterControlList) filterControlList[key].closeFilter();
+  _callbackFilterOpen(callingFilter, filterControls) {
+    for (var key in filterControls) filterControls[key].closeFilter();
     callingFilter.openFilter();
   }
     
@@ -676,7 +711,16 @@ class RosterViewer {
   _handleStudentFilterChange(e) {
     this.settings.filtering['student'] = this.studentSelectInput.value;
     this._updateUI();
+  }
+  
+  _handleClearFilters(e) {
+    this.studentSelectInput.value = '';
 
+    for (var key in this.settings.filterControls) {
+      this.settings.filterControls[key].clearFilter();
+    }
+
+    this._updateUI();
   }
   
   _handleSortBy(e) {
@@ -691,6 +735,7 @@ class RosterViewer {
     this.settings.selectedStudentInfo = null;
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, false);
     UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, false);
+    UtilityKTS.setClass(this.clearFilterContainer, this.settings.hideClass, false);
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
   }
 
@@ -716,16 +761,6 @@ class RosterViewer {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  _failResult(msg, methodName) {
-    if (methodName) msg += ' in ' + methodName;
-    
-    return {
-      success: false,
-      details: msg,
-      data: null
-    };
-  }
-  
   _formatDate(str) {
     return str.slice(0, 10);
   }

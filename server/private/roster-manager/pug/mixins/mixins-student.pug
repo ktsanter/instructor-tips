@@ -7,7 +7,14 @@ mixin studentContainer()
         span(for="studentName" class="input-group-text") search
         input(type="text" class="form-control student-filter" id="studentName")
         
-    .col-sm(class="item-images hide-me")      
+    .col-sm(class="clear-filter-container")
+      button(class="btn btn-primary btn-clearfilter hide-me" title="clear filters")
+        span(class="fa-stack fa-2x button-interior")
+          i(class="fas fa-filter fa-stack-1x filter-icon")
+          i(class="fas fa-ban fa-stack-2x ban-icon")
+    
+  .row(class="hide-me")
+    .col-sm(class="item-images hide-me")
       img(class="item-image image-iep me-1" title="student has IEP" src="https://res.cloudinary.com/ktsanter/image/upload/v1625677834/Roster%20Manager/iep_standardized.png")
       img(class="item-image image-504 me-1" title="student has 504" src="https://res.cloudinary.com/ktsanter/image/upload/v1625677834/Roster%20Manager/504_standardized.png")
       i(class="item-icon icon-homeschooled me-1 fas fa-home" title="student is homeschooled")
