@@ -18,7 +18,7 @@ create table comment
   userid        int unsigned not null,
   tags          varchar(200) not null,
   hovertext     varchar(300) not null,
-  commenttext   varchar(4000) not null,
+  commenttext   mediumtext not null,
   
   primary key (commentid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
@@ -39,7 +39,7 @@ create table presetcomment
 (
   presetcommentid   int unsigned not null AUTO_INCREMENT,
   userid            int unsigned not null,
-  commenttext       varchar(4000) not null,
+  commenttext       mediumtext not null,
   
   primary key (presetcommentid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
