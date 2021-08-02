@@ -13,6 +13,7 @@ const app = function () {
     logoutURL: '/usermanagement/logout/enddate-manager',
     owaURL: 'https://outlook.office365.com/mail/inbox',
     googleCalendarURL: 'https://calendar.google.com/calendar',
+    rosterManagerURL: '/roster-manager',
     
     dirtyBit: {
       "navManage": false,
@@ -44,8 +45,6 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {    
-    console.log('add filtering by column (except for student');
-    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
@@ -134,6 +133,7 @@ const app = function () {
 	//-----------------------------------------------------------------------------
   function _renderContents() {
     _enableNavOption('navGoogle', false, false);
+    _enableNavOption('navClearFilters', false, false);
     
     _renderManage();
     _renderOptions();
@@ -150,9 +150,16 @@ const app = function () {
       editorOkay: page.contents.getElementsByClassName('button-editor-okay')[0],
       editorCancel: page.contents.getElementsByClassName('button-editor-cancel')[0],
       callbackEventChange: _callbackEditorEventChange,
-      callbackModeChange: _callbackEditorModeChange
+      callbackModeChange: _callbackEditorModeChange,
+      callbackClearFiltersVisibility: (makeVisible) => { _enableNavOption('navClearFilters', makeVisible, makeVisible); }
     });
     settings.eventEditor.render();
+    
+    var btnClearFilters = page.navManage.getElementsByClassName('btn-clearfilter')[0];
+    var navoptionClearFilters = document.getElementById('navClearFilters');
+    navoptionClearFilters.parentNode.replaceChild(btnClearFilters, navoptionClearFilters);
+    btnClearFilters.addEventListener('click', (e) => { settings.eventEditor.clearFilters(); });
+    _enableNavOption('navClearFilters', false, false);
   }
   
   function _renderOptions() {
@@ -254,6 +261,10 @@ const app = function () {
   
   function _handleOWAOpen() {
     window.open(settings.owaURL, '_blank');
+  }
+   
+  function _doRosterManager() {
+    window.open(settings.rosterManagerURL, '_blank');
   }
   
   function _doHelp() {
@@ -660,7 +671,6 @@ const app = function () {
   }
   
   async function _callbackEditorEventChange(params) {
-    console.log('_callbackEditorEventChange', params);
     var queryType = null;
     if (params.action == 'add') {
       queryType = 'insert';  
@@ -742,6 +752,7 @@ const app = function () {
       "navCalendar": function() { _handleCalendarOpen(); },
       "navExport": function() { _exportToExcel(); },
       "navOWA": function() { _handleOWAOpen(); },
+      "navRosterManager": function() { _doRosterManager(); },      
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },

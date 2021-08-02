@@ -5,7 +5,7 @@
 //-------------------------------------------------------------------
 class EventEditor {
   constructor(config) {
-    this._config = config;  
+    this._config = config;
     
     this.rowClassList = 'eventlist-row';
     this.datacellClassList = 'eventlist-datacell';
@@ -30,11 +30,11 @@ class EventEditor {
   render() { 
     this.tableBody = this._config.eventContainer.getElementsByTagName('tbody')[0];
     
-    this._config.eventContainer.getElementsByClassName('header-student')[0].addEventListener('click', (e) => { this._handleResort('student'); });
-    this._config.eventContainer.getElementsByClassName('header-section')[0].addEventListener('click', (e) => { this._handleResort('section'); });
-    this._config.eventContainer.getElementsByClassName('header-enddate')[0].addEventListener('click', (e) => { this._handleResort('enddate'); });
-    this._config.eventContainer.getElementsByClassName('header-term')[0].addEventListener('click', (e) => { this._handleResort('term'); });
-    this._config.eventContainer.getElementsByClassName('header-control')[0].addEventListener('click', (e) => { this._handleResort('control'); });
+    this._config.eventContainer.getElementsByClassName('header-student')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('student'); });
+    this._config.eventContainer.getElementsByClassName('header-section')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('section'); });
+    this._config.eventContainer.getElementsByClassName('header-enddate')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('enddate'); });
+    this._config.eventContainer.getElementsByClassName('header-term')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('term'); });
+    this._config.eventContainer.getElementsByClassName('header-control')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('control'); });
     
     this._config.editorOkay.addEventListener('click', (e) => { this._handleEditEnd(true); });
     this._config.editorCancel.addEventListener('click', (e) => { this._handleEditEnd(false); });
@@ -46,19 +46,15 @@ class EventEditor {
     this.elemEndDate = this._config.editorContainer.getElementsByClassName('input-enddate')[0];  
     this.elemNotes = this._config.editorContainer.getElementsByClassName('input-notes')[0];      
     this.elemEnrollmentEndDate = this._config.editorContainer.getElementsByClassName('input-enrollmentenddate')[0];
+    
+    this.filterControls = this._createFilterControls(['enddate', 'section', 'term']);
+    this._attachFilterControls(this._config.eventContainer.getElementsByTagName('table')[0]);
   }
    
   update(eventList) {
-    this.eventList = this._sortEvents(eventList);
-    UtilityKTS.removeChildren(this.tableBody);
-    
-    for (var i = 0; i < eventList.length; i++) {
-      var item = eventList[i];
-      this.tableBody.appendChild(this._renderTableRow(i, item));
-    }  
-
-    this._show('eventlist', true);
-    this._show('editor', false);
+    this.eventList = eventList;
+    this._updateFilterControls();
+    this._updateUI(eventList);
   }
 
   clear() {
@@ -86,20 +82,102 @@ class EventEditor {
     return list;
   }
   
+  clearFilters() {
+    for (var key in this.filterControls) this.filterControls[key].clearFilter();
+    this._updateUI();
+  }
+  
   //--------------------------------------------------------------
   // private methods - rendering
   //--------------------------------------------------------------
-  _sortEvents(eventList) {
+  _updateFilterControls() {
+    var valueSets = {};
+
+    // build value set for each filer control
+    for (var fieldName in this.filterControls) {
+      valueSets[fieldName] = new Set();
+    }
+    
+    for (var i = 0; i < this.eventList.length; i++) {
+      var eventItem = this.eventList[i];
+      for (var key in eventItem) {
+        if (valueSets.hasOwnProperty(key)) {
+          valueSets[key].add(eventItem[key]);
+        }
+      }
+    }
+    
+    // update filter controls
+    for (var key in this.filterControls) {
+      this.filterControls[key].update(valueSets[key]);
+    }    
+  }
+  
+  _updateUI() {
+    var displayedEventList = this._filterAndSortEvents(this.eventList);
+    UtilityKTS.removeChildren(this.tableBody);
+    
+    for (var i = 0; i < displayedEventList.length; i++) {
+      var item = displayedEventList[i];
+      this.tableBody.appendChild(this._renderTableRow(item.eventListIndex, item));
+    }  
+
+    this._show('eventlist', true);
+    this._show('editor', false);
+    this._config.callbackClearFiltersVisibility(this._shouldClearFilterBeVisible());
+  }
+  
+  _filterAndSortEvents(eventList) {
+    var augmentedEventList = [];
+    for (var i = 0; i < eventList.length; i++) {
+      augmentedEventList.push({...{"eventListIndex": i}, ...eventList[i]});
+    }
+    
+    var activeFilters = {};
+    for (var fieldName in this.filterControls) {
+      activeFilters[fieldName] = {"filterType": 'in', "filterValue": this.filterControls[fieldName].getFilterSettings()};
+    }
+
+    var filtered = augmentedEventList.filter(function(a) {
+      var result = true;
+
+      for (var fieldName in activeFilters) {
+        var filter = activeFilters[fieldName];
+        var fieldVal = a[fieldName].toString().toLowerCase();
+        var filterVal = filter.filterValue.toString().toLowerCase();
+        
+        if (filter.filterType == 'like') {
+          if (filterVal.length > 0) {
+            result = result && fieldVal.includes(filterVal);
+          }
+          
+        } else if (filter.filterType == 'in') {
+          result = result && filterVal.includes(fieldVal);
+        }
+      }
+      
+      return result;
+    });
+    
     var sortBy = this.sortBy;
     var sortDirection = this.sortDirection;
-    
-    var sorted = eventList.sort(function(a, b) {
+    var sorted = filtered.sort(function(a, b) {
       var result;
       if (sortBy == 'control') {
         result = -1 * sortDirection * a.override.toString().localeCompare(b.override.toString());
         
       } else {
         result = sortDirection * a[sortBy].localeCompare(b[sortBy]);
+      }
+      
+      if (result == 0) {
+        result = a.student.localeCompare(b.student); 
+        if (result == 0) {
+          result = a.term.localeCompare(b.term);
+          if (result == 0) {
+            result = a.section.localeCompare(b.section);
+          }
+        }        
       }
       
       return result;
@@ -149,6 +227,34 @@ class EventEditor {
     return elemCell;
   }
   
+  _createFilterControls(filterFields) {
+    var controls = {};
+    for (var i = 0; i < filterFields.length; i++) {
+      var fieldName = filterFields[i];
+      controls[fieldName] = new FilterControl({
+        "fieldName": fieldName,
+        "valueSet": new Set(),
+        "callbackIconClick": (callingFilter) => { this._callbackFilterOpen(callingFilter, this.filterControls); },
+        "callbackSelectChange": (params) => { this._callbackFilterChange(params); this._updateUI(); }
+      });
+      
+      controls[fieldName].render();
+    }
+    
+    return controls;    
+  }
+  
+  _attachFilterControls(table) {
+    var headerNodes = table.getElementsByTagName('thead')[0].getElementsByTagName('th');
+    for (var i = 0; i < headerNodes.length; i++) {
+      var node = headerNodes[i];
+      var fieldName = node.getAttribute('field-name');
+      if (this.filterControls.hasOwnProperty(fieldName)) {
+        this.filterControls[fieldName].attachTo(node, true);
+      }
+    }    
+  }
+  
   //--------------------------------------------------------------
   // private methods - updating
   //--------------------------------------------------------------
@@ -177,7 +283,6 @@ class EventEditor {
     if (okay) {
       var editedData = this._getEventDataFromEditor();
       var eventData = this.eventList[this.editorEventIndex];
-      console.log('_endEventEditing1', eventData);
 
       var currentEndDate = eventData.enddate;
       var enrollmentEndDate = eventData.enrollmentenddate;
@@ -188,7 +293,6 @@ class EventEditor {
       eventData.currentenddate = currentEndDate;
       eventData.enrollmentenddate = enrollmentEndDate;
       eventData.notes = editedData.notes;
-      console.log('_endEventEditing2', eventData);
 
       await this._config.callbackEventChange({action: changeAction, data: eventData});
     }
@@ -222,7 +326,30 @@ class EventEditor {
       notes: encodeURIComponent(this.elemNotes.value)
     };
   }
+
+  _shouldClearFilterBeVisible() {
+    var noFilters = true;
+    
+    for (var key in this.filterControls) {
+      if (!noFilters) break;
+      noFilters = this.filterControls[key].allChecked();
+    }
+    
+    return !noFilters;
+  }
   
+  //--------------------------------------------------------------
+  // callbacks
+  //--------------------------------------------------------------   
+  _callbackFilterChange(params) {
+    // handled by _updateUI
+  }
+  
+  _callbackFilterOpen(callingFilter, filterControls) {
+    for (var key in filterControls) filterControls[key].closeFilter();
+    callingFilter.openFilter();
+  }
+      
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------  
@@ -233,7 +360,7 @@ class EventEditor {
     this._removeOverride(row.eventDataIndex);    
   }
   
-  _editItem(e) {  
+  _editItem(e) {
     var row = this._upsearchForRow(e.target);
     if (!row) return;
     
@@ -252,7 +379,7 @@ class EventEditor {
       this.sortDirection = 1;
     }
     
-    this.update(this.eventList);
+    this._updateUI();
   }
   
   //--------------------------------------------------------------

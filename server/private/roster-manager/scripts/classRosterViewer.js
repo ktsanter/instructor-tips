@@ -460,7 +460,7 @@ class RosterViewer {
     
     this._renderPropertyArray(
       ['datestamp', 'notetext', '[edit-delete-icons]'], 
-      ['date', 'note', '[add-_icon]'],
+      ['date', 'note', '[add-icon]'],
       info.notes, 
       this.studentContent,
       'limit-second-col',

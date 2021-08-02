@@ -6,6 +6,7 @@ define(function (require) {
   require('/scripts/classProfile');
   require('/scripts/usermanagement');
   require('/scripts/clipboard_copy');  
+  require('/scripts/classFilterControl');
   
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
@@ -14,7 +15,6 @@ define(function (require) {
   require('classDataIntegrator');
   require('classRosterViewer');
   require('classMentorViewer');
-  require('classFilterControl');
   require('roster-manager');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

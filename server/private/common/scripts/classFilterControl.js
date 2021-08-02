@@ -201,7 +201,7 @@ class FilterControl {
     for (var value in settings) {
       if (!settings[value]) allChecked = false; 
     }
-    
+
     UtilityKTS.setClass(this.controlIcon, 'filter-off', allChecked);
   }
   

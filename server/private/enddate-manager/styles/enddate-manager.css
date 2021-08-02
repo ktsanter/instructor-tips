@@ -87,6 +87,10 @@ body {
   cursor: pointer;
 }
 
+.contents .contents-navManage .eventlist-container .header:hover {
+  text-decoration: underline;
+}
+
 .contents .contents-navManage .eventlist-container .student-cell {
   cursor: pointer;
 }
@@ -115,6 +119,17 @@ body {
 
 .contents .input-notes {
   height: 16.0em;
+}
+
+.contents .contents-navManage .icon-rosterfilter {
+  cursor: pointer;
+  color: var(--bgPrimary);
+  font-size: 0.8em;
+  padding-left: 0.2em;
+}
+
+.contents .contents-navManage .icon-rosterfilter.filter-off {
+  color: #aaa;
 }
 
 /*------------------------------------------------------------------------------
@@ -179,6 +194,77 @@ body {
   width: 93%;
 }
 
+/*------------------------------------------------------------------------------
+ * FilterControl
+ *------------------------------------------------------------------------------*/
+.filter-control {
+  position: absolute;
+  color: black;
+  background-color: white;
+  border: 1px solid #aaa;
+  font-weight: normal;
+}
+  
+.filter-control.filter-control-section      { width: 100%; }
+.filter-control.filter-control-enddate      { width: 100%; }
+.filter-control.filter-control-term         { width: 100%; }
+
+.filter-control.filter-control-list {
+  list-style-type:none;
+  padding: 0.2em 0.4em;
+  margin: 0;
+  font-size: 80%;
+  min-width: 8.0em;
+}
+
+.filter-control .form-check {
+  min-height: 0;
+  margin-bottom: 0;
+}
+
+.filter-control .divider {
+  margin: 0.3em 0;
+}
+
+.filter-control .filter-check {
+  vertical-align: middle;
+  padding-right: 0.2em;
+}
+
+.filter-control .filter-finalitem {
+  text-align: right;
+}
+
+.filter-control .filter-button {
+  color: var(--bgPrimary);
+  font-size: 130%;
+  margin-top: 0.4em;
+}
+
+.filter-control .filter-button.okay {
+  margin-right: 0.4em;
+}
+
+.navbar .btn.btn-clearfilter {
+  font-size: 36%;
+  background-color: var(--bgPrimary);
+  margin-right: 1.5em;
+  width: 6.0em;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.navbar .btn.btn-clearfilter:not(:hover) {
+  border: none;
+}
+
+.navbar .btn.btn-clearfilter .filter-icon {
+  color: white
+}
+
+.navbar .btn.btn-clearfilter .ban-icon {
+  color: red;
+}
 
 /*------------------------------------------------------------------
  * standard error and notice

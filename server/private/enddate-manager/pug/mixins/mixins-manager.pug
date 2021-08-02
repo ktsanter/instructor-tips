@@ -1,18 +1,32 @@
 mixin managerContainer()
+  button(id="navClearFilters" class="btn btn-primary btn-clearfilter" title="clear filters")
+    span(class="fa-stack fa-2x button-interior")
+      i(class="fas fa-filter fa-stack-1x filter-icon")
+      i(class="fas fa-ban fa-stack-2x ban-icon")
+
   .row
     .col-sm(class="eventlist-container")
+
       div(class="masker")
       
       table(class="table table-striped table-hover table-sm")
         thead(class="table-primary")
           tr
-            th(class="header header-student") student
-            th(class="header header-enddate") end date
-            th(class="header header-section") section
-            th(class="header header-term") term
-            th(class="header header-control") 
+            th(class="header header-student" field-name="student")
+              span(class="roster-headerlabel") student
+
+            th(class="header header-enddate" field-name="enddate")
+              span(class="roster-headerlabel") end date
+
+            th(class="header header-section" field-name="section")
+              span(class="roster-headerlabel") section
+
+            th(class="header header-term" field-name="term")
+              span(class="roster-headerlabel") term
+
+            th(class="header header-control" field-name="control") 
               form(id="formExport" class="export-form hide-me" action="enddate-manager/export" enctype="multipart/form-data" method="post")
                 textarea(id="exportData" class="export-data" name="export-data")
-              |override
+              span(class="roster-headerlabel") override
 
         tbody(class="eventlist-body")
