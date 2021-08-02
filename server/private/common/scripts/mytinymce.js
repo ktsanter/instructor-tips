@@ -86,6 +86,7 @@ class MyTinyMCE {
       selector: this._selector,
       height: this._height,
       readonly: paramReadOnly,
+      convert_urls: false,
 
       plugins: paramPlugins,
       menubar: paramMenubar,
