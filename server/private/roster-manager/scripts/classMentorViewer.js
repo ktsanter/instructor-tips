@@ -57,15 +57,16 @@ class MentorViewer {
     container.appendChild(CreateElement.createDiv(null, termClasses, term));
     
     for (var section in termItem) {
-      this._renderSection(section, termItem[section], container);
+      this._renderSection(term, section, termItem[section], container);
     }
   }
   
-  _renderSection(section, sectionItem, container) {
+  _renderSection(term, section, sectionItem, container) {
     var labelDiv = CreateElement.createDiv(null, 'section-label ms-2', section);
     container.appendChild(labelDiv);
     
-    var headerNames = ['name', 'email', 'phone', 'affiliation', 'affiliationphone'];
+    var headerFields = ['name', 'email', 'phone', 'affiliation', 'affiliationphone', 'welcomelettersent'];
+    var headerNames = ['name', 'email', 'phone', 'affiliation', 'aff phone', 'welcome'];
     
     var tableClasses = 'table table-striped table-hover table-sm';
     var table = CreateElement._createElement('table', null, tableClasses);
@@ -89,6 +90,13 @@ class MentorViewer {
         th.classList.add('email-column');
         th.setAttribute('item', JSON.stringify(sectionItem));
         th.addEventListener('click', (e) => { this._handleSectionClick(e); });
+        
+      } else if (headerNames[i] == 'welcome') {
+        th.innerHTML = '';
+        var span = CreateElement.createSpan(null, null, headerNames[i]);
+        th.appendChild(span);
+        var filterIcon = CreateElement.createIcon(null, 'fas fa-filter mentor-welcomefilter filter-off', 'filter checked', (e) => { this._handleWelcomeFilterClick(e); });
+        th.appendChild(filterIcon);        
       }
     }
 
@@ -96,19 +104,33 @@ class MentorViewer {
 
     for (var m = 0; m < sortedMentors.length; m++) {
       var mentorItem = sortedMentors[m];
+      var mentorName = mentorItem['name'];
       
       var tbodyRow = CreateElement._createElement('tr');
       tbody.appendChild(tbodyRow);
       
-      for (var i = 0; i < headerNames.length; i++) {
+      for (var i = 0; i < headerFields.length; i++) {
         var td = CreateElement._createElement('td');
         tbodyRow.appendChild(td);
-        td.innerHTML = mentorItem[headerNames[i]];
+        td.innerHTML = mentorItem[headerFields[i]];
         
-        if (headerNames[i] == 'email') {
+        if (headerFields[i] == 'email') {
           td.title = 'copy to clipboard';
           td.classList.add('email-column');
           td.addEventListener('click', (e) => { this._handleEmailClick(e); });
+          
+        } else if (headerFields[i] == 'welcomelettersent') {
+          td.classList.add('welcome-column');
+          td.classList.add('form-check');
+          td.innerHTML = '';
+
+          var checkVal = JSON.stringify({"term": term, "section": section, "name": mentorName});
+          var checked = mentorItem[headerFields[i]];
+          var handler = (e) => { this._handleMentorWelcomeClick(e); };
+          var check = CreateElement.createCheckbox(null, 'mentor-welcome-control', 'mentor-welcome', checkVal, '', checked, handler);
+          check.getElementsByTagName('input')[0].classList.add('form-check-input');
+          check.getElementsByTagName('input')[0].classList.add('ms-4');
+          td.appendChild(check);
         }
       }
     }
@@ -127,13 +149,17 @@ class MentorViewer {
     return mentorList;
   }
   
-  _copySectionEmailsToClipboard(sectionItem) {
+  _copySectionEmailsToClipboard(target, sectionItem) { 
+    var filterOn = this._welcomeFilterIsOn(target);
+    
     var emails = '';
     var first = true;
     for (var name in sectionItem) {
-      if (!first) emails += ';'
-      emails += sectionItem[name].email;
-      first = false;
+      if (!filterOn || !  sectionItem[name].welcomelettersent) {
+        if (!first) emails += ';'
+        emails += sectionItem[name].email;
+        first = false;
+      }
     }
     
     this._copyToClipboard(emails);
@@ -143,6 +169,51 @@ class MentorViewer {
     this._copyToClipboard(email);
   }
 
+  _toggleWelcomeFilter(target) {
+    var filterOn = !target.classList.contains('filter-off');
+    var turnFilterOn = !filterOn;
+    
+    var table = this._upsearchForTable(target);
+    var rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var elemWelcomeControl = row.getElementsByClassName('mentor-welcome-control')[0];
+      var hideRow = turnFilterOn && elemWelcomeControl.checked;
+      UtilityKTS.setClass(row, this.settings.hideClass, hideRow);
+    }
+    
+    UtilityKTS.setClass(target, 'filter-off', !turnFilterOn);
+  }
+  
+  _welcomeFilterIsOn(target) {
+    var table = this._upsearchForTable(target);;
+    var thead = table.getElementsByTagName('thead')[0];
+    var elemFilter = thead.getElementsByClassName('mentor-welcomefilter')[0];
+
+    return !elemFilter.classList.contains('filter-off');
+  }
+  
+  async _saveMentorWelcomeSetting(target) {
+    var value = JSON.parse(target.value);
+
+    var params = {
+      "property": 'welcomelettersent',
+      "term": value.term,
+      "section": value.section,
+      "name": value.name,
+      "welcomelettersent": target.checked
+    };
+    
+    var result = await this.config.callbackPropertyChange(params);
+    if (result.success) {
+      this.settings.currentInfo.mentorsByTermAndSection[value.term][value.section][value.name].welcomelettersent = target.checked;
+      if (target.checked && this._welcomeFilterIsOn(target)) {
+        var row = this._upsearchForRow(target);
+        UtilityKTS.setClass(row, this.settings.hideClass, true);
+      }
+    }
+  }
+  
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
@@ -151,11 +222,19 @@ class MentorViewer {
   // handlers
   //--------------------------------------------------------------   
   _handleSectionClick(e) {
-    this._copySectionEmailsToClipboard(JSON.parse(e.target.getAttribute('item')));
+    this._copySectionEmailsToClipboard(e.target, JSON.parse(e.target.getAttribute('item')));
   }
   
   _handleEmailClick(e) {
     this._copyEmailToClipboard(e.target.innerHTML);
+  }
+  
+  _handleWelcomeFilterClick(e) {
+    this._toggleWelcomeFilter(e.target);
+  }
+  
+  async _handleMentorWelcomeClick(e) {
+    await this._saveMentorWelcomeSetting(e.target);
   }
   
   //---------------------------------------
@@ -170,13 +249,23 @@ class MentorViewer {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  _failResult(msg, methodName) {
-    if (methodName) msg += ' in ' + methodName;
+  _upsearchForTable(target) {
+    var table = null;
+    var node = target;
+    for (var node = target; !table; node = node.parentNode) {
+      if (node.nodeName == 'TABLE') table = node;
+    }
     
-    return {
-      success: false,
-      details: msg,
-      data: null
-    };
+    return table;
+  }
+
+  _upsearchForRow(target) {
+    var row = null;
+    var node = target;
+    for (var node = target; !row; node = node.parentNode) {
+      if (node.nodeName == 'TR') row = node;
+    }
+    
+    return row;
   }
 }

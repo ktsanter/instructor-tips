@@ -106,7 +106,8 @@ const app = function () {
   
   function _initializeMentorViewer() {
     settings.mentorViewer = new MentorViewer({
-      "container": page.navMentor
+      "container": page.navMentor,
+      "callbackPropertyChange": _callbackMentorViewerPropertyChange,
     });
   }
   
@@ -298,8 +299,15 @@ const app = function () {
     }
     var extraStudentInfo = result.data;
 
+    result = await _getMentorPropertiesFromDB();
+    if (!result.success) {
+      console.log('failed to get extra mentor info');
+      return;
+    }
+    var extraMentorInfo = result.data.mentorextra;
+
     settings.currentInfo = _packageStudentInfo(rosterInfo, extraStudentInfo);
-    settings.currentMentorInfo = _packageMentorInfo(rosterInfo, extraStudentInfo);
+    settings.currentMentorInfo = _packageMentorInfo(rosterInfo, extraStudentInfo, extraMentorInfo);
     
     _setExportUIEnable({
       "student": settings.currentInfo.studentList.length > 0, 
@@ -418,7 +426,7 @@ const app = function () {
     };
   }
   
-  function _packageMentorInfo(rawData, extraStudentInfo) {
+  function _packageMentorInfo(rawData, extraStudentInfo, extraMentorInfo) {
     var mentors = {};
     var mentorsByTermAndSection = {};
 
@@ -433,9 +441,10 @@ const app = function () {
         "email": item.email,
         "phone": item.phone,
         "affiliation": item.affiliation,
-        "affiliationphone": item.affiliationphone,
+        "affiliationphone": item.affiliationphone
       }
       
+      var welcomeLetterSent = _wasWelcomeLetterSent(extraMentorInfo, term, section, name);
       if (!mentorsByTermAndSection.hasOwnProperty(term)) mentorsByTermAndSection[term] = {};
       if (!mentorsByTermAndSection[term].hasOwnProperty(section)) mentorsByTermAndSection[term][section] = {};
       if (!mentorsByTermAndSection[term][section].hasOwnProperty(name)) mentorsByTermAndSection[term][section][name] = {
@@ -444,6 +453,7 @@ const app = function () {
         "phone": item.phone,
         "affiliation": item.affiliation,
         "affiliationphone": item.affiliationphone,
+        "welcomelettersent": welcomeLetterSent
       };
     }
     
@@ -455,6 +465,19 @@ const app = function () {
       "mentorsByTermAndSection": mentorsByTermAndSection,
       "mentorList": mentorList.sort()
     };
+  }
+  
+  function _wasWelcomeLetterSent(extraMentorInfo, term, section, name) {
+    var letterSent = false;
+
+    for (var i = 0; i < extraMentorInfo.length && !letterSent; i++) {
+      var item = extraMentorInfo[i];
+      if (item.term == term && item.section == section && item.name == name) {
+        letterSent = (item.welcomelettersent == 1);
+      }
+    }
+    
+    return letterSent;
   }
   
   function _setUploadFileInfo() {
@@ -687,6 +710,13 @@ const app = function () {
     return result;
   }
   
+  async function _callbackMentorViewerPropertyChange(params) {
+    var result = await _saveMentorPropertyToDB(params);
+    if (!result.success) return result;
+        
+    return result;
+  }
+
   //---------------------------------------
   // DB interface
   //----------------------------------------  
@@ -722,8 +752,21 @@ const app = function () {
     return dbResult;
   }
   
+  async function _getMentorPropertiesFromDB() {
+    dbResult = await SQLDBInterface.doGetQuery('roster-manager/query', 'mentor-properties', page.notice);
+    if (!dbResult.success) return false;
+
+    return dbResult;
+  }
+  
   async function _saveStudentPropertyToDB(params) {
     dbResult = await SQLDBInterface.doPostQuery('roster-manager/insert', 'student-property', params, page.notice);
+    
+    return dbResult
+  }
+  
+  async function _saveMentorPropertyToDB(params) {
+    dbResult = await SQLDBInterface.doPostQuery('roster-manager/insert', 'mentor-property', params, page.notice);
     
     return dbResult
   }

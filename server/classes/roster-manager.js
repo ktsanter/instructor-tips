@@ -95,11 +95,14 @@ module.exports = internal.RosterManager = class {
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
       
+    } else if (params.queryName == 'rosterinfo') {
+      dbResult = await this._getRosterInfo(params, postData, userInfo);
+      
     } else if (params.queryName == 'student-properties') {
       dbResult = await this._getStudentProperties(params, postData, userInfo);
       
-    } else if (params.queryName == 'rosterinfo') {
-      dbResult = await this._getRosterInfo(params, postData, userInfo);
+    } else if (params.queryName == 'mentor-properties') {
+      dbResult = await this._getMentorProperties(params, postData, userInfo);
       
     } else if (params.queryName == 'accesskey') {
       dbResult = await this._getAccessKey(params, postData, userInfo);
@@ -132,7 +135,10 @@ module.exports = internal.RosterManager = class {
     if (params.queryName == 'student-property') {
       dbResult = await this._replaceStudentProperty(params, postData, userInfo);
   
-    } else if (params.queryName == 'student-note') {
+    } else if (params.queryName == 'mentor-property') {
+      dbResult = await this._replaceMentorProperty(params, postData, userInfo);
+  
+    }else if (params.queryName == 'student-note') {
       dbResult = await this._addStudentNote(params, postData, userInfo);
   
     } else {
@@ -975,6 +981,30 @@ module.exports = internal.RosterManager = class {
     return result;
   }
   
+  async _getMentorProperties(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "mentorextra":
+        'select m.mentorextraid, m.term, m.section, m.name, m.welcomelettersent ' +
+        'from mentorextra as m ' +
+        'where m.userid = ' + userInfo.userId
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = queryResults.data;
+
+    return result;
+  }
+  
   async _getRosterInfo(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;
@@ -1051,6 +1081,52 @@ module.exports = internal.RosterManager = class {
       result.details = 'invalid property: ' + postData.property;
       return result;
     }
+
+    queryResults = await this._dbManager.dbQueries(queryList);   
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = postData;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }
+  
+  async _replaceMentorProperty(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;    
+
+    if (postData.property == 'welcomelettersent') {
+      queryList = {};
+      queryList["delete"] = 
+        'delete ' +
+        'from mentorextra ' +
+        'where userid = ' + userInfo.userId + ' ' +
+          'and term = "' + postData.term + '" ' +
+          'and section = "' + postData.section + '" ' +
+          'and name = "' + postData.name + '" ';
+      
+      if (postData.welcomelettersent) {
+        queryList["insert"] =  
+          'insert ' +
+          'into mentorextra (userid, term, section, name, welcomelettersent) ' + 
+          'values (' + 
+            userInfo.userId + ', ' +
+            '"' + postData.term + '", ' +
+            '"' + postData.section + '", ' +
+            '"' + postData.name + '", ' +
+            '1' +
+          ') ';
+      }
+      
+    } else {
+      result.details = 'invalid property: ' + postData.property;
+      return result;
+    }  
 
     queryResults = await this._dbManager.dbQueries(queryList);   
     
