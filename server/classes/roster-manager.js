@@ -881,21 +881,41 @@ module.exports = internal.RosterManager = class {
       {width: 6, style: {alignment: {vertical: 'top', horizontal: 'center'}, font: {size: 9}}}
     ];
 
+    var termList = [];
     for (var term in mentorData) {
+      termList.push(term);
+    }
+    termList = termList.sort();
+    
+    for (var t = 0; t < termList.length; t++) {
+      term = termList[t];
       var termItem = mentorData[term];
       sheet.addRow([term]);
       rowCount++;
       sheet.getRow(rowCount).font = {"bold": true};
       sheet.getRow(rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
-      
+      var sectionList = [];
       for (var section in termItem) {
+        sectionList.push(section);
+      }
+      sectionList = sectionList.sort();
+      
+      for (var s = 0; s < sectionList.length; s++) {
+        var section = sectionList[s];
         var sectionItem = termItem[section];
         sheet.addRow([section]);
         rowCount++;
         sheet.getRow(rowCount).font = {"bold": true};
         
+        var mentorList = [];
         for (var mentor in sectionItem) {
+          mentorList.push(mentor);
+        }
+        mentorList = mentorList.sort();
+        
+        for (var m = 0; m < mentorList.length; m++) {
+          var mentor = mentorList[m];
           var mentorItem = sectionItem[mentor];
           sheet.addRow([
             mentor,
