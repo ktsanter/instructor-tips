@@ -122,6 +122,9 @@ module.exports = internal.RosterManager = class {
     } else if (params.app == 'infodeck' && params.queryName == 'infodeck-deletenote') {
       dbResult = await this._infodeckDeleteNote(params, postData, userInfo);
             
+    } else if (params.app == 'infodeck' && params.queryName == 'infodeck-mentorwelcome') {
+      dbResult = await this._infodeckReplaceMentorProperty(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -138,7 +141,7 @@ module.exports = internal.RosterManager = class {
     } else if (params.queryName == 'mentor-property') {
       dbResult = await this._replaceMentorProperty(params, postData, userInfo);
   
-    }else if (params.queryName == 'student-note') {
+    } else if (params.queryName == 'student-note') {
       dbResult = await this._addStudentNote(params, postData, userInfo);
   
     } else {
@@ -275,8 +278,6 @@ module.exports = internal.RosterManager = class {
       
       if (processRoutingMap.hasOwnProperty(uploadType)) {
         processRoutingMap[uploadType](res, thisObj, worksheet, currentRosterData, userInfo);
-        
-        
 
       } else {
         thisObj._sendFail(res, 'unrecognized upload type: ' + uploadType);
@@ -1313,11 +1314,18 @@ module.exports = internal.RosterManager = class {
       return result;
     }
     
+    var mentorExtraResult = await this._getMentorProperties(null, null, {"userId": userId});
+    if (!mentorExtraResult.success) {
+      result.details = mentorExtraResult.details;
+      return result;
+    }
+    
     result.success = true;
     result.details = 'query succeeded';
     result.data = {
       "rosterinfo": rosterResult.data,
-      "studentproperties": propertiesResult.data
+      "studentproperties": propertiesResult.data,
+      "mentorproperties": mentorExtraResult.data.mentorextra
     }
     
     return result;
@@ -1464,6 +1472,28 @@ module.exports = internal.RosterManager = class {
     return result;
   }
 
+  async _infodeckReplaceMentorProperty(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+
+    var userId = await this._getUserIdFromAccessKey(postData.accesskey);
+    if (!userId) {
+      result.details = 'invalid access key';
+      return result;
+    }
+    
+    var dbResult = await this._replaceMentorProperty(null, postData, {"userId": userId});
+    if (!dbResult.success) {
+      result.details = dbResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = dbResult.data;
+    
+    return result;
+  }
+  
   async _getUserIdFromAccessKey(accesskey) {
     var query, queryResults;
     

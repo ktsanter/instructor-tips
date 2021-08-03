@@ -43,8 +43,15 @@ class MentorViewer {
       UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
       
     } else {
-      var firstTerm = true;
+      var termList = [];
       for (var term in this.settings.currentInfo.mentorsByTermAndSection) {
+        termList.push(term);
+      }
+      termList = termList.sort();
+      
+      var firstTerm = true;
+      for (var i = 0; i < termList.length; i++) {
+        var term = termList[i];
         this._renderTerm(term, this.settings.currentInfo.mentorsByTermAndSection[term], container, firstTerm);
         firstTerm = false;
       }
@@ -52,11 +59,18 @@ class MentorViewer {
   }
   
   _renderTerm(term, termItem, container, firstTerm) {
+    var sectionList = [];
+    for (var section in termItem) {
+      sectionList.push(section);
+    }
+    sectionList = sectionList.sort();
+    
     var termClasses = 'term-label px-2 mb-2';
     if (!firstTerm) termClasses += ' mt-2';
     container.appendChild(CreateElement.createDiv(null, termClasses, term));
     
-    for (var section in termItem) {
+    for (var i = 0; i < sectionList.length; i++) {
+      var section = sectionList[i];
       this._renderSection(term, section, termItem[section], container);
     }
   }
