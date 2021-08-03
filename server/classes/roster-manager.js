@@ -876,7 +876,8 @@ module.exports = internal.RosterManager = class {
       {width: 26, style: {alignment: {vertical: 'top'}}}, 
       {width: 15, style: {alignment: {vertical: 'top'}}}, 
       {width: 36, style: {alignment: {vertical: 'top'}}}, 
-      {width: 15, style: {alignment: {vertical: 'top'}}}
+      {width: 15, style: {alignment: {vertical: 'top'}}},
+      {width: 6, style: {alignment: {vertical: 'top', horizontal: 'center'}, font: {size: 9}}}
     ];
 
     for (var term in mentorData) {
@@ -900,7 +901,8 @@ module.exports = internal.RosterManager = class {
             mentorItem.email,
             mentorItem.phone,
             mentorItem.affiliation,
-            mentorItem.affiliationphone
+            mentorItem.affiliationphone,
+            mentorItem.welcomelettersent ? '☑️' : ''
           ]);
           rowCount++;
         }
