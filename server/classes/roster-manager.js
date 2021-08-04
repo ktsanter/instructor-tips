@@ -170,6 +170,9 @@ module.exports = internal.RosterManager = class {
     if (params.queryName == 'student-note') {
       dbResult = await this._deleteStudentNote(params, postData, userInfo);
     
+    } else if (params.queryName == 'term-remove') {
+      dbResult = await this._removeTermData(params, postData, userInfo);
+    
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -1248,6 +1251,64 @@ module.exports = internal.RosterManager = class {
     return result;
   }  
   
+  async _removeTermData(params, postData, userInfo) {
+    console.log('RosterData._removeTermData');
+    
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    if (userInfo.privilegeId > 1) {
+      result.details = 'insufficient privileges';
+      return result;
+    }
+
+    
+    queryList = {
+      "mentorextra": 
+        'delete from mentorextra ' +
+        'where term = "' + postData.term + '" ',
+
+      "iep": 
+        'delete from iep ' +
+        'where term = "' + postData.term + '" ',
+
+      "504": 
+        'delete from student504 ' +
+        'where term = "' + postData.term + '" ',
+
+      "homeschooled": 
+        'delete from homeschooled ' +
+        'where term = "' + postData.term + '" ',
+
+      "mentor": 
+        'delete from mentor ' +
+        'where term = "' + postData.term + '" ',
+
+      "guardian": 
+        'delete from guardian ' +
+        'where term = "' + postData.term + '" ',
+
+      "enrollment": 
+        'delete from enrollment ' +
+        'where term = "' + postData.term + '" ',
+    };
+     
+    console.log(queryList);   
+    queryResults = await this._dbManager.dbQueries(queryList);   
+    console.log(queryResults);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = postData;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+
   async _getAccessKey(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     
@@ -1666,8 +1727,6 @@ module.exports = internal.RosterManager = class {
     var m = String(theDate.getMonth() + 1).padStart(2, '0');
     var d = String(theDate.getDate()).padStart(2, '0');
     
-    console.log(y + '-' + m + '-' + d);
-
     return y + '-' + m + '-' + d;
   }  
 }

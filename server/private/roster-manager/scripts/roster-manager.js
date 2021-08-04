@@ -597,17 +597,6 @@ const app = function () {
     }
   }
   
-  async function _removeTermData(term) {
-    var msg = 'All data for this term will be permanently deleted from the database';
-    msg += '\n\n';
-    msg += term;
-    msg += '\n\n';
-    msg += 'Choose "OK" to continue';
-    if (!confirm(msg)) return;
-
-    console.log('_removeTermData', term);
-  }
-  
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
@@ -828,7 +817,31 @@ const app = function () {
     
     return dbResult
   }
+  
+  async function _removeTermData(term) {
+    var msg = '⚠️ All data for this term will be permanently deleted from the database';
+    msg += '\n\n';
+    msg += term;
+    msg += '\n\n';
+    msg += 'Choose "OK" to continue';
+    if (!confirm(msg)) return;
+    
+    msg = "⚠️ Are you really, really sure?";
+    msg += '\n\n';
+    msg += term;
+    msg += '\n\n';
+    msg += 'will be deleted';
+    if (!confirm(msg)) return;
 
+    console.log('_removeTermData', term);
+    var params = {"term": term};
+    dbResult = await SQLDBInterface.doPostQuery('roster-manager/delete', 'term-remove', params, page.notice);
+    console.log(dbResult);
+    if (dbResult.success) {
+      await _getCurrentInfo();
+    }
+  }
+ 
   //---------------------------------------
   // clipboard functions
   //----------------------------------------
