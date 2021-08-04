@@ -161,9 +161,10 @@ const app = function () {
   
   function _renderAdmin() {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
+    page.adminTermSelect = page.navAdmin.getElementsByClassName('select-term')[0];
     
     page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });    
-    page.navAdmin.getElementsByClassName('btnTest')[0].addEventListener('click', (e) => { _handleTest(e); });
+    page.navAdmin.getElementsByClassName('btnRemoveTermData')[0].addEventListener('click', (e) => { _handleRemoveTermData(e); });    
   }
     
   //-----------------------------------------------------------------------------
@@ -205,7 +206,32 @@ const app = function () {
   
   function _showConfigure() {}
   
-  function _showAdmin() {}
+  function _showAdmin() {
+    var termList = _getTermListFromRawData();
+    
+    UtilityKTS.removeChildren(page.adminTermSelect);
+    for (var i = 0; i < termList.length; i++) {
+      var term = termList[i];
+      var elem = CreateElement.createOption(null, null, term, term);
+      page.adminTermSelect.appendChild(elem);
+    }
+  }
+  
+  function _getTermListFromRawData() {
+    var termSet = new Set([]);
+    for (var key in settings.currentRawInfo.rosterInfo) {
+      var rawDataArray = settings.currentRawInfo.rosterInfo[key];
+      for (var i = 0; i < rawDataArray.length; i++) {
+        termSet.add(rawDataArray[i].term);
+      }
+    }
+    
+    for (var i = 0; i < settings.currentRawInfo.extraMentorInfo.length; i++) {
+      termSet.add(settings.currentRawInfo.extraMentorInfo[i].term);
+    }
+    
+    return Array.from(termSet).sort();
+  }
   
   function _setNavOptions() {
     var opt = settings.currentNavOption;
@@ -308,6 +334,11 @@ const app = function () {
 
     settings.currentInfo = _packageStudentInfo(rosterInfo, extraStudentInfo);
     settings.currentMentorInfo = _packageMentorInfo(rosterInfo, extraStudentInfo, extraMentorInfo);
+    settings.currentRawInfo = {
+      "rosterInfo": rosterInfo,
+      "extraStudentInfo": extraStudentInfo,
+      "extraMentorInfo": extraMentorInfo
+    };
     
     _setExportUIEnable({
       "student": settings.currentInfo.studentList.length > 0, 
@@ -566,10 +597,15 @@ const app = function () {
     }
   }
   
-  async function _doTest() {
-    console.log('_doTest');
-    console.log('**stub');
-    alert('There is currently no action for this choice');  
+  async function _removeTermData(term) {
+    var msg = 'All data for this term will be permanently deleted from the database';
+    msg += '\n\n';
+    msg += term;
+    msg += '\n\n';
+    msg += 'Choose "OK" to continue';
+    if (!confirm(msg)) return;
+
+    console.log('_removeTermData', term);
   }
   
   //--------------------------------------------------------------------------
@@ -666,15 +702,19 @@ const app = function () {
     settings.adminDisable = !settings.adminDisable;
     _setAdminMenu();
   }
-  
-  function _handleEditEnableToggle(e) {
-    page.labelEditEnable.innerHTML = e.target.checked ? 'field editing is ENABLED' : 'field editing is DISABLED';
-  }
-  
-  async function _handleTest() {
-    await _doTest();
-  }
 
+  async function _handleRemoveTermData(e) {
+    var index = page.adminTermSelect.selectedIndex;
+    
+    if (index < 0) {
+      alert('Please select a term');
+      return;
+    }
+    
+    var term = page.adminTermSelect[index].value;
+    await _removeTermData(term);
+  }
+  
   //----------------------------------------
   // callbacks
   //----------------------------------------

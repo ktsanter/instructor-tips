@@ -2,7 +2,16 @@ mixin adminContainer()
   .row(class="py-2")
     .col-sm
       button(class="btnToggleAdmin" title="toggle admin menu option") toggle admin
-   
+      
   .row(class="py-2")
-    .col-sm
-      button(class="btnTest") test
+    .col-sm-5
+      fieldset(class="border ps-2 configure-fieldset")
+        legend(class="w-auto") remove old term data
+        
+        .container-fluid
+          .row(class="py-2"): .col-sm
+            select(class="select-term")
+
+          .row(class="py-2"): .col-sm
+            button(class="btnRemoveTermData") remove term data
+
