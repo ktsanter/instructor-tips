@@ -833,10 +833,8 @@ const app = function () {
     msg += 'will be deleted';
     if (!confirm(msg)) return;
 
-    console.log('_removeTermData', term);
     var params = {"term": term};
     dbResult = await SQLDBInterface.doPostQuery('roster-manager/delete', 'term-remove', params, page.notice);
-    console.log(dbResult);
     if (dbResult.success) {
       await _getCurrentInfo();
     }

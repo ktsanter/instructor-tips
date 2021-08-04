@@ -1293,9 +1293,7 @@ module.exports = internal.RosterManager = class {
         'where term = "' + postData.term + '" ',
     };
      
-    console.log(queryList);   
     queryResults = await this._dbManager.dbQueries(queryList);   
-    console.log(queryResults);
     
     if (queryResults.success) {
       result.success = true;
