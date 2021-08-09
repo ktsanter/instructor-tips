@@ -52,19 +52,7 @@ const app = function () {
     elem.addEventListener('click', (e) => {_handleLink();});    
 
     elem = page.body.getElementsByClassName('config-embed-control')[0];
-    elem.addEventListener('click', (e) => {_handleEmbed();});    
-
-    elem = page.body.getElementsByClassName('toc-control')[0];
-    elem.addEventListener('click', (e) => {_handleOptionChange();});    
-
-    elem = page.body.getElementsByClassName('index-control')[0];
-    elem.addEventListener('click', (e) => {_handleOptionChange();});    
-
-    elem = page.body.getElementsByClassName('altcontrol-control')[0];
-    elem.addEventListener('click', (e) => {_handleOptionChange();});    
-
-    elem = page.body.getElementsByClassName('homeoverlay-control')[0];
-    elem.addEventListener('click', (e) => {_handleOptionChange();});    
+    elem.addEventListener('click', (e) => {_handleEmbed();});      
   }
   
   //----------------------------------------
@@ -103,20 +91,7 @@ const app = function () {
     } else if (params.type == 'indexer') {
       var id = _getPresentationId();      
       if (id) {
-        var toc = 'toc=false';
-        if (_isChecked('toc-control')) toc = 'toc=true';
-        
-        var index = 'index=false';
-        if (_isChecked('index-control')) index = 'index=true';
-        
-        var altcontrol = 'altcontrol=false';
-        if (_isChecked('altcontrol-control')) altcontrol = 'altcontrol=true';
-        
-        var homeoverlay = 'homeoverlay=false';
-        if (_isChecked('homeoverlay-control')) homeoverlay = 'homeoverlay=true';
-        
-        var queryParams = '?' + toc + '&' + index + '&' + altcontrol + '&' + homeoverlay;
-        url = protocol + '//' + hostname + '/' + path + '/' + id + queryParams;
+        url = protocol + '//' + hostname + '/' + path + '/' + id;
       }
     }
     
@@ -202,10 +177,6 @@ const app = function () {
     
   function _handleEmbed() {
     _makeAndCopyEmbed();
-  }
-  
-  function _handleOptionChange() {
-    _updatePreview();
   }
     
   //----------------------------------------

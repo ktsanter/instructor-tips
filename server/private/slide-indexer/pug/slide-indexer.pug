@@ -23,7 +23,7 @@ html(lang="en")
     
   body(class="colorscheme")
     //- *** for debug
-    - var params = {"presentationid": '1EccQWBLlv7w9YI-cN40FSFg1cQIf-wgg89Q1JMb2-io', "slidenumber": 1};
+    //- - var params = {"presentationid": '1EccQWBLlv7w9YI-cN40FSFg1cQIf-wgg89Q1JMb2-io', "slidenumber": 0};
     //- *** end debug
     
     - var presentationId = params.presentationid
@@ -39,18 +39,18 @@ html(lang="en")
         .row(class="g-0")
           .col-10
             .navigation-container(class="hide-me")
-              i(class="navicon home fas fa-home" title="home")
               i(class="navicon toc fas fa-book" title="table of contents")
               i(class="navicon index fas fa-list-ul" title="index")
+              i(class="navicon link fas fa-link" title="get direct link to slide")
+              span(class="message")
               i(class="navicon open fas fa-external-link-alt" title="open in new tab")
-              i(class="navicon next fas fa-angle-right")
-              i(class="navicon previous fas fa-angle-left")
-              
-              .toc-container(class="hide-me") toc
-              .index-container(class="hide-me") index
-          
+              i(class="navicon next invisible-me fas fa-angle-right")
+              i(class="navicon previous invisible-me fas fa-angle-left")
+                        
         .row(class="g-0")
           .col-10
+            .toc-container(class="hide-me") toc
+            .index-container(class="hide-me") index
             .slide-container(class="hide-me")
           
           .col

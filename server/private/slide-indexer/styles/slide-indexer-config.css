@@ -106,8 +106,7 @@ body {
 .slide-indexer-config .config-preview .preview-container {
   position: relative; 
   display: block; 
-  width: 53%;
-  padding-bottom: 60%;  
+  padding-bottom: 50%;  
 }
   
 .slide-indexer-config .config-preview .preview-container .preview-iframe {

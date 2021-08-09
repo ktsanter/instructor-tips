@@ -13,6 +13,7 @@ body {}
   display: none;
 }
 
+
 /*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/
@@ -21,12 +22,7 @@ body {}
 /*------------------------------------------------------------------------------
  * presentation
  *------------------------------------------------------------------------------*/
-.contents .presentation {}
-
-/*------------------------------------------------------------------------------
- * slides
- *------------------------------------------------------------------------------*/
-.contents .presentation-container .slide-container {}
+.contents .presentation-container {}
 
 /*------------------------------------------------------------------------------
  * navigation
@@ -35,35 +31,163 @@ body {}
 
 .contents .presentation-container .navigation-container .navicon {
   color: var(--bgPrimary);
+  margin-right: 0.2em;
+  cursor: pointer;
+}
+
+.contents .presentation-container .navigation-container .navicon.index {
+  margin-left: 0.2em;
+}
+
+.contents .presentation-container .navigation-container .navicon.invisible-me {
+  visibility: hidden;
+}
+
+.contents .presentation-container .navigation-container .navicon.link {
+  margin-left: 0.4em;
+} 
+
+.contents .presentation-container .navigation-container .message {
+  color: var(--bgPrimary);
+  font-style: italic;
+  margin-left: 0.2em;
+  font-size: 0.9em;
+} 
+
+.contents .presentation-container .navigation-container .navicon.previous, 
+.contents .presentation-container .navigation-container .navicon.next,
+.contents .presentation-container .navigation-container .navicon.open
+ {
+  float: right;
 }
 
 .contents .presentation-container .navigation-container .navicon.previous, 
-.contents .presentation-container .navigation-container .navicon.next {
+.contents .presentation-container .navigation-container .navicon.next
+{
+  font-size: 1.3em;
+  padding-top: 0.1em;
+}
+
+.contents .presentation-container .navigation-container .navicon.open {
+  padding-top: 0.3em;
+  margin-left: 0.2em;
+}
+
+/*------------------------------------------------------------------------------
+ * slides
+ *------------------------------------------------------------------------------*/
+.contents .presentation-container .slide-container {}
+
+/*------------------------------------------------------------------------------
+ * table of contents
+ *------------------------------------------------------------------------------*/
+.contents .presentation-container .toc-container {
+  border: 1px solid #aaa;
+  position: absolute;
+  z-index: 1;
+  background-color: white;
+  font-size: 0.8em;
+  filter: drop-shadow(2px 2px 2px #000000)  ;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  overflow-y: auto;
+}
+
+.toc-container .toc-title {
+  font-weight: bold;
+}
+
+.toc-container .toc-item {}
+
+.toc-container .toc-item.toc-level0 {}
+
+.toc-container .toc-item.toc-level1 {
+  padding-left: 1.5em;
+}
+
+.toc-container .toc-item:hover {
+  background-color: #eee;
+  cursor: pointer;
+}
+
+/*------------------------------------------------------------------------------
+ * index
+ *------------------------------------------------------------------------------*/
+.contents .presentation-container .index-container {
+  border: 1px solid #aaa;
+  position: absolute;
+  z-index: 1;
+  background-color: white;
+  font-size: 0.8em;
+  filter: drop-shadow(2px 2px 2px #000000);
+  padding-left: 0.2em;
+  padding-right: 0.4em;
+  overflow-y: auto;
+}
+
+.index-container .index-title {
+  font-weight: bold;
+}
+
+.index-container .index-item {}
+
+.index-container .index-item:hover {
+  background-color: #eee;
+}
+
+.index-container .index-key,
+.index-container .index-links {
+  display: inline-block;
+}
+
+.index-container .index-links {
   float: right;
+}
+
+.index-container .index-links .index-singlelink{
+  cursor: pointer;
+  padding-left: 0.2em;
 }
 
 /*------------------------------------------------------------------------------
  * tabs
  *------------------------------------------------------------------------------*/
-.contents .presentation-container .tab-container {}
-.contents .presentation-container .tab-container .tab-row {}
-.contents .presentation-container .tab-container .tab-col {}
+.tab-container {}
+.tab-container .tab-row {}
+.tab-container .tab-col {}
 
-.contents .presentation-container .tab-container .tab-item {
+.tab-container .tab-item {
   color: white;
   background-color: var(--bgPrimary);
   border: 1px solid white; 
   border-left: none;
   border-radius: 0 30px 30px 0; 
   font-size: 0.9em;
+  position: relative;
+  margin-left: -0.15em;
+  padding-left: 0.2em;
+  width: 80%;
 }
 
-.contents .presentation-container .tab-container .tab-item.selected {
-  color: var(--bgPrimary);
-  background-color: white;
-  border-color: var(--bgPrimary);
-}
+.tab-container .tab-item.color0 { background-color: #a40e4c; }
+.tab-container .tab-item.color1 { background-color: #a23b72; }
+.tab-container .tab-item.color2 { background-color: #414066; }
+.tab-container .tab-item.color3 { background-color: #2e86ab; }
+.tab-container .tab-item.color4 { background-color: #25bb41; }
+.tab-container .tab-item.color5 { background-color: #ee6123; }
+.tab-container .tab-item.color6 { background-color: #c73e1d; }
 
+.tab-container .tab-item.selected { 
+  background-color: white; 
+  font-weight: bold;
+}
+.tab-container .tab-item.selected.color0 { color: #a40e4c; border-color: #a40e4c }
+.tab-container .tab-item.selected.color1 { color: #a23b72; border-color: #a23b72 }
+.tab-container .tab-item.selected.color2 { color: #414066; border-color: #414066 }
+.tab-container .tab-item.selected.color3 { color: #2e86ab; border-color: #2e86ab }
+.tab-container .tab-item.selected.color4 { color: #25bb41; border-color: #25bb41 }
+.tab-container .tab-item.selected.color5 { color: #ee6123; border-color: #ee6123 }
+.tab-container .tab-item.selected.color6 { color: #c73e1d; border-color: #c73e1d }
 
 /*------------------------------------------------------------------
  * standard error and notice
