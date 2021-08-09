@@ -1,246 +1,92 @@
-/*------------------------------------------------------------
- * style settings for Slide Indexer
- *------------------------------------------------------------*/
-.slide-indexer-colorscheme {
-  --bgOverall: #eee; /*-- very light gray --*/
-  --bgPrimaryEmphasis: rgba(66, 98, 150, 1.0);   /*-- medium-dark blue --*/
-  --bgPrimaryEmphasis_trans: rgba(66, 98, 150, 0.6);
-  --bgSecondaryEmphasis: #daad86;  /*-- medium sand --*/
-  --bgTertiaryEmphasis: #c9c9c9;  /*-- medium gray --*/
-  --bgQuaternaryEmphasis: #f2f2f2; /*-- light gray --*/
-  --bgPrimaryChoice:  #111111; /* #bc986a;*/  /*-- dark sand --*/
-  --bgSecondaryChoice: var(--bgPrimaryEmphasis);
-  --bgTertiaryChoice: #6093e5;  /*-- light blue --*/
-  
-  --navBackground: #426296;
+/*------------------------------------------------------------------------------
+ * Slide indexer (landing page)
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
 }
 
-body {
-  color: black;
-  /*background-color: var(--bgOverall);*/
-  background-color: transparent;
-  font-family: "Segoe UI", Tahoma, Arial, sans-serif;
-  font-size: 13px;
-}
+body {}
 
-.slide-indexer {}
-
-.slide-indexer .hide-me {
+.hide-me {
   display: none;
 }
 
-/*-- navigation --*/
-.slide-indexer .navigation {
-  background-color: var(--navBackground);
-  border: 1px solid var(--navBackground);
-  border-radius: 6px 6px 0 0;
-  width: 32em;
-  padding: 0.2em;
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {}
+
+/*------------------------------------------------------------------------------
+ * presentation
+ *------------------------------------------------------------------------------*/
+.contents .presentation {}
+
+/*------------------------------------------------------------------------------
+ * slides
+ *------------------------------------------------------------------------------*/
+.contents .presentation-container .slide-container {}
+
+/*------------------------------------------------------------------------------
+ * navigation
+ *------------------------------------------------------------------------------*/
+.contents .presentation-container .navigation-container {}
+
+.contents .presentation-container .navigation-container .navicon {
+  color: var(--bgPrimary);
 }
 
-.slide-indexer .navigation .navicon {
-  color: white;
-  font-size: 1.1em;
-  padding-right: 0.6em;
-  cursor: pointer;
-}
-
-.slide-indexer .navigation .navicon.right{
+.contents .presentation-container .navigation-container .navicon.previous, 
+.contents .presentation-container .navigation-container .navicon.next {
   float: right;
-  padding-right: 0;
-  padding-left: 0.6em;
-  padding-top: 0.2em;
 }
 
-.slide-indexer .navigation .navicon.nextpage {
-  font-size: 1.2em;
-  margin-right: 1.0em;
-}
+/*------------------------------------------------------------------------------
+ * tabs
+ *------------------------------------------------------------------------------*/
+.contents .presentation-container .tab-container {}
+.contents .presentation-container .tab-container .tab-row {}
+.contents .presentation-container .tab-container .tab-col {}
 
-.slide-indexer .navigation .navicon.prevpage {
-  font-size: 1.2em;
-}
-
-.slide-indexer .navigation .message {
+.contents .presentation-container .tab-container .tab-item {
   color: white;
-  font-style: italic;
-  margin-left: 0.8em;
-}
-
-.slide-indexer .navigation .toggle-container {
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.slide-indexer .navigation .toggle-container-label {
-  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid white; 
+  border-left: none;
+  border-radius: 0 30px 30px 0; 
   font-size: 0.9em;
-  font-weight: normal;
-  margin-left: 3.0em;
-  margin-right: 0.4em;
 }
 
-/*-- display container for presentation, index and TOC --*/
-.slide-indexer .display-container {
-  position: relative;
-  width: 100%;    
+.contents .presentation-container .tab-container .tab-item.selected {
+  color: var(--bgPrimary);
+  background-color: white;
+  border-color: var(--bgPrimary);
 }
 
-/*-- slide presentation --*/
-.slide-indexer .display-container .presentation-container {
-  position: absolute;
-  top: 0;
-  left: 0;  
-  width: 95%;
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
 }
 
-.slide-indexer .display-container .homeslide-overlay {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform-origin: 0 0;
-  width: 100%;
-}
-
-.slide-indexer .display-container .homeslide-overlay .homeslide-navcontainer {
-  height: 28em;
-  width: 36em;
-  margin-left: 2%;
-  margin-top: 4%;
-  display: flex;
-  flex-flow: column wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-
-.slide-indexer .display-container .homeslide-overlay .homeslide-navcontainer .homeslide-navitem {
-  cursor: pointer;
-  color: white;
-  background-color: var(--bgPrimaryEmphasis);
-  border: 1px solid var(--bgPrimaryEmphasis);
-  border-radius: 0 8px 8px 0;
-  margin-bottom: 0.4em;
-  padding: 0.1em 0.4em 0.1em 0.2em;
-}
-
-.slide-indexer .display-container .presentation-container .slide-container {
-  position: relative;
-  /*width: 100%;*/
-}
-  
-.slide-indexer .display-container .presentation-container .slide-container .slide {
-  position: absolute;
-  top: 0;
-  left: 0;
-  /*width: 100%;*/
-}
-
-/*-- index --*/
-.slide-indexer .display-container .index-container {
-  position: absolute;
-  top: 0;
-  left: 0;    
-  margin: 0.4em 0 0 0.4em;
-}
-
-.slide-indexer .display-container .index-container .index-title {
+.standard-notice { 
   display: inline-block;
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-bottom: 0.2em;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
 }
 
-.slide-indexer .display-container .index-container .index-items {}
-
-.slide-indexer .display-container .index-container .index-items .index-item-row {}
-
-.slide-indexer .display-container .index-container .index-items .index-item-row:nth-of-type(odd) {
-  background-color: #ddd;
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
 }
-
-.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell{}
-
-.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-value {
-  padding-right: 1.4em;
-}
-
-.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-link {
-  padding-left: 0.4em;
-  padding-right: 0.4em;
-}
-
-.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-link .single-index-link {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell .itemshare.index-itemshare {
-  color: var(--navBackground);
-  font-size: 0.8em;
-  cursor: pointer;
-  vertical-align: top;
-  padding-left: 0.4em;
-}
-
-.slide-indexer .display-container .index-container .index-items .index-item-row .index-item-cell.index-link .index-link-separator {
-  padding-right: 0.4em;
-}
-
-/*-- table of contents --*/
-.slide-indexer .display-container .toc-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 0.4em 0 0 0.4em;
-}
-
-.slide-indexer .display-container .toc-container .toc-title {
-  display: inline-block;  
-  font-weight: bold;
-  font-size: 1.2em;
-  margin-bottom: 0.2em;
-}
-
-.slide-indexer .display-container .toc-container .toc-item {
-  width: 30em;
-  padding-top: 0.2em;
-  padding-bottom: 0.2em;
-}
-
-.slide-indexer .display-container .toc-container .toc-item .toc-mainitem {}
-
-.slide-indexer .display-container .toc-container .toc-item .toc-subitem {
-  margin-left: 2em;
-}
-
-.slide-indexer .display-container .toc-container .toc-item .toc-itemlink:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-  
-.slide-indexer .display-container .toc-container .toc-item .toc-itemshare {
-  color: var(--navBackground);
-  font-size: 0.8em;
-  cursor: pointer;
-  vertical-align: top;
-  padding-left: 0.4em;
-}
-
-/*-- other stuff --*/
-/*
-.google-slides-container{
-    position: relative;
-    width: 100%;
-    padding-top: 60%;
-    overflow: hidden;
-}
-
-.google-slides-container iframe{
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-}
-*/
+/*-- end of standard notice and error --*/
 
