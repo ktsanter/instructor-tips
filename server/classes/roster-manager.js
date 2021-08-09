@@ -541,7 +541,7 @@ module.exports = internal.RosterManager = class {
 
       if (student != thisObj.colIEP_Student) {
         iepInfo.push({
-          "student": student,
+          "student": thisObj._formatName(student),
           "term": term,
           "section": section
         });
@@ -567,7 +567,7 @@ module.exports = internal.RosterManager = class {
 
       if (student != thisObj.col504_Student) {
         student504Info.push({
-          "student": student,
+          "student": thisObj._formatName(student),
           "term": term,
           "section": section
         });
@@ -613,6 +613,7 @@ module.exports = internal.RosterManager = class {
   //------------------------------------------------------------
   _findDifferences(thisObj, originalData, newData, funcMakeKey) {
     var differences = [];
+    
     
     for (var i = 0; i < originalData.length; i++) {
       var item = originalData[i];
@@ -661,7 +662,7 @@ module.exports = internal.RosterManager = class {
     }
 
     for (let key of keys1) {
-      if (object1[key] !== object2[key]) {
+      if (object1[key] != object2[key]) {
         return false;
       }
     }
@@ -1659,13 +1660,17 @@ module.exports = internal.RosterManager = class {
     
     var splitName = name.split(' ');
     if (splitName.length == 2) {
-      name = splitName[1] + ', ' + splitName[0];
+      name = splitName[1].trim() + ', ' + splitName[0].trim();
       
     } else if (splitName.length == 3) {
-      name = splitName[2] + ', ' + splitName[0] + ' ' + splitName[1];
+      if (splitName[1].trim() == '') {
+        name = splitName[2].trim() + ', ' + splitName[0].trim();
+      } else {
+        name = splitName[2].trim() + ', ' + splitName[0].trim() + ' ' + splitName[1].trim();
+      }
       
     } else if (splitName.length == 4) {
-      name = splitName[3] + ', ' + splitName[0] + ' ' + splitName[1] + ' ' + splitName[2];
+      name = splitName[3].trim() + ', ' + splitName[0].trim() + ' ' + splitName[1].trim() + ' ' + splitName[2].trim();
     }
     
     return name;
