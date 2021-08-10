@@ -33,6 +33,7 @@ body {}
   color: var(--bgPrimary);
   margin-right: 0.2em;
   cursor: pointer;
+  font-size: 1.3vw;
 }
 
 .contents .presentation-container .navigation-container .navicon.index {
@@ -43,35 +44,30 @@ body {}
   visibility: hidden;
 }
 
-.contents .presentation-container .navigation-container .navicon.link {
-  margin-left: 0.4em;
-} 
+.contents .presentation-container .navigation-container .navigation-middle {
+  display: inline-block;
+  margin-left: 2.0em;
+}
+.contents .presentation-container .navigation-container .navicon.open {}
+.contents .presentation-container .navigation-container .navicon.link {} 
 
 .contents .presentation-container .navigation-container .message {
   color: var(--bgPrimary);
   font-style: italic;
   margin-left: 0.2em;
-  font-size: 0.9em;
+  font-size: 1.1vw;
 } 
 
-.contents .presentation-container .navigation-container .navicon.previous, 
-.contents .presentation-container .navigation-container .navicon.next,
-.contents .presentation-container .navigation-container .navicon.open
- {
+.contents .presentation-container .navigation-container .navigation-right {
   float: right;
 }
 
 .contents .presentation-container .navigation-container .navicon.previous, 
 .contents .presentation-container .navigation-container .navicon.next
 {
-  font-size: 1.3em;
-  padding-top: 0.1em;
+  font-size: 1.7vw;
 }
 
-.contents .presentation-container .navigation-container .navicon.open {
-  padding-top: 0.3em;
-  margin-left: 0.2em;
-}
 
 /*------------------------------------------------------------------------------
  * slides
@@ -162,11 +158,11 @@ body {}
   border: 1px solid white; 
   border-left: none;
   border-radius: 0 30px 30px 0; 
-  font-size: 0.9em;
+  font-size: 1.2vw;
   position: relative;
-  margin-left: -0.15em;
-  padding-left: 0.2em;
-  width: 80%;
+  margin-left: -0.15vw;
+  padding-left: 0.2vw;
+  width: 85%;
 }
 
 .tab-container .tab-item.color0 { background-color: #a40e4c; }

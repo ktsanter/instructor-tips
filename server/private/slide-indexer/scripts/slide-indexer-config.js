@@ -6,7 +6,7 @@
 //-------------------------------------------------------------------
 
 const app = function () {
-  const appversion = '1.01';
+  const appversion = '1.20';
   const appname = 'Slide indexer configuration';
   
   const apiInfo = {
@@ -16,9 +16,6 @@ const app = function () {
   
   const page = {};
   const settings = {};
-  
-  // presentation id for testing: 14X6SpTLlIZ_273f14e-thhYefJXGDvw4gP3VODnvA3w
-  // link for testing: https://docs.google.com/presentation/d/14X6SpTLlIZ_273f14e-thhYefJXGDvw4gP3VODnvA3w/edit?usp=sharing
   
 	//----------------------------------------
 	// get things going
@@ -127,7 +124,7 @@ const app = function () {
     var height = (result.pageHeight + heightPadding).toString();
     console.log(result.pageHeight + ' ' + height);
     
-    var elem = CreateElement.createIframe(null, null, url, "90%", height, true);
+    var elem = CreateElement.createIframe(null, null, url, "100%", height, true);
     var embedCode = elem.outerHTML;
     console.log(embedCode);
     

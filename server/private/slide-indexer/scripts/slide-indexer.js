@@ -81,6 +81,16 @@ const app = function () {
     settings.slideSource = 'https://docs.google.com/presentation/d/' + settings.presentationId + '/embed?rm=minimal';
     var numSlides = settings.presentationInfo.numSlides;
     page.slide = [];
+    
+    var loadingHTML = '';
+    loadingHTML += '<link ';
+    loadingHTML +=   'rel="stylesheet", href="https://use.fontawesome.com/releases/v5.8.2/css/all.css", integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay", crossorigin="anonymous"';
+    loadingHTML += '>';
+    loadingHTML += '<p style="color: #426296; font-family: \'Segoe UI\', Roboto, \'Helvetica Neue\', Arial; font-size: 2.0vw;">';
+    loadingHTML +=   '<em>loading slide... </em>';
+    loadingHTML +=   '<i class="fas fa-spinner fa-pulse"></i>';
+    loadingHTML += '</p>';
+    console.log(loadingHTML);
 
     for (var i = 0; i < numSlides; i++) {
       var sourceURL = settings.slideSource + '#' + (i + 1);
@@ -88,9 +98,13 @@ const app = function () {
       var singleSlideContainer = CreateElement.createDiv(null, 'single-slide-container hide-me ratio ratio-16x9');
       var singleSlide = CreateElement._createElement('iframe', null);
       singleSlideContainer.appendChild(singleSlide);
+      singleSlide.srcdoc = loadingHTML;
       singleSlide.src = sourceURL;
       singleSlide.allowfullscreen = true;
       
+      singleSlide.addEventListener('load', (e) => {
+        e.target.removeAttribute('srcdoc');
+      });
       page.slide.push(singleSlideContainer);
       page.slideContainer.appendChild(page.slide[i]);
     }

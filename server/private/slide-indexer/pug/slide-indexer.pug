@@ -41,11 +41,15 @@ html(lang="en")
             .navigation-container(class="hide-me")
               i(class="navicon toc fas fa-book" title="table of contents")
               i(class="navicon index fas fa-list-ul" title="index")
-              i(class="navicon link fas fa-link" title="get direct link to slide")
-              span(class="message")
-              i(class="navicon open fas fa-external-link-alt" title="open in new tab")
-              i(class="navicon next invisible-me fas fa-angle-right")
-              i(class="navicon previous invisible-me fas fa-angle-left")
+              
+              .navigation-middle
+                i(class="navicon open fas fa-external-link-alt" title="open in new tab")
+                i(class="navicon link fas fa-link" title="get direct link to slide")
+                span(class="message")
+              
+              .navigation-right
+                i(class="navicon previous invisible-me fas fa-angle-left")
+                i(class="navicon next invisible-me fas fa-angle-right")
                         
         .row(class="g-0")
           .col-10
