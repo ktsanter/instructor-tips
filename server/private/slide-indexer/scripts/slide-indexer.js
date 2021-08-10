@@ -90,7 +90,6 @@ const app = function () {
     loadingHTML +=   '<em>loading slide... </em>';
     loadingHTML +=   '<i class="fas fa-spinner fa-pulse"></i>';
     loadingHTML += '</p>';
-    console.log(loadingHTML);
 
     for (var i = 0; i < numSlides; i++) {
       var sourceURL = settings.slideSource + '#' + (i + 1);
@@ -167,8 +166,16 @@ const app = function () {
     UtilityKTS.removeChildren(page.index);
 
     page.index.appendChild(CreateElement.createDiv(null, 'index-title', 'Index'));
-    
+    var indexKeyList = [];
     for (var key in indexInfo) {
+      indexKeyList.push(key);
+    }
+    indexKeyList = indexKeyList.sort(function(a, b) {
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+    
+    for (var keynum = 0; keynum < indexKeyList.length; keynum++) {
+      var key = indexKeyList[keynum];
       var item = indexInfo[key];
       var elem = CreateElement.createDiv(null, 'index-item');
 
