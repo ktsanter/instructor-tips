@@ -114,7 +114,7 @@ const app = function () {
   }
   
   async function _makeAndCopyEmbed() {
-    var heightPadding = 95;
+    var heightPadding = 150;
     if (!_getPresentationId()) return;
     var url = _makeURL({type: 'indexer'});
     
