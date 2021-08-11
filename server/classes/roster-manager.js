@@ -501,7 +501,7 @@ module.exports = internal.RosterManager = class {
           "section": section,
           "role": row.getCell(columnInfo[thisObj.colMentor_Role]).value,
           "name": thisObj._formatName(row.getCell(columnInfo[thisObj.colMentor_Name]).value),
-          "email": row.getCell(columnInfo[thisObj.colMentor_Email]).value,
+          "email": thisObj._formatMentorEmail(row.getCell(columnInfo[thisObj.colMentor_Email]).value),
           "affiliation": row.getCell(columnInfo[thisObj.colMentor_Affiliation]).value,
           "phone": row.getCell(columnInfo[thisObj.colMentor_Phone]).value,
           "affiliationphone": row.getCell(columnInfo[thisObj.colMentor_AffiliationPhone]).value
@@ -1676,6 +1676,12 @@ module.exports = internal.RosterManager = class {
     return name;
   }
     
+  _formatMentorEmail(origEmail) {
+    var email = origEmail.replace('_MENTOR', '');
+    
+    return email;
+  }
+  
   collateObjectArray(objectArray, collationKey) {
     var collated = {};
     for (var i = 0; i < objectArray.length; i++) {
