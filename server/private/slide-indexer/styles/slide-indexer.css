@@ -155,9 +155,7 @@ body {}
 .tab-container .tab-col {}
 
 .tab-container .tab-item {
-  color: white;
-  background-color: var(--bgPrimary);
-  border: 1px solid white; 
+  border: 1px solid white;
   border-left: none;
   border-radius: 0 30px 30px 0; 
   font-size: 1.2vw;
@@ -167,40 +165,16 @@ body {}
   width: 85%;
 }
 
-/*--- replace these with user selected values ---*/
+/*--- these are default values, PUG params can override them ---*/
 .tab-container .tab-item {
   color: var(--bgPrimary);
   background-color: #eee;
-  border-color: white; 
 }
 
 .tab-container .tab-item.selected { 
   color: white;
   background-color: var(--bgPrimary); 
 }
-/*-------- end of replace --------*/
-
-/*
-.tab-container .tab-item.color0 { background-color: #a40e4c; }
-.tab-container .tab-item.color1 { background-color: #a23b72; }
-.tab-container .tab-item.color2 { background-color: #414066; }
-.tab-container .tab-item.color3 { background-color: #2e86ab; }
-.tab-container .tab-item.color4 { background-color: #25bb41; }
-.tab-container .tab-item.color5 { background-color: #ee6123; }
-.tab-container .tab-item.color6 { background-color: #c73e1d; }
-
-.tab-container .tab-item.selected { 
-  background-color: white; 
-  font-weight: bold;
-}
-.tab-container .tab-item.selected.color0 { color: #a40e4c; border-color: #a40e4c }
-.tab-container .tab-item.selected.color1 { color: #a23b72; border-color: #a23b72 }
-.tab-container .tab-item.selected.color2 { color: #414066; border-color: #414066 }
-.tab-container .tab-item.selected.color3 { color: #2e86ab; border-color: #2e86ab }
-.tab-container .tab-item.selected.color4 { color: #25bb41; border-color: #25bb41 }
-.tab-container .tab-item.selected.color5 { color: #ee6123; border-color: #ee6123 }
-.tab-container .tab-item.selected.color6 { color: #c73e1d; border-color: #c73e1d }
-*/
 
 /*------------------------------------------------------------------
  * standard error and notice

@@ -22,15 +22,15 @@ html(lang="en")
     script(data-main="/scripts/slide-indexer/require_slide-indexer", src="/scripts/require.js")      \
     
   body(class="colorscheme")
-    //- *** for debug
-    //- - var params = {"presentationid": '1EccQWBLlv7w9YI-cN40FSFg1cQIf-wgg89Q1JMb2-io', "slidenumber": 0};
-    //- *** end debug
-    
     - var presentationId = params.presentationid
     - var slideNumber = params.slidenumber
+    - var tabItemColor = params.tabcolor
+    - var tabItemBackground = params.tabbackground
     
     div(class="presentationId hide-me")= presentationId
     div(class="initialSlideNumber hide-me")= slideNumber  
+    div(class="tabItemColor hide-me")= tabItemColor
+    div(class="tabItemBackground hide-me")= tabItemBackground
     
     .contents
       .error-container

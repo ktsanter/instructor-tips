@@ -45,11 +45,24 @@ const app = function () {
     elem = page.body.getElementsByClassName('id-input')[0];
     elem.addEventListener('input', (e) => {_handleIdInput()});
     
+    elem = page.body.getElementsByClassName('tabcolor-input')[0];    
+    elem.addEventListener('change', (e) => {_handleColorChange(e, 'tabcolor');});
+
+    elem = page.body.getElementsByClassName('tabbackground-input')[0];    
+    elem.addEventListener('change', (e) => {_handleColorChange(e, 'tabbackground');});
+
+    elem = page.body.getElementsByClassName('tabcolor-text')[0];    
+    elem.addEventListener('click', (e) => {_handleColorDefault(e, 'tabcolor');});
+
+    elem = page.body.getElementsByClassName('tabbackground-text')[0];    
+    elem.addEventListener('click', (e) => {_handleColorDefault(e, 'tabbackground');});
+
     elem = page.body.getElementsByClassName('config-link-control')[0];
     elem.addEventListener('click', (e) => {_handleLink();});    
 
     elem = page.body.getElementsByClassName('config-embed-control')[0];
-    elem.addEventListener('click', (e) => {_handleEmbed();});      
+    elem.addEventListener('click', (e) => {_handleEmbed();});  
+
   }
   
   //----------------------------------------
@@ -79,7 +92,12 @@ const app = function () {
     var hostname = window.location.hostname;
     if (hostname == 'localhost') hostname = 'localhost:8000';
     var path = 'slide-indexer';
-    var queryParams = window.location.search;
+    
+    var tabColor = page.body.getElementsByClassName('tabcolor-input')[0].value.slice(-6);
+    var tabBackground = page.body.getElementsByClassName('tabbackground-input')[0].value.slice(-6);
+    console.log(tabColor, tabBackground);
+    
+    var queryParams = '?tabcolor=' + tabColor + '&tabbackground=' + tabBackground;
 
     var url = null;
     if (params.type == 'help') {
@@ -88,7 +106,8 @@ const app = function () {
     } else if (params.type == 'indexer') {
       var id = _getPresentationId();      
       if (id) {
-        url = protocol + '//' + hostname + '/' + path + '/' + id;
+        url = protocol + '//' + hostname + '/' + path + '/' + id + queryParams;
+        console.log(url);
       }
     }
     
@@ -165,6 +184,25 @@ const app = function () {
   }
   
   function _handleIdInput() {
+    _updatePreview();
+  }
+  
+  function _handleColorChange(e, type) {
+    if (!_getPresentationId()) return;
+    _updatePreview();
+  }
+  
+  function _handleColorDefault(e, type) {
+    if (type == 'tabcolor') {
+      var defaultColor = page.body.getElementsByClassName('default-tabcolor')[0].innerHTML;
+      page.body.getElementsByClassName('tabcolor-input')[0].value = defaultColor;
+      
+    } else if (type == 'tabbackground') {
+      var defaultColor = page.body.getElementsByClassName('default-tabbackround')[0].innerHTML;
+      page.body.getElementsByClassName('tabbackground-input')[0].value = defaultColor;
+    }
+    
+    if (!_getPresentationId()) return;
     _updatePreview();
   }
   

@@ -30,8 +30,16 @@ html(lang="en")
               
       div(class="config-controls")
         div(class="config-option config-id")
-          span(class="option-text") slide deck URL
+          span(class="option-text id-text") slide deck URL
           input(type="text" class="id-input")
+          
+          span(class="option-text tabcolor-text" title="click to set to default") tab color
+          span(class="default-tabcolor hide-me") #426296
+          input(type="color" class="color-input tabcolor-input" value="#426296")
+
+          span(class="option-text tabbackground-text" title="click to set to default") tab background
+          span(class="default-tabbackround hide-me") #eeeeee
+          input(type="color" class="color-input tabbackground-input" value="#eeeeee")
 
       div(class="config-preview hide-me")
         div(class="preview-error hide-me") invalid slide link

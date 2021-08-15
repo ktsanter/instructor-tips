@@ -45,6 +45,8 @@ const app = function () {
   async function getConfigurationInfo() {
     settings.presentationId = page.body.getElementsByClassName('presentationId')[0].innerHTML;
     settings.initialSlideNumber = page.body.getElementsByClassName('initialSlideNumber')[0].innerHTML; 
+    settings.tabItemColor = page.body.getElementsByClassName('tabItemColor')[0].innerHTML;
+    settings.tabItemBackground = page.body.getElementsByClassName('tabItemBackground')[0].innerHTML;
     
     var requestResult = await googleSheetWebAPI.webAppGet(apiInfo, 'slideindexinfo', {presentationid: settings.presentationId}, page.notice);
 
@@ -215,10 +217,12 @@ const app = function () {
       var row = CreateElement.createDiv(null, 'tab-row row');
       var col = CreateElement.createDiv(null, 'tab-col col-8');
       var elem = CreateElement.createDiv(null, 'tab-item py-1', tabItem.tabtext);
-      elem.classList.add('color' + ((i + 1) % numTabColors));
       elem.setAttribute('slide-number', tabItem.slidenumber);
       elem.setAttribute('tab-index', (i + 1));
       elem.addEventListener('click', (e) => { handleTabClick(e); });
+      
+      if (settings.tabItemColor != 'default') elem.style.color = settings.tabItemColor;
+      if (settings.tabItemBackground != 'default') elem.style.backgroundColor = settings.tabItemBackground;
       
       page.tabContainer.appendChild(row);
       row.appendChild(col);
@@ -272,10 +276,16 @@ const app = function () {
     }
 
     for (var i = 0; i < tabElements.length; i++) {
+      if (settings.tabItemColor != 'default') tabElements[i].style.color = settings.tabItemColor;
+      if (settings.tabItemBackground != 'default') tabElements[i].style.backgroundColor = settings.tabItemBackground;
       UtilityKTS.setClass(tabElements[i], 'selected', false);
     }
     
-    if (tabForSlide) UtilityKTS.setClass(tabForSlide, 'selected', true);
+    if (tabForSlide) {
+      if (settings.tabItemColor != 'default') tabForSlide.style.color = settings.tabItemBackground;
+      if (settings.tabItemBackground != 'default') tabForSlide.style.backgroundColor = settings.tabItemColor;
+      UtilityKTS.setClass(tabForSlide, 'selected', true);
+    }
   }
   
   function makeSlideURL(slideNumber) {
@@ -283,9 +293,9 @@ const app = function () {
     var hostname = window.location.hostname;
     if (hostname == 'localhost') hostname = 'localhost:8000';
     var path = 'slide-indexer';
-    //var queryParams = window.location.search;
+    var queryParams = window.location.search;
     
-    return protocol + '//' + hostname + '/' + path + '/' + settings.presentationId + '/' + slideNumber; // + queryParams;
+    return protocol + '//' + hostname + '/' + path + '/' + settings.presentationId + '/' + slideNumber + queryParams;
   }
   
   function showTableOfContents(state) {

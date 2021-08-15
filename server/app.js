@@ -946,22 +946,32 @@ app.get('/slide-indexer/:subpage', function (req, res) {
     res.sendFile(htmlFileName);
     
   } else {
+    var tabColor = req.query.tabcolor ? '#' + req.query.tabcolor : 'default';
+    var tabBackground = req.query.tabbackground ? '#' + req.query.tabbackground : 'default';
+    
     var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer.pug');
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {
       params: {
         presentationid: req.params.subpage,
-        slidenumber: 0
+        slidenumber: 0,
+        tabcolor: tabColor,
+        tabbackground: tabBackground
       }
     });
   }
 })
 
 app.get('/slide-indexer/:presentationid/:slidenumber', function (req, res) {
+  var tabColor = req.query.tabcolor ? '#' + req.query.tabcolor : 'default';
+  var tabBackground = req.query.tabbackground ? '#' + req.query.tabbackground : 'default';
+
   var pugFileName = path.join(__dirname, 'private', 'slide-indexer/pug/slide-indexer.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {
     params: {
       presentationid: req.params.presentationid,
-      slidenumber: req.params.slidenumber
+      slidenumber: req.params.slidenumber,
+        tabcolor: tabColor,
+        tabbackground: tabBackground
     },
   });
 })

@@ -62,8 +62,19 @@ body {
 
 .slide-indexer-config .config-controls .config-option .option-text {
   display: inline-block;
-  width: 10em;
 }
+.slide-indexer-config .config-controls .config-option .option-text.id-text { width: 8.0em; }
+.slide-indexer-config .config-controls .config-option .option-text.tabcolor-text,
+.slide-indexer-config .config-controls .config-option .option-text.tabbackground-text { 
+  margin-left: 4.0em; 
+  margin-right: 0.5em;
+}
+
+.slide-indexer-config .config-controls .config-option .option-text.tabcolor-text:hover,
+.slide-indexer-config .config-controls .config-option .option-text.tabbackground-text:hover
+ {
+   cursor: pointer;
+ }
 
 .slide-indexer-config .config-controls .config-option.config-id {}
 
