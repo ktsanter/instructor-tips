@@ -982,33 +982,33 @@ app.get('/accordion-wrapper', function (req, res) {
 })
 
 app.get('/jsgd/simplyjsref', function (req, res) {
-    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/index.html');
+    var fileName = path.join(__dirname, 'private', 'simplyjs/docs/index.html');
     res.sendFile(fileName);
 })
 
 app.get('/jsgd/scripts/prettify/:script', function (req, res) {
-    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/scripts/prettify/' + req.params.script);
+    var fileName = path.join(__dirname, 'private', 'simplyjs/docs/scripts/prettify/' + req.params.script);
     res.sendFile(fileName);
 })
 
 app.get('/jsgd/scripts/:script', function (req, res) {
-    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/scripts/' + req.params.script);
+    var fileName = path.join(__dirname, 'private', 'simplyjs/docs/scripts/' + req.params.script);
     res.sendFile(fileName);
 })
 
 app.get('/jsgd/styles/:style', function (req, res) {
-    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/styles/' + req.params.style);
+    var fileName = path.join(__dirname, 'private', 'simplyjs/docs/styles/' + req.params.style);
     res.sendFile(fileName);
 })
 
 app.get('/jsgd/fonts/:font', function (req, res) {
-    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/fonts/' + req.params.font);
+    var fileName = path.join(__dirname, 'private', 'simplyjs/docs/fonts/' + req.params.font);
     res.sendFile(fileName);
 })
 
 app.get('/jsgd/:app', function (req, res) {
   if (req.params.app.slice(-5) == '.html') {
-    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/' + req.params.app);
+    var fileName = path.join(__dirname, 'private', 'simplyjs/docs/' + req.params.app);
     res.sendFile(fileName);
     
   } else {
