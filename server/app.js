@@ -981,9 +981,40 @@ app.get('/accordion-wrapper', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.get('/jsgd/simplyjsref', function (req, res) {
+    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/index.html');
+    res.sendFile(fileName);
+})
+
+app.get('/jsgd/scripts/prettify/:script', function (req, res) {
+    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/scripts/prettify/' + req.params.script);
+    res.sendFile(fileName);
+})
+
+app.get('/jsgd/scripts/:script', function (req, res) {
+    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/scripts/' + req.params.script);
+    res.sendFile(fileName);
+})
+
+app.get('/jsgd/styles/:style', function (req, res) {
+    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/styles/' + req.params.style);
+    res.sendFile(fileName);
+})
+
+app.get('/jsgd/fonts/:font', function (req, res) {
+    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/fonts/' + req.params.font);
+    res.sendFile(fileName);
+})
+
 app.get('/jsgd/:app', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'jsgd/pug/' + req.params.app + '.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+  if (req.params.app.slice(-5) == '.html') {
+    var fileName = path.join(__dirname, 'private', 'SimplyJS/docs/' + req.params.app);
+    res.sendFile(fileName);
+    
+  } else {
+    var pugFileName = path.join(__dirname, 'private', 'jsgd/pug/' + req.params.app + '.pug');;
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+  }
 })
 
 app.get('/as-admin', function (req, res) {
