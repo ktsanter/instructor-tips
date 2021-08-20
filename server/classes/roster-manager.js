@@ -1671,6 +1671,9 @@ module.exports = internal.RosterManager = class {
       
     } else if (splitName.length == 4) {
       name = splitName[3].trim() + ', ' + splitName[0].trim() + ' ' + splitName[1].trim() + ' ' + splitName[2].trim();
+      
+    } else if (splitName.length == 5) {
+      name = splitName[1].trim() + ' ' + splitName[2].trim() + ' ' + splitName[3].trim() + ' ' + splitName[4] + ', ' + splitName[0];
     }
     
     return name;
