@@ -11,7 +11,9 @@ class MentorViewer {
       currentInfo: null,
       selectedMentorInfo: null,
       
-      filtering: {},
+      filtering: {
+        "mentor": {filterType: 'like', filterValue: ''}
+      },
       sorting: {
         "field": 'name',
         "direction": 1
@@ -19,7 +21,6 @@ class MentorViewer {
     }
     
     this._initUI();
-    console.log('TODO: add search to MentorViewer');
   }
   
   //--------------------------------------------------------------
@@ -51,7 +52,15 @@ class MentorViewer {
     
     this.config.container.getElementsByClassName('icon-close')[0].addEventListener('click', (e) => { this._handleSingleMentorClose(e); });
     
-    this.settings.filterControls = this._createFilterControls(['section', 'earlieststartdate', 'welcomelettersent']);    
+    this.mentorSelect = this.config.container.getElementsByClassName('mentor-select')[0];
+    this.mentorSelectInput = this.mentorSelect.getElementsByClassName('mentor-filter')[0];
+    this.mentorSelectInput.addEventListener('input', (e) => { this._handleMentorFilterChange(e); });    
+    
+    this.settings.filterControls = this._createFilterControls(['section', 'earlieststartdate', 'welcomelettersent']); 
+
+    this.clearFilterContainer = this.config.container.getElementsByClassName('clear-filter-container')[0]
+    this.clearFilterButton = this.clearFilterContainer.getElementsByClassName('btn-clearfilter')[0];
+    this.clearFilterButton.addEventListener('click', (e) => { this._handleClearFilters(e); });    
   }
 
   _updateUI() {
@@ -69,6 +78,8 @@ class MentorViewer {
       UtilityKTS.setClass(this.settings.singleMentorContainer, this.settings.hideClass, true);
 
       if (this.settings.selectedMentorInfo) this._selectMentor(this.settings.selectedMentorInfo.name);
+      
+      this._setClearFilterVisibility();
     }
   }
   
@@ -107,10 +118,11 @@ class MentorViewer {
     }
     
     var activeFilters = {};
+    activeFilters["name"] = {"filterType": 'like', "filterValue": this.mentorSelectInput.value};
     for (var fieldName in this.settings.filterControls) {
       activeFilters[fieldName] = {"filterType": 'in', "filterValue": this.settings.filterControls[fieldName].getFilterSettings()};
     }
-    
+
     var filtered = flattened.filter(function(a) { 
       var result = true;
 
@@ -473,6 +485,17 @@ class MentorViewer {
     this._copyToClipboard(emailString);
   }
   
+  _setClearFilterVisibility() {
+    var noFilters = this.mentorSelectInput.value.length == 0;
+    
+    for (var key in this.settings.filterControls) {
+      if (!noFilters) break;
+      noFilters = this.settings.filterControls[key].allChecked();
+    }
+    
+    UtilityKTS.setClass(this.clearFilterButton, this.settings.hideClass, noFilters);
+  }
+    
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
@@ -508,6 +531,22 @@ class MentorViewer {
   
   _handleCopyMentorEmail(e) {
     this._copyMentorEmails();
+  }
+
+  _handleMentorFilterChange(e) {
+    console.log(this.mentorSelectInput.value);
+    this.settings.filtering['mentor'] = this.mentorSelectInput.value;
+    this._updateUI();
+  }
+  
+  _handleClearFilters(e) {
+    this.mentorSelectInput.value = '';
+
+    for (var key in this.settings.filterControls) {
+      this.settings.filterControls[key].clearFilter();
+    }
+
+    this._updateUI();
   }
   
   //---------------------------------------

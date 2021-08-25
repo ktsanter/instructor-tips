@@ -41,7 +41,9 @@ body {
   font-size: 90%;
 }
 
-.contents .input-group-text, .contents #studentName {
+.contents .input-group-text, 
+.contents #studentName,
+.contents #mentorName {
   font-size: 90%;
 }
 
