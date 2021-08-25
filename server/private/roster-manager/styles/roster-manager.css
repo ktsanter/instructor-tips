@@ -123,6 +123,7 @@ body {
   right: 1.3em;
   font-size: 2.0em;
   color: #aaa;
+  cursor: pointer;
 }
 
 .contents .contents-navStudent .clear-filter-container {}
@@ -225,36 +226,23 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navMentor {}
 
-.contents .contents-navMentor .term-label {
-  display: inline-block;
-  font-weight: bold;
-  border: 1px solid var(--bgPrimary);
-  background-color: var(--bgShaded);
-}
-
-.contents .contents-navMentor .section-label { 
-  font-weight: bold
-}
-
-.contents .contents-navMentor .mentor-welcomefilter {
-  color: var(--bgPrimary);
-  font-size: 0.8em;
-  padding-left: 0.2em;
+.contents .contents-navMentor .hover-decorate:hover {
+  text-decoration: underline;
   cursor: pointer;
+}
+
+.contents .contents-navMentor .roster-headerlabel:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.contents .contents-navMentor .mentor-selection:hover {
+  cursor: pointer;
+  text-decoration: underline;
 }
 
 .contents .contents-navMentor .mentor-welcomefilter.filter-off {
   color: #aaa;
-}
-
-.contents .contents-navMentor .email-column { 
-  cursor: pointer;
-}
-
-.contents .contents-navMentor .welcome-column { }
-
-.contents .contents-navMentor .welcome-column .mentor-welcome-control {
-  float: none;
 }
 
 .contents .contents-navMentor .welcome-column .mentor-welcome-control:checked { 
@@ -262,14 +250,33 @@ body {
   border-color: var(--bgPrimary);
 }
 
-.contents .contents-navMentor .email-column:hover { 
-  text-decoration: underline;
-}
-
 .contents .contents-navMentor .colwidth-0 { width: 15%; }
 .contents .contents-navMentor .colwidth-1 { width: 25%; }
 .contents .contents-navMentor .colwidth-2 { width: 15%; }
 .contents .contents-navMentor .colwidth-3 { width: 25%; }
+
+.contents .contents-navMentor .item-icon.icon-close {
+  position: absolute;
+  right: 1.3em;
+  font-size: 2.0em;
+  color: #aaa;
+  cursor: pointer;
+}
+
+.contents .contents-navMentor .single-mentor-listing .mls-label { 
+  font-weight: bold;
+}
+
+.contents .contents-navMentor .single-mentor-listing .mls-student { width: 15%; }
+.contents .contents-navMentor .single-mentor-listing .mls-term    { width: 20%; }
+.contents .contents-navMentor .single-mentor-listing .mls-section { width: 25%; }
+.contents .contents-navMentor .single-mentor-listing .mls-start   { width: 7%; }
+.contents .contents-navMentor .single-mentor-listing .mls-end     { width: 7%; }
+
+.contents .contents-navMentor .icon-rosterinfo {
+  color: var(--bgPrimary);
+  padding-left: 0.1em;
+}
 
 /*------------------------------------------------------------------------------
  * contents - navConfigure

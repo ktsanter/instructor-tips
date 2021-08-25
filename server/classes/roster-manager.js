@@ -1133,7 +1133,7 @@ module.exports = internal.RosterManager = class {
         'delete ' +
         'from mentorextra ' +
         'where userid = ' + userInfo.userId + ' ' +
-          'and term = "' + postData.term + '" ' +
+          //'and term = "' + postData.term + '" ' +
           'and section = "' + postData.section + '" ' +
           'and name = "' + postData.name + '" ';
       

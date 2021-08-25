@@ -199,7 +199,7 @@ const app = function () {
   function _showMentor() {
     UtilityKTS.setClass(page.navMentor, 'disable-container', true);
     
-    settings.mentorViewer.update(settings.currentMentorInfo);
+    settings.mentorViewer.update(settings.currentMentorInfo, settings.currentInfo);
     
     UtilityKTS.setClass(page.navMentor, 'disable-container', false);
   }
@@ -503,7 +503,7 @@ const app = function () {
 
     for (var i = 0; i < extraMentorInfo.length && !letterSent; i++) {
       var item = extraMentorInfo[i];
-      if (item.term == term && item.section == section && item.name == name) {
+      if (/*item.term == term && */ item.section == section && item.name == name) {
         letterSent = (item.welcomelettersent == 1);
       }
     }

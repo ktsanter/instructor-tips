@@ -2,5 +2,40 @@ mixin mentorContainer()
   .row(class="py-2")
     .col-sm
       .status-message(class="hide-me")
-    
-      .mentors-by-term-and-section
+      
+      .mentors-listing(class="hide-me")
+      
+  .row(class="single-mentor-listing hide-me py-2")
+    .col-11
+      .container(class="m-0")
+        .row
+          .col-2(class="mls-label") mentor
+          .col(class="mentor-name") 
+        .row
+          .col-2(class="mls-label") email
+          .col(class="mentor-email") 
+        .row
+          .col-2(class="mls-label") phone
+          .col(class="mentor-phone") 
+        .row
+          .col-2(class="mls-label") affiliation
+          .col(class="mentor-affiliation") 
+        .row
+          .col-2(class="mls-label") affiliationphone
+          .col(class="mentor-affiliation-phone") 
+          
+        .row
+          .col
+            table(class="table table-striped table-hover table-sm mt-3")
+              thead(class="table-primary")
+                tr
+                    th(class="mls-student") student
+                    th(class="mls-term") term
+                    th(class="mls-section") section
+                    th(class="mls-start") start
+                    th(class="mls-end") end
+                    
+              tbody(class="mentor-students")
+      
+    .col-sm
+      i(class="item-icon icon-close far fa-window-close")
