@@ -128,20 +128,20 @@ body {
 
 .contents .contents-navStudent .clear-filter-container {}
 
-.contents .contents-navStudent .clear-filter-container .btn-clearfilter {
+.contents .clear-filter-container .btn-clearfilter {
   font-size: 36%;
   background-color: white;
 }
 
-.contents .contents-navStudent .clear-filter-container .btn-clearfilter:hover {
+.contents .clear-filter-container .btn-clearfilter:hover {
   background-color: #ddd;
 }
 
-.contents .contents-navStudent .clear-filter-container .filter-icon {
+.contents .clear-filter-container .filter-icon {
   color: var(--bgPrimary);
 }
 
-.contents .contents-navStudent .clear-filter-container .ban-icon {
+.contents .clear-filter-container .ban-icon {
   color: red;
 }
 
@@ -182,14 +182,14 @@ body {
   text-align: center;
 }
 
-.contents .contents-navStudent .icon-rosterfilter {
+.contents .icon-rosterfilter {
   cursor: pointer;
   color: var(--bgPrimary);
   font-size: 0.8em;
   padding-left: 0.2em;
 }
 
-.contents .contents-navStudent .icon-rosterfilter.filter-off {
+.contents .icon-rosterfilter.filter-off {
   color: #aaa;
 }
 
@@ -260,6 +260,12 @@ body {
   right: 1.3em;
   font-size: 2.0em;
   color: #aaa;
+  cursor: pointer;
+}
+
+.contents-navMentor .icon-copyemail {
+  color: var(--bgPrimary);
+  padding-left: 0.2em;
   cursor: pointer;
 }
 

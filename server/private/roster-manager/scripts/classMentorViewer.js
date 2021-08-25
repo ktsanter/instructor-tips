@@ -20,8 +20,6 @@ class MentorViewer {
     
     this._initUI();
     console.log('TODO: add search to MentorViewer');
-    console.log('TODO: add filter to MentorViewer');
-    console.log('TODO: add copy filtered emails to clipboard for MentorViewer');
   }
   
   //--------------------------------------------------------------
@@ -37,6 +35,7 @@ class MentorViewer {
       }
     }
     
+    this._updateFilterControls();
     this._updateUI();
   }
   
@@ -51,6 +50,8 @@ class MentorViewer {
     this.settings.singleMentorContainer = this.config.container.getElementsByClassName('single-mentor-listing')[0];
     
     this.config.container.getElementsByClassName('icon-close')[0].addEventListener('click', (e) => { this._handleSingleMentorClose(e); });
+    
+    this.settings.filterControls = this._createFilterControls(['section', 'earlieststartdate', 'welcomelettersent']);    
   }
 
   _updateUI() {
@@ -105,8 +106,30 @@ class MentorViewer {
       }
     }
     
+    var activeFilters = {};
+    for (var fieldName in this.settings.filterControls) {
+      activeFilters[fieldName] = {"filterType": 'in', "filterValue": this.settings.filterControls[fieldName].getFilterSettings()};
+    }
+    
     var filtered = flattened.filter(function(a) { 
-      return true; 
+      var result = true;
+
+      for (var fieldName in activeFilters) {
+        var filter = activeFilters[fieldName];
+        var fieldVal = a[fieldName].toString().toLowerCase();
+        var filterVal = filter.filterValue.toString().toLowerCase();
+        
+        if (filter.filterType == 'like') {
+          if (filterVal.length > 0) {
+            result = result && fieldVal.includes(filterVal);
+          }
+          
+        } else if (filter.filterType == 'in') {
+          result = result && filterVal.includes(fieldVal);
+        }
+      }
+      
+      return result;    
     });
     
     var sortField = this.settings.sorting.field;
@@ -152,8 +175,8 @@ class MentorViewer {
     UtilityKTS.removeChildren(container);
     
     var headerArray = ['mentor', 'section', 'email', 'phone', 'first start', 'welcome'];
-    var headerFields = ['name', 'section', 'email', 'phone', 'earlieststartdate', 'welcome'];
-    var tableClasses = 'table table-striped table-hover table-sm';
+    var headerFields = ['name', 'section', 'email', 'phone', 'earlieststartdate', 'welcomelettersent'];
+    var tableClasses = 'mentor-table table table-striped table-hover table-sm';
     
     var table = CreateElement.createTable(null, tableClasses, headerArray, []);
     container.appendChild(table);
@@ -175,6 +198,13 @@ class MentorViewer {
       span.setAttribute("field-name", fieldName);
       
       span.addEventListener('click', (e) => { this._handleSortBy(e); });
+      
+      if (fieldName == 'email') {
+        var icon = CreateElement.createIcon(null, 'icon-copyemail far fa-copy');
+        cell.appendChild(icon);
+        icon.title = 'copy all emails';
+        icon.addEventListener('click', (e) => { this._handleCopyMentorEmail(e); });
+      }
     }
     
     var tbody = table.getElementsByTagName('tbody')[0];
@@ -195,7 +225,7 @@ class MentorViewer {
       cell.innerHTML = mentorItem.section;
       cell.setAttribute('filter-value', mentorItem.section);      
       
-      var cell = CreateElement._createElement('td', null, null);
+      var cell = CreateElement._createElement('td', null, 'col-mentoremail');
       row.appendChild(cell);
       cell.innerHTML = mentorItem.email;
       cell.setAttribute('filter-value', mentorItem.email);      
@@ -210,8 +240,6 @@ class MentorViewer {
       cell.innerHTML = mentorItem.earlieststartdate;
       cell.setAttribute('filter-value', mentorItem.earlieststartdate);   
 
-      //var checkVal = JSON.stringify({"term": term, "section": section, "name": mentorName});
-      //var checked = mentorItem[headerFields[i]];
       var checkVal = JSON.stringify(mentorItem);
       var checked = mentorItem.welcomelettersent;
       var handler = (e) => { this._handleMentorWelcomeClick(e); };
@@ -222,7 +250,9 @@ class MentorViewer {
       check.getElementsByTagName('input')[0].classList.add('form-check-input');      
       check.getElementsByTagName('input')[0].classList.add('ms-4');
       cell.appendChild(check);      
-    }    
+    }   
+
+    this._attachFilterControls(table);    
   }
   
   _sortRosterBy(fieldToSortBy) {
@@ -241,8 +271,63 @@ class MentorViewer {
     this._updateUI();
   }  
   
+  _createFilterControls(fieldNameList) {
+    var filterControls = {};
+    for (var i = 0; i < fieldNameList.length; i++) {
+      var fieldName = fieldNameList[i];
+      filterControls[fieldName] = new FilterControl({
+        "fieldName": fieldName,
+        "valueSet": new Set(),
+        "callbackIconClick": (callingFilter) => { this._callbackFilterOpen(callingFilter, this.settings.filterControls); },
+        "callbackSelectChange": (params) => {this._callbackFilterChange(params); this._updateUI(); }
+      })
+      
+      var elem = filterControls[fieldName].render();
+    }
+    
+    return filterControls;
+  }  
+  
+  _attachFilterControls(table) {
+    var headerNodes = table.getElementsByTagName('thead')[0].getElementsByTagName('th');
+    for (var i = 0; i < headerNodes.length; i++) {
+      var node = headerNodes[i];
+      var fieldName = node.getAttribute('field-name');
+      if (this.settings.filterControls.hasOwnProperty(fieldName)) {
+        this.settings.filterControls[fieldName].attachTo(node, true);
+      }
+    }
+  }  
+  
+  _updateFilterControls() {
+    var valueSets = {};
+    var studentInfo = this.settings.currentInfo.students;
+
+    for (var fieldName in this.settings.filterControls) {
+      valueSets[fieldName] = new Set();      
+    }
+    
+    for (var term in this.settings.currentInfo.mentorsByTermAndSection) {
+      var termItem = this.settings.currentInfo.mentorsByTermAndSection[term];
+      for (var section in termItem) {
+        var sectionItem = termItem[section];
+        valueSets["section"].add(section);
+        
+        for (var mentor in sectionItem) {
+          valueSets["earlieststartdate"].add(this._findEarliestStartDate(section, mentor, this.settings.currentStudentInfo.students));
+          
+          var mentorItem = sectionItem[mentor];
+          valueSets["welcomelettersent"].add(mentorItem.welcomelettersent);
+        }
+      }
+    }
+    
+    for (var key in this.settings.filterControls) {
+      this.settings.filterControls[key].update(valueSets[key]);
+    }
+  }
+    
   async _saveMentorWelcomeSetting(target) {
-    console.log('_saveMentorWelcomeSetting');
     var mentorItem = JSON.parse(target.value);
     
     var params = {
@@ -255,7 +340,6 @@ class MentorViewer {
     
     var result = await this.config.callbackPropertyChange(params);
     if (result.success) {
-      console.log('looking for', mentorItem.section, mentorItem.name);
       for (var term in this.settings.currentInfo.mentorsByTermAndSection) {
         var termInfo = this.settings.currentInfo.mentorsByTermAndSection[term];
         
@@ -273,16 +357,6 @@ class MentorViewer {
         }
       }
     }
-    
-    /*    
-    if (result.success) {
-      this.settings.currentInfo.mentorsByTermAndSection[value.term][value.section][value.name].welcomelettersent = target.checked;
-      if (target.checked && this._welcomeFilterIsOn(target)) {
-        var row = this._upsearchForRow(target);
-        UtilityKTS.setClass(row, this.settings.hideClass, true);
-      }
-    }
-    */
   }
   
   _selectMentor(mentorName) {
@@ -379,10 +453,37 @@ class MentorViewer {
     
     return studentInfo;
   }
+
+  _copyMentorEmails() {
+    var table = this.config.container.getElementsByClassName('mentor-table')[0];
+    var cells = table.getElementsByClassName('col-mentoremail');
+    
+    var emailSet = new Set();
+    for (var i = 0; i < cells.length; i++) {
+      emailSet.add(cells[i].innerHTML);
+    }
+    
+    var emailList = Array.from(emailSet).sort();
+    var emailString = '';
+    for (var i = 0; i < emailList.length; i++) {
+      if (i > 0) emailString += ';';
+      emailString += emailList[i];
+    }
+    
+    this._copyToClipboard(emailString);
+  }
   
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
+  _callbackFilterChange(params) {
+    // handled by updateUI
+  }
+  
+  _callbackFilterOpen(callingFilter, filterControls) {
+    for (var key in filterControls) filterControls[key].closeFilter();
+    callingFilter.openFilter();
+  }
   
   //--------------------------------------------------------------
   // handlers
@@ -402,6 +503,11 @@ class MentorViewer {
   
   async _handleMentorWelcomeClick(e) {
     await this._saveMentorWelcomeSetting(e.target);
+    this._updateUI();
+  }
+  
+  _handleCopyMentorEmail(e) {
+    this._copyMentorEmails();
   }
   
   //---------------------------------------
