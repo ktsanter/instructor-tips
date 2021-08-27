@@ -460,6 +460,8 @@ module.exports = internal.RosterManager = class {
     var enrollments = [];
     worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
       var student = row.getCell(columnInfo[thisObj.colEnrollment_Student]).value;
+      student = thisObj._formatEnrollmentStudentName(student);
+      
       var term = row.getCell(columnInfo[thisObj.colEnrollment_Term]).value;
       var section = row.getCell(columnInfo[thisObj.colEnrollment_Section]).value;
 
@@ -482,6 +484,16 @@ module.exports = internal.RosterManager = class {
     };
     
     return result;
+  }
+  
+  _formatEnrollmentStudentName(origName) {
+    var formatted = origName;
+    var splitName = origName.split(',');
+    if (splitName.length > 1) {
+      formatted = splitName[0].trim() + ', ' + splitName[1].trim();
+    }
+    
+    return formatted;      
   }
   
   _packageUploadedMentorValues(thisObj, worksheet, columnInfo) {
