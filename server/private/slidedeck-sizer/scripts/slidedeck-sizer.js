@@ -110,7 +110,7 @@ const app = function () {
     console.log(previewSettings);
     var deckURL = previewSettings.decklink;
     deckURL = deckURL.replace('pub?', 'embed?');
-    if (!previewSettings.includenav) deckURL += '?rm=minimal';
+    if (!previewSettings.includenav) deckURL += '&rm=minimal';
     
     var embedCode = '';
     embedCode += '<div style="padding-bottom: ' + previewSettings.padding + '%; position: relative; display: block; width: 100%;">';

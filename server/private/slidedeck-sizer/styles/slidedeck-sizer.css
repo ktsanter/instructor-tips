@@ -7,7 +7,9 @@
   --borderPrimary: #ced4da;
 }
 
-body {}
+body {
+  width: 800px;
+}
 
 .hide-me {
   display: none;
@@ -66,8 +68,10 @@ body {}
  * preview
  *------------------------------------------------------------------*/
 .sizer-contents .preview {
+  /*
   transform: scale(0.75);
   transform-origin: 0 0;
+  */
 }
 
 /*------------------------------------------------------------------
