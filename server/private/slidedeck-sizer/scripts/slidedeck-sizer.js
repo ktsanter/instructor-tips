@@ -107,11 +107,13 @@ const app = function () {
   
   function makeAndCopyEmbed() {
     var previewSettings = getSettings();
-    var deckURL = previewSettings.deckurl;
-    if (!previewSettings.includeNav) deckURL += '?rm=minimal';
+    console.log(previewSettings);
+    var deckURL = previewSettings.decklink;
+    deckURL = deckURL.replace('pub?', 'embed?');
+    if (!previewSettings.includenav) deckURL += '?rm=minimal';
     
     var embedCode = '';
-    embedCode += '<div style="padding-bottom: ' + previewSettings.padding + '; position: relative; display: block; width: 100%;">';
+    embedCode += '<div style="padding-bottom: ' + previewSettings.padding + '%; position: relative; display: block; width: 100%;">';
     embedCode +=   '<iframe ';
     embedCode +=     'width="100%" ';
     embedCode +=     'height="100%" ';
