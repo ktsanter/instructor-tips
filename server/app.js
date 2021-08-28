@@ -919,6 +919,11 @@ app.get('/binary-conversion/:mode', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});
 })
 
+app.get('/slidedeck-sizer', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'slidedeck-sizer/pug/slidedeck-sizer.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});
+})
+
 app.get('/timer', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'timer/pug/timer.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});

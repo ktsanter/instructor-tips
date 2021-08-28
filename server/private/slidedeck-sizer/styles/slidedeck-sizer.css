@@ -1,0 +1,193 @@
+/*-------------------------------------------------------------------
+ * Slide deck sizer styling
+ *------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+}
+
+body {}
+
+.hide-me {
+  display: none;
+}
+
+/*------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------*/
+.contents {}
+
+.contents .sizer-contents {}
+
+.contents .sizer-contents .error-container {
+  display: inline-block;
+}
+
+/*------------------------------------------------------------------
+ * title
+ *------------------------------------------------------------------*/
+.sizer-contents .sizer-title {
+  color: white;
+  background-color: var(--bgPrimary);
+}
+
+.sizer-contents .sizer-title .embed-controls {
+  margin-left: 0.3em;
+}
+
+.sizer-contents .sizer-title .sizer-version {
+  font-size: 70%;
+  float: right;
+  margin-top: 0.4em;
+}
+
+/*------------------------------------------------------------------
+ * UI
+ *------------------------------------------------------------------*/
+.input-group-text.sizerui-label {
+  width: 6.0em;
+}
+
+.sizer-contents .input-padding {
+  max-width: 6.0em;
+}
+
+.sizer-contents .check-navigation {
+  font-size: 2.0em;
+  border-radius: 0;
+}
+  
+.sizer-contents .check-navigation:checked {
+  background-color: var(--bgPrimary);
+}
+
+/*------------------------------------------------------------------
+ * preview
+ *------------------------------------------------------------------*/
+.sizer-contents .preview {
+  transform: scale(0.75);
+  transform-origin: 0 0;
+}
+
+/*------------------------------------------------------------------
+ * title and toolbar
+ *------------------------------------------------------------------*/
+.standard-title {
+	color: white;
+	background-color: #426296;
+  border: 1px solid white;
+  border-radius: 6px 6px 0px 0px;
+  font-size: 1.2em;
+  padding: 0.4em 0.2em 0.2em 0.4em;
+  margin-top: 0em;
+}
+
+#iconLink {
+  display: none;
+  font-size: 0.9em;
+  margin-left: 1.5em;
+}
+
+#iconEmbedLeft {
+  display: none;
+  margin-left: 0.8em;
+}
+
+#iconEmbedRight {
+  display: none;
+  margin-left: 0.2em;
+}
+
+#appVersion {
+  display: inline-block;
+  float: right;
+  font-size: 0.9em;
+}
+
+/*------------------------------------------------------------------
+ * input section
+ *------------------------------------------------------------------*/
+.standard-section-label {
+  color: #093c44;
+  background-color: white;
+  border: 1px solid #093c44;
+  border-radius: 6px;
+  font-size: 1em;
+  padding-left: 0.4em;
+  margin-top: 0.4em;
+}
+
+.standard-section-contents {
+  margin-top: 0.4em;
+}
+
+#mainContainer {
+  display: inline-block;
+}
+
+#contentsContainer {
+  display: inline-block;
+  background-color: #eee;
+  padding: 0.3em 0.5em;
+  border: 1px solid #ccc;
+}
+
+.control-container {
+  margin-bottom: 0.4em;
+}
+
+.control-label {
+  display: inline-block;
+  min-width: 5em;
+}
+
+/*------------------------------------------------------------------
+ * preview section
+ *------------------------------------------------------------------*/
+#previewContainer {
+  display: none;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-size: 13px;
+  width: 800px; /* mimic Blackboard */
+  background-color: #eee;
+  border: 1px solid #ccc;
+  padding: 0.2em;
+}
+
+#previewDiv {
+  position: relative; 
+  display: block; 
+  width: 100%;  
+}
+
+#previewIframe {
+  position: absolute; 
+  top: 0; 
+  left: 0;  
+}
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/
