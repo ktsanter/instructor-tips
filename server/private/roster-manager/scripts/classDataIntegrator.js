@@ -37,6 +37,9 @@ class DataIntegrator {
     } else if (reportType == 'homeschooled') {
       return await this._applyHomeSchooledReportData(reportData);
       
+    } else if (reportType == 'studentflags') {
+      return await this._applyStudentFlagsReportData(reportData);
+      
     } else {
       return {success: false, details: 'unrecognized report type: ' + reportType, data: null};
     }
@@ -65,7 +68,7 @@ class DataIntegrator {
 
     return {
       success: true, 
-      details: 'enrollment report uploaded successfully', 
+      details: 'mentor report uploaded successfully', 
       data: {
         "mentors": {
           "differences": reportData.differences.mentor, 
@@ -81,6 +84,38 @@ class DataIntegrator {
     }
   }
   
+  async _applyStudentFlagsReportData(reportData) {
+    const METHODNAME = 'DataIntegrator._applyIEPReportData';
+
+    var categorizedReportData = [];
+    for (var i = 0; i < reportData.differences.iep.length; i++) {
+      var item = reportData.differences.iep[i];
+      item.key = 'IEP\t' + item.key;
+      categorizedReportData.push(item);
+    }
+    for (var i = 0; i < reportData.differences["504"].length; i++) {
+      var item = reportData.differences["504"][i];
+      item.key = '504\t' + item.key;
+      categorizedReportData.push(item);
+    }
+    for (var i = 0; i < reportData.differences.homeschooled.length; i++) {
+      var item = reportData.differences.homeschooled[i];
+      item.key = 'homeschooled\t' + item.key;
+      categorizedReportData.push(item);
+    }
+    
+    return {
+      success: true, 
+      details: 'students with flags report uploaded successfully', 
+      data: {
+        "students": {
+          "differences": categorizedReportData, 
+          "headers": ['flag', 'student', 'term', 'section']
+        }
+      }
+    }
+  }
+    
   async _applyIEPReportData(reportData) {
     const METHODNAME = 'DataIntegrator._applyIEPReportData';
     

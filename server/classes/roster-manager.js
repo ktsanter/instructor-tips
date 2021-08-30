@@ -55,6 +55,22 @@ module.exports = internal.RosterManager = class {
       this.colMentor_AffiliationPhone
     ]);    
 
+    // Excel column names for students with flags report
+    this.colFlags_Student = 'Student';
+    this.colFlags_Term = 'LMSTerm';
+    this.colFlags_Section = 'Section';
+    this.colFlags_IEP = 'iep';
+    this.colFlags_504 = 'Section504';
+    this.colFlags_Homeschooled = 'Homeschool';
+    this._requiredColumns_StudentFlags = new Set([
+      this.colFlags_Student,
+      this.colFlags_Term,
+      this.colFlags_Section,
+      this.colFlags_IEP,
+      this.colFlags_504,
+      this.colFlags_Homeschooled
+    ]);
+    
     // Excel column names for IEP data
     this.colIEP_Student = 'Name';
     this.colIEP_Term = 'Term Name';
@@ -184,7 +200,7 @@ module.exports = internal.RosterManager = class {
 // other public methods
 //---------------------------------------------------------------  
   processUploadedFile(req, res, uploadType, userInfo) {
-    var validTypes = new Set(['enrollment', 'mentor', 'iep', '504', 'homeschooled']);
+    var validTypes = new Set(['enrollment', 'mentor', 'studentflags', 'iep', '504', 'homeschooled']);
 
     if (validTypes.has(uploadType)) {
       this._processExcelFile(req, res, uploadType, userInfo);
@@ -274,6 +290,7 @@ module.exports = internal.RosterManager = class {
       var processRoutingMap = {
         "enrollment": thisObj._processEnrollmentFile,
         "mentor": thisObj._processMentorFile,
+        "studentflags": thisObj._processStudentFlagsFile,
         "iep": thisObj._processIEPFile,
         "504": thisObj._process504File,
         "homeschooled": thisObj._processHomeSchooledFile
@@ -361,6 +378,51 @@ module.exports = internal.RosterManager = class {
     thisObj._sendSuccess(res, 'upload succeeded', result.data);
   }
   
+  async _processStudentFlagsFile(res, thisObj, worksheet, currentRosterData, userInfo) {    
+    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_StudentFlags);
+    if (!validate.success) {
+      thisObj._sendFail(res, 'missing one or more required columns');
+      return;
+    }
+
+    var result = thisObj._packageUploadedStudentFlagValues(thisObj, worksheet, validate.columnInfo);
+    if (!result.success) {
+      thisObj._sendFail(res, '**failed to package values');
+      return;
+    }
+
+    var uploadedData = result.data
+    var differencesIEP = thisObj._findDifferences(thisObj, currentRosterData.raw_iep_data, uploadedData.dataIEP, 
+      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
+    );
+    var differences504 = thisObj._findDifferences(thisObj, currentRosterData.raw_504_data, uploadedData.data504, 
+      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
+    );
+    var differencesHomeschooled = thisObj._findDifferences(thisObj, currentRosterData.raw_homeschooled_data, uploadedData.dataHomeschool, 
+      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
+    );
+    
+    var result = await thisObj._postExcelData(thisObj, 'iep', uploadedData.dataIEP, userInfo);
+    if (!result.success) {
+      thisObj._sendFail(res, '** failed to post iep values');
+      return;
+    }
+    var result = await thisObj._postExcelData(thisObj, 'student504', uploadedData.data504, userInfo);
+    if (!result.success) {
+      thisObj._sendFail(res, '** failed to post 504 values');
+      return;
+    }
+    var result = await thisObj._postExcelData(thisObj, 'homeschooled', uploadedData.dataHomeschool, userInfo);
+    if (!result.success) {
+      thisObj._sendFail(res, '** failed to post homeschooled values');
+      return;
+    }
+
+    result.success = true;
+    result.data = {"differences": {"iep": differencesIEP, "504": differences504, "homeschooled": differencesHomeschooled}};
+    thisObj._sendSuccess(res, 'upload succeeded', result.data);
+  }
+
   async _processIEPFile(res, thisObj, worksheet, currentRosterData, userInfo) {    
     var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_IEP);
     if (!validate.success) {
@@ -542,6 +604,53 @@ module.exports = internal.RosterManager = class {
     return result;
   }  
   
+  _packageUploadedStudentFlagValues(thisObj, worksheet, columnInfo) {
+    var result = {success: false, data: null};
+    
+    var flagInfo = [];
+    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
+      var student = row.getCell(columnInfo[thisObj.colFlags_Student]).value;
+      var term = row.getCell(columnInfo[thisObj.colFlags_Term]).value;
+      var section = row.getCell(columnInfo[thisObj.colFlags_Section]).value;
+
+      if (student != thisObj.colFlags_Student) {
+        flagInfo.push({
+          "student": student,
+          "term": term,
+          "section": section,
+          "iep": row.getCell(columnInfo[thisObj.colFlags_IEP]).value == 'Yes',
+          "504": row.getCell(columnInfo[thisObj.colFlags_504]).value == 'Yes',
+          "homeschool": row.getCell(columnInfo[thisObj.colFlags_Homeschooled]).value == 'Yes'
+        });
+      }
+    });
+    
+    var dataIEP = [];
+    var data504 = [];
+    var dataHomeschool = [];
+    for (var i = 0; i < flagInfo.length; i++) {
+      var entry = flagInfo[i];
+      if (entry["iep"]) {
+        dataIEP.push({"student": entry.student, "term": entry.term, "section": entry.section});
+      }
+      if (entry["504"]) {
+        data504.push({"student": entry.student, "term": entry.term, "section": entry.section});
+      }
+      if (entry["homeschool"]) {
+        dataHomeschool.push({"student": entry.student, "term": entry.term, "section": entry.section});
+      }
+    }
+    
+    result.success = true;
+    result.data = {
+      "dataIEP": dataIEP,
+      "data504": data504,
+      "dataHomeschool": dataHomeschool
+    };
+    
+    return result;
+  }
+
   _packageUploadedIEPValues(thisObj, worksheet, columnInfo) {
     var result = {success: false, data: null};
     
@@ -1265,8 +1374,6 @@ module.exports = internal.RosterManager = class {
   }  
   
   async _removeTermData(params, postData, userInfo) {
-    console.log('RosterData._removeTermData');
-    
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;
     

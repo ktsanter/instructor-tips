@@ -549,7 +549,7 @@ const app = function () {
     }
 
     var result = await settings.dataIntegrator.applyReportData(uploadType, result.data);
-
+    
     elemResult.innerHTML = result.details;
     if (result.success) {
       _displayChanges(result.data, elemChanges);
@@ -671,6 +671,7 @@ const app = function () {
     var classToParamMap = {
       'uploadfile-enrollment': 'enrollment',
       'uploadfile-mentor': 'mentor',
+      'uploadfile-flags': 'studentflags',
       'uploadfile-iep': 'iep',
       'uploadfile-504': '504',     
       'uploadfile-homeschooled': 'homeschooled'      
