@@ -74,6 +74,8 @@ class MentorViewer {
       var filteredAndSortedMentors = this._filterAndSortMentors(this.settings.currentInfo.mentorsByTermAndSection);
       this._renderMentorTable(filteredAndSortedMentors, this.settings.mentorListContainer);
       
+      UtilityKTS.setClass(this.mentorSelect, this.settings.hideClass, false);
+      UtilityKTS.setClass(this.clearFilterContainer, this.settings.hideClass, false);
       UtilityKTS.setClass(this.settings.mentorListContainer, this.settings.hideClass, false);
       UtilityKTS.setClass(this.settings.singleMentorContainer, this.settings.hideClass, true);
 
@@ -419,7 +421,9 @@ class MentorViewer {
     }
     
     UtilityKTS.setClass(this.settings.mentorListContainer, this.settings.hideClass, true);
+    UtilityKTS.setClass(this.clearFilterContainer, this.settings.hideClass, true);    
     UtilityKTS.setClass(this.settings.singleMentorContainer, this.settings.hideClass, false);
+    UtilityKTS.setClass(this.mentorSelect, this.settings.hideClass, true);    
   }
   
   _getStudentsForMentor(mentorInfo) {
