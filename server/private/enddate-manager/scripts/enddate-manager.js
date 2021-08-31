@@ -623,6 +623,7 @@ const app = function () {
   // callbacks
 	//--------------------------------------------------------------------------
   function _calendarInfoCallback(success, results) {
+    console.log('_calendarInfoCallback', success, results);
     if (!success) {
       console.log('error: ' + JSON.stringify(results));
       return;
@@ -635,13 +636,27 @@ const app = function () {
     
     for (var i = 0; i < fullCalendarList.length; i++) {
       var item = fullCalendarList[i];
+      console.log('item #' + i, item.summary, item.accessRole, item.primary);
       if (item.accessRole == 'owner') {
+        console.log('  - adding "' + item.summary + '" to filteredCalendarList');
         filteredCalendarList.push(item);
 
         if (settings.configuration.calendarId == null && item.hasOwnProperty('primary') && item.primary) {
+          console.log('  - setting "' + item.summary + '" as configured');
           settings.configuration.calendarId = item.id;
         }
       }
+    }
+
+    if (filteredCalendarList.length == 0) {
+      console.log('no qualified calendars found');
+    }
+    
+    if (filteredCalendarList.length > 0 && !settings.configuration.calendarId) {
+      console.log('no calendar selected or identified as "owner" and "primary"');
+      var item = filteredCalendarList[0];
+      console.log('  - defaulting to: "' + item.summary);
+      settings.configuration.calendarId = item.id;
     }
     
     settings.configuration.calendarList = filteredCalendarList;
@@ -802,6 +817,7 @@ const app = function () {
   
   async function _signInChangeForGoogle(isSignedIn) {
     settings.google.isSignedIn = isSignedIn;
+    console.log('_signInChangeForGoogle', isSignedIn);
 
     _setMainUIEnable(false);
     
