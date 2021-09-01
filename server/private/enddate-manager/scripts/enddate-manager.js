@@ -26,7 +26,8 @@ const app = function () {
         'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'
       ],
       clientId:  '780404244540-nug55q7bnd7daf3dpj5k5g8qob9uqv41.apps.googleusercontent.com',
-      scopes: 'https://www.googleapis.com/auth/calendar.events',
+      scopes: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/calendar.events',
+      //https://www.googleapis.com/auth/calendar
       isSignedIn: false,
       objCalendar: null
     },

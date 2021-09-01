@@ -24,7 +24,7 @@ class GoogleCalendar {
       },
       
       function(err) { 
-        console.error("GoogleCalendar.loadCalendarInfo error", err); 
+        console.error("GoogleCalendar.getCalendarInfo error", err); 
         callback(false, err);
       }
     );
