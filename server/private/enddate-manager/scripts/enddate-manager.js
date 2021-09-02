@@ -765,6 +765,7 @@ const app = function () {
       "navOptions": function() { _showContents('navOptions'); },
       "navAdmin": function() { _showContents('navAdmin'); },
       "navGoogle": function() { _handleGoogleSignIn(); },
+      "navGoogleReAuth": function() { _handleGoogleSignIn(); },
       "navCalendar": function() { _handleCalendarOpen(); },
       "navExport": function() { _exportToExcel(); },
       "navOWA": function() { _handleOWAOpen(); },
