@@ -56,11 +56,12 @@ class GoogleManagement {
     return this._config.isSignedIn;
   }
   
-  trySignIn() {
+  trySignIn(optionalCallback) {
     console.log('GoogleManagement.trySignIn');
     gapi.auth2.getAuthInstance().signIn().then(
       function () {
         console.log('GoogleManagement.trySignIn: signIn okay');
+        if (optionalCallback) optionalCallback({"success": true, "details": 'Google signin succeeded'});
         //console.log('sign-in okeydokey');
       },
 
@@ -72,6 +73,7 @@ class GoogleManagement {
         } else {
           console.log('sign-in error: ' + objErr.error);
         }
+        if (optionalCallback) optionalCallback({"success": false, "details": 'Google signin failed: ' + JSON.stringify(objErr)});
       });
   }
   

@@ -739,6 +739,11 @@ const app = function () {
     _setMainNavbarEnable(enable);
   }
   
+  function _callbackGoogleReauth(result) {
+    console.log('_callbackGoogleReauth', result);
+    if (result.success) location.reload();
+  }
+  
   function _setMainNavbarEnable(enable) {
     var menuIds = ['navManage', 'navOptions', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
@@ -765,7 +770,7 @@ const app = function () {
       "navOptions": function() { _showContents('navOptions'); },
       "navAdmin": function() { _showContents('navAdmin'); },
       "navGoogle": function() { _handleGoogleSignIn(); },
-      "navGoogleReAuth": function() { _handleGoogleSignIn(); },
+      "navGoogleReAuth": function() { _handleGoogleReauthorization(); },
       "navCalendar": function() { _handleCalendarOpen(); },
       "navExport": function() { _exportToExcel(); },
       "navOWA": function() { _handleOWAOpen(); },
@@ -811,6 +816,11 @@ const app = function () {
   
   function _handleGoogleSignIn() {
     settings.google.obj.trySignIn();
+  }
+  
+  function _handleGoogleReauthorization() {
+    console.log('_handleGoogleReauthorization');
+    settings.google.obj.trySignIn(_callbackGoogleReauth);
   }
   
   function _handleGoogleSignout() {
