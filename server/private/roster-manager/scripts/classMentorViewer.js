@@ -182,6 +182,11 @@ class MentorViewer {
       }
     }
     
+    if (!earliestStartDate) {
+      console.log('cannot find earliest start date for ', section, mentor);
+      earliestStartDate = '???';
+    }
+    
     return earliestStartDate;
   }
     
@@ -466,7 +471,7 @@ class MentorViewer {
     studentInfo = studentInfo.sort(function(a, b) {
       return a.student.localeCompare(b.student);
     });
-    
+        
     return studentInfo;
   }
 
@@ -538,7 +543,6 @@ class MentorViewer {
   }
 
   _handleMentorFilterChange(e) {
-    console.log(this.mentorSelectInput.value);
     this.settings.filtering['mentor'] = this.mentorSelectInput.value;
     this._updateUI();
   }
