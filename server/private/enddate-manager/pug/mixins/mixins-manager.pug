@@ -21,9 +21,6 @@ mixin managerContainer()
             th(class="header header-section" field-name="section")
               span(class="roster-headerlabel") section
 
-            th(class="header header-term" field-name="term")
-              span(class="roster-headerlabel") term
-
             th(class="header header-control" field-name="control") 
               form(id="formExport" class="export-form hide-me" action="enddate-manager/export" enctype="multipart/form-data" method="post")
                 textarea(id="exportData" class="export-data" name="export-data")

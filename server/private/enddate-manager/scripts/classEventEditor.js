@@ -33,7 +33,7 @@ class EventEditor {
     this._config.eventContainer.getElementsByClassName('header-student')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('student'); });
     this._config.eventContainer.getElementsByClassName('header-section')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('section'); });
     this._config.eventContainer.getElementsByClassName('header-enddate')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('enddate'); });
-    this._config.eventContainer.getElementsByClassName('header-term')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('term'); });
+    //this._config.eventContainer.getElementsByClassName('header-term')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('term'); });
     this._config.eventContainer.getElementsByClassName('header-control')[0].getElementsByTagName('span')[0].addEventListener('click', (e) => { this._handleResort('control'); });
     
     this._config.editorOkay.addEventListener('click', (e) => { this._handleEditEnd(true); });
@@ -199,7 +199,7 @@ class EventEditor {
     
     elemRow.appendChild(this._rendeDataCell(eventData.enddate, eventData.override));
     elemRow.appendChild(this._rendeDataCell(eventData.section));
-    elemRow.appendChild(this._rendeDataCell(eventData.term));
+    //elemRow.appendChild(this._rendeDataCell(eventData.term));
     elemRow.appendChild(this._renderControlCell(eventData));
     
     return elemRow;
@@ -314,7 +314,8 @@ class EventEditor {
   
   _loadEventDataIntoEditor(eventData) {
     this.elemStudent.value = eventData.student;
-    this.elemSection.value = eventData.term + ', ' + eventData.section;
+//    this.elemSection.value = eventData.term + ', ' + eventData.section;
+    this.elemSection.value = eventData.section;
     this.elemEndDate.value = eventData.enddate;
     this.elemNotes.value = decodeURIComponent(eventData.notes);
     this.elemEnrollmentEndDate.value = eventData.enrollmentenddate;

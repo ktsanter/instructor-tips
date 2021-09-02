@@ -406,7 +406,8 @@ const app = function () {
     var description = 'Term end date scheduled for:';
     for (var i = 0; i < eventInfo.enrollments.length; i++) {
       var item = eventInfo.enrollments[i];
-      description += '\n' + item.student + ' | ' + item.section + ' | ' + item.term + ' | enrollment: ' + item.originalEndDate;
+      //description += '\n' + item.student + ' | ' + item.section + ' | ' + item.term + ' | enrollment: ' + item.originalEndDate;
+      description += '\n' + item.student + ' | ' + item.section + ' | enrollment: ' + item.originalEndDate;
     }
     
     var reminders = [];
@@ -416,7 +417,7 @@ const app = function () {
     if (settings.configuration.popupNotification) {
       reminders.push({"method": "popup", "minutes": settings.configuration.popupNotificationMinutes});
     }
-
+    
     return {
         "calendarId": settings.configuration.calendarId,
         "date": eventInfo.date,
@@ -1175,19 +1176,24 @@ const app = function () {
       var student = parsedLine[0].trim();
       var section = parsedLine[1].trim();
 
-      var term, enrollmentEndDate;      
+      var term, enrollmentEndDate;
+      if (parsedLine.length != 3) {
+        console.log(descriptionLines[i], parsedLine.length, parsedLine);
+      }
+      
       if (parsedLine.length < 4) {
-        term = '[unknown';
+        //term = '[unknown';
         enrollmentEndDate = parsedLine[2].trim().slice(-10);
       } else {
-        term = parsedLine[2].trim();
+        //term = parsedLine[2].trim();
         enrollmentEndDate = parsedLine[3].trim().slice(-10);
       }
 
       studentList.push({
         "student": student, 
         "section": section, 
-        "term": term,
+        /*"term": term,*/
+        "term": 'dummy',
         "enddate": item.end.date, 
         "enrollmentenddate": enrollmentEndDate
       });
