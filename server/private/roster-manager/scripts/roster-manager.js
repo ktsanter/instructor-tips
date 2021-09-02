@@ -251,9 +251,11 @@ const app = function () {
   }
   
   function _exportToExcel() {
+    var mentorExportData = _packageMentorExportData();
+    
     var exportData = {
       "studentExportData": settings.currentInfo.students,
-      "mentorExportData": settings.currentMentorInfo.mentorsByTermAndSection
+      "mentorExportData": mentorExportData
     };
     
     var exportForm = page.body.getElementsByClassName('export-form')[0];
@@ -496,6 +498,40 @@ const app = function () {
       "mentorsByTermAndSection": mentorsByTermAndSection,
       "mentorList": mentorList.sort()
     };
+  }
+  
+  function _packageMentorExportData() {
+    var mentorExportData = {};
+    for (var term in settings.currentMentorInfo.mentorsByTermAndSection) {
+      var termInfo = settings.currentMentorInfo.mentorsByTermAndSection[term];
+      
+      for (var section in termInfo) {
+        if (!mentorExportData.hasOwnProperty(section)) mentorExportData[section] = {};  
+        var sectionInfo = termInfo[section];
+
+        for (var mentor in sectionInfo) {
+          mentorExportData[section][mentor] = sectionInfo[mentor];
+          
+          mentorExportData[section][mentor].studentlist = _getStudentsForMentorSection(mentor, section);
+        }
+      }
+    }
+    
+    return mentorExportData;
+  }
+  
+  function _getStudentsForMentorSection(mentor, section) {
+    var studentSet = new Set([]);
+    
+    for (var student in settings.currentInfo.students) {
+      var studentMentors = settings.currentInfo.students[student].mentors;
+
+      for (var i = 0; i < studentMentors.length; i++) {
+        var mentorItem = studentMentors[i];
+        if (mentorItem.section == section && mentorItem.name == mentor) studentSet.add(mentorItem.student);
+      }
+    }
+    return Array.from(studentSet).sort();
   }
   
   function _wasWelcomeLetterSent(extraMentorInfo, term, section, name) {

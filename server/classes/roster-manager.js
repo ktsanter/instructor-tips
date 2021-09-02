@@ -210,7 +210,7 @@ module.exports = internal.RosterManager = class {
     }
   }
   
-  exportToExcel(req, res, callback) {    
+  exportToExcel(req, res, callback) {
     var thisObj = this;
     var result = {
         "success": false,
@@ -222,14 +222,12 @@ module.exports = internal.RosterManager = class {
     var form = new this._formManager.IncomingForm();
     form.parse(req, async function(err, fields, files) {
       if (err) {
-        result.description = 'error in form.parse: ' + JSON.stringify(err);
-        callback(erq, res, result);
+        callback(req, res, {"success": false, "description": 'error in form.parse: ' + JSON.stringify(err)});
         return;
       }
       
       if (!fields.hasOwnProperty('export-data')) {
-        result.description = 'missing export data field';
-        callback(erq, res, result);
+        callback(req, res, {"success": false, "description": 'missing export data field'});
         return;
       }
       
@@ -995,68 +993,65 @@ module.exports = internal.RosterManager = class {
   
   _writeMentorDataToWorkbook(mentorData, workbook) {
     var sheet = workbook.addWorksheet('mentors');
+    
     var rowCount = 0;
     
+    sheet.addRow(['section', 'mentor', 'email', 'phone', 'affiliation', 'aff phone', 'welcome', 'students']);
+    sheet.getRow(1).font = {bold: true};
+    sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
+
     sheet.columns = [ 
       {width: 40, style: {alignment: {vertical: 'top'}}}, 
+      {width: 29, style: {alignment: {vertical: 'top'}}}, 
       {width: 26, style: {alignment: {vertical: 'top'}}}, 
       {width: 15, style: {alignment: {vertical: 'top'}}}, 
       {width: 36, style: {alignment: {vertical: 'top'}}}, 
       {width: 15, style: {alignment: {vertical: 'top'}}},
-      {width: 6, style: {alignment: {vertical: 'top', horizontal: 'center'}, font: {size: 9}}}
+      {width: 6, style: {alignment: {vertical: 'top', horizontal: 'center'}, font: {size: 9}}},
+      {width: 15, style: {alignment: {vertical: 'top'}}}
     ];
 
-    var termList = [];
-    for (var term in mentorData) {
-      termList.push(term);
+    var sectionList = [];
+    for (var section in mentorData) {
+      sectionList.push(section);
     }
-    termList = termList.sort();
+    sectionList = sectionList.sort();
     
-    for (var t = 0; t < termList.length; t++) {
-      term = termList[t];
-      var termItem = mentorData[term];
-      sheet.addRow([term]);
-      rowCount++;
-      sheet.getRow(rowCount).font = {"bold": true};
-      sheet.getRow(rowCount).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
-
-      var sectionList = [];
-      for (var section in termItem) {
-        sectionList.push(section);
-      }
-      sectionList = sectionList.sort();
+    for (var s = 0; s < sectionList.length; s++) {
+      var section = sectionList[s];
+      var sectionItem = mentorData[section];
       
-      for (var s = 0; s < sectionList.length; s++) {
-        var section = sectionList[s];
-        var sectionItem = termItem[section];
-        sheet.addRow([section]);
-        rowCount++;
-        sheet.getRow(rowCount).font = {"bold": true};
-        
-        var mentorList = [];
-        for (var mentor in sectionItem) {
-          mentorList.push(mentor);
-        }
-        mentorList = mentorList.sort();
-        
-        for (var m = 0; m < mentorList.length; m++) {
-          var mentor = mentorList[m];
-          var mentorItem = sectionItem[mentor];
-          sheet.addRow([
-            mentor,
-            mentorItem.email,
-            mentorItem.phone,
-            mentorItem.affiliation,
-            mentorItem.affiliationphone,
-            mentorItem.welcomelettersent ? '☑️' : ''
-          ]);
-          rowCount++;
-        }
-        
-        sheet.addRow([]);
-        rowCount++;
+      var mentorList = [];
+      for (var mentor in sectionItem) {
+        mentorList.push(mentor);
       }
-    } 
+      mentorList = mentorList.sort();
+      
+      for (var m = 0; m < mentorList.length; m++) {
+        var mentor = mentorList[m];
+        var mentorItem = sectionItem[mentor];
+        var formattedStudentList = this._formatStudentList(mentorItem.studentlist);
+        sheet.addRow([
+          section,
+          mentor,
+          mentorItem.email,
+          mentorItem.phone,
+          mentorItem.affiliation,
+          mentorItem.affiliationphone,
+          mentorItem.welcomelettersent ? '☑️' : '',
+          formattedStudentList
+        ]);
+      }
+    }
+  }
+  
+  _formatStudentList(studentList) {
+    var formatted = '';
+    for (var i = 0; i < studentList.length; i++) {
+      if (i > 0) formatted += '; ';
+      formatted += studentList[i];
+    }
+    return formatted;
   }
   
   _getEndDate(enrollment, enddateoverride) {
