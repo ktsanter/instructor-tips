@@ -35,20 +35,28 @@ module.exports = internal.RosterManager = class {
 
     // Excel column names for mentor/guardian
     this.colMentor_Student = 'Student_Name';
+    this.colMentor_StudentFirst = 'First Name';
+    this.colMentor_StudentLast = 'Last Name';
     this.colMentor_Term = 'Term_Name';
     this.colMentor_Section = 'Section_Name';
     this.colMentor_Role = 'Role';
     this.colMentor_Name = 'Mentor/Guardian';
+    this.colMentor_FirstName = 'Mentor/Guardian First Name';
+    this.colMentor_LastName = 'Mentor/Guardian Last Name';
     this.colMentor_Affiliation = 'Affilation_Name';
     this.colMentor_Email = 'Mentor Email';
     this.colMentor_Phone = 'Mentor Phone';
     this.colMentor_AffiliationPhone = 'Affiliation Phone';
     this._requiredColumns_Mentor = new Set([
       this.colMentor_Student,
+      this.colMentor_StudentFirst,
+      this.colMentor_StudentLast,
       this.colMentor_Term,
       this.colMentor_Section,
       this.colMentor_Role,
       this.colMentor_Name,
+      this.colMentor_FirstName,
+      this.colMentor_LastName,
       this.colMentor_Email,
       this.colMentor_Affiliation,
       this.colMentor_Phone,
@@ -562,17 +570,23 @@ module.exports = internal.RosterManager = class {
     var entries = [];
     
     worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
-      var student = row.getCell(columnInfo[thisObj.colMentor_Student]).value;    
+      var student = row.getCell(columnInfo[thisObj.colMentor_Student]).value;
+      var studentFirst = row.getCell(columnInfo[thisObj.colMentor_StudentFirst]).value;
+      var studentLast = row.getCell(columnInfo[thisObj.colMentor_StudentLast]).value;
+      
+      var mentorFirst = row.getCell(columnInfo[thisObj.colMentor_FirstName]).value;
+      var mentorLast = row.getCell(columnInfo[thisObj.colMentor_LastName]).value;
+
       var term = row.getCell(columnInfo[thisObj.colMentor_Term]).value;    
       var section = row.getCell(columnInfo[thisObj.colMentor_Section]).value;
 
       if (student != thisObj.colMentor_Student) {
         entries.push({
-          "student": thisObj._formatName(student),
+          "student": thisObj._formatNameFromMentorReport(student, 'student', studentFirst, studentLast),
           "term": term,
           "section": section,
           "role": row.getCell(columnInfo[thisObj.colMentor_Role]).value,
-          "name": thisObj._formatName(row.getCell(columnInfo[thisObj.colMentor_Name]).value),
+          "name": thisObj._formatNameFromMentorReport(row.getCell(columnInfo[thisObj.colMentor_Name]).value, 'mentor', mentorFirst, mentorLast),
           "email": thisObj._formatMentorEmail(row.getCell(columnInfo[thisObj.colMentor_Email]).value),
           "affiliation": row.getCell(columnInfo[thisObj.colMentor_Affiliation]).value,
           "phone": row.getCell(columnInfo[thisObj.colMentor_Phone]).value,
@@ -650,6 +664,7 @@ module.exports = internal.RosterManager = class {
   }
 
   _packageUploadedIEPValues(thisObj, worksheet, columnInfo) {
+    console.log('unexpected call of _packageUploadedIEPValues');
     var result = {success: false, data: null};
     
     var iepInfo = [];
@@ -660,7 +675,7 @@ module.exports = internal.RosterManager = class {
 
       if (student != thisObj.colIEP_Student) {
         iepInfo.push({
-          "student": thisObj._formatName(student),
+          "student": thisObj._formatNameFromMentorReport(student, 'student'),
           "term": term,
           "section": section
         });
@@ -671,11 +686,12 @@ module.exports = internal.RosterManager = class {
     result.data = {
       "iep": iepInfo
     };
-    
+
     return result;
   }
     
   _packageUploaded504Values(thisObj, worksheet, columnInfo) {
+    console.log('unexpected call of _packageUploaded504Values');
     var result = {success: false, data: null};
     
     var student504Info = [];
@@ -686,7 +702,7 @@ module.exports = internal.RosterManager = class {
 
       if (student != thisObj.col504_Student) {
         student504Info.push({
-          "student": thisObj._formatName(student),
+          "student": thisObj._formatNameFromMentorReport(student, 'student'),
           "term": term,
           "section": section
         });
@@ -697,12 +713,14 @@ module.exports = internal.RosterManager = class {
     result.data = {
       "student504": student504Info
     };
-    
+
     return result;
   }
     
   _packageUploadedHomeSchooledValues(thisObj, worksheet, columnInfo) {
+    console.log('unexpected call of _packageUploadedHomeSchooledValues');
     var result = {success: false, data: null};
+    
     
     var studentHomeSchooledInfo = [];
     worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
@@ -723,7 +741,7 @@ module.exports = internal.RosterManager = class {
     result.data = {
       "homeschooled": studentHomeSchooledInfo
     };
-    
+
     return result;
   }
   
@@ -1769,7 +1787,8 @@ module.exports = internal.RosterManager = class {
     return result;
   }
 
-  _formatName(origName) {
+  _formatNameFromMentorReport(origName, nameType, firstName, lastName) {
+    /*
     var name = origName;
     
     var splitName = name.split(' ');
@@ -1789,6 +1808,9 @@ module.exports = internal.RosterManager = class {
     } else if (splitName.length == 5) {
       name = splitName[1].trim() + ' ' + splitName[2].trim() + ' ' + splitName[3].trim() + ' ' + splitName[4] + ', ' + splitName[0];
     }
+    */
+    
+    var name = lastName.trim() + ', ' + firstName.trim();
     
     return name;
   }
