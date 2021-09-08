@@ -375,56 +375,62 @@ const app = function () {
     for (var i = 0; i < rawData.raw_mentor_data.length; i++) {
       var item = rawData.raw_mentor_data[i];
       var student = item.student;
+      student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) {
         students[student].mentors.push(item);
       } else {
-        console.log('mentor for unknown student', item);
+        console.log('mentor for unknown student', student, item);
       }
     }
 
     for (var i = 0; i < rawData.raw_guardian_data.length; i++) {
       var item = rawData.raw_guardian_data[i];
       var student = item.student;
+      student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) {
         students[student].guardians.push(item);
       } else {
-        console.log('guardian for unknown student', item);
+        console.log('guardian for unknown student', student, item);
       }
     }
 
     for (var i = 0; i < rawData.raw_iep_data.length; i++) {
       var item = rawData.raw_iep_data[i];
       var student = item.student;
+      student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) {
         students[student].iep = true;
       } else {
-        console.log('IEP for unknown student', item);
+        console.log('IEP for unknown student', student, item);
       }
     }
 
     for (var i = 0; i < rawData.raw_504_data.length; i++) {
       var item = rawData.raw_504_data[i];
       var student = item.student;
+      student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) {
         students[student]["504"] = true;
       } else {
-        console.log('504 for unknown student', item);
+        console.log('504 for unknown student', student, item);
       }
     }
 
     for (var i = 0; i < rawData.raw_homeschooled_data.length; i++) {
       var item = rawData.raw_homeschooled_data[i];
       var student = item.student;
+      student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) {
         students[student].homeschooled = true;
       } else {
-        console.log('homeschooled for unknown student', item);
+        console.log('homeschooled for unknown student', student, item);
       }
     }
 
     for (var i = 0; i < extraStudentInfo.preferredname.length; i++) {
       var item = extraStudentInfo.preferredname[i];
       var student = item.studentname;
+      student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) {
         students[student].preferredname = item.preferredname;
       }
@@ -433,6 +439,7 @@ const app = function () {
     for (var i = 0; i < extraStudentInfo.notes.length; i++) {
       var item = extraStudentInfo.notes[i];
       var student = item.studentname;
+      student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) students[student].notes.push({
         "datestamp": item.datestamp, 
         "notetext": item.notetext,
