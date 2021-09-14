@@ -1,0 +1,73 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/profile-mixins.pug
+
+include ./mixins/mixins-scheduling.pug
+include ./mixins/mixins-tipsediting.pug
+include ./mixins/mixins-sharing.pug
+include ./mixins/mixins-notification.pug
+include ./mixins/mixins-admin.pug
+
+doctype html
+html(lang="en")
+  head
+    title ITips
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+    
+    style
+      include ../../common/styles/classProfile.css
+      include ../../common/styles/navbar-overrides.css
+      include ../styles/itips.css
+    
+    +addJQuery()
+    script(data-main="/scripts/itips/require_itips", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    +makeNavbar("ITips", 
+      {
+        items: [
+          {id: "navSchedule", type: "link", label: "schedule"},
+          {id: "navTipEditing", type: "link", label: "edit tips"},
+          {id: "navSharing", type: "link", label: "share"},
+          {id: "navNotification", type: "link", label: "notify"},
+          {id: "navAdmin", type: "link", label: "admin"},
+          {type: "dropdown", label: "other", items: [
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}        
+        ],
+        
+        profile: true
+      }
+    )
+    
+    .contents
+      .error-container
+      
+      .container-fluid(class="contents-container contents-navScheduling hide-me disable-container")
+        +schedulingContainer()      
+        
+      .container-fluid(class="contents-container contents-navTipsEditing hide-me disable-container")
+        +tipsEditingContainer()      
+        
+      .container-fluid(class="contents-container contents-navSharing hide-me disable-container")
+        +sharingContainer()      
+        
+      .container-fluid(class="contents-container contents-navNotification hide-me disable-container")
+        +notificationContainer()      
+        
+      .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
+        +adminContainer()     
+        
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

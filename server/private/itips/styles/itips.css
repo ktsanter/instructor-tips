@@ -1,0 +1,79 @@
+/*------------------------------------------------------------------------------
+ * ITips
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+}
+
+body {
+  padding-top: 4.0em;
+}
+
+.hide-me {
+  display: none;
+}
+
+/*------------------------------------------------------------------------------
+ * navbar
+ *------------------------------------------------------------------------------*/
+.navbar-brand {
+  border: 1px solid white;
+  border-radius: 5px;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  font-size: 1.1em;
+}
+
+.navbar .dropdown-item .excel-icon {
+  color: #379164;
+}
+
+.navbar .dropdown-item.disabled .excel-icon  {
+  color: #adb5bd;
+}
+
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {}
+
+/*------------------------------------------------------------------------------
+ * contents - navAdmin
+ *------------------------------------------------------------------------------*/
+.contents .contents-navAdmin {}
+
+.contents .contents-navAdmin .configure-fieldset {}
+
+.contents .contents-navAdmin .configure-fieldset legend {
+  font-size: 1.0em;
+  font-weight: 500;
+  float: none; 
+  padding: inherit; 
+}
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/

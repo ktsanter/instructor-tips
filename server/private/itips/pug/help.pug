@@ -1,0 +1,40 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+
+include ./mixins-help/mixins-overvew.pug
+
+
+doctype html
+html(lang="en")
+  head
+    title ITips help
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+
+    +fontawesome()
+    +bootstrapstyle()
+    
+    style
+      include ../../common/styles/navbar-overrides.css    
+      include ../styles/help.css
+
+  body(class="colorscheme")
+    +makeNavbar("ITips help", 
+      {
+        items: [
+          {id: "navOverview", type: "link", label: "overview"}
+        ],
+        
+        buttons: [],        
+        profile: false
+      }
+    )    
+
+    .container-fluid
+      .row: .col-sm 
+        .helpsection(id="anchorOverview")
+           +helpcontent_Overview
+
+    script
+      include ../scripts/help.js
