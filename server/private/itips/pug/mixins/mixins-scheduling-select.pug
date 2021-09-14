@@ -2,7 +2,9 @@ mixin schedulingSelect()
   .container-fluid(class="scheduling-selection-container")
     .row
       .col-sm
-        select(class="form-select scheduling-select" arial-label="schedule selection")
+        .form-floating
+          select(class="form-select scheduling-select" id="selectSchedule" aria-label="schedule selection")
+          label(for="selectSchedule") schedule
           
       .col-sm
         .scheduling-selection-controls(class="collapsed")

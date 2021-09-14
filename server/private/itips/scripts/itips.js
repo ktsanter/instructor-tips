@@ -28,6 +28,7 @@ const app = function () {
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('loading...', true);
     
+    await _initializeDB();
     await _setAdminMenu();
 
     page.navbar = page.body.getElementsByClassName('navbar')[0];
@@ -36,7 +37,6 @@ const app = function () {
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
     await _initializeProfile(sodium);
-    await _initializeDB();
 
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
@@ -52,7 +52,8 @@ const app = function () {
   async function _setAdminMenu() {
     _enableNavOption('navAdmin', false, false);
     
-    var adminAllowed = await _checkAdminAllowed();
+    var adminAllowed = await settings.db.isAdminAllowedForUser();
+    adminAllowed = adminAllowed && !settings.adminDisable;
     
     _enableNavOption('navAdmin', adminAllowed, adminAllowed);
   }
@@ -76,7 +77,7 @@ const app = function () {
   function _initializeDB() {
     var noticeCallback = (msg) => { page.notice.setNotice(msg); };
     settings.db = new ITipsDB({
-      "callbackSetNotice": noticeCallback
+      "notice": page.notice
     });
   }
   
@@ -119,7 +120,8 @@ const app = function () {
     
     settings.tipsEditing = new TipsEditing({
       "container": page.navTipsEditing,
-      "hideClass": settings.hideClass
+      "hideClass": settings.hideClass,
+      "db": settings.db
     });
     
     settings.tipsEditing.render();
@@ -130,7 +132,8 @@ const app = function () {
     
     settings.sharing = new Sharing({
       "container": page.navSharing,
-      "hideClass": settings.hideClass
+      "hideClass": settings.hideClass,
+      "db": settings.db
     });
     
     settings.sharing.render();
@@ -141,7 +144,8 @@ const app = function () {
     
     settings.notification = new Notification({
       "container": page.navNotification,
-      "hideClass": settings.hideClass
+      "hideClass": settings.hideClass,
+      "db": settings.db
     });
     
     settings.notification.render();
@@ -153,6 +157,7 @@ const app = function () {
     settings.admin = new Admin({
       "container": page.navAdmin,
       "hideClass": settings.hideClass,
+      "db": settings.db,
       "callbackAdminToggle": _toggleAdmin
     });
     

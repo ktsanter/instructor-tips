@@ -1,4 +1,29 @@
 mixin sharingContainer()
-  .row(class="my-2")
+  .row
     .col-sm
-      |sharing
+      .form-floating
+        select(class="form-select" id="selectSchedule" aria-label="select schedule to share")
+          option(selected) Open this select menu
+          option(value="1") One
+          option(value="2") Two
+          option(value="3") Three
+        label(for="selectSchedule") schedule
+        
+    .col-sm
+      .form-floating
+        select(class="form-select" id="selectUser" aria-label="select user to share with")
+          option(selected) Open this select menu
+          option(value="1") One
+          option(value="2") Two
+          option(value="3") Three
+        label(for="selectUser") user to share with       
+
+  .row
+    .col-sm
+      .form-floating
+        input(type="text" class="form-control" id="floatingInput" placeholder="some comment text")
+        label(for="floatingInput") comment
+
+  .row
+    .col-sm
+      button(type="button" class="btn btn-primary" disabled) share

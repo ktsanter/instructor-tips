@@ -23,6 +23,7 @@ html(lang="en")
     style
       include ../../common/styles/classProfile.css
       include ../../common/styles/navbar-overrides.css
+      include ../../common/styles/sliderswitch.css
       include ../styles/itips.css
     
     +addJQuery()
@@ -34,8 +35,8 @@ html(lang="en")
         items: [
           {id: "navSchedule", type: "link", label: "schedule"},
           {id: "navTipEditing", type: "link", label: "edit tips"},
-          {id: "navSharing", type: "link", label: "share"},
-          {id: "navNotification", type: "link", label: "notify"},
+          {id: "navSharing", type: "link", label: "sharing"},
+          {id: "navNotification", type: "link", label: "notifications"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
             {id: "navHelp", type: "link", label: "help"},

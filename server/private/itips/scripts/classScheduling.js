@@ -12,20 +12,20 @@ class Scheduling {
   // public methods
   //--------------------------------------------------------------   
   render() {
-    this.scheduleSelection = new SchedulingSelection({
-      "container": this.config.container.getElementsByClassName('scheduling-selection-container')[0],
-      "hideClass": this.config.hideClass,
-      "db": this.config.db,
-      "callbackScheduleSelect": this._displayDetails
-    });
-    this.scheduleSelection.render();
-    
     this.scheduleDetails = new SchedulingDetails({
       "container": this.config.container.getElementsByClassName('scheduling-detail-container')[0],
       "hideClass": this.config.hideClass,
       "db": this.config.db
     });
     this.scheduleDetails.render();
+    
+    this.scheduleSelection = new SchedulingSelection({
+      "container": this.config.container.getElementsByClassName('scheduling-selection-container')[0],
+      "hideClass": this.config.hideClass,
+      "db": this.config.db,
+      "callbackScheduleSelect": this.scheduleDetails.update
+    });
+    this.scheduleSelection.render();    
   }
   
   async update() {
@@ -36,12 +36,6 @@ class Scheduling {
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
-  _displayDetails(scheduleInfo) {
-    console.log('Scheduling._displayDetails', scheduleInfo);
-    console.log('clear details');
-    if (!scheduleInfo) return;
-    console.log('display details for ' + scheduleInfo.id);
-  }
   
   //--------------------------------------------------------------
   // utility

@@ -5,6 +5,9 @@
   --bgPrimary: rgba(66, 98, 150, 1.0);
   --bgShaded: #e9ecef;
   --borderPrimary: #ced4da;
+  
+  /*-- for slider switches --*/
+  --bgSecondaryChoice: rgba(66, 98, 150, 1.0);
 }
 
 body {
@@ -63,6 +66,19 @@ body {
 
 .contents .contents-navScheduling .scheduling-selection-controls .selection-control.disable-me {
   color: #aaa;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navNotification
+ *------------------------------------------------------------------------------*/
+.contents .contents-navNotification {}
+
+.contents .contents-navNotification .dayslider {
+  width: 3.0em;
+}
+
+.contents .contents-navNotification .dayslider .switch-label {
+  font-size: 0.8em;
 }
 
 /*------------------------------------------------------------------------------

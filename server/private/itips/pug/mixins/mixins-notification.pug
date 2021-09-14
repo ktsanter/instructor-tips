@@ -1,4 +1,30 @@
+mixin daySlider(day)
+  label(class="switch switch-yes-no dayslider")
+    input(class="switch-input" type="checkbox")
+    span(class="switch-label" data-on= day data-off= day)
+    span(class="switch-handle")
+
+
 mixin notificationContainer()
-  .row(class="my-2")
+  .row
     .col-sm
-      |notification
+      .form-check(class="form-switch")
+        input(class="receive-share-notification form-check-input" type="checkbox" id="checkReceiveNotification")
+        label(class="form-check-label" for="checkReceiveNotification") receive notification when a schedule is shared with you
+        
+  .row
+    .col-sm
+      .reminder-schedule-title
+        |day(s) to send schedule reminder notifications
+        
+      .reminder-schedule
+
+  .row(class="hide-me")
+    .col-sm(class="reminder-days-template")
+      +daySlider("Sun")
+      +daySlider("Mon")
+      +daySlider("Tue")
+      +daySlider("Wed")
+      +daySlider("Thu")
+      +daySlider("Fri")
+      +daySlider("Sat")

@@ -30,7 +30,9 @@ class SchedulingSelection {
   }
   
   async update() {
-    var scheduleList = await this._getScheduleList();
+    UtilityKTS.removeChildren(this.inputSelect);
+
+    var scheduleList = await this.config.db.getScheduleList();
     if (!scheduleList) return;
     this.scheduleList = scheduleList;
     
@@ -42,11 +44,11 @@ class SchedulingSelection {
       var item = scheduleList[i];
       
       var elemOption = CreateElement._createElement('option', null, 'schedule-item');
-      elemOption.value = item.id;
+      elemOption.value = item.scheduleid;
       elemOption.innerHTML = item.schedulename
       elemOption.setAttribute("scheduleInfo", JSON.stringify(item));
       
-      elemOption.selected = (this.selectedSchedule && this.selectedSchedule.id == item.id);
+      elemOption.selected = (this.selectedSchedule && this.selectedSchedule.scheduleid == item.scheduleid);
       if (elemOption.selected) selectedItem = item; 
       
       this.inputSelect.appendChild(elemOption);
@@ -54,7 +56,7 @@ class SchedulingSelection {
     
     if (!selectedItem && scheduleList.length > 0) selectedItem = scheduleList[0];
     
-    this._doSelection(selectedItem);
+    await this._doSelection(selectedItem);
   }
   
   getSelectedSchedule() {
@@ -64,18 +66,9 @@ class SchedulingSelection {
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------  
-  async _getScheduleList() {
-    var dbResult = await this.config.db.getScheduleList();
-    if (dbResult.success) {
-      return dbResult.data;
-    } else {
-      return null;
-    }
-  }
-  
-  _doSelection(scheduleInfo) {
+  async _doSelection(scheduleInfo) {
     this.selectedSchedule = scheduleInfo;
-    this.config.callbackScheduleSelect(this.selectedSchedule);
+    await this.config.callbackScheduleSelect(this.selectedSchedule.scheduleid, this.config.db);
   }
   
   //--------------------------------------------------------------
@@ -89,13 +82,11 @@ class SchedulingSelection {
   }
   
   _handleMainControl(e) {
-    console.log('_handleMainControl');
     var collapse = !this.controlsContainer.classList.contains('collapsed');
     UtilityKTS.setClass(this.controlsContainer, 'collapsed', collapse);
-    console.log('collapse', collapse);
+
     if (!collapse) {
       var noSchedules = (this.scheduleList.length == 0);
-      console.log('noSchedules', noSchedules);
       UtilityKTS.setClass(this.controlEdit, 'disable-me', noSchedules);
       UtilityKTS.setClass(this.controlDelete, 'disable-me', noSchedules);
     }
