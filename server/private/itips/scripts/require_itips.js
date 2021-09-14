@@ -8,8 +8,13 @@ define(function (require) {
   
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
+  
+  require('classITipsDB');
    
   require('classScheduling');
+  require('classSchedulingSelection');
+  require('classSchedulingDetails');
+  
   require('classTipsEditing');
   require('classSharing');
   require('classNotification');

@@ -40,18 +40,35 @@ body {
 .contents {}
 
 /*------------------------------------------------------------------------------
+ * contents - navScheduling
+ *------------------------------------------------------------------------------*/
+.contents .contents-navScheduling {}
+
+.contents .contents-navScheduling .scheduling-selection-controls .selection-control {
+  color: var(--bgPrimary);
+  font-size: 125%;
+  margin-right: 0.3em;
+  margin-top: 0.3em;
+  padding: 0.1em;
+}
+
+.contents .contents-navScheduling .scheduling-selection-controls:not(.collapsed) .selection-control.main-control {
+  color: white;
+  background-color: var(--bgPrimary);
+}
+
+.contents .contents-navScheduling .scheduling-selection-controls.collapsed .selection-control:not(.main-control) {
+  display: none;
+}
+
+.contents .contents-navScheduling .scheduling-selection-controls .selection-control.disable-me {
+  color: #aaa;
+}
+
+/*------------------------------------------------------------------------------
  * contents - navAdmin
  *------------------------------------------------------------------------------*/
 .contents .contents-navAdmin {}
-
-.contents .contents-navAdmin .configure-fieldset {}
-
-.contents .contents-navAdmin .configure-fieldset legend {
-  font-size: 1.0em;
-  font-weight: 500;
-  float: none; 
-  padding: inherit; 
-}
 
 /*------------------------------------------------------------------
  * standard error and notice

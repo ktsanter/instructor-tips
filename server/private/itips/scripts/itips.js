@@ -36,6 +36,7 @@ const app = function () {
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
     await _initializeProfile(sodium);
+    await _initializeDB();
 
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
@@ -44,9 +45,8 @@ const app = function () {
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
-
     page.notice.setNotice('');
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
   }
   
   async function _setAdminMenu() {
@@ -71,6 +71,13 @@ const app = function () {
     });
 
     await settings.profile.init();
+  }
+  
+  function _initializeDB() {
+    var noticeCallback = (msg) => { page.notice.setNotice(msg); };
+    settings.db = new ITipsDB({
+      "callbackSetNotice": noticeCallback
+    });
   }
   
   //-----------------------------------------------------------------------------
@@ -100,7 +107,8 @@ const app = function () {
     
     settings.scheduling = new Scheduling({
       "container": page.navScheduling,
-      "hideClass": settings.hideClass
+      "hideClass": settings.hideClass,
+      "db": settings.db
     });
     
     settings.scheduling.render();
@@ -173,7 +181,7 @@ const app = function () {
     _setNavOptions();
   }
   
-  function _showScheduling() {
+  async function _showScheduling() {    
     settings.scheduling.update();
     UtilityKTS.setClass(page.navScheduling, settings.hideClass, false);
   }

@@ -1,4 +1,11 @@
+include ./mixins-scheduling-select.pug
+include ./mixins-scheduling-details.pug
+
 mixin schedulingContainer()
-  .row(class="my-2")
+  .row
     .col-sm
-      |scheduling
+      +schedulingSelect()
+
+  .row
+    .col-sm
+      +schedulingDetails()

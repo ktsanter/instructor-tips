@@ -1,0 +1,12 @@
+mixin schedulingSelect()
+  .container-fluid(class="scheduling-selection-container")
+    .row
+      .col-sm
+        select(class="form-select scheduling-select" arial-label="schedule selection")
+          
+      .col-sm
+        .scheduling-selection-controls(class="collapsed")
+          i(class="main-control selection-control fas fa-cog" title="configure schedules")
+          i(class="add-control selection-control far fa-plus-square" title="create new schedule")
+          i(class="edit-control selection-control fas fa-edit" title="edit the parameters for this schedule")
+          i(class="delete-control selection-control far fa-trash-alt" title="delete this schedule")
