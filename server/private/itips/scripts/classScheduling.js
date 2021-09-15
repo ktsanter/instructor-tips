@@ -29,7 +29,6 @@ class Scheduling {
   }
   
   async update() {
-    console.log('Scheduling.update');
     await this.scheduleSelection.update();
   }
   

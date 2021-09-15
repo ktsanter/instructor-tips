@@ -14,12 +14,8 @@ class SchedulingDetails {
   render() {}
   
   async update(scheduleId, db) {
-    console.log('SchedulingDetails.update', scheduleId);
-
     var scheduleData = await db.getScheduleData(scheduleId);
     if (!scheduleData) return;
-    
-    console.log('scheduleData', scheduleData);
   }
   
   //--------------------------------------------------------------

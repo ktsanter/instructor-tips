@@ -1,6 +1,7 @@
 mixin daySlider(day)
-  label(class="switch switch-yes-no dayslider")
-    input(class="switch-input" type="checkbox")
+  - var labelClassList = "switch switch-yes-no dayslider dayslider-" + day;
+  label(class= labelClassList)
+    input(class="switch-input" type="checkbox" slider-day= day)
     span(class="switch-label" data-on= day data-off= day)
     span(class="switch-handle")
 
@@ -14,13 +15,18 @@ mixin notificationContainer()
         
   .row
     .col-sm
-      .reminder-schedule-title
-        |day(s) to send schedule reminder notifications
-        
-      .reminder-schedule
+      |day(s) to send schedule reminder notifications
 
-  .row(class="hide-me")
-    .col-sm(class="reminder-days-template")
+  .row(class="reminder-container")
+  
+  .row
+    .col-sm(class="label-for-empty hide-me")
+      |there are currently no schedules available
+
+  .row(class="hide-me reminder-template")
+    .col-sm(class="reminder-schedule")
+    
+    .col-sm(class="reminder-days")
       +daySlider("Sun")
       +daySlider("Mon")
       +daySlider("Tue")

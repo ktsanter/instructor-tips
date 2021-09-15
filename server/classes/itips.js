@@ -21,10 +21,9 @@ module.exports = internal.ITips = class {
   async doQuery(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
 
-    if (params.queryName == 'dummy') {
-      dbResult.details = 'dummy query call succeeded';
-      dbResult.success = true;
-             
+    if (params.queryName == 'admin-allowed') {
+      dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
