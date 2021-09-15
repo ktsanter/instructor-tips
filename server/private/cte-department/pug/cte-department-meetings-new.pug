@@ -21,6 +21,7 @@ mixin deptmeeting(label, meeting, slides, recording, resourcelist)
     td
       each resource in resourcelist
         a(href=resource.url, target="_blank")= resource.label
+        br
     
 table(class="table table-hover table-condensed")
   thead
@@ -41,8 +42,11 @@ table(class="table table-hover table-condensed")
     +deptmeeting("September", 
       {label: " (Tue Sep 14, 7:00pm)", url: "https://michiganvirtual.zoom.us/j/98095850885?pwd=UkVGMno3ZU5PRnJucFV3a2IyS0svUT09"},
       "https://bit.ly/CTE-dept-2021-09",
-      "",
-      []
+      {link: "https://michiganvirtual.zoom.us/rec/share/hQEj4MKxusxjD4buqZN3q0Y2LLRNd9C89SyYz8iS5FP_yVJwe1WmHnTgROc4tjyC.BKU12FLH4d1RFQqd", passcode: "$&1gKU%3"},
+      [
+        {label: "shared resources folder", url: "https://drive.google.com/drive/folders/0B6M3FAhABpk3V181NnFNTW9zdmc?resourcekey=0-DTJHZKLxPHu9dPyiFExMLw&usp=sharing"},
+        {label: "I want to collaborate!", url: "https://docs.google.com/document/d/10uQ0PfhB4zgQsJaRZoXX8EhV8PaTH2mgqccaDnzUVOo/edit?usp=sharing"}
+      ]
     )
 
     +deptmeeting("November", 
