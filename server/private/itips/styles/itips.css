@@ -38,6 +38,13 @@ body {
   color: #adb5bd;
 }
 
+.navbar .navbar-super {
+  display: inline-block;
+  position: absolute;
+  top: 0.5em;
+  font-weight: bold;
+}
+
 /*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/

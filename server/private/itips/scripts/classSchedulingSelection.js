@@ -30,6 +30,9 @@ class SchedulingSelection {
   }
   
   async update() {
+    console.log('SchedulingSelection.update');
+    this.config.callbackConfigureOption({"configureType": 'force-close'});
+    
     UtilityKTS.removeChildren(this.inputSelect);
 
     var scheduleList = await this.config.db.getScheduleList();
@@ -71,14 +74,20 @@ class SchedulingSelection {
     await this.config.callbackScheduleSelect(this.selectedSchedule.scheduleid, this.config.db);
   }
   
+  _getSelectedScheduleInfo() {
+    if (this.inputSelect.selectedIndex < 0) return null;
+    
+    var selectedOption = this.inputSelect[this.inputSelect.selectedIndex];
+    var scheduleInfo = JSON.parse(selectedOption.getAttribute('scheduleInfo'));
+    
+    return scheduleInfo;
+  }
+  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
   _handleScheduleSelect(e) {
-    var selectedOption = e.target[e.target.selectedIndex];
-    var scheduleInfo = JSON.parse(selectedOption.getAttribute('scheduleInfo'));
-    
-    this._doSelection(scheduleInfo);
+    this._doSelection(this._getSelectedScheduleInfo());
   }
   
   _handleMainControl(e) {
@@ -94,18 +103,28 @@ class SchedulingSelection {
   
   _handleAdd(e) {
     if (e.target.classList.contains('disable-me')) return;
-    console.log('SchedulingSelection._handleAdd');
+    this.config.callbackConfigureOption({
+      "configureType": 'add',
+      "callbackCompletion": this.update
+    });
   }
   
   _handleEdit(e) {
     if (e.target.classList.contains('disable-me')) return;
-    console.log('SchedulingSelection._handleEdit');
-    
+    this.config.callbackConfigureOption({
+      "configureType": 'edit',
+      "scheduleInfo": this._getSelectedScheduleInfo(),
+      "callbackCompletion": this.update
+    });
   }
   
   _handleDelete(e) {
     if (e.target.classList.contains('disable-me')) return;
-    console.log('SchedulingSelection._handleDelete');
+    this.config.callbackConfigureOption({
+      "configureType": 'delete',
+      "scheduleInfo": this._getSelectedScheduleInfo(),
+      "callbackCompletion": this.update
+    });
   }
   
   //--------------------------------------------------------------

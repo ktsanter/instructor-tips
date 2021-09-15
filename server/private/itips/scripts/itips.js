@@ -96,11 +96,20 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
+    _renderShareCount();
+    
     _renderScheduling();
     _renderTipsEditing();
     _renderSharing();
     _renderNotification();
     _renderAdmin();
+  }
+  
+  function _renderShareCount() {
+    var elemSharing = document.getElementById('navSharing');
+    elemSharing.appendChild(CreateElement.createDiv(null, 'navbar-super use-parentid', ''));
+    
+    page.shareCount = elemSharing;
   }
     
   function _renderScheduling() {
@@ -127,16 +136,17 @@ const app = function () {
     settings.tipsEditing.render();
   }
 
-  function _renderSharing() {
+  async function _renderSharing() {
     page.navSharing = page.contents.getElementsByClassName('contents-navSharing')[0];
     
     settings.sharing = new Sharing({
       "container": page.navSharing,
       "hideClass": settings.hideClass,
-      "db": settings.db
+      "db": settings.db,
+      "elemShareCount": page.shareCount
     });
     
-    settings.sharing.render();
+    await settings.sharing.render();
   }
 
   function _renderNotification() {

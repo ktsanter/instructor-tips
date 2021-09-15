@@ -14,6 +14,7 @@ define(function (require) {
   require('classScheduling');
   require('classSchedulingSelection');
   require('classSchedulingDetails');
+  require('classSchedulingConfigure');
   
   require('classTipsEditing');
   require('classSharing');

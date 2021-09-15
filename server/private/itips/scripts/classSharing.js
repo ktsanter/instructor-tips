@@ -11,7 +11,7 @@ class Sharing {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
-  render() {
+  async render() {
     this.selectSchedule = this.config.container.getElementsByClassName('select-schedule')[0];
     this.selectUser = this.config.container.getElementsByClassName('select-user')[0];
     this.textComment = this.config.container.getElementsByClassName('text-comment')[0];
@@ -24,6 +24,11 @@ class Sharing {
     this.selectSchedule.addEventListener('change', (e) => { this._handleSelect(e); });
     this.selectUser.addEventListener('change', (e) => { this._handleSelect(e); });
     this.buttonShare.addEventListener('click', (e) => { this._handleShareButton(e); });
+
+    this._setShareCount(0);
+    var pendingList = await this.config.db.getPendingSharedSchedules();
+    if (!pendingList) return;
+    this._setShareCount(pendingList.length);
   }
   
   async update() {
@@ -33,7 +38,24 @@ class Sharing {
   
   //--------------------------------------------------------------
   // private methods
-  //--------------------------------------------------------------  
+  //-------------------------------------------------------------- 
+  _setShareCount(count) {
+    var elemInner = this.config.elemShareCount.getElementsByClassName('navbar-super')[0];
+    
+    if (count == 0) {
+      elemInner.innerHTML = '';
+      this.config.elemShareCount.title = '';
+    
+    } else if (count == 1) {
+      elemInner.innerHTML = count;
+      this.config.elemShareCount.title = '1 schedule has been shared with you';
+    
+    } else {
+      elemInner.innerHTML = count;
+      this.config.elemShareCount.title = count + ' schedules have been shared with you';
+    }
+  }
+  
   async _updateSharing() {
     UtilityKTS.removeChildren(this.selectSchedule);
     UtilityKTS.removeChildren(this.selectUser);
@@ -64,8 +86,10 @@ class Sharing {
   async _updatePendingShares() {
     UtilityKTS.setClass(this.pendingSharesContainer, this.config.hideClass, true);
 
+    this._setShareCount(0);
     var pendingList = await this.config.db.getPendingSharedSchedules();
     if (!pendingList || pendingList.length == 0) return;
+    this._setShareCount(pendingList.length);
     
     UtilityKTS.removeChildren(this.pendingSharesContainer);
     

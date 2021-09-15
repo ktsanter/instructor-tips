@@ -1,5 +1,6 @@
 include ./mixins-scheduling-select.pug
 include ./mixins-scheduling-details.pug
+include ./mixins-scheduling-configure.pug
 
 mixin schedulingContainer()
   .row
@@ -9,3 +10,7 @@ mixin schedulingContainer()
   .row
     .col-sm
       +schedulingDetails()
+      
+  .row(class="hide-me")
+    .col-sm
+      +schedulingConfigure()

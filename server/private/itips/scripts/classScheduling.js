@@ -12,20 +12,33 @@ class Scheduling {
   // public methods
   //--------------------------------------------------------------   
   render() {
+    var containerDetails = this.config.container.getElementsByClassName('scheduling-detail-container')[0];
+    var containerConfigure = this.config.container.getElementsByClassName('scheduling-configure-container')[0];
+    var containerSelection = this.config.container.getElementsByClassName('scheduling-selection-container')[0];
+    
     this.scheduleDetails = new SchedulingDetails({
-      "container": this.config.container.getElementsByClassName('scheduling-detail-container')[0],
+      "container": containerDetails,
       "hideClass": this.config.hideClass,
       "db": this.config.db
     });
     this.scheduleDetails.render();
     
+    this.scheduleConfigure = new SchedulingConfigure({
+      "container": containerConfigure,
+      "otherContainers": [containerSelection, containerDetails],
+      "hideClass": this.config.hideClass,
+      "db": this.config.db
+    });      
+    this.scheduleConfigure.render();  
+
     this.scheduleSelection = new SchedulingSelection({
-      "container": this.config.container.getElementsByClassName('scheduling-selection-container')[0],
+      "container": containerSelection,
       "hideClass": this.config.hideClass,
       "db": this.config.db,
-      "callbackScheduleSelect": this.scheduleDetails.update
+      "callbackScheduleSelect": this.scheduleDetails.update,
+      "callbackConfigureOption": (params) => { this.scheduleConfigure.beginConfigureOption(params); }
     });
-    this.scheduleSelection.render();    
+    this.scheduleSelection.render();  
   }
   
   async update() {
