@@ -18,6 +18,9 @@ class SchedulingConfigure {
       "edit": this.config.container.getElementsByClassName('subcontainer configure-edit')[0],
       "delete": this.config.container.getElementsByClassName('subcontainer configure-delete')[0]
     };
+    
+    UtilityKTS.denyDoubleQuotes(this.subContainers.add.getElementsByClassName('input-name')[0]);
+    UtilityKTS.denyDoubleQuotes(this.subContainers.edit.getElementsByClassName('input-name')[0]);
         
     var saveButtons = this.config.container.getElementsByClassName('button-save');
     for (var i = 0; i < saveButtons.length; i++) {
@@ -37,6 +40,9 @@ class SchedulingConfigure {
     }
     
     this.configureType = params.configureType;
+    
+    this._loadFields(params);
+    
     this._setContainerVisibility(params.configureType, true);
   }
   
@@ -60,10 +66,31 @@ class SchedulingConfigure {
     var containerRow = this.config.container.parentNode.parentNode
     UtilityKTS.setClass(containerRow, this.config.hideClass, !showConfigure);
   }
-    
+   
+  _loadFields(params) {
+    var subContainer = this.subContainers[params.configureType];
+    var scheduleInfo = params.scheduleInfo;
+    subContainer.setAttribute('original-schedule-info', JSON.stringify(scheduleInfo));
+
+    if (params.configureType == 'add') {
+      subContainer.getElementsByClassName('input-name')[0].value = 'default';
+      subContainer.getElementsByClassName('input-length')[0].value = 20;
+      subContainer.getElementsByClassName('input-start')[0].value = this._formatShortDate(new Date(Date.now()))
+      
+    } else if (params.configureType == 'edit') {
+      subContainer.getElementsByClassName('input-name')[0].value = scheduleInfo.schedulename;
+      subContainer.getElementsByClassName('input-start')[0].value = scheduleInfo.firstdate;
+      
+    } else if (params.configureType == 'delete') {
+      subContainer.getElementsByClassName('schedule-name')[0].innerHTML = scheduleInfo.schedulename;
+    }
+  }
+  
   async _endConfigureOption(save) {
     if (save) {
-      console.log('do save', this.configureType);
+      var subContainer = this.subContainers[this.configureType];
+      var originalScheduleInfo = JSON.parse(subContainer.getAttribute('original-schedule-info'));
+  
       var params = null;
       if (this.configureType == 'add') {
         params = {
@@ -76,19 +103,20 @@ class SchedulingConfigure {
       } else if (this.configureType == 'edit') {
         params = {
           "configureType": this.configureType,
-          "scheduleid": '???',
+          "scheduleid": originalScheduleInfo.scheduleid,
           "schedulename": this.subContainers.edit.getElementsByClassName('input-name')[0].value,
           "schedulestart": this.subContainers.edit.getElementsByClassName('input-start')[0].value
         }
         
       } else if (this.configureType == 'delete') {
         params = {
-          "scheduleid": '???'
+          "configureType": this.configureType,
+          "scheduleid": originalScheduleInfo.scheduleid
         }
       }
       
       if (params) {
-        console.log('do DB work for', params);
+        var success = await this.config.db.saveScheduleConfiguration(params);
       }
     }
     
@@ -110,13 +138,13 @@ class SchedulingConfigure {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  _failResult(msg, methodName) {
-    if (methodName) msg += ' in ' + methodName;
-    
-    return {
-      success: false,
-      details: msg,
-      data: null
-    };
+  _formatShortDate(origDate) {
+    var splitDate = origDate.toLocaleDateString("en-US").split('/');
+    var formattedDate = 
+      ('0000' + splitDate[2]).slice(-4) 
+      + '-' + ('00' + splitDate[0]).slice(-2) 
+      + '-' + ('00' + splitDate[1]).slice(-2);
+
+    return formattedDate;
   }
 }

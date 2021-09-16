@@ -1,4 +1,11 @@
+include ./mixins-tipsediting-main.pug
+include ./mixins-tipsediting-edit.pug
+
 mixin tipsEditingContainer()
-  .row(class="my-2")
+  .row
     .col-sm
-      |tips editing
+      +tipseditingMain()
+      
+  .row
+    .col-sm
+      +tipseditingEdit()

@@ -1,0 +1,34 @@
+mixin tipseditingMain()
+  .container-fluid(class="tipsediting-main-container")
+    .row
+      .col-sm
+        .form-floating
+          input(type="text" class="input-search form-control" id="inputSearch" placeholder="search for tip")
+          label(for="inputSearch") search
+  
+    .row
+      .col-sm
+        .form-floating
+          select(class="tag-select form-select" id="selectTag" aria-label="tag selection")
+          label(for="selectTag") tag
+          
+          .selected-tag-container
+
+  
+    .row
+      .col-sm
+        table(class="table table-striped table-hover table-sm")
+          thead(class="table-primary")
+          tbody(class="tiplist-body")
+          
+    div(class="hide-me")
+      table
+        thead
+        tbody
+          tr(class="tiplist-templaterow")
+            td(class="tiplist-controls")
+              i(class="tiplist-edit far fa-edit")
+              i(class="tiplist-delete far fa-trash-alt")
+              
+            td(class="tiplist-content")
+            td(class="tiplist-tags")

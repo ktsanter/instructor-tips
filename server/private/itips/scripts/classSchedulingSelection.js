@@ -30,7 +30,6 @@ class SchedulingSelection {
   }
   
   async update() {
-    console.log('SchedulingSelection.update');
     this.config.callbackConfigureOption({"configureType": 'force-close'});
     
     UtilityKTS.removeChildren(this.inputSelect);
@@ -48,7 +47,7 @@ class SchedulingSelection {
       
       var elemOption = CreateElement._createElement('option', null, 'schedule-item');
       elemOption.value = item.scheduleid;
-      elemOption.innerHTML = item.schedulename
+      elemOption.innerHTML = item.schedulename;
       elemOption.setAttribute("scheduleInfo", JSON.stringify(item));
       
       elemOption.selected = (this.selectedSchedule && this.selectedSchedule.scheduleid == item.scheduleid);
@@ -105,6 +104,7 @@ class SchedulingSelection {
     if (e.target.classList.contains('disable-me')) return;
     this.config.callbackConfigureOption({
       "configureType": 'add',
+      "scheduleInfo": null,
       "callbackCompletion": this.update
     });
   }

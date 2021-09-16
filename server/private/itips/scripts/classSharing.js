@@ -21,6 +21,8 @@ class Sharing {
     this.pendingSharesLabel = this.config.container.getElementsByClassName('pending-shares-label')[0];
     this.pendingSharesTemplate = this.config.container.getElementsByClassName('pending-shares-template')[0];
     
+    UtilityKTS.denyDoubleQuotes(this.textComment);
+    
     this.selectSchedule.addEventListener('change', (e) => { this._handleSelect(e); });
     this.selectUser.addEventListener('change', (e) => { this._handleSelect(e); });
     this.buttonShare.addEventListener('click', (e) => { this._handleShareButton(e); });
@@ -146,6 +148,7 @@ class Sharing {
     var response = prompt(msg, proposedName);
     if (!response) return;
     response = response.trim();
+    response = response.replace(/"/g, '');
     if (response.length == 0) return;
     
     var acceptParams = {

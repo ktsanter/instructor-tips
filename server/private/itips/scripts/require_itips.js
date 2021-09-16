@@ -10,6 +10,7 @@ define(function (require) {
   const libsodiumWrappers = require('libsodium-wrappers');
   
   require('classITipsDB');
+  require('classFilteredTipSearch');
    
   require('classScheduling');
   require('classSchedulingSelection');
@@ -17,6 +18,9 @@ define(function (require) {
   require('classSchedulingConfigure');
   
   require('classTipsEditing');
+  require('classTipsEditingMain');
+  require('classTipsEditingEdit');
+  
   require('classSharing');
   require('classNotification');
   require('classAdmin');

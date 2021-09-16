@@ -45,7 +45,35 @@ class ITipsDB {
     if (!dbResult.success) return null;
     
     return dbResult.data;
-  }  
+  }
+  
+  async saveScheduleConfiguration(params) {
+    console.log('ITipsDB.saveScheduleConfiguration', params);
+
+    var dbResult = {"success": true, "details": 'save succeeded', "data": null};
+    
+    return dbResult.success;
+  }
+  
+  async getTipList() {
+    var tipList = [
+      {"tipid": 5, "tipcontent": "<p>some tip</p>", "taglist": []},
+      {"tipid": 4, "tipcontent": "<p>another tip</p>", "taglist": ['aa', 'bb', 'cc']},
+      {"tipid": 3, "tipcontent": "<p>important info</p>", "taglist": ['bb', 'cc']},
+      {"tipid": 2, "tipcontent": "<p>xyzzy</p>", "taglist": ['aa']},
+      {"tipid": 1, "tipcontent": "<p>pflugh</p>", "taglist": []},
+      {"tipid": 6, "tipcontent": "<p>inconceivable!</p>", "taglist": []}
+    ];
+
+    tipList = tipList.sort(function(a, b) {
+      return a.tipcontent.toLowerCase().localeCompare(b.tipcontent.toLowerCase());
+    })
+    
+    var dbResult = {"success": true, "details": 'query succeeded', "data": tipList};
+    if (!dbResult.success) return null;
+    
+    return dbResult.data;    
+  }
   
   async getUserList() {
     var userList = [
