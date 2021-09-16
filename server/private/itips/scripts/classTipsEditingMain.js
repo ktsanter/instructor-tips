@@ -18,8 +18,7 @@ class TipsEditingMain {
     this.tipSearch = new FilteredTipSearch({
       "db": this.config.db,
       "elemSearch": this.config.container.getElementsByClassName('input-search')[0],
-      "elemTags": this.config.container.getElementsByClassName('tag-select')[0],
-      "elemSelectedTags": this.config.container.getElementsByClassName('selected-tag-container')[0],
+      "elemTagContainer": this.config.container.getElementsByClassName('tagselect-container')[0],
       "callbackChange": () => { this._searchChange(); }
     });
     this.tipSearch.render();

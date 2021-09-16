@@ -5,15 +5,10 @@ mixin tipseditingMain()
         .form-floating
           input(type="text" class="input-search form-control" id="inputSearch" placeholder="search for tip")
           label(for="inputSearch") search
-  
+
     .row
       .col-sm
-        .form-floating
-          select(class="tag-select form-select" id="selectTag" aria-label="tag selection")
-          label(for="selectTag") tag
-          
-          .selected-tag-container
-
+        .tagselect-container
   
     .row
       .col-sm

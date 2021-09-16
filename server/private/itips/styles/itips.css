@@ -77,6 +77,70 @@ body {
 }
 
 /*------------------------------------------------------------------------------
+ * contents - navTipsEditing
+ *------------------------------------------------------------------------------*/
+.contents .contents-navTipsEditing {}
+
+.contents .contents-navTipsEditing .tagselect-dropdown-label {
+  display: inline-block;
+}
+
+.contents .contents-navTipsEditing .tagselect-dropdown-label:hover {
+  cursor: pointer;
+}
+
+.contents .contents-navTipsEditing .tagselect-dropdown:not(.dd-closed) {
+  display: inline-block;
+  position: absolute;
+  background-color: white;
+  border: 1px solid #aaa;
+  filter: drop-shadow(4px 4px 6px #aaaaaa);
+  min-width: 10.0em;
+  padding-left: 0.2em;
+}
+
+.contents .contents-navTipsEditing .dd-closed {
+  display: none;
+}
+
+.contents .contents-navTipsEditing .tagselect-item:hover {
+  cursor: pointer;
+  background-color: #eee;
+}
+
+.contents .contents-navTipsEditing .tagselect-selected-container {
+  display: inline-block;
+  margin-left: 0.4em;
+}
+
+.contents .contents-navTipsEditing .tagitem {
+  display: inline-block;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+  margin-right: 0.2em;
+}
+
+.contents .contents-navTipsEditing .tagitem .tagitem-value, 
+.contents .contents-navTipsEditing .tagitem .tagitem-control {
+  display: inline-block;  
+  padding: 0.2em 0.3em;
+}
+
+.contents .contents-navTipsEditing .tagitem .tagitem-control {
+  margin-left: 0.2em;
+  color: transparent;
+}
+
+.contents .contents-navTipsEditing .tagitem .tagitem-control.hovering {
+  color: #bbb;
+}
+
+.contents .contents-navTipsEditing .tagitem .tagitem-control:hover {
+  color: white;
+  background-color: var(--bgPrimary);
+}
+
+/*------------------------------------------------------------------------------
  * contents - navNotification
  *------------------------------------------------------------------------------*/
 .contents .contents-navNotification {}

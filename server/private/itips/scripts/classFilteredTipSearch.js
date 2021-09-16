@@ -14,11 +14,19 @@ class FilteredTipSearch {
   //--------------------------------------------------------------   
   render() {
     this.config.elemSearch.addEventListener('input', (e) => { this._handleSearchInput(e); });
-    this.config.elemTags.addEventListener('change', (e) => { this._handleTagsChange(e); });
+    
+    var tagDropdownLabel = CreateElement.createDiv(null, 'tagselect-dropdown-label', 'tags');
+    tagDropdownLabel.addEventListener('click', (e) => { this._handleTagDropdown(e); });
+    this.config.elemTagContainer.appendChild(tagDropdownLabel);
+    
+    this.tagDropdown = CreateElement.createDiv(null, 'tagselect-dropdown dd-closed');
+    this.config.elemTagContainer.appendChild(this.tagDropdown);
+    
+    this.selectedTagsContainer = CreateElement.createDiv(null, 'tagselect-selected-container', 'selected tags container');
+    this.config.elemTagContainer.appendChild(this.selectedTagsContainer);
   }
   
   async update() {
-    console.log('FilteredTipSearch.update');
     this.fullTipList = [];
     var tipList = await this.config.db.getTipList();
     if (!tipList) return;
@@ -45,33 +53,24 @@ class FilteredTipSearch {
     }
     
     var fullTagList = Array.from(tagSet).sort();
-    var elemTagSelect = this.config.elemTags;
-    var elemSelectedTagsContainer = this.config.elemSelectedTags;
     
-    UtilityKTS.removeChildren(elemTagSelect);
-    UtilityKTS.removeChildren(elemSelectedTagsContainer);
-    
-    elemTagSelect.appendChild(CreateElement.createOption(null, null, '', ''));
+    UtilityKTS.removeChildren(this.tagDropdown);
     for (var i = 0; i < fullTagList.length; i++) {
       var tag = fullTagList[i];
-      var elemOption = CreateElement.createOption(null, null, tag, tag);
-      elemTagSelect.appendChild(elemOption);
+      var elem = CreateElement.createDiv(null, 'tagselect-item', tag);
+      elem.setAttribute('tag-value', tag);
+      elem.addEventListener('click', (e) => { this._handleTagsChange(e); });
+      this.tagDropdown.appendChild(elem);
     }
+    
+    UtilityKTS.removeChildren(this.selectedTagsContainer); 
+    this._setSelectedTags([]);    
   }
   
-  _getSelectedTags() {
-    var selectedTags = [];
-    var elemTagSelect = this.config.elemTags;
-    if (elemTagSelect.selectedIndex > 0) selectedTags.push(elemTagSelect[elemTagSelect.selectedIndex].value);
-    
-    return selectedTags;
-  }
-    
   _applyFiltering(tipList) {
-    console.log('TipsEditingMain._applyFiltering', tipList);
-    
     var searchValue = this.config.elemSearch.value.toLowerCase();
     var searchTagSet = new Set(this._getSelectedTags());
+    console.log('_applyFiltering', searchValue, searchTagSet);
     
     var filteredTips = tipList.filter(function(a) {
       var include = a.tipcontent.toLowerCase().includes(searchValue);
@@ -86,6 +85,52 @@ class FilteredTipSearch {
     return filteredTips;
   }
   
+  _getSelectedTags() {
+    return JSON.parse(this.selectedTagsContainer.getAttribute('selected-tag-list'));
+  }
+  
+  _setSelectedTags(tagList) {
+    this.selectedTagsContainer.setAttribute('selected-tag-list', JSON.stringify(tagList));
+  }
+  
+  _displaySelectedTags() {
+    var selectedTags = this._getSelectedTags().sort();
+    UtilityKTS.removeChildren(this.selectedTagsContainer);
+    for (var i = 0; i < selectedTags.length; i++) {
+      var itemContainer = CreateElement.createDiv(null, 'tagitem');
+      this.selectedTagsContainer.appendChild(itemContainer);
+      
+      var elemValue = CreateElement.createDiv(null, 'tagitem-value', selectedTags[i]);
+      itemContainer.appendChild(elemValue);
+      elemValue.addEventListener('mouseover', (e) => { this._handleTagItemHover(e, true); });
+      elemValue.addEventListener('mouseleave', (e) => { this._handleTagItemHover(e, false); });
+      
+      var elemControlContainer = CreateElement.createDiv(null, 'tagitem-control');
+      itemContainer.appendChild(elemControlContainer);
+      
+      var elemControl = CreateElement._createElement('i', null, 'far fa-times-circle');
+      elemControlContainer.appendChild(elemControl);
+      elemControl.setAttribute('tag-value', JSON.stringify(selectedTags[i]));
+      elemControl.addEventListener('click', (e) => { this._handleTagRemove(e); });
+      
+    }
+  }
+    
+  _updateSelectedTags(updateType, tagValue) {
+    var currentTagList = this._getSelectedTags();
+
+    var currentTagSet = new Set(currentTagList);
+    if (updateType == 'add') {
+      currentTagSet.add(tagValue);
+    } else {
+      currentTagSet.delete(tagValue);
+    }
+    currentTagList = Array.from(currentTagSet);
+    this._setSelectedTags(currentTagList);
+    
+    this._displaySelectedTags();
+  }
+  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
@@ -93,9 +138,26 @@ class FilteredTipSearch {
     this.config.callbackChange();
   }
   
+  _handleTagDropdown(e) {
+    UtilityKTS.toggleClass(this.tagDropdown, 'dd-closed');
+  }
+  
   _handleTagsChange(e) {
-    console.log('FilteredTipSearch._handleTagsChange', e.target[e.target.selectedIndex].value);
+    UtilityKTS.setClass(this.tagDropdown, 'dd-closed', true);    
+    var tagValue = e.target.getAttribute('tag-value');
+    this._updateSelectedTags('add', tagValue);
     this.config.callbackChange();
+  }
+  
+  _handleTagRemove(e) {
+    var tagValue = JSON.parse(e.target.getAttribute('tag-value'));
+    this._updateSelectedTags('remove', tagValue);
+    this.config.callbackChange();
+  }
+  
+  _handleTagItemHover(e, enter) {
+    var controlContainer = e.target.nextSibling;
+    UtilityKTS.setClass(controlContainer, 'hovering', enter);
   }
   
   //--------------------------------------------------------------
