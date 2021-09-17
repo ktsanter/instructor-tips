@@ -14,6 +14,18 @@ mixin tipseditingMain()
       .col-sm
         table(class="table table-striped table-hover table-sm")
           thead(class="table-primary")
+           th(class="header header-controls" field-name="controls")
+            span(class="tips-headerlabel")
+
+            th(class="header header-tip" field-name="tip")
+              span(class="tips-headerlabel") tip
+
+            th(class="header header-tags" field-name="tags")
+              span(class="tips-headerlabel") tags   
+
+            th(class="header header-usage" field-name="usage")
+              span(class="tips-headerlabel") usage         
+            
           tbody(class="tiplist-body")
           
     div(class="hide-me")
@@ -22,8 +34,9 @@ mixin tipseditingMain()
         tbody
           tr(class="tiplist-templaterow")
             td(class="tiplist-controls")
-              i(class="tiplist-edit far fa-edit")
-              i(class="tiplist-delete far fa-trash-alt")
+              i(class="tiplist-edit far fa-edit" title="edit tip")
+              i(class="tiplist-delete far fa-trash-alt" title="delete tip")
               
             td(class="tiplist-content")
             td(class="tiplist-tags")
+            td(class="tiplist-usage")

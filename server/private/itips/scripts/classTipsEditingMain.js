@@ -50,6 +50,7 @@ class TipsEditingMain {
       
       tipRow.getElementsByClassName('tiplist-content')[0].innerHTML = tip.tipcontent;
       tipRow.getElementsByClassName('tiplist-tags')[0].innerHTML = tip.taglist;
+      tipRow.getElementsByClassName('tiplist-usage')[0].innerHTML = tip.usagecount;
       
       this.tipListBody.appendChild(tipRow);
     }

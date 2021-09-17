@@ -6,6 +6,47 @@
 class ITipsDB {
   constructor(config) {
     this.config = config;
+    
+    this.dummyScheduleList = [
+      {"schedulename": "second schedule", "scheduleid": 109, "numweeks": 20, "firstdate": '2021-08-28'},
+      {"schedulename": "first schedule", "scheduleid": 108, "numweeks": 20, "firstdate": '2021-09-05'},
+      {"schedulename": "third schedule", "scheduleid": 110, "numweeks": 13, "firstdate": '2021-09-05'}
+    ];
+    
+    this.dummyScheduleData = {
+      "foo": 'bar'
+    };
+    
+    this.dummyTipList = [
+      {"tipid": 5, "tipcontent": "<p>some tip</p>", "taglist": [], "usagecount": 2},
+      {"tipid": 4, "tipcontent": "<p>another tip</p>", "taglist": ['aa', 'bb', 'cc'], "usagecount": 1},
+      {"tipid": 3, "tipcontent": "<p>important info</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
+      {"tipid": 2, "tipcontent": "<p>xyzzy</p>", "taglist": ['aa'], "usagecount": 0},
+      {"tipid": 1, "tipcontent": "<p>pflugh</p>", "taglist": [], "usagecount": 1},
+      {"tipid": 6, "tipcontent": "<p>inconceivable!</p>", "taglist": [], "usagecount": 3}
+    ];
+    
+    this.dummySharedScheduleList = [
+      {"scheduleid": 1, "schedulename": "some schedule", "comment": 'rando comment', "sharedby": 'Kevin Santer', "dateshared": '2021-09-25 10:58'},
+      {"scheduleid": 2, "schedulename": "some other schedule", "comment": '', "sharedby": 'Joe Instructor', "dateshared": '2021-09-20 14:23'},
+      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
+    ];
+    
+    this.dummyUserList = [
+      {"userid": 5, "username": "Joe Instructor"},
+      {"userid": 6, "username": "Bob Teacher"},
+      {"userid": 2, "username": "Taskmaster Phillipa"},
+      {"userid": 1, "username": "Professor Zooey"}
+    ];
+    
+    this.dummyNotificationData = {
+      "receivesharenotification": true,
+      "remindernotifications": [
+        {"scheduleid": 108, "notificationtype": "Sat"},
+        {"scheduleid": 108, "notificationtype": "Thu"},
+        {"scheduleid": 109, "notificationtype": "Wed"}
+      ]
+    };
   }
   
   //--------------------------------------------------------------
@@ -19,11 +60,7 @@ class ITipsDB {
   }
   
   async getScheduleList() {
-    var scheduleList = [
-      {"schedulename": "second schedule", "scheduleid": 109, "numweeks": 20, "firstdate": '2021-08-28'},
-      {"schedulename": "first schedule", "scheduleid": 108, "numweeks": 20, "firstdate": '2021-09-05'},
-      {"schedulename": "third schedule", "scheduleid": 110, "numweeks": 13, "firstdate": '2021-09-05'}
-    ];
+    var scheduleList = this.dummyScheduleList
     //scheduleList = [];
     
     scheduleList = scheduleList.sort(function(a, b) {
@@ -37,9 +74,7 @@ class ITipsDB {
   }
   
   async getScheduleData(scheduleId) {
-    var scheduleData = {
-      "foo": 'bar'
-    };
+    var scheduleData = this.dummyScheduleData;
     
     var dbResult = {"success": true, "details": 'query succeeded', "data": scheduleData};
     if (!dbResult.success) return null;
@@ -56,14 +91,7 @@ class ITipsDB {
   }
   
   async getTipList() {
-    var tipList = [
-      {"tipid": 5, "tipcontent": "<p>some tip</p>", "taglist": []},
-      {"tipid": 4, "tipcontent": "<p>another tip</p>", "taglist": ['aa', 'bb', 'cc']},
-      {"tipid": 3, "tipcontent": "<p>important info</p>", "taglist": ['bb', 'cc']},
-      {"tipid": 2, "tipcontent": "<p>xyzzy</p>", "taglist": ['aa']},
-      {"tipid": 1, "tipcontent": "<p>pflugh</p>", "taglist": []},
-      {"tipid": 6, "tipcontent": "<p>inconceivable!</p>", "taglist": []}
-    ];
+    var tipList = this.dummyTipList;
 
     tipList = tipList.sort(function(a, b) {
       return a.tipcontent.toLowerCase().localeCompare(b.tipcontent.toLowerCase());
@@ -76,12 +104,7 @@ class ITipsDB {
   }
   
   async getUserList() {
-    var userList = [
-      {"userid": 5, "username": "Joe Instructor"},
-      {"userid": 6, "username": "Bob Teacher"},
-      {"userid": 2, "username": "Taskmaster Phillipa"},
-      {"userid": 1, "username": "Professor Zooey"}
-    ];
+    var userList = this.dummyUserList;
 
     userList = userList.sort(function(a, b) {
       return a.username.toLowerCase().localeCompare(b.username.toLowerCase());
@@ -102,14 +125,7 @@ class ITipsDB {
   }
   
   async getNotificationSettings() {
-    var notificationData = {
-      "receivesharenotification": true,
-      "remindernotifications": [
-        {"scheduleid": 108, "notificationtype": "Sat"},
-        {"scheduleid": 108, "notificationtype": "Thu"},
-        {"scheduleid": 109, "notificationtype": "Wed"}
-      ]
-    };
+    var notificationData = this.dummyNotificationData;
     
     var dbResult = {"success": true, "details": 'query succeeded', "data": notificationData};
     if (!dbResult.success) return null;
@@ -134,11 +150,7 @@ class ITipsDB {
   }
   
   async getPendingSharedSchedules() {
-    var sharedScheduleList = [
-      {"scheduleid": 1, "schedulename": "some schedule", "comment": 'rando comment', "sharedby": 'Kevin Santer', "dateshared": '2021-09-25 10:58'},
-      {"scheduleid": 2, "schedulename": "some other schedule", "comment": '', "sharedby": 'Joe Instructor', "dateshared": '2021-09-20 14:23'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-    ];
+    var sharedScheduleList = this.dummySharedScheduleList;
     //sharedScheduleList = [];
     
     sharedScheduleList = sharedScheduleList.sort(function(a, b) {
@@ -167,3 +179,4 @@ class ITipsDB {
   // utility
   //--------------------------------------------------------------
 }
+  

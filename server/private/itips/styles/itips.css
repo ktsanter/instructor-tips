@@ -3,6 +3,7 @@
  *------------------------------------------------------------------------------*/
 .colorscheme {
   --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgPrimaryFaded: rgba(66, 98, 150, 0.7);
   --bgShaded: #e9ecef;
   --borderPrimary: #ced4da;
   
@@ -87,6 +88,11 @@ body {
 
 .contents .contents-navTipsEditing .tagselect-dropdown-label:hover {
   cursor: pointer;
+  text-decoration: underline;
+}
+
+.contents .contents-navTipsEditing .tagselect-dropdown-label i {
+  margin-left: 0.2em;
 }
 
 .contents .contents-navTipsEditing .tagselect-dropdown:not(.dd-closed) {
@@ -97,6 +103,8 @@ body {
   filter: drop-shadow(4px 4px 6px #aaaaaa);
   min-width: 10.0em;
   padding-left: 0.2em;
+  top: 9.5em;
+  left: 2.7em;  
 }
 
 .contents .contents-navTipsEditing .dd-closed {
@@ -137,7 +145,13 @@ body {
 
 .contents .contents-navTipsEditing .tagitem .tagitem-control:hover {
   color: white;
-  background-color: var(--bgPrimary);
+  background-color: var(--bgPrimaryFaded);
+}
+
+.contents .contents-navTipsEditing .tiplist-body {}
+
+.contents .contents-navTipsEditing .tiplist-body .tiplist-controls i {
+  margin-right: 0.3em;
 }
 
 /*------------------------------------------------------------------------------
