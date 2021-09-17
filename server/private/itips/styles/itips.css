@@ -154,6 +154,22 @@ body {
   margin-right: 0.3em;
 }
 
+.contents .contents-navTipsEditing .tipcontent-deletion {
+  display: inline-block;
+  border: 1px solid #aaa;
+  padding-left: 0.4em;
+  padding-right: 0.4em;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navSharing
+ *------------------------------------------------------------------------------*/
+.contents .contents-navSharing {}
+
+.contents .contents-navSharing .pending-shares-container .controls i {
+  margin-right: 0.3em;
+}
+
 /*------------------------------------------------------------------------------
  * contents - navNotification
  *------------------------------------------------------------------------------*/

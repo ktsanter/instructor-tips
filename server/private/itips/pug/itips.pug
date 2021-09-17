@@ -3,6 +3,7 @@ include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/profile-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
 
 include ./mixins/mixins-scheduling.pug
 include ./mixins/mixins-tipsediting.pug
@@ -19,6 +20,7 @@ html(lang="en")
     
     +fontawesome()
     +bootstrapstyle()
+    +tinyMCEscripts()
     
     style
       include ../../common/styles/classProfile.css

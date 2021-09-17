@@ -107,6 +107,10 @@ class Sharing {
       elemAccept.setAttribute("pending-schedule", JSON.stringify(item));
       elemAccept.addEventListener('click', (e) => { this._handleAcceptShared(e); });
       
+      var elemRemove = elem.getElementsByClassName('remove')[0];
+      elemRemove.setAttribute("pending-schedule", JSON.stringify(item));
+      elemRemove.addEventListener('click', (e) => { this._handleRemoveShared(e); });
+      
       elem.getElementsByClassName('date-shared')[0].innerHTML = item.dateshared;
       elem.getElementsByClassName('shared-by')[0].innerHTML = item.sharedby;
       
@@ -139,10 +143,9 @@ class Sharing {
   }
   
   async _acceptShare(shareInfo) {
-    console.log('_acceptShare', shareInfo);
     var msg = 'Accept this shared schedule?';
-    msg += '\n"' + shareInfo.schedulename + '"';
-    msg += '\n\n shared by ' + shareInfo.sharedby + ' on ' + shareInfo.dateshared;
+    msg += '\n\n"' + shareInfo.schedulename + '"';
+    msg += '\nshared by ' + shareInfo.sharedby + ' on ' + shareInfo.dateshared;
     var proposedName = 'copy of ' + shareInfo.schedulename;
     
     var response = prompt(msg, proposedName);
@@ -157,6 +160,25 @@ class Sharing {
     }
     
     var success = await this.config.db.acceptSharedSchedule(acceptParams);
+    if (success) this.update();
+  }
+  
+  async _removeShare(shareInfo) {
+    var msg = 'Remove this shared schedule?';
+    msg += '\n\n"' + shareInfo.schedulename + '"';
+    msg += '\nshared by ' + shareInfo.sharedby + ' on ' + shareInfo.dateshared;
+    msg += '\nwill be removed from your list.';
+    msg += '\n\nChoose OK to continue';
+    
+    var response = confirm(msg);
+    if (!response) return;
+    
+    var removeParams = {
+      "scheduleid": shareInfo.scheduleid,
+      "schedulename": response
+    }
+    
+    var success = await this.config.db.removeSharedSchedule(removeParams);
     if (success) this.update();
   }
   
@@ -176,6 +198,10 @@ class Sharing {
   
   async _handleAcceptShared(e) {
     await this._acceptShare(JSON.parse(e.target.getAttribute('pending-schedule')));
+  }
+  
+  async _handleRemoveShared(e) {
+    await this._removeShare(JSON.parse(e.target.getAttribute('pending-schedule')));
   }
   
   //--------------------------------------------------------------

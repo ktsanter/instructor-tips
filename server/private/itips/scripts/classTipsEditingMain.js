@@ -64,13 +64,19 @@ class TipsEditingMain {
   }
   
   _handleTipEdit(e) {
-    var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
-    console.log('_handleTipEdit', tipInfo);
+    this.config.callbackEditOption({
+      "editType": 'edit',
+      "tipInfo": JSON.parse(e.target.getAttribute('tip-info')),
+      "callbackCompletion": this.update
+    });
   }
   
   _handleTipDelete(e) {
-    var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
-    console.log('_handleTipDelete', tipInfo);
+    this.config.callbackEditOption({
+      "editType": 'delete',
+      "tipInfo": JSON.parse(e.target.getAttribute('tip-info')),
+      "callbackCompletion": this.update
+    });
   }
   
   //--------------------------------------------------------------

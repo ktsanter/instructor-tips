@@ -103,6 +103,14 @@ class ITipsDB {
     return dbResult.data;    
   }
   
+  async updateTip(params) {
+    console.log('ITipsDB.updateTip', params);
+
+    var dbResult = {"success": true, "details": 'update succeeded', "data": null};
+    
+    return dbResult.success;
+  }
+  
   async getUserList() {
     var userList = this.dummyUserList;
 
@@ -167,6 +175,14 @@ class ITipsDB {
     console.log('ITipsDB.acceptSharedSchedule', shareParams);
     
     var dbResult = {"success": true, "details": "accept succeeded", "data": null};
+    
+    return dbResult.success;
+  }
+  
+  async removeSharedSchedule(shareParams) {
+    console.log('ITipsDB.removeSharedSchedule', shareParams);
+    
+    var dbResult = {"success": true, "details": "remove succeeded", "data": null};
     
     return dbResult.success;
   }
