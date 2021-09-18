@@ -165,6 +165,10 @@ body {
   margin-right: 0.3em;
 }
 
+.contents .contents-navTipsEditing  .tipusage-deletion {
+  font-weight: bold;
+}
+
 .contents .contents-navTipsEditing .tipcontent-deletion {
   display: inline-block;
   border: 1px solid #aaa;

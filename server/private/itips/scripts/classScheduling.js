@@ -35,8 +35,9 @@ class Scheduling {
       "container": containerSelection,
       "hideClass": this.config.hideClass,
       "db": this.config.db,
-      "callbackScheduleSelect": this.scheduleDetails.update,
-      "callbackConfigureOption": (params) => { this.scheduleConfigure.beginConfigureOption(params); }
+      "callbackScheduleSelect": (scheduleId) => { this.scheduleDetails.setSchedule(scheduleId); },
+      "callbackConfigureOption": (params) => { this.scheduleConfigure.beginConfigureOption(params); },
+      "callbackSetEditMode": (params) => { this.scheduleDetails.setEditMode(params); }
     });
     this.scheduleSelection.render();  
   }

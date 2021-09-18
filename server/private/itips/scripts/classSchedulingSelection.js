@@ -27,6 +27,9 @@ class SchedulingSelection {
     this.controlAdd.addEventListener('click', (e) => { this._handleAdd(e); });
     this.controlEdit.addEventListener('click', (e) => { this._handleEdit(e); });
     this.controlDelete.addEventListener('click', (e) => { this._handleDelete(e); });
+
+    this.controlEditMode = this.config.container.getElementsByClassName('schedule-editingmode')[0];
+    this.controlEditMode.addEventListener('click', (e) => { this._handleScheduleEditMode(e); });
   }
   
   async update() {
@@ -124,6 +127,13 @@ class SchedulingSelection {
       "configureType": 'delete',
       "scheduleInfo": this._getSelectedScheduleInfo(),
       "callbackCompletion": this.update
+    });
+  }
+  
+  _handleScheduleEditMode(e) {
+    if (e.target.classList.contains('disable-me')) return;
+    this.config.callbackSetEditMode({
+      "editMode": e.target.checked
     });
   }
   

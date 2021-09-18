@@ -1,5 +1,23 @@
 mixin schedulingDetails()
   .container-fluid(class="scheduling-detail-container")
     .row
-      .col-sm
-        |scheduling detail      
+      .col-sm(class="subcontainer single-week non-editmode")
+        |single week, non-edit mode
+
+      .col-sm(class="subcontainer single-week editmode")
+        |single week, edit mode
+
+      .col-sm(class="subcontainer full-schedule non-editmode")
+        |full-schedule, non-edit mode
+        
+      .col-sm(class="subcontainer full-schedule editmode")
+        .form-check(class="form-switch")
+          input(class="check-browse full-schedule form-check-input" type="checkbox" id="checkBrowseMode1")
+          label(class="form-check-label" for="checkBrowseMode1") tip browsing      
+        |full-schedule, edit mode
+        
+      .col-sm(class="subcontainer tip-browsing editmode")
+        .form-check(class="form-switch")
+          input(class="check-browse tip-browsing form-check-input" type="checkbox" id="checkBrowseMode2")
+          label(class="form-check-label" for="checkBrowseMode2") tip browsing      
+        |tip browsing, edit mode
