@@ -148,6 +148,17 @@ body {
   background-color: var(--bgPrimaryFaded);
 }
 
+.contents .contents-navTipsEditing .tiplist-head {}
+
+.contents .contents-navTipsEditing .tiplist-head .tips-addtip {
+  cursor: pointer;
+}
+
+.contents .contents-navTipsEditing .tiplist-head .tips-headerlabel:hover {
+  cursor: pointer;
+  text-decoration: underline
+}
+
 .contents .contents-navTipsEditing .tiplist-body {}
 
 .contents .contents-navTipsEditing .tiplist-body .tiplist-controls i {

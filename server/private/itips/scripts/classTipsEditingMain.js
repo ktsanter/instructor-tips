@@ -6,6 +6,10 @@
 class TipsEditingMain {
   constructor(config) {
     this.config = config;
+    this.sorting = {
+      sortBy: 'tipcontent',
+      direction: 1
+    }
   }
   
   //--------------------------------------------------------------
@@ -22,6 +26,12 @@ class TipsEditingMain {
       "callbackChange": () => { this._searchChange(); }
     });
     this.tipSearch.render();
+
+    var tipListHead = this.config.container.getElementsByClassName('tiplist-head')[0];
+    tipListHead.getElementsByClassName('tips-addtip')[0].addEventListener('click', (e) => { this._handleTipAdd(e); });
+    tipListHead.getElementsByClassName('label-tip')[0].addEventListener('click', (e) => { this._handleHeaderClick(e); });
+    tipListHead.getElementsByClassName('label-tags')[0].addEventListener('click', (e) => { this._handleHeaderClick(e); });
+    tipListHead.getElementsByClassName('label-usage')[0].addEventListener('click', (e) => { this._handleHeaderClick(e); });
   }
   
   async update() {
@@ -34,7 +44,7 @@ class TipsEditingMain {
   //--------------------------------------------------------------  
   _loadTipListTable() {
     UtilityKTS.removeChildren(this.tipListBody);
-    var tipList = this.tipSearch.selectedTips();
+    var tipList = this._sortTipList(this.tipSearch.selectedTips());
     
     for (var i = 0; i < tipList.length; i++) {
       var tip = tipList[i];
@@ -56,11 +66,70 @@ class TipsEditingMain {
     }
   }
   
+  _sortTipList(tipList) {
+    var sortBy = this.sorting.sortBy;
+    var direction = this.sorting.direction;
+    console.log(this.sorting);
+    
+    var sorted = tipList.sort(function(a, b) {
+      var aval = a[sortBy];
+      var bval = b[sortBy];
+      
+      var result;
+      if (typeof aval == 'string') {
+        result = direction * aval.toLowerCase().localeCompare(bval.toLowerCase()); 
+      } else if (typeof aval == 'number') {
+        result = direction * (aval - bval); 
+      } else {
+        aval = aval.toString().toLowerCase();
+        bval = bval.toString().toLowerCase();
+        result = direction * aval.localeCompare(bval);
+      }
+      
+      return result;
+    });
+
+    return sorted;
+  }
+  
+  _setSortingParameters(sortBy) {
+    if (sortBy == this.sorting.sortBy) {
+      this.sorting.direction *= -1;
+      
+    } else {
+      this.sorting.sortBy = sortBy;
+      this.sorting.direction = 1;
+    }
+  }
+  
   //--------------------------------------------------------------
   // handlers
-  //--------------------------------------------------------------   
+  //--------------------------------------------------------------
+  _handleHeaderClick(e) {
+    var sortBy = null;
+    if (e.target.classList.contains('label-tip')) {
+      sortBy = 'tipcontent';
+    } else if (e.target.classList.contains('label-tags')) {
+      sortBy = 'taglist';
+    } else if (e.target.classList.contains('label-usage')) {
+      sortBy = 'usagecount';
+    }
+    if (!sortBy) return;
+    
+    this._setSortingParameters(sortBy);
+    this._loadTipListTable();
+  }
+  
   _searchChange() {
     this._loadTipListTable();
+  }
+  
+  _handleTipAdd(e) {
+    this.config.callbackEditOption({
+      "editType": 'add',
+      "tipInfo": null,
+      "callbackCompletion": this.update
+    });
   }
   
   _handleTipEdit(e) {

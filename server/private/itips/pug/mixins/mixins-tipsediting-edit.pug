@@ -5,7 +5,14 @@ mixin tipseditingEdit()
         .container-fluid
           .row
             .col-sm
-              |add
+            .tipeditor-container(class="tipeditor-container")
+              +makeTinyMCE("tipeditorAdd")
+              
+          .row
+            .col-sm
+              .form-floating
+                input(type="text" class="input-tags form-control" id="tagsInput" placeholder="default")
+                label(for="tagsInput") tags
           
           .row
             .col-sm
@@ -18,7 +25,7 @@ mixin tipseditingEdit()
           .row
             .col-sm
             .tipeditor-container(class="tipeditor-container")
-              +makeTinyMCE("tipeditor")
+              +makeTinyMCE("tipeditorEdit")
               
           .row
             .col-sm
@@ -36,7 +43,8 @@ mixin tipseditingEdit()
         .container-fluid
           .row
             .col-sm
-              |This tip will be deleted and this action cannot be undone.
+              |This tip will be deleted and this action cannot be undone. 
+              span(class="tipusage-deletion") xx
               br
               .tipcontent-deletion
               br

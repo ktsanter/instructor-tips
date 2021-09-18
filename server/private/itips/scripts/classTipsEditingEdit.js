@@ -30,14 +30,21 @@ class TipsEditingEdit {
     }
     
     this.tiny = {};
-    this.tiny.tipContent = new MyTinyMCE({
-      id: 'tipeditor', 
-      selector: '#tipeditor', 
+    this.tiny.tipContent_add = new MyTinyMCE({
+      id: 'tipeditorAdd', 
+      selector: '#tipeditorAdd', 
+      changeCallback: (e) => { this._handleEditorChange(e); },
+      height: 450
+    });
+    this.tiny.tipContent_edit = new MyTinyMCE({
+      id: 'tipeditorEdit', 
+      selector: '#tipeditorEdit', 
       changeCallback: (e) => { this._handleEditorChange(e); },
       height: 450
     });
     
-    await this.tiny.tipContent.init();
+    await this.tiny.tipContent_add.init();
+    await this.tiny.tipContent_edit.init();
   }
   
   beginEditOption(params) {   
@@ -80,18 +87,21 @@ class TipsEditingEdit {
     subContainer.setAttribute('original-tip-info', JSON.stringify(tipInfo));
 
     if (params.editType == 'add') {
-      console.log('_loadFields: "add" is stubbed');
-      /*
-      subContainer.getElementsByClassName('input-name')[0].value = 'default';
-      subContainer.getElementsByClassName('input-length')[0].value = 20;
-      subContainer.getElementsByClassName('input-start')[0].value = this._formatShortDate(new Date(Date.now()))
-      */
+      this.tiny.tipContent_add.setContent('new tip');
+      subContainer.getElementsByClassName('input-tags')[0].value = this._tagListToString([]);
       
     } else if (params.editType == 'edit') {
-      this.tiny.tipContent.setContent(tipInfo.tipcontent);
+      this.tiny.tipContent_edit.setContent(tipInfo.tipcontent);
       subContainer.getElementsByClassName('input-tags')[0].value = this._tagListToString(tipInfo.taglist);
       
     } else if (params.editType == 'delete') {
+      var usageMsg = '';
+      if (tipInfo.usagecount == 1) {
+        usageMsg = 'It is currently used in ' + tipInfo.usagecount + ' schedule.';
+      } else if (tipInfo.usagecount > 1) {
+        usageMsg = 'It is currently used in ' + tipInfo.usagecount + ' schedule(s).';
+      }
+      subContainer.getElementsByClassName('tipusage-deletion')[0].innerHTML = usageMsg;
       subContainer.getElementsByClassName('tipcontent-deletion')[0].innerHTML = tipInfo.tipcontent;
     }    
   }
@@ -103,18 +113,17 @@ class TipsEditingEdit {
   
       var params = null;
       if (this.editType == 'add') {
-        console.log('_endEditOption: "add" is stubbed');
-        /*
         params = {
-          "editType": this.editType
-        };
-        */
+          "editType": this.editType,
+          "tipcontent": this.tiny.tipContent_add.getContent(),
+          "taglist": this._tagStringToArray(subContainer.getElementsByClassName('input-tags')[0].value.trim())
+        }
         
       } else if (this.editType == 'edit') {
         params = {
           "editType": this.editType,
           "scheduleid": originalTipInfo.tipid,
-          "tipcontent": this.tiny.tipContent.getContent(),
+          "tipcontent": this.tiny.tipContent_edit.getContent(),
           "taglist": this._tagStringToArray(subContainer.getElementsByClassName('input-tags')[0].value.trim())
         }
         
@@ -142,9 +151,15 @@ class TipsEditingEdit {
   
   _tagStringToArray(tagList) {
     var tagList = tagList.split(',');
+
     for (var i = 0; i < tagList.length; i++) {
       tagList[i] = tagList[i].trim();
     }
+
+    tagList = tagList.sort(function(a, b) {
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+    
     return tagList;
   }
   
