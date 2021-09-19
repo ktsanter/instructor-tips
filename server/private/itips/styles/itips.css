@@ -20,6 +20,10 @@ body {
   display: none;
 }
 
+.invisible-me {
+  visibility: hidden;
+}
+
 /*------------------------------------------------------------------------------
  * navbar
  *------------------------------------------------------------------------------*/
@@ -94,6 +98,7 @@ body {
   transform: rotateY(180deg);
 }
 
+/*-- single week --*/
 .contents .contents-navScheduling .scheduling-detail-container .single-week-controls,
 .contents .contents-navScheduling .scheduling-detail-container .single-week-label {
   display: inline-block;
@@ -125,6 +130,10 @@ body {
   background-color: var(--bgPrimary);
 }
 
+.contents .contents-navScheduling .scheduling-detail-container .single-week-tip-container {
+  border: 1px solid #ddd;
+}
+
 .contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip:nth-child(odd) {
   background-color: #eee;
 }
@@ -133,17 +142,84 @@ body {
   display: inline-block;
 }
 
-.contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-controls .tip-icon {
-  color: var(--bgPrimary);
+.contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-controls .tip-check:checked {
+  background-color: var(--bgPrimary);
 }
 
 .contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-content {
   display: inline-block;
 }
 
-.contents .contents-navScheduling .subcontainer.single-week.editmode .single-week-tip-controls {
+/*--- single week, edit mode ---*/
+.contents .contents-navScheduling .subcontainer.single-week.editmode .single-week-tip-controls.after-content {
   float: right;
 }
+
+.contents .contents-navScheduling .subcontainer.single-week.editmode .single-week-tip-controls .tip-icon {
+  cursor: pointer;
+  color: var(--bgPrimaryFaded);
+}
+
+.contents .contents-navScheduling .subcontainer.single-week.editmode .single-week-tip-controls .tip-icon:hover {
+  color: var(--bgPrimary);
+}
+
+/*--- full schedule ---*/
+.contents .contents-navScheduling .subcontainer.full-schedule .full-schedule-weeks {
+  border: 1px solid #ddd;  
+  max-height: 34.0em;
+  overflow-y: auto;
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule:not(.editmode) .full-schedule-week-label {
+  color: white;
+  background-color: var(--bgPrimaryFaded);
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule:not(.editmode) .full-schedule-week-label:hover {
+  cursor: pointer;
+  text-decoration: underline;
+  background-color: var(--bgPrimary);
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule .full-schedule-tip-controls,
+.contents .contents-navScheduling .subcontainer.full-schedule .full-schedule-tip-content {
+  display: inline-block;
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule .full-schedule-tip:nth-child(even) {
+  background-color: #eee;
+}
+
+/*-- full schedule, edit mode --*/
+.contents .contents-navScheduling .subcontainer.full-schedule.editmode .full-schedule-week-header {
+  color: white;
+  background-color: var(--bgPrimaryFaded);  
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule.editmode .full-schedule-week-header:hover {
+  background-color: var(--bgPrimary);  
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule.editmode .full-schedule-week-label,
+.contents .contents-navScheduling .subcontainer.full-schedule.editmode .full-schedule-week-controls {
+  display: inline-block;
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule.editmode .full-schedule-week-label:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule.editmode .full-schedule-week-controls {
+  float: right;
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule.editmode .full-schedule-week-controls {
+  cursor: pointer;
+}
+
+/*--- tip browsing ---*/
 
 /*------------------------------------------------------------------------------
  * contents - navTipsEditing

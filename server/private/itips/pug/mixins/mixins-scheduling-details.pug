@@ -1,5 +1,5 @@
 mixin schedulingDetails()
-  .container-fluid(class="scheduling-detail-container mt-2")
+  .container-fluid(class="scheduling-detail-container mt-3")
     .row
       .col-sm(class="subcontainer single-week non-editmode")
         .single-week-controls
@@ -14,32 +14,28 @@ mixin schedulingDetails()
           .single-week-tips
             .single-week-tip
               .single-week-tip-controls
-                i(class="tip-icon icon-unchecked far fa-square hide-me")
-                i(class="tip-icon icon-checked fas fa-check-square")
+                input(class="tip-check form-check-input" type="checkbox" checked)
 
               .single-week-tip-content(class="ms-2")
                 |content for tip
 
             .single-week-tip
               .single-week-tip-controls
-                i(class="tip-icon icon-unchecked far fa-square hide-me")
-                i(class="tip-icon icon-checked fas fa-check-square")
+                input(class="tip-check form-check-input" type="checkbox" checked)
 
               .single-week-tip-content(class="ms-2")
                 |content for tip
 
             .single-week-tip
               .single-week-tip-controls
-                i(class="tip-icon icon-unchecked far fa-square")
-                i(class="tip-icon icon-checked fas fa-check-square hide-me")
+                input(class="tip-check form-check-input" type="checkbox")
 
               .single-week-tip-content(class="ms-2")
                 |content for tip
 
             .single-week-tip
               .single-week-tip-controls
-                i(class="tip-icon icon-unchecked far fa-square")
-                i(class="tip-icon icon-checked fas fa-check-square hide-me")
+                input(class="tip-check form-check-input" type="checkbox")
 
               .single-week-tip-content(class="ms-2")
                 |content for tip
@@ -56,28 +52,509 @@ mixin schedulingDetails()
         .single-week-tip-container(class="mt-2")
           .single-week-tips
             .single-week-tip
+              .single-week-tip-controls(class="before-content")
+                i(class="tip-icon icon-remove fas fa-arrow-up pe-1 invisible-me")
+
               .single-week-tip-content(class="me-2")
                 |content for tip
 
-              .single-week-tip-controls
-                i(class="tip-icon icon-remove fas fa-times ps-1")
+              .single-week-tip-controls(class="after-content")
+                i(class="tip-icon icon-remove fas fa-times pe-1")
 
             .single-week-tip
+              .single-week-tip-controls(class="before-content")
+                i(class="tip-icon icon-remove fas fa-arrow-up pe-1")
+
               .single-week-tip-content(class="me-2")
                 |content for tip
 
-              .single-week-tip-controls
-                i(class="tip-icon icon-up fas fa-arrow-up")
-                i(class="tip-icon icon-remove fas fa-times ps-1")
+              .single-week-tip-controls(class="after-content")
+                i(class="tip-icon icon-remove fas fa-times pe-1")
+
+            .single-week-tip
+              .single-week-tip-controls(class="before-content")
+                i(class="tip-icon icon-remove fas fa-arrow-up pe-1")
+
+              .single-week-tip-content(class="me-2")
+                |content for tip
+
+              .single-week-tip-controls(class="after-content")
+                i(class="tip-icon icon-remove fas fa-times pe-1")
+
+            .single-week-tip
+              .single-week-tip-controls(class="before-content")
+                i(class="tip-icon icon-remove fas fa-arrow-up pe-1")
+
+              .single-week-tip-content(class="me-2")
+                |content for tip
+
+              .single-week-tip-controls(class="after-content")
+                i(class="tip-icon icon-remove fas fa-times pe-1")
 
       .col-sm(class="subcontainer full-schedule non-editmode")
-        |full-schedule, non-edit mode
+        .form-check(class="form-switch")
+          input(class="check-full-schedule form-check-input" type="checkbox" id="checkFullScheduleMode")
+          label(class="form-check-label" for="checkFullScheduleMode") show full schedule      
         
+        .full-schedule-weeks
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 1 (9/19)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 2 (9/26)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 3 (10/3)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 4 (10/10)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+                
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 5 (10/17)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 6 (10/24)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 7 (10/31)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 8 (11/7)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 9 (11/14)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 10 (11/21)
+                
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 3 (10/3)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 3 (10/3)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-label
+              |week 3 (10/3)
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+                
       .col-sm(class="subcontainer full-schedule editmode")
         .form-check(class="form-switch")
           input(class="check-browse full-schedule form-check-input" type="checkbox" id="checkBrowseMode1")
-          label(class="form-check-label" for="checkBrowseMode1") tip browsing      
-        |full-schedule, edit mode
+          label(class="form-check-label" for="checkBrowseMode1") tip browsing           
+        
+        .full-schedule-weeks
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-header
+              .full-schedule-week-label
+                |week 1 (9/19)
+                
+              .full-schedule-week-controls
+                i(class="week-icon icon-add far fa-plus-square pe-2" title="insert week after this one")
+                i(class="week-icon icon-add far fa-trash-alt pe-1" title="remove this week from schedule")
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-header
+              .full-schedule-week-label
+                |week 2 (9/26)
+                
+              .full-schedule-week-controls
+                i(class="week-icon icon-add far fa-plus-square pe-2")
+                i(class="week-icon icon-add far fa-trash-alt")
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-header
+              .full-schedule-week-label
+                |week 3 (10/3)
+                
+              .full-schedule-week-controls
+                i(class="week-icon icon-add far fa-plus-square pe-2" title="insert week after this one")
+                i(class="week-icon icon-add far fa-trash-alt pe-1" title="remove this week from schedule")
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-header
+              .full-schedule-week-label
+                |week 4 (10/10)
+                
+              .full-schedule-week-controls
+                i(class="week-icon icon-add far fa-plus-square pe-2" title="insert week after this one")
+                i(class="week-icon icon-add far fa-trash-alt pe-1" title="remove this week from schedule")
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+                
+          .full-schedule-week(class="mb-2")
+            .full-schedule-week-header
+              .full-schedule-week-label
+                |week 5 (10/17)
+                
+              .full-schedule-week-controls
+                i(class="week-icon icon-add far fa-plus-square pe-2" title="insert week after this one")
+                i(class="week-icon icon-add far fa-trash-alt pe-1" title="remove this week from schedule")
+              
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
+        
+            .full-schedule-tip
+              .full-schedule-tip-controls
+                input(class="tip-check form-check-input" type="checkbox")
+
+              .full-schedule-tip-content(class="ms-2")
+                |content for tip
         
       .col-sm(class="subcontainer tip-browsing editmode")
         .form-check(class="form-switch")
