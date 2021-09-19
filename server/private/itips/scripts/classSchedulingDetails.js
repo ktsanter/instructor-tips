@@ -6,9 +6,13 @@
 class SchedulingDetails {
   constructor(config) {
     this.config = config;
-    this.scheduleId = null;
+    
     this.editMode = false;
     this.tipBrowsing = false;
+
+    this.scheduleId = null;
+    this.scheduleData = null;    
+    this.weekIndex = 0;
   }
   
   //--------------------------------------------------------------
@@ -29,9 +33,18 @@ class SchedulingDetails {
     };
     
     for (var key in this.tipBrowsingInputs) {
-      console.log(key);
       this.tipBrowsingInputs[key].addEventListener('click', (e) => { this._handleTipBrowseInput(e); });
     }
+    
+    this.subContainers["singleweek-noneditmode"].getElementsByClassName('weekwcontrol-icon icon-previous')[0].addEventListener(
+      'click', (e) => { this._handleSingleWeekNavigation(e, "singleweek-noneditmode", "previous"); }
+    );
+    this.subContainers["singleweek-noneditmode"].getElementsByClassName('weekcontrol-current')[0].addEventListener(
+      'click', (e) => { this._handleSingleWeekNavigation(e, "singleweek-noneditmode", "current"); }
+    );
+    this.subContainers["singleweek-noneditmode"].getElementsByClassName('weekwcontrol-icon icon-next')[0].addEventListener(
+      'click', (e) => { this._handleSingleWeekNavigation(e, "singleweek-noneditmode", "next"); }
+    );
   }
   
   setEditMode(params) {
@@ -41,16 +54,33 @@ class SchedulingDetails {
   
   setSchedule(scheduleId) {
     this.scheduleId = scheduleId;
+    this.weekIndex = 0;
     this.update();
   }
   
   async update() {
+    console.log('SchedulingDetails.update', this.editMode, this.tipBrowsing);
     var scheduleData = await this.config.db.getScheduleData(this.scheduleId);
     if (!scheduleData) return;
-    //console.log('scheduleData', scheduleData);
+    this.scheduleData = scheduleData;
+    console.log(scheduleData);
     
     this.setContainerVisibility();
     this._setTipBrowsingInputs();
+    
+    if (this.editMode) {
+      this._updateSingleWeekEditing();
+
+      if (this.tipBrowsing) {
+        this._updateTipBrowsing();
+      } else {
+        this._updateFullScheduleEditing();
+      }
+
+    } else {
+      this._updateSingleWeekNonEditing();
+      this._updateFullScheduleNonEditing();
+    }
   }
   
   //--------------------------------------------------------------
@@ -77,6 +107,52 @@ class SchedulingDetails {
     }    
   }
   
+  _updateSingleWeekNonEditing() {
+    console.log('SchedulingDetails._updateSingleWeekNonEditing');
+    var weekData = this.scheduleData.tiplist[this.weekIndex];
+    console.log(weekData);
+
+    var subContainer = this.subContainers['singleweek-noneditmode'];
+    var weekLabel = subContainer.getElementsByClassName('single-week-label')[0];
+    var tipsContainer = subContainer.getElementsByClassName('single-week-tips')[0];
+    var tipTemplate = subContainer.getElementsByClassName('single-week-tip')[0];
+
+    weekLabel.innerHTML = this._calculateWeekDate(this.scheduleData.firstdate, this.weekIndex);
+    
+    UtilityKTS.removeChildren(tipsContainer);
+    for (var i = 0; i < weekData.length; i++) {
+      var elemWeek = tipTemplate.cloneNode(true);
+      UtilityKTS.setClass(elemWeek, 'template', false);
+      UtilityKTS.setClass(elemWeek, this.config.hideClass, false);
+      
+      var tip = weekData[i];
+      elemWeek.getElementsByClassName('single-week-tip-content')[0].innerHTML = tip.tipcontent;
+      elemWeek.getElementsByClassName('tip-check')[0].checked = (tip.tipstate == 'checked');
+      
+      var elemTipCheck = elemWeek.getElementsByClassName('tip-check')[0];
+      elemTipCheck.setAttribute('tip-info', JSON.stringify(tip));
+      elemTipCheck.addEventListener('click', (e) => { this._handleTipCheck(e); });
+      
+      tipsContainer.appendChild(elemWeek);
+    }
+  }
+  
+  _updateSingleWeekEditing() {
+    console.log('SchedulingDetails._updateSingleWeekEditing');
+  }
+  
+  _updateFullScheduleNonEditing() {
+    console.log('SchedulingDetails._updateFullScheduleNonEditing');
+  }
+  
+  _updateFullScheduleEditing() {
+    console.log('SchedulingDetails._updateFullScheduleEditing');
+  }
+  
+  _updateTipBrowsing() {
+    console.log('SchedulingDetails._updateTipBrowsing');
+  }  
+  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
@@ -85,7 +161,20 @@ class SchedulingDetails {
     this.update();
   }
   
+  _handleSingleWeekNavigation(e, subContainerLabel, action) {
+    console.log('_handleSingleWeekNavigation', subContainerLabel, action);
+  }
+  
+  _handleTipCheck(e) {
+    var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
+    console.log('_handleTipCheck', tipInfo.tipid, e.target.checked);
+  }
+  
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
+  _calculateWeekDate(firstDate, weekIndex) {
+    console.log('_calculateWeekDate', firstDate, weekIndex);
+    return firstDate;
+  }
 }

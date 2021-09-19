@@ -14,7 +14,22 @@ class ITipsDB {
     ];
     
     this.dummyScheduleData = {
-      "foo": 'bar'
+      "scheduleid": 1,
+      "firstdate": '2021-09-16',
+      "tiplist": [
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ]
+      ]
     };
     
     this.dummyTipList = [

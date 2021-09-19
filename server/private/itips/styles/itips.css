@@ -100,7 +100,7 @@ body {
 
 /*-- single week --*/
 .contents .contents-navScheduling .scheduling-detail-container .single-week-controls,
-.contents .contents-navScheduling .scheduling-detail-container .single-week-label {
+.contents .contents-navScheduling .scheduling-detail-container .single-week-label:not(.hide-me) {
   display: inline-block;
 }
 
@@ -142,8 +142,11 @@ body {
   display: inline-block;
 }
 
+.contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-controls .tip-check:hover {
+  cursor: pointer;
+}
 .contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-controls .tip-check:checked {
-  background-color: var(--bgPrimary);
+  background-color: var(--bgPrimaryFaded);
 }
 
 .contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-content {

@@ -8,37 +8,15 @@ mixin schedulingDetails()
           i(class="weekwcontrol-icon icon-next fas fa-play")
           
         .single-week-label
-          |week 1 (9/19)
                     
         .single-week-tip-container(class="mt-2")
           .single-week-tips
-            .single-week-tip
-              .single-week-tip-controls
-                input(class="tip-check form-check-input" type="checkbox" checked)
+          
+          .single-week-tip(class="template hide-me")
+            .single-week-tip-controls
+              input(class="tip-check form-check-input" type="checkbox" checked)
 
-              .single-week-tip-content(class="ms-2")
-                |content for tip
-
-            .single-week-tip
-              .single-week-tip-controls
-                input(class="tip-check form-check-input" type="checkbox" checked)
-
-              .single-week-tip-content(class="ms-2")
-                |content for tip
-
-            .single-week-tip
-              .single-week-tip-controls
-                input(class="tip-check form-check-input" type="checkbox")
-
-              .single-week-tip-content(class="ms-2")
-                |content for tip
-
-            .single-week-tip
-              .single-week-tip-controls
-                input(class="tip-check form-check-input" type="checkbox")
-
-              .single-week-tip-content(class="ms-2")
-                |content for tip
+            .single-week-tip-content(class="ms-2") template
 
       .col-sm(class="subcontainer single-week editmode")
         .single-week-controls
