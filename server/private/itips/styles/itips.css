@@ -56,12 +56,20 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navScheduling {}
 
+/*------------------------------------------------------------------------------
+ * contents - navScheduling, selection
+ *------------------------------------------------------------------------------*/
 .contents .contents-navScheduling .scheduling-selection-controls .selection-control {
-  color: var(--bgPrimary);
+  color: var(--bgPrimaryFaded);
+  cursor: pointer;
   font-size: 125%;
   margin-right: 0.3em;
   margin-top: 0.3em;
   padding: 0.1em;
+}
+
+.contents .contents-navScheduling .scheduling-selection-controls .selection-control:hover {
+  color: var(--bgPrimary);
 }
 
 .contents .contents-navScheduling .scheduling-selection-controls:not(.collapsed) .selection-control.main-control {
@@ -75,6 +83,66 @@ body {
 
 .contents .contents-navScheduling .scheduling-selection-controls .selection-control.disable-me {
   color: #aaa;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navScheduling, details
+ *------------------------------------------------------------------------------*/
+.contents .contents-navScheduling .scheduling-detail-container {}
+
+.contents .contents-navScheduling .scheduling-detail-container .icon-mirrored {
+  transform: rotateY(180deg);
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-controls,
+.contents .contents-navScheduling .scheduling-detail-container .single-week-label {
+  display: inline-block;
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-label {
+  font-weight: bold;
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-controls .weekwcontrol-icon {
+  color: var(--bgPrimaryFaded);
+  cursor: pointer;
+  font-size: 125%;
+  margin-left: 0.3em;
+  margin-right: 0.3em;
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-controls .weekwcontrol-icon:hover {
+  color: var(--bgPrimary);
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-controls .weekcontrol-current {
+  color: white;
+  background-color: var(--bgPrimaryFaded);  
+  border-radius: 8px;
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-controls .weekcontrol-current:hover {
+  background-color: var(--bgPrimary);
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip:nth-child(odd) {
+  background-color: #eee;
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-controls {
+  display: inline-block;
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-controls .tip-icon {
+  color: var(--bgPrimary);
+}
+
+.contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-content {
+  display: inline-block;
+}
+
+.contents .contents-navScheduling .subcontainer.single-week.editmode .single-week-tip-controls {
+  float: right;
 }
 
 /*------------------------------------------------------------------------------

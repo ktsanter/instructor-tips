@@ -1,11 +1,74 @@
 mixin schedulingDetails()
-  .container-fluid(class="scheduling-detail-container")
+  .container-fluid(class="scheduling-detail-container mt-2")
     .row
       .col-sm(class="subcontainer single-week non-editmode")
-        |single week, non-edit mode
+        .single-week-controls
+          i(class="weekwcontrol-icon icon-previous icon-mirrored fas fa-play")
+          button(class="weekcontrol-current") current
+          i(class="weekwcontrol-icon icon-next fas fa-play")
+          
+        .single-week-label
+          |week 1 (9/19)
+                    
+        .single-week-tip-container(class="mt-2")
+          .single-week-tips
+            .single-week-tip
+              .single-week-tip-controls
+                i(class="tip-icon icon-unchecked far fa-square hide-me")
+                i(class="tip-icon icon-checked fas fa-check-square")
+
+              .single-week-tip-content(class="ms-2")
+                |content for tip
+
+            .single-week-tip
+              .single-week-tip-controls
+                i(class="tip-icon icon-unchecked far fa-square hide-me")
+                i(class="tip-icon icon-checked fas fa-check-square")
+
+              .single-week-tip-content(class="ms-2")
+                |content for tip
+
+            .single-week-tip
+              .single-week-tip-controls
+                i(class="tip-icon icon-unchecked far fa-square")
+                i(class="tip-icon icon-checked fas fa-check-square hide-me")
+
+              .single-week-tip-content(class="ms-2")
+                |content for tip
+
+            .single-week-tip
+              .single-week-tip-controls
+                i(class="tip-icon icon-unchecked far fa-square")
+                i(class="tip-icon icon-checked fas fa-check-square hide-me")
+
+              .single-week-tip-content(class="ms-2")
+                |content for tip
 
       .col-sm(class="subcontainer single-week editmode")
-        |single week, edit mode
+        .single-week-controls
+          i(class="weekwcontrol-icon icon-previous icon-mirrored fas fa-play")
+          button(class="weekcontrol-current") current
+          i(class="weekwcontrol-icon icon-next fas fa-play")
+          
+        .single-week-label
+          |week 1 (9/19)
+
+        .single-week-tip-container(class="mt-2")
+          .single-week-tips
+            .single-week-tip
+              .single-week-tip-content(class="me-2")
+                |content for tip
+
+              .single-week-tip-controls
+                i(class="tip-icon icon-remove fas fa-times ps-1")
+
+            .single-week-tip
+              .single-week-tip-content(class="me-2")
+                |content for tip
+
+              .single-week-tip-controls
+                i(class="tip-icon icon-up fas fa-arrow-up")
+                i(class="tip-icon icon-remove fas fa-times ps-1")
 
       .col-sm(class="subcontainer full-schedule non-editmode")
         |full-schedule, non-edit mode
