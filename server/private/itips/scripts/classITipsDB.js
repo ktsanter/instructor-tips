@@ -27,7 +27,7 @@ class ITipsDB {
           {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
         ],
         [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "unchecked" },
           {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
         ]
       ]

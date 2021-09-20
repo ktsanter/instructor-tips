@@ -138,6 +138,10 @@ body {
   background-color: #eee;
 }
 
+.contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip:hover {
+  background-color: #ccc;
+}
+
 .contents .contents-navScheduling .scheduling-detail-container .single-week-tips .single-week-tip-controls {
   display: inline-block;
 }
@@ -192,6 +196,13 @@ body {
 
 .contents .contents-navScheduling .subcontainer.full-schedule .full-schedule-tip:nth-child(even) {
   background-color: #eee;
+}
+
+.contents .contents-navScheduling .subcontainer.full-schedule .tip-check:hover {
+  cursor: pointer;
+}
+.contents .contents-navScheduling .subcontainer.full-schedule .tip-check:checked {
+  background-color: var(--bgPrimaryFaded);
 }
 
 /*-- full schedule, edit mode --*/

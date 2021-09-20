@@ -45,6 +45,21 @@ class SchedulingDetails {
     this.subContainers["singleweek-noneditmode"].getElementsByClassName('weekwcontrol-icon icon-next')[0].addEventListener(
       'click', (e) => { this._handleSingleWeekNavigation(e, "next"); }
     );
+
+    this.subContainers["singleweek-editmode"].getElementsByClassName('weekwcontrol-icon icon-previous')[0].addEventListener(
+      'click', (e) => { this._handleSingleWeekNavigation(e, "previous"); }
+    );
+    this.subContainers["singleweek-editmode"].getElementsByClassName('weekcontrol-current')[0].addEventListener(
+      'click', (e) => { this._handleSingleWeekNavigation(e, "current"); }
+    );
+    this.subContainers["singleweek-editmode"].getElementsByClassName('weekwcontrol-icon icon-next')[0].addEventListener(
+      'click', (e) => { this._handleSingleWeekNavigation(e, "next"); }
+    );
+    
+    this.subContainers["fullschedule-noneditmode"].getElementsByClassName('check-full-schedule')[0].addEventListener(
+      'click', (e) => { this._handleFullScheduleHide(e); }
+    );
+    //check-full-schedule
   }
   
   setEditMode(params) {
@@ -185,15 +200,134 @@ class SchedulingDetails {
   }
   
   _updateSingleWeekEditing() {
-    console.log('SchedulingDetails._updateSingleWeekEditing');
+    var weekData = this.scheduleData.tiplist[this.weekIndex];
+
+    var subContainer = this.subContainers['singleweek-editmode'];
+    var weekLabel = subContainer.getElementsByClassName('single-week-label')[0];
+    var tipsContainer = subContainer.getElementsByClassName('single-week-tips')[0];
+    var tipTemplate = subContainer.getElementsByClassName('single-week-tip')[0];
+
+    weekLabel.innerHTML = this._calculateWeekDate(this.scheduleData.firstdate, this.weekIndex);
+    
+    UtilityKTS.removeChildren(tipsContainer);
+    UtilityKTS.removeChildren(tipsContainer);
+    for (var i = 0; i < weekData.length; i++) {
+      var elemWeek = tipTemplate.cloneNode(true);
+      UtilityKTS.setClass(elemWeek, 'template', false);
+      UtilityKTS.setClass(elemWeek, this.config.hideClass, false);
+      
+      var tip = weekData[i];
+      elemWeek.getElementsByClassName('single-week-tip-content')[0].innerHTML = tip.tipcontent;
+      
+      var weekAndTipInfo = {
+        ...tip,
+        ...{"weekindex": this.weekIndex}
+      };
+
+      var elemUpControl = elemWeek.getElementsByClassName('tip-icon icon-moveup')[0];
+      elemUpControl.setAttribute('tip-info', JSON.stringify(weekAndTipInfo));
+      elemUpControl.addEventListener('click', (e) => { this._handleTipOrderChange(e, 'up'); });
+      UtilityKTS.setClass(elemUpControl, 'invisible-me', i == 0);
+
+      var elemRemoveControl = elemWeek.getElementsByClassName('tip-icon icon-remove')[0];
+      elemRemoveControl.setAttribute('tip-info', JSON.stringify(weekAndTipInfo));
+      elemRemoveControl.addEventListener('click', (e) => { this._handleRemoveTipFromWeek(e); });
+      
+      tipsContainer.appendChild(elemWeek);
+    }
   }
   
   _updateFullScheduleNonEditing() {
-    console.log('SchedulingDetails._updateFullScheduleNonEditing');
+    var subContainer = this.subContainers["fullschedule-noneditmode"];
+
+    var scheduleContainer = subContainer.getElementsByClassName('full-schedule-weeks')[0];
+    var showSchedule = subContainer.getElementsByClassName('check-full-schedule')[0].checked;
+    UtilityKTS.setClass(scheduleContainer, this.config.hideClass, !showSchedule);
+    if (!showSchedule) return;
+    
+    UtilityKTS.removeChildren(scheduleContainer);
+
+    var weekTemplate = subContainer.getElementsByClassName('full-schedule-week')[0];
+    var tipTemplate = subContainer.getElementsByClassName('full-schedule-tip')[0];
+    
+    for (var i = 0; i < this.scheduleData.numweeks; i++) {
+      var elemWeek = weekTemplate.cloneNode(true);
+      UtilityKTS.setClass(elemWeek, 'template', false);
+      UtilityKTS.setClass(elemWeek, this.config.hideClass, false);
+      
+      var weekDate = this._calculateWeekDate(this.scheduleData.firstdate, i);
+      var elemWeekLabel = elemWeek.getElementsByClassName('full-schedule-week-label')[0]
+      elemWeekLabel.innerHTML = weekDate;
+      elemWeekLabel.setAttribute('week-index', i);
+      elemWeekLabel.addEventListener('click', (e) => { this._handleFullScheduleNavigation(e); });
+
+      var weekData = this.scheduleData.tiplist[i];
+      for (var j = 0; j < weekData.length; j++) {
+        var tip = weekData[j];
+        var elemTip = tipTemplate.cloneNode(true);
+        UtilityKTS.setClass(elemTip, 'template', false);
+        UtilityKTS.setClass(elemTip, this.config.hideClass, false);
+        
+        elemTip.getElementsByClassName('full-schedule-tip-content')[0].innerHTML = tip.tipcontent;
+        
+        var elemTipCheck = elemTip.getElementsByClassName('tip-check')[0];
+        var weekAndTipInfo = {
+          ...tip,
+          ...{"weekindex": i}
+        };
+        elemTipCheck.checked = (tip.tipstate == 'checked');
+        elemTipCheck.setAttribute('tip-info', JSON.stringify(weekAndTipInfo));
+        elemTipCheck.addEventListener('click', (e) => { this._handleTipCheck(e); });
+
+        elemWeek.appendChild(elemTip);
+      }
+      
+      scheduleContainer.appendChild(elemWeek);
+    }      
   }
   
   _updateFullScheduleEditing() {
     console.log('SchedulingDetails._updateFullScheduleEditing');
+    var subContainer = this.subContainers["fullschedule-editmode"];
+
+    var scheduleContainer = subContainer.getElementsByClassName('full-schedule-weeks')[0];    
+    UtilityKTS.removeChildren(scheduleContainer);
+    var weekTemplate = subContainer.getElementsByClassName('full-schedule-week')[0];
+    var tipTemplate = subContainer.getElementsByClassName('full-schedule-tip')[0];
+    
+    for (var i = 0; i < this.scheduleData.numweeks; i++) {
+      var elemWeek = weekTemplate.cloneNode(true);
+      UtilityKTS.setClass(elemWeek, 'template', false);
+      UtilityKTS.setClass(elemWeek, this.config.hideClass, false);
+      
+      var weekDate = this._calculateWeekDate(this.scheduleData.firstdate, i);
+      var elemWeekLabel = elemWeek.getElementsByClassName('full-schedule-week-label')[0]
+      elemWeekLabel.innerHTML = weekDate;
+      elemWeekLabel.setAttribute('week-index', i);
+      elemWeekLabel.addEventListener('click', (e) => { this._handleFullScheduleNavigation(e); });
+      
+      var elemWeekInsert = elemWeek.getElementsByClassName('icon-insert')[0];
+      elemWeekInsert.setAttribute('week-index', i);
+      elemWeekInsert.addEventListener('click', (e) => { this._handleWeekInsert(e); });
+      
+      var elemWeekRemove = elemWeek.getElementsByClassName('icon-remove')[0];
+      elemWeekRemove.setAttribute('week-index', i);
+      elemWeekRemove.addEventListener('click', (e) => { this._handleWeekRemove(e); });
+
+      var weekData = this.scheduleData.tiplist[i];
+      for (var j = 0; j < weekData.length; j++) {
+        var tip = weekData[j];
+        var elemTip = tipTemplate.cloneNode(true);
+        UtilityKTS.setClass(elemTip, 'template', false);
+        UtilityKTS.setClass(elemTip, this.config.hideClass, false);
+        
+        elemTip.getElementsByClassName('full-schedule-tip-content')[0].innerHTML = tip.tipcontent;
+
+        elemWeek.appendChild(elemTip);
+      }
+      
+      scheduleContainer.appendChild(elemWeek);
+    }      
   }
   
   _updateTipBrowsing() {
@@ -236,6 +370,37 @@ class SchedulingDetails {
     console.log('_handleTipCheck', tipInfo.weekindex, tipInfo.tipid, e.target.checked);
   }
   
+  _handleTipOrderChange(e, direction) {
+    var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
+    console.log('_handleTipOrderChange', tipInfo.weekindex, tipInfo.tipid, direction);
+  }
+    
+  _handleRemoveTipFromWeek(e) {
+    var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
+    console.log('_handleRemoveTipFromWeek', tipInfo.weekindex, tipInfo.tipid);
+  }
+  
+  _handleFullScheduleHide(e) {
+    this._updateWithoutFetch();
+  }
+  
+  _handleFullScheduleNavigation(e) {
+    var weekIndex = e.target.getAttribute('week-index');
+    if (this.setWeek({"action": 'index', "value": weekIndex * 1})) {
+      this._updateWithoutFetch();
+    }
+  }
+
+  _handleWeekInsert(e) {
+    var weekIndex = e.target.getAttribute('week-index');
+    console.log('_handleWeekInsert', weekIndex);
+  }
+
+  _handleWeekRemove(e) {
+    var weekIndex = e.target.getAttribute('week-index');
+    console.log('_handleWeekRemove', weekIndex);
+  }
+
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
