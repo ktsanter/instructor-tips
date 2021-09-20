@@ -37,34 +37,82 @@ class SchedulingDetails {
     }
     
     this.subContainers["singleweek-noneditmode"].getElementsByClassName('weekwcontrol-icon icon-previous')[0].addEventListener(
-      'click', (e) => { this._handleSingleWeekNavigation(e, "singleweek-noneditmode", "previous"); }
+      'click', (e) => { this._handleSingleWeekNavigation(e, "previous"); }
     );
     this.subContainers["singleweek-noneditmode"].getElementsByClassName('weekcontrol-current')[0].addEventListener(
-      'click', (e) => { this._handleSingleWeekNavigation(e, "singleweek-noneditmode", "current"); }
+      'click', (e) => { this._handleSingleWeekNavigation(e, "current"); }
     );
     this.subContainers["singleweek-noneditmode"].getElementsByClassName('weekwcontrol-icon icon-next')[0].addEventListener(
-      'click', (e) => { this._handleSingleWeekNavigation(e, "singleweek-noneditmode", "next"); }
+      'click', (e) => { this._handleSingleWeekNavigation(e, "next"); }
     );
   }
   
   setEditMode(params) {
     this.editMode = params.editMode;
-    this.update();
+    this._updateWithoutFetch();
   }
   
-  setSchedule(scheduleId) {
+  async setSchedule(scheduleId) {
     this.scheduleId = scheduleId;
-    this.weekIndex = 0;
-    this.update();
+    var fetchSuccess = await this._fetchSchedule();
+    if (!fetchSuccess) return;
+    
+    this.setWeek({
+      "action": 'index',
+      "value": 0
+    });
+    
+    this._updateWithoutFetch();
+  }
+  
+  setWeek(params) {
+    var success = false;
+    
+    if (params.action == 'index') {
+      if (params.value >= 0 && params.value <= this.scheduleData.numweeks - 1) {
+        this.weekIndex = params.value;
+        success = true;
+      }        
+      
+    } else if (params.action == 'next') {
+      if (this.weekIndex < this.scheduleData.numweeks - 1) {
+        this.weekIndex++;
+        success = true;
+      }
+      
+    } else if (params.action == 'previous') {
+      if (this.weekIndex > 0) {
+        this.weekIndex --;
+        success = true;
+      }
+      
+    } else if (params.action == 'current') {
+      this.weekIndex = this._getCurrentWeekIndex(this.scheduleData.numweeks, this.scheduleData.firstdate);
+      success = true;
+    }
+    
+    return success;
   }
   
   async update() {
-    console.log('SchedulingDetails.update', this.editMode, this.tipBrowsing);
-    var scheduleData = await this.config.db.getScheduleData(this.scheduleId);
-    if (!scheduleData) return;
-    this.scheduleData = scheduleData;
-    console.log(scheduleData);
+    var fetchSuccess = await this._fetchSchedule();
+    if (!fetchSuccess) return;
     
+    this._updateWithoutFetch();
+  }
+  
+  //--------------------------------------------------------------
+  // private methods
+  //--------------------------------------------------------------
+  async _fetchSchedule() {
+    var scheduleData = await this.config.db.getScheduleData(this.scheduleId);
+    if (!scheduleData) return false;
+ 
+    this.scheduleData = scheduleData;
+    return true;
+  }
+  
+  _updateWithoutFetch() {
     this.setContainerVisibility();
     this._setTipBrowsingInputs();
     
@@ -83,9 +131,6 @@ class SchedulingDetails {
     }
   }
   
-  //--------------------------------------------------------------
-  // private methods
-  //--------------------------------------------------------------   
   setContainerVisibility() {
     var showClass = 'editmode';
     if (!this.editMode) showClass = 'non-editmode';
@@ -108,9 +153,7 @@ class SchedulingDetails {
   }
   
   _updateSingleWeekNonEditing() {
-    console.log('SchedulingDetails._updateSingleWeekNonEditing');
     var weekData = this.scheduleData.tiplist[this.weekIndex];
-    console.log(weekData);
 
     var subContainer = this.subContainers['singleweek-noneditmode'];
     var weekLabel = subContainer.getElementsByClassName('single-week-label')[0];
@@ -130,7 +173,11 @@ class SchedulingDetails {
       elemWeek.getElementsByClassName('tip-check')[0].checked = (tip.tipstate == 'checked');
       
       var elemTipCheck = elemWeek.getElementsByClassName('tip-check')[0];
-      elemTipCheck.setAttribute('tip-info', JSON.stringify(tip));
+      var weekAndTipInfo = {
+        ...tip,
+        ...{"weekindex": this.weekIndex}
+      };
+      elemTipCheck.setAttribute('tip-info', JSON.stringify(weekAndTipInfo));
       elemTipCheck.addEventListener('click', (e) => { this._handleTipCheck(e); });
       
       tipsContainer.appendChild(elemWeek);
@@ -153,28 +200,64 @@ class SchedulingDetails {
     console.log('SchedulingDetails._updateTipBrowsing');
   }  
   
+  _getCurrentWeekIndex(numWeeks, firstDate) {
+    var weekIndex = 0;
+    
+    var strNowDate = this._formatShortDate(new Date());
+    var strFirstDate = this._formatShortDate(this._addDays(new Date(firstDate), 1));
+    var strLastDate = this._formatShortDate(this._addDays(new Date(strFirstDate), 7 * numWeeks - 1));
+     
+    var strLastDayInWeek = this._formatShortDate(this._addDays(new Date(strFirstDate), 6));
+    
+    for (var weekIndex = 0; weekIndex < numWeeks - 1; weekIndex++) {
+      if (strNowDate <= strLastDayInWeek) break;
+      strLastDayInWeek = this._formatShortDate(this._addDays(new Date(strLastDayInWeek), 7));
+    }
+    
+    return weekIndex;
+  }
+  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
   _handleTipBrowseInput(e) {
     this.tipBrowsing = e.target.checked;
-    this.update();
+    this._updateWithoutFetch();
   }
   
-  _handleSingleWeekNavigation(e, subContainerLabel, action) {
-    console.log('_handleSingleWeekNavigation', subContainerLabel, action);
+  _handleSingleWeekNavigation(e, action) {
+    if (this.setWeek({"action": action})) {
+      this._updateWithoutFetch();
+    };
   }
   
   _handleTipCheck(e) {
     var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
-    console.log('_handleTipCheck', tipInfo.tipid, e.target.checked);
+    console.log('_handleTipCheck', tipInfo.weekindex, tipInfo.tipid, e.target.checked);
   }
   
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  _calculateWeekDate(firstDate, weekIndex) {
-    console.log('_calculateWeekDate', firstDate, weekIndex);
-    return firstDate;
+  _calculateWeekDate(firstDate, weekIndex) {   
+    var weekDate = this._addDays( new Date(firstDate), weekIndex * 7 + 1);
+
+    return this._formatShortDate(weekDate);
   }
+  
+  _formatShortDate(origDate) {
+    var splitDate = origDate.toLocaleDateString("en-US").split('/');
+    var formattedDate = 
+      ('0000' + splitDate[2]).slice(-4) 
+      + '-' + ('00' + splitDate[0]).slice(-2) 
+      + '-' + ('00' + splitDate[1]).slice(-2);
+
+    return formattedDate;
+  }  
+  
+  _addDays(date, days) {
+    var result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }  
 }

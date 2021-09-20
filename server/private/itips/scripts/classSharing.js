@@ -207,13 +207,4 @@ class Sharing {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  _failResult(msg, methodName) {
-    if (methodName) msg += ' in ' + methodName;
-    
-    return {
-      success: false,
-      details: msg,
-      data: null
-    };
-  }
 }

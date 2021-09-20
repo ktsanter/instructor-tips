@@ -15,6 +15,7 @@ class ITipsDB {
     
     this.dummyScheduleData = {
       "scheduleid": 1,
+      "numweeks": 3,
       "firstdate": '2021-09-16',
       "tiplist": [
         [
