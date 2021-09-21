@@ -25,6 +25,34 @@ body {
 }
 
 /*------------------------------------------------------------------------------
+ * Bootstrap overrides/replacements
+ *------------------------------------------------------------------------------*/
+ .btn-aardvark {
+   color: white;
+   background-color: var(--bgPrimaryFaded);
+   border-color: var(--bgPrimary);
+ }
+ 
+ .btn-aardvark:hover {
+   color: white;
+   background-color: var(--bgPrimary);
+ }
+ 
+.btn-outline-aardvark {
+  color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+}
+
+.btn-outline-aardvark:hover {
+  color: var(--bgPrimary);
+}
+
+.btn-check:checked + label.btn-outline-aardvark {
+  color: white;
+  background-color: var(--bgPrimaryFaded);
+}
+
+/*------------------------------------------------------------------------------
  * navbar
  *------------------------------------------------------------------------------*/
 .navbar-brand {
@@ -123,7 +151,8 @@ body {
 .contents .contents-navScheduling .scheduling-detail-container .single-week-controls .weekcontrol-current {
   color: white;
   background-color: var(--bgPrimaryFaded);  
-  border-radius: 8px;
+  border: none;
+  border-radius: 3px;
 }
 
 .contents .contents-navScheduling .scheduling-detail-container .single-week-controls .weekcontrol-current:hover {

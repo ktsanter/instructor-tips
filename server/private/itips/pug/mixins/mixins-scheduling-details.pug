@@ -50,7 +50,7 @@ mixin schedulingDetails()
       //--------------------------------------------------------------
       .col-sm(class="subcontainer full-schedule non-editmode")
         input(type="checkbox" class="check-full-schedule btn-check" id="checkFullScheduleMode")
-        label(class="btn btn-outline-primary" for="checkFullScheduleMode") full schedule
+        label(class="btn btn-outline-aardvark p-1" for="checkFullScheduleMode") full schedule
         
         .full-schedule-weeks
 
@@ -67,11 +67,11 @@ mixin schedulingDetails()
       //- full schedule, edit mode
       //--------------------------------------------------------------
       .col-sm(class="subcontainer full-schedule editmode")
-        input(type="radio" class="viewmodecontrol-fullschedule fullschedule btn-check" name="viewmode-controls1" id="radioFullSchedule1" autocomplete="off" checked)
-        label(class="btn btn-outline-primary" for="radioFullSchedule1") full schedule
+        input(type="radio" class="viewmodecontrol-fullschedule fullschedule btn-check" name="viewmode-controls1" id="radioFullSchedule1" autocomplete="off")
+        label(class="btn  btn-outline-aardvark p-1 me-1" for="radioFullSchedule1") full schedule
 
         input(type="radio" class="viewmodecontrol-fullschedule tipbrowsing btn-check" name="viewmode-controls1" id="radioTipBrowsing1" autocomplete="off")
-        label(class="btn btn-outline-primary" for="radioTipBrowsing1") tip browsing
+        label(class="btn  btn-outline-aardvark p-1" for="radioTipBrowsing1") tip browsing
         
         .full-schedule-weeks
         
@@ -90,10 +90,10 @@ mixin schedulingDetails()
       //- tip browsing, only for edit mode
       //--------------------------------------------------------------
       .col-sm(class="subcontainer tip-browsing editmode")
-        input(type="radio" class="viewmodecontrol-tipbrowsing fullschedule btn-check" name="viewmode-controls2" id="radioFullSchedule2" autocomplete="off" checked)
-        label(class="btn btn-outline-primary" for="radioFullSchedule2") full schedule
+        input(type="radio" class="viewmodecontrol-tipbrowsing fullschedule btn-check" name="viewmode-controls2" id="radioFullSchedule2" autocomplete="off")
+        label(class="btn  btn-outline-aardvark p-1 me-1" for="radioFullSchedule2") full schedule
 
         input(type="radio" class="viewmodecontrol-tipbrowsing tipbrowsing btn-check" name="viewmode-controls2" id="radioTipBrowsing2" autocomplete="off")
-        label(class="btn btn-outline-primary" for="radioTipBrowsing2") tip browsing
+        label(class="btn  btn-outline-aardvark p-1" for="radioTipBrowsing2") tip browsing
 
         .temporary tip browsing, edit mode
