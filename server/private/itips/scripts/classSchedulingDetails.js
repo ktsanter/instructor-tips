@@ -27,13 +27,15 @@ class SchedulingDetails {
       "tipbrowsing-editmode": this.config.container.getElementsByClassName('subcontainer tip-browsing editmode')[0]
     };
     
-    this.tipBrowsingInputs = {
-      'full-schedule': this.config.container.getElementsByClassName('check-browse full-schedule')[0],
-      'tip-browsing': this.config.container.getElementsByClassName('check-browse tip-browsing')[0]
+    this.viewModeInputs = {
+      'fs-full-schedule': this.config.container.getElementsByClassName('viewmodecontrol-fullschedule fullschedule')[0],
+      'tb-full-schedule': this.config.container.getElementsByClassName('viewmodecontrol-tipbrowsing fullschedule')[0],
+      'fs-tip-browsing': this.config.container.getElementsByClassName('viewmodecontrol-fullschedule tipbrowsing')[0],
+      'tb-tip-browsing': this.config.container.getElementsByClassName('viewmodecontrol-tipbrowsing tipbrowsing')[0]
     };
     
-    for (var key in this.tipBrowsingInputs) {
-      this.tipBrowsingInputs[key].addEventListener('click', (e) => { this._handleTipBrowseInput(e); });
+    for (var key in this.viewModeInputs) {
+      this.viewModeInputs[key].addEventListener('click', (e) => { this._handleViewModeControl(e); });
     }
     
     this.subContainers["singleweek-noneditmode"].getElementsByClassName('weekwcontrol-icon icon-previous')[0].addEventListener(
@@ -59,7 +61,6 @@ class SchedulingDetails {
     this.subContainers["fullschedule-noneditmode"].getElementsByClassName('check-full-schedule')[0].addEventListener(
       'click', (e) => { this._handleFullScheduleHide(e); }
     );
-    //check-full-schedule
   }
   
   setEditMode(params) {
@@ -129,7 +130,7 @@ class SchedulingDetails {
   
   _updateWithoutFetch() {
     this.setContainerVisibility();
-    this._setTipBrowsingInputs();
+    this._setViewModeInputs();
     
     if (this.editMode) {
       this._updateSingleWeekEditing();
@@ -161,10 +162,11 @@ class SchedulingDetails {
     }
   }
   
-  _setTipBrowsingInputs() {
-    for (var key in this.tipBrowsingInputs) {
-      this.tipBrowsingInputs[key].checked = this.tipBrowsing;
-    }    
+  _setViewModeInputs() {
+    this.viewModeInputs['fs-full-schedule'].checked = !this.tipBrowsing;
+    this.viewModeInputs['fs-tip-browsing'].checked = this.tipBrowsing;
+    this.viewModeInputs['tb-full-schedule'].checked = !this.tipBrowsing;
+    this.viewModeInputs['tb-tip-browsing'].checked = this.tipBrowsing;
   }
   
   _updateSingleWeekNonEditing() {
@@ -354,8 +356,8 @@ class SchedulingDetails {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
-  _handleTipBrowseInput(e) {
-    this.tipBrowsing = e.target.checked;
+  _handleViewModeControl(e) {
+    this.tipBrowsing = e.target.classList.contains('tipbrowsing');
     this._updateWithoutFetch();
   }
   
