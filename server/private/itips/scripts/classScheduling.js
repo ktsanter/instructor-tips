@@ -27,7 +27,8 @@ class Scheduling {
       "container": containerConfigure,
       "otherContainers": [containerSelection, containerDetails],
       "hideClass": this.config.hideClass,
-      "db": this.config.db
+      "db": this.config.db,
+      "callbackScheduleChange": (params) => { this._scheduleChange(params); }
     });      
     this.scheduleConfigure.render();  
 
@@ -49,6 +50,16 @@ class Scheduling {
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
+  _scheduleChange(params) {
+    console.log('Scheduling._scheduleChange', params);
+    if (!params) return;
+    
+    if (params.configureType == 'add' || params.configureType == 'edit') {
+      this.scheduleSelection.update(params.scheduleid);
+    } else {
+      this.scheduleSelection.update(-1);
+    }
+  }
   
   //--------------------------------------------------------------
   // utility

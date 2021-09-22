@@ -87,6 +87,8 @@ class SchedulingConfigure {
   }
   
   async _endConfigureOption(save) {
+    var result = null;
+    
     if (save) {
       var subContainer = this.subContainers[this.configureType];
       var originalScheduleInfo = JSON.parse(subContainer.getAttribute('original-schedule-info'));
@@ -116,12 +118,17 @@ class SchedulingConfigure {
       }
       
       if (params) {
-        var success = await this.config.db.saveScheduleConfiguration(params);
+        var dbResult = await this.config.db.saveScheduleConfiguration(params);
+        if (dbResult) {
+          result = {...params, ...dbResult};
+        }
       }
     }
     
     this._setContainerVisibility('all', false);
     this.configureType = null;
+    
+    this.config.callbackScheduleChange(result);
   }
   
   //--------------------------------------------------------------

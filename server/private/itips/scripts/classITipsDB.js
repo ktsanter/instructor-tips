@@ -15,9 +15,65 @@ class ITipsDB {
     
     this.dummyScheduleData = {
       "scheduleid": 1,
-      "numweeks": 3,
+      "numweeks": 17,
       "firstdate": '2021-09-16',
       "tiplist": [
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
+          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
+        [
+          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
+        ],
         [
           {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
           {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
@@ -91,17 +147,14 @@ class ITipsDB {
   }
   
   async getScheduleList() {
-    var scheduleList = this.dummyScheduleList
-    //scheduleList = [];
-    
-    scheduleList = scheduleList.sort(function(a, b) {
+    var dbResult = await SQLDBInterface.doGetQuery('itips/query', 'schedule-list', this.config.notice);;
+    if (!dbResult.success) return null;
+
+    var scheduleList = dbResult.data.sort(function(a, b) {
       return a.schedulename.toLowerCase().localeCompare(b.schedulename.toLowerCase());
     });
-
-    var dbResult = {"success": true, "details": 'query succeeded', "data": scheduleList};
-    if (!dbResult.success) return null;
     
-    return dbResult.data;
+    return scheduleList;
   }
   
   async getScheduleData(scheduleId) {
@@ -114,11 +167,18 @@ class ITipsDB {
   }
   
   async saveScheduleConfiguration(params) {
-    console.log('ITipsDB.saveScheduleConfiguration', params);
+    var result = null;
 
-    var dbResult = {"success": true, "details": 'save succeeded', "data": null};
+    var dbResult = {"success": false, "details": 'unrecognized action', "data": null};
+    if (params.configureType == 'add') {
+      dbResult = await SQLDBInterface.doPostQuery('itips/insert', 'schedule', params, this.config.notice);
+    }
+
+    if (dbResult.success) {
+      result = dbResult.data;
+    }
     
-    return dbResult.success;
+    return result;
   }
   
   async getTipList() {

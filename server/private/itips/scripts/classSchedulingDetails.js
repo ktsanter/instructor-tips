@@ -29,7 +29,7 @@ class SchedulingDetails {
     
     this._renderViewModeInputs();
     this._renderTipBrowser();
-    
+    this._setContainerVisibility(true);
   }
     
   setEditMode(params) {
@@ -150,7 +150,7 @@ class SchedulingDetails {
   }
   
   async _updateWithoutFetch() {
-    this.setContainerVisibility();
+    this._setContainerVisibility(false);
     this._setViewModeInputs();
     
     if (this.editMode) {
@@ -168,18 +168,24 @@ class SchedulingDetails {
     }
   }
   
-  setContainerVisibility() {
+  _setContainerVisibility(hideAll) {
     var showClass = 'editmode';
     if (!this.editMode) showClass = 'non-editmode';
     
     for (var key in this.subContainers) {
       var subContainer = this.subContainers[key];
-      var showContainer = subContainer.classList.contains(showClass);
       
-      if (showContainer && key == 'fullschedule-editmode') showContainer = !this.tipBrowsing
-      if (showContainer && key == 'tipbrowsing-editmode') showContainer = this.tipBrowsing;
-      
-      UtilityKTS.setClass(subContainer, this.config.hideClass, !showContainer);
+      if (hideAll) {
+        UtilityKTS.setClass(subContainer, this.config.hideClass, true);
+        
+      } else {
+        var showContainer = subContainer.classList.contains(showClass);
+        
+        if (showContainer && key == 'fullschedule-editmode') showContainer = !this.tipBrowsing
+        if (showContainer && key == 'tipbrowsing-editmode') showContainer = this.tipBrowsing;
+        
+        UtilityKTS.setClass(subContainer, this.config.hideClass, !showContainer);
+      }
     }
   }
   
@@ -423,7 +429,7 @@ class SchedulingDetails {
     var weekIndex = e.target.getAttribute('week-index');
     
     var success = await this.config.db.insertWeekIntoSchedule({ 
-      "scheduleid": '???',
+      "scheduleid": this.scheduleId,
       "action": "after", 
       "weekindex": weekIndex 
     });
@@ -437,7 +443,7 @@ class SchedulingDetails {
     var weekIndex = e.target.getAttribute('week-index');
     
     var success = await this.config.db.removeWeekFromSchedule({ 
-      "scheduleid": '???',
+      "scheduleid": this.scheduleId,
       "action": "after", 
       "weekindex": weekIndex 
     });
@@ -451,7 +457,7 @@ class SchedulingDetails {
     var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
     
     var success = await this.config.db.addTipToWeek({ 
-      "scheduleid": '???', 
+      "scheduleid": this.scheduleId, 
       "weekindex": this.weekIndex, 
       "tipid": tipInfo.tipid
     });
@@ -464,7 +470,7 @@ class SchedulingDetails {
     var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
     
     var success = await this.config.db.removeTipFromWeek({ 
-      "scheduleid": '???', 
+      "scheduleid": this.scheduleId, 
       "weekindex": this.weekIndex, 
       "tipid": tipInfo.tipid
     });
@@ -477,7 +483,7 @@ class SchedulingDetails {
     var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
     
     var success = await this.config.db.changeTipState({ 
-      "scheduleid": '???',
+      "scheduleid": this.scheduleId,
       "weekindex": this.weekIndex,
       "tipid": tipInfo.tipid, 
       "value": e.target.checked 
@@ -491,7 +497,7 @@ class SchedulingDetails {
     var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
 
     var success = await this.config.db.changeTipOrderInSchedule({ 
-      "scheduleid": '???',
+      "scheduleid": this.scheduleId,
       "weekindex": this.weekIndex,
       "tipid": tipInfo.tipid, 
       "direction": direction

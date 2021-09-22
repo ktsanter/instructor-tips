@@ -32,7 +32,10 @@ class SchedulingSelection {
     this.controlEditMode.addEventListener('click', (e) => { this._handleScheduleEditMode(e); });
   }
   
-  async update() {
+  async update(initialScheduleId) {
+    if (initialScheduleId && initialScheduleId >= 0) this.selectedSchedule.scheduleid = initialScheduleId;
+    if (initialScheduleId && initialScheduleId == 0) this.selectedSchedule = null;
+    
     this.config.callbackConfigureOption({"configureType": 'force-close'});
     
     UtilityKTS.removeChildren(this.inputSelect);
@@ -61,6 +64,8 @@ class SchedulingSelection {
     
     if (!selectedItem && scheduleList.length > 0) selectedItem = scheduleList[0];
     
+    if (!selectedItem) return;
+    
     await this._doSelection(selectedItem);
   }
   
@@ -72,6 +77,8 @@ class SchedulingSelection {
   // private methods
   //--------------------------------------------------------------  
   async _doSelection(scheduleInfo) {
+    console.log('_doSelection', scheduleInfo);
+    
     this.selectedSchedule = scheduleInfo;
     await this.config.callbackScheduleSelect(this.selectedSchedule.scheduleid, this.config.db);
   }
@@ -108,7 +115,7 @@ class SchedulingSelection {
     this.config.callbackConfigureOption({
       "configureType": 'add',
       "scheduleInfo": null,
-      "callbackCompletion": this.update
+      "callbackCompletion": (params) => { this.update; }
     });
   }
   
