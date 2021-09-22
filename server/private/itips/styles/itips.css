@@ -263,52 +263,81 @@ body {
 }
 
 /*--- tip browsing ---*/
+.contents .contents-navScheduling .subcontainer.tip-browsing .tiplist-body {
+  display: block;
+  height: 56vh;
+  overflow-y: auto;
+}
+
+.contents .contents-navScheduling .subcontainer.tip-browsing .tiplist-body .tiplist-controls {
+  width: 2%;
+}
+
+.contents .contents-navScheduling .subcontainer.tip-browsing .tiplist-body .tiplist-content {
+  width: 98%;
+}
 
 /*------------------------------------------------------------------------------
- * contents - navTipsEditing
+ * contents - navTipsEditing (and tip browsing for navScheduling)
  *------------------------------------------------------------------------------*/
 .contents .contents-navTipsEditing {}
 
-.contents .contents-navTipsEditing .tagselect-dropdown-label {
-  display: inline-block;
+.contents .contents-navTipsEditing .tagselect-container,
+.contents .contents-navScheduling .tagselect-container {
+  position: relative;
 }
 
-.contents .contents-navTipsEditing .tagselect-dropdown-label:hover {
+.contents .contents-navTipsEditing .tagselect-dropdown-label,
+.contents .contents-navScheduling .tagselect-dropdown-label {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimaryFaded);
+  padding: 0.2em 0.4em;
+}
+
+.contents .contents-navTipsEditing .tagselect-dropdown-label:hover,
+.contents .contents-navScheduling .tagselect-dropdown-label:hover {
   cursor: pointer;
   text-decoration: underline;
 }
 
-.contents .contents-navTipsEditing .tagselect-dropdown-label i {
+.contents .contents-navTipsEditing .tagselect-dropdown-label i,
+.contents .contents-navScheduling .tagselect-dropdown-label i {
   margin-left: 0.2em;
 }
 
-.contents .contents-navTipsEditing .tagselect-dropdown:not(.dd-closed) {
+.contents .contents-navTipsEditing .tagselect-dropdown:not(.dd-closed),
+.contents .contents-navScheduling .tagselect-dropdown:not(.dd-closed) {
   display: inline-block;
   position: absolute;
+  top: 2.5em;
+  left: 0.7em;  
   background-color: white;
   border: 1px solid #aaa;
   filter: drop-shadow(4px 4px 6px #aaaaaa);
   min-width: 10.0em;
   padding-left: 0.2em;
-  top: 9.5em;
-  left: 2.7em;  
 }
 
-.contents .contents-navTipsEditing .dd-closed {
+.contents .contents-navTipsEditing .dd-closed,
+.contents .contents-navScheduling .dd-closed {
   display: none;
 }
 
-.contents .contents-navTipsEditing .tagselect-item:hover {
+.contents .contents-navTipsEditing .tagselect-item:hover,
+.contents .contents-navScheduling .tagselect-item:hover {
   cursor: pointer;
   background-color: #eee;
 }
 
-.contents .contents-navTipsEditing .tagselect-selected-container {
+.contents .contents-navTipsEditing .tagselect-selected-container,
+.contents .contents-navScheduling .tagselect-selected-container {
   display: inline-block;
   margin-left: 0.4em;
 }
 
-.contents .contents-navTipsEditing .tagitem {
+.contents .contents-navTipsEditing .tagitem,
+.contents .contents-navScheduling .tagitem {
   display: inline-block;
   border: 1px solid #bbb;
   border-radius: 5px;
@@ -316,21 +345,26 @@ body {
 }
 
 .contents .contents-navTipsEditing .tagitem .tagitem-value, 
-.contents .contents-navTipsEditing .tagitem .tagitem-control {
+.contents .contents-navTipsEditing .tagitem .tagitem-control,
+.contents .contents-navScheduling .tagitem .tagitem-value, 
+.contents .contents-navScheduling .tagitem .tagitem-control {
   display: inline-block;  
   padding: 0.2em 0.3em;
 }
 
-.contents .contents-navTipsEditing .tagitem .tagitem-control {
+.contents .contents-navTipsEditing .tagitem .tagitem-control,
+.contents .contents-navScheduling .tagitem .tagitem-control {
   margin-left: 0.2em;
   color: transparent;
 }
 
-.contents .contents-navTipsEditing .tagitem .tagitem-control.hovering {
+.contents .contents-navTipsEditing .tagitem .tagitem-control.hovering,
+.contents .contents-navScheduling .tagitem .tagitem-control.hovering {
   color: #bbb;
 }
 
-.contents .contents-navTipsEditing .tagitem .tagitem-control:hover {
+.contents .contents-navTipsEditing .tagitem .tagitem-control:hover,
+.contents .contents-navScheduling .tagitem .tagitem-control:hover {
   color: white;
   background-color: var(--bgPrimaryFaded);
 }
@@ -414,3 +448,49 @@ body {
   margin-right: 0.2em;
 }
 /*-- end of standard notice and error --*/
+
+/*---------------------------------------------------
+ * scrollbar
+ *---------------------------------------------------*/
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #ccc; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--bgPrimaryFaded); 
+  border-radius: 6px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bgPrimary);
+}
+
+ /*
+.itips-scrollbar::-webkit-scrollbar {
+  width: 16px;
+}
+.itips-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: blue green;
+}
+
+.itips-scrollbar::-webkit-scrollbar-track {
+  background: green;
+}
+.itips-scrollbar::-webkit-scrollbar-thumb {
+  background-color: blue) ;
+  border-radius: 8px;
+  border: 3px solid green;
+} 
+
+.itips-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bgPrimaryFaded) ;
+} 
+*/

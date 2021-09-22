@@ -15,7 +15,7 @@ class FilteredTipSearch {
   render() {
     this.config.elemSearch.addEventListener('input', (e) => { this._handleSearchInput(e); });
     
-    this.tagDropdownLabel = CreateElement.createDiv(null, 'tagselect-dropdown-label', 'tags');
+    this.tagDropdownLabel = CreateElement.createDiv(null, 'tagselect-dropdown-label p-2', 'tags');
     this.tagDropdownLabel.addEventListener('click', (e) => { this._handleTagDropdown(e); });
     this.config.elemTagContainer.appendChild(this.tagDropdownLabel);
     this.tagDropdownLabel.appendChild(CreateElement.createIcon(null, 'icon-open dd-closed fas fa-caret-down'));
@@ -24,7 +24,7 @@ class FilteredTipSearch {
     this.tagDropdown = CreateElement.createDiv(null, 'tagselect-dropdown dd-closed');
     this.config.elemTagContainer.appendChild(this.tagDropdown);
     
-    this.selectedTagsContainer = CreateElement.createDiv(null, 'tagselect-selected-container', 'selected tags container');
+    this.selectedTagsContainer = CreateElement.createDiv(null, 'tagselect-selected-container', '[selected tags container]');
     this.config.elemTagContainer.appendChild(this.selectedTagsContainer);
   }
   
@@ -148,6 +148,9 @@ class FilteredTipSearch {
   
   _handleTagsChange(e) {
     UtilityKTS.setClass(this.tagDropdown, 'dd-closed', true);    
+    UtilityKTS.setClass(this.tagDropdownLabel.getElementsByClassName('icon-open')[0], 'dd-closed', true);
+    UtilityKTS.setClass(this.tagDropdownLabel.getElementsByClassName('icon-closed')[0], 'dd-closed', false);
+
     var tagValue = e.target.getAttribute('tag-value');
     this._updateSelectedTags('add', tagValue);
     this.config.callbackChange();

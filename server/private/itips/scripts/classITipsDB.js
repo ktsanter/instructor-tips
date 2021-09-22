@@ -39,6 +39,21 @@ class ITipsDB {
       {"tipid": 3, "tipcontent": "<p>important info</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
       {"tipid": 2, "tipcontent": "<p>xyzzy</p>", "taglist": ['aa'], "usagecount": 0},
       {"tipid": 1, "tipcontent": "<p>pflugh</p>", "taglist": [], "usagecount": 1},
+      {"tipid": 15, "tipcontent": "<p>some tip1</p>", "taglist": [], "usagecount": 2},
+      {"tipid": 14, "tipcontent": "<p>another tip1</p>", "taglist": ['aa', 'bb', 'cc'], "usagecount": 1},
+      {"tipid": 13, "tipcontent": "<p>important info1</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
+      {"tipid": 12, "tipcontent": "<p>xyzzy1</p>", "taglist": ['aa'], "usagecount": 0},
+      {"tipid": 11, "tipcontent": "<p>pflugh1</p>", "taglist": [], "usagecount": 1},
+      {"tipid": 25, "tipcontent": "<p>some tip2</p>", "taglist": [], "usagecount": 2},
+      {"tipid": 24, "tipcontent": "<p>another tip2</p>", "taglist": ['aa', 'bb', 'cc'], "usagecount": 1},
+      {"tipid": 23, "tipcontent": "<p>important info2</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
+      {"tipid": 22, "tipcontent": "<p>xyzzy2</p>", "taglist": ['aa'], "usagecount": 0},
+      {"tipid": 21, "tipcontent": "<p>pflugh2</p>", "taglist": [], "usagecount": 1},
+      {"tipid": 35, "tipcontent": "<p>some tip3</p>", "taglist": [], "usagecount": 2},
+      {"tipid": 34, "tipcontent": "<p>another tip3</p>", "taglist": ['aa', 'bb', 'cc'], "usagecount": 1},
+      {"tipid": 33, "tipcontent": "<p>important info3</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
+      {"tipid": 32, "tipcontent": "<p>xyzzy3</p>", "taglist": ['aa'], "usagecount": 0},
+      {"tipid": 31, "tipcontent": "<p>pflugh3</p>", "taglist": [], "usagecount": 1},
       {"tipid": 6, "tipcontent": "<p>inconceivable!</p>", "taglist": [], "usagecount": 3}
     ];
     
@@ -199,6 +214,54 @@ class ITipsDB {
     console.log('ITipsDB.removeSharedSchedule', shareParams);
     
     var dbResult = {"success": true, "details": "remove succeeded", "data": null};
+    
+    return dbResult.success;
+  }
+  
+  async insertWeekIntoSchedule(params) {
+    console.log('ITipsDB.insertWeekIntoSchedule', params);
+    
+    var dbResult = {"success": true, "details": "insert succeeded", "data": null};
+    
+    return dbResult.success;
+  }
+  
+  async removeWeekFromSchedule(params) {
+    console.log('ITipsDB.removeWeekFromSchedule', params);
+    
+    var dbResult = {"success": true, "details": "remove succeeded", "data": null};
+    
+    return dbResult.success;
+  }
+  
+  async addTipToWeek(params) {
+    console.log('ITipsDB.addTipToWeek', params);
+    
+    var dbResult = {"success": true, "details": "add succeeded", "data": null};
+    
+    return dbResult.success;
+  }
+  
+  async removeTipFromWeek(params) {
+    console.log('ITipsDB.removeTipFromWeek', params);
+    
+    var dbResult = {"success": true, "details": "remove succeeded", "data": null};
+    
+    return dbResult.success;
+  }
+  
+  async changeTipOrderInSchedule(params) {
+    console.log('ITipsDB.changeTipOrderInSchedule', params);
+    
+    var dbResult = {"success": true, "details": "remove succeeded", "data": null};
+    
+    return dbResult.success;
+  }
+
+  async changeTipState(params) {
+    console.log('ITipsDB.changeTipState', params);
+    
+    var dbResult = {"success": true, "details": "query succeeded", "data": null};
     
     return dbResult.success;
   }
