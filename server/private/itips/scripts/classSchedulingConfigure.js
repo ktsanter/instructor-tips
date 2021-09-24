@@ -87,7 +87,6 @@ class SchedulingConfigure {
   }
   
   async _endConfigureOption(save) {
-    console.log('_endConfigureOption', this.configureType, save);
     var result = null;
     
     if (save) {
@@ -118,7 +117,6 @@ class SchedulingConfigure {
         }
       }
       
-      console.log('params', params);
       if (params) {
         var dbResult = await this.config.db.saveScheduleConfiguration(params);
         if (dbResult) {

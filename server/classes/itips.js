@@ -25,8 +25,14 @@ module.exports = internal.ITips = class {
     } else if (params.queryName == 'schedule-list') {
       dbResult = await this._getScheduleList(params, postData, userInfo, funcCheckPrivilege);
       
+    } else if (params.queryName == 'schedule-data') {
+      dbResult = await this._getScheduleData(params, postData, userInfo, funcCheckPrivilege);
+      
     } else if (params.queryName == 'tip-list') {
       dbResult = await this._getTipList(params, postData, userInfo, funcCheckPrivilege);
+      
+    } else if (params.queryName == 'user-list') {
+      dbResult = await this._getUserList(params, postData, userInfo, funcCheckPrivilege);
       
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -44,6 +50,12 @@ module.exports = internal.ITips = class {
     } else if (params.queryName == 'tip') {
       dbResult = await this._insertTip(params, postData, userInfo, funcCheckPrivilege);
 
+    } else if (params.queryName == 'add-tip-to-week') {
+      dbResult = await this._addTipToWeek(params, postData, userInfo, funcCheckPrivilege);
+
+    } else if (params.queryName == 'remove-tip-from-week') {
+      dbResult = await this._removeTipFromWeek(params, postData, userInfo, funcCheckPrivilege);
+
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -59,6 +71,9 @@ module.exports = internal.ITips = class {
 
     } else if (params.queryName == 'tip') {
       dbResult = await this._updateTip(params, postData, userInfo, funcCheckPrivilege);
+
+    } else if (params.queryName == 'change-tip-state') {
+      dbResult = await this._changeTipState(params, postData, userInfo, funcCheckPrivilege);
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -100,34 +115,6 @@ module.exports = internal.ITips = class {
     return result;
   }  
 
-  async _getScheduleList(params, postData, userInfo, funcCheckPrivilege) {
-    var result = this._dbManager.queryFailureResult(); 
-    
-    var queryList, queryResults;
-    
-    queryList = {
-      schedule:
-        'select ' + 
-          's.scheduleid, s.schedulename, s.schedulelength, s.schedulestart ' + 
-        'from schedule as s ' +
-        'where s.userid = ' + userInfo.userId + ' ' +
-        'order by s.schedulename'
-    };
-    
-    queryResults = await this._dbManager.dbQueries(queryList);
-    
-    if (queryResults.success) {
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = queryResults.data.schedule;
-
-    } else {
-      result.details = queryResults.details;
-    }
-    
-    return result;
-  }
-  
   async _getScheduleList(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
     
@@ -241,6 +228,45 @@ module.exports = internal.ITips = class {
 
     return result;
   }  
+
+  async _getScheduleData(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      schedule:
+        'select ' + 
+          'a.scheduleid, a.schedulelength, a.schedulestart ' +
+          'from schedule as a ' +
+        'where a.userid = ' + userInfo.userId + ' ' +
+          'and a.scheduleid = ' + postData.scheduleid,
+          
+      tips:
+        'select a.tipid, a.weekindex, a.tipstate, b.tipcontent ' +
+        'from schedule_tip as a, tip as b ' +
+        'where a.scheduleid = ' + postData.scheduleid + ' ' +
+          'and a.tipid = b.tipid'
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var scheduleInfo = queryResults.data.schedule[0];
+    var tipInfo = queryResults.data.tips;
+    var scheduleData = this._consolidateScheduleData(scheduleInfo, tipInfo);
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = scheduleData;
+    
+    return result;
+  }
+  
 
   async _getTipList(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
@@ -396,6 +422,122 @@ module.exports = internal.ITips = class {
     return result;
   }  
 
+  async _addTipToWeek(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult();  
+    
+    var query, queryResults;
+    
+    query = 
+      'insert into schedule_tip ( ' +
+        'scheduleid, weekindex, tipid, tipstate ' +
+      ') values (' +
+        postData.scheduleid + ', ' +
+        postData.weekindex + ', ' +
+        postData.tipid + ', ' +
+        '"unchecked"' +
+      ')'        
+
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'insert succeeded';
+      result.data = queryResults.data;
+
+    } else {
+      result.details = queryResults.details;
+      if (queryResults.details.code == 'ER_DUP_ENTRY') {
+        result.details = 'duplicate';
+      }
+    }
+
+    return result;
+  }  
+
+  async _removeTipFromWeek(params, postData, userInfo, funcCheckPrivilege) {
+    console.log('_removeTipFromWeek', params, postData);
+    var result = this._dbManager.queryFailureResult();  
+    
+    var query, queryResults;
+    
+    query = 
+      'delete from schedule_tip ' +
+      'where scheduleid = ' + postData.scheduleid + ' ' +
+        'and weekindex = ' + postData.weekindex + ' ' +
+        'and tipid = ' + postData.tipid
+
+    console.log('query', query);
+    queryResults = await this._dbManager.dbQuery(query);
+    console.log('queryResults', queryResults);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'removal succeeded';
+      result.data = queryResults.data;
+
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+
+  async _changeTipState(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult();  
+
+    var query, queryResults;
+    var tipState = postData.value ? 'checked' : 'unchecked';
+    
+    query = 
+      'update schedule_tip ' + 
+      'set ' +
+        'tipstate = "' + tipState + '" ' +
+      'where scheduleid = ' + postData.scheduleid + ' ' +
+          'and weekindex = ' + postData.weekindex + ' ' +
+          'and tipid = ' + postData.tipid
+    
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'tip state change succeeded';
+      result.data = queryResults.data;
+      console.log('changed week', postData.weekindex, 'tipid', postData.tipid, 'to', tipState);
+
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+
+  async _getUserList(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      schedule:
+        'select ' + 
+          'a.userid, a.username ' + 
+        'from instructortips.user as a ' +
+        'order by a.username '
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data.schedule;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
 //----------------------------------------------------------------------
 // support methods and queries
 //----------------------------------------------------------------------  
@@ -503,6 +645,30 @@ module.exports = internal.ITips = class {
     result.data = tipId;
 
     return result;
+  }
+  
+  _consolidateScheduleData(scheduleInfo, tipInfo) {
+    var weeklyTips = [];
+    for (var i = 0; i < scheduleInfo.schedulelength; i++) {
+      weeklyTips.push([]);
+    }
+    for (var i = 0; i < tipInfo.length; i++) {
+      var tipItem = tipInfo[i];
+      weeklyTips[tipItem.weekindex].push({
+        "tipid": tipItem.tipid,
+        "tipcontent": tipItem.tipcontent,
+        "tipstate": tipItem.tipstate
+      });
+    }      
+    
+    var consolidated = {
+      "scheduleid": scheduleInfo.scheduleid,
+      "schedulelength": scheduleInfo.schedulelength,
+      "schedulestart": scheduleInfo.schedulestart,
+      "tiplist": weeklyTips
+    }
+    
+    return consolidated;
   }
 
 //----------------------------------------------------------------------

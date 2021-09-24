@@ -6,125 +6,11 @@
 class ITipsDB {
   constructor(config) {
     this.config = config;
-    
-    /*
-    this.dummyScheduleList = [
-      {"schedulename": "second schedule", "scheduleid": 109, "numweeks": 20, "firstdate": '2021-08-28'},
-      {"schedulename": "first schedule", "scheduleid": 108, "numweeks": 20, "firstdate": '2021-09-05'},
-      {"schedulename": "third schedule", "scheduleid": 110, "numweeks": 13, "firstdate": '2021-09-05'}
-    ];
-    */
-    this.dummyScheduleData = {
-      "scheduleid": 1,
-      "numweeks": 17,
-      "firstdate": '2021-09-16',
-      "tiplist": [
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
-          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
-          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
-          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
-          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
-          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
-          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
-          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "checked" },
-          {"tipid": 2, "tipcontent": "<p>example BB", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ],
-        [
-          {"tipid": 1, "tipcontent": "<p>example AA", "tipstate": "unchecked" },
-          {"tipid": 3, "tipcontent": "<p>example CC", "tipstate": "checked" }        
-        ]
-      ]
-    };
-    
-    this.dummyTipList = [
-      {"tipid": 5, "tipcontent": "<p>some tip</p>", "taglist": [], "usagecount": 2},
-      {"tipid": 4, "tipcontent": "<p>another tip</p>", "taglist": ['aa', 'bb', 'cc'], "usagecount": 1},
-      {"tipid": 3, "tipcontent": "<p>important info</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
-      {"tipid": 2, "tipcontent": "<p>xyzzy</p>", "taglist": ['aa'], "usagecount": 0},
-      {"tipid": 1, "tipcontent": "<p>pflugh</p>", "taglist": [], "usagecount": 1},
-      {"tipid": 15, "tipcontent": "<p>some tip1</p>", "taglist": [], "usagecount": 2},
-      {"tipid": 14, "tipcontent": "<p>another tip1</p>", "taglist": ['aa', 'bb', 'cc'], "usagecount": 1},
-      {"tipid": 13, "tipcontent": "<p>important info1</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
-      {"tipid": 12, "tipcontent": "<p>xyzzy1</p>", "taglist": ['aa'], "usagecount": 0},
-      {"tipid": 11, "tipcontent": "<p>pflugh1</p>", "taglist": [], "usagecount": 1},
-      {"tipid": 25, "tipcontent": "<p>some tip2</p>", "taglist": [], "usagecount": 2},
-      {"tipid": 24, "tipcontent": "<p>another tip2</p>", "taglist": ['aa', 'bb', 'cc'], "usagecount": 1},
-      {"tipid": 23, "tipcontent": "<p>important info2</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
-      {"tipid": 22, "tipcontent": "<p>xyzzy2</p>", "taglist": ['aa'], "usagecount": 0},
-      {"tipid": 21, "tipcontent": "<p>pflugh2</p>", "taglist": [], "usagecount": 1},
-      {"tipid": 35, "tipcontent": "<p>some tip3</p>", "taglist": [], "usagecount": 2},
-      {"tipid": 34, "tipcontent": "<p>another tip3</p>", "taglist": ['aa', 'bb', 'cc'], "usagecount": 1},
-      {"tipid": 33, "tipcontent": "<p>important info3</p>", "taglist": ['bb', 'cc'], "usagecount": 2},
-      {"tipid": 32, "tipcontent": "<p>xyzzy3</p>", "taglist": ['aa'], "usagecount": 0},
-      {"tipid": 31, "tipcontent": "<p>pflugh3</p>", "taglist": [], "usagecount": 1},
-      {"tipid": 6, "tipcontent": "<p>inconceivable!</p>", "taglist": [], "usagecount": 3}
-    ];
-    
+            
     this.dummySharedScheduleList = [
       {"scheduleid": 1, "schedulename": "some schedule", "comment": 'rando comment', "sharedby": 'Kevin Santer', "dateshared": '2021-09-25 10:58'},
       {"scheduleid": 2, "schedulename": "some other schedule", "comment": '', "sharedby": 'Joe Instructor', "dateshared": '2021-09-20 14:23'},
       {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-    ];
-    
-    this.dummyUserList = [
-      {"userid": 5, "username": "Joe Instructor"},
-      {"userid": 6, "username": "Bob Teacher"},
-      {"userid": 2, "username": "Taskmaster Phillipa"},
-      {"userid": 1, "username": "Professor Zooey"}
     ];
     
     this.dummyNotificationData = {
@@ -148,7 +34,6 @@ class ITipsDB {
   }
   
   async getScheduleList() {
-    console.log('ITipsDB.getScheduleList');
     var dbResult = await SQLDBInterface.doGetQuery('itips/query', 'schedule-list', this.config.notice);;
     if (!dbResult.success) return null;
 
@@ -160,11 +45,11 @@ class ITipsDB {
   }
   
   async getScheduleData(scheduleId) {
-    var scheduleData = this.dummyScheduleData;
+    var params = { "scheduleid": scheduleId };
     
-    var dbResult = {"success": true, "details": 'query succeeded', "data": scheduleData};
+    var dbResult = await SQLDBInterface.doPostQuery('itips/query', 'schedule-data', params, this.config.notice);;
     if (!dbResult.success) return null;
-    
+
     return dbResult.data;
   }
   
@@ -191,8 +76,6 @@ class ITipsDB {
   }
   
   async getTipList() {
-    console.log('_getTipList');
-    
     var dbResult = await SQLDBInterface.doGetQuery('itips/query', 'tip-list', this.config.notice);
 
     if (!dbResult.success) return null;
@@ -200,14 +83,11 @@ class ITipsDB {
     var tipList = dbResult.data.sort(function(a, b) {
       return a.tipcontent.toLowerCase().localeCompare(b.tipcontent.toLowerCase());
     })
-    
-    
+        
     return tipList;    
   }
   
   async updateTip(params) {
-    console.log('ITipsDB.updateTip', params);
-    
     var dbResult = {"success": false, "details": 'updateTip - unrecognized editType: ' + params.editType, "data": null};
     
     if (params.editType == 'add') {
@@ -224,16 +104,15 @@ class ITipsDB {
   }
   
   async getUserList() {
-    var userList = this.dummyUserList;
+    var dbResult = await SQLDBInterface.doGetQuery('itips/query', 'user-list', this.config.notice);
 
-    userList = userList.sort(function(a, b) {
+    if (!dbResult.success) return null;
+    
+    var userList = dbResult.data.sort(function(a, b) {
       return a.username.toLowerCase().localeCompare(b.username.toLowerCase());
     })
     
-    var dbResult = {"success": true, "details": 'query succeeded', "data": userList};
-    if (!dbResult.success) return null;
-    
-    return dbResult.data;    
+    return userList;    
   }
 
   async saveShareNotification(notificationOn) {
@@ -316,17 +195,17 @@ class ITipsDB {
   }
   
   async addTipToWeek(params) {
-    console.log('ITipsDB.addTipToWeek', params);
-    
-    var dbResult = {"success": true, "details": "add succeeded", "data": null};
+    var dbResult = await SQLDBInterface.doPostQuery('itips/insert', 'add-tip-to-week', params, this.config.notice);;
+
+    if (!dbResult.success && dbResult.details.includes('"duplicate"')) {
+      this.config.notice.setNotice('this tip is already included for the week');
+    }
     
     return dbResult.success;
   }
   
   async removeTipFromWeek(params) {
-    console.log('ITipsDB.removeTipFromWeek', params);
-    
-    var dbResult = {"success": true, "details": "remove succeeded", "data": null};
+    var dbResult = await SQLDBInterface.doPostQuery('itips/insert', 'remove-tip-from-week', params, this.config.notice);;
     
     return dbResult.success;
   }
@@ -340,9 +219,7 @@ class ITipsDB {
   }
 
   async changeTipState(params) {
-    console.log('ITipsDB.changeTipState', params);
-    
-    var dbResult = {"success": true, "details": "query succeeded", "data": null};
+    var dbResult = await SQLDBInterface.doPostQuery('itips/update', 'change-tip-state', params, this.config.notice);;
     
     return dbResult.success;
   }

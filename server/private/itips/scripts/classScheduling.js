@@ -51,7 +51,6 @@ class Scheduling {
   // private methods
   //--------------------------------------------------------------   
   _scheduleChange(params) {
-    console.log('Scheduling._scheduleChange', params);
     if (!params) return;
     
     if (params.configureType == 'add' || params.configureType == 'edit') {

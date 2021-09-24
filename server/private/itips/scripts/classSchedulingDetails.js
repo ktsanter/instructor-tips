@@ -54,13 +54,13 @@ class SchedulingDetails {
     var success = false;
     
     if (params.action == 'index') {
-      if (params.value >= 0 && params.value <= this.scheduleData.numweeks - 1) {
+      if (params.value >= 0 && params.value <= this.scheduleData.schedulelength - 1) {
         this.weekIndex = params.value;
         success = true;
       }        
       
     } else if (params.action == 'next') {
-      if (this.weekIndex < this.scheduleData.numweeks - 1) {
+      if (this.weekIndex < this.scheduleData.schedulelength - 1) {
         this.weekIndex++;
         success = true;
       }
@@ -72,7 +72,7 @@ class SchedulingDetails {
       }
       
     } else if (params.action == 'current') {
-      this.weekIndex = this._getCurrentWeekIndex(this.scheduleData.numweeks, this.scheduleData.firstdate);
+      this.weekIndex = this._getCurrentWeekIndex(this.scheduleData.schedulelength, this.scheduleData.schedulestart);
       success = true;
     }
     
@@ -204,7 +204,7 @@ class SchedulingDetails {
     var tipsContainer = subContainer.getElementsByClassName('single-week-tips')[0];
     var tipTemplate = subContainer.getElementsByClassName('single-week-tip')[0];
 
-    weekLabel.innerHTML = this._calculateWeekDate(this.scheduleData.firstdate, this.weekIndex);
+    weekLabel.innerHTML = this._calculateWeekDate(this.scheduleData.schedulestart, this.weekIndex);
     
     UtilityKTS.removeChildren(tipsContainer);
     for (var i = 0; i < weekData.length; i++) {
@@ -236,7 +236,7 @@ class SchedulingDetails {
     var tipsContainer = subContainer.getElementsByClassName('single-week-tips')[0];
     var tipTemplate = subContainer.getElementsByClassName('single-week-tip')[0];
 
-    weekLabel.innerHTML = this._calculateWeekDate(this.scheduleData.firstdate, this.weekIndex);
+    weekLabel.innerHTML = this._calculateWeekDate(this.scheduleData.schedulestart, this.weekIndex);
     
     UtilityKTS.removeChildren(tipsContainer);
     UtilityKTS.removeChildren(tipsContainer);
@@ -279,12 +279,12 @@ class SchedulingDetails {
     var weekTemplate = subContainer.getElementsByClassName('full-schedule-week')[0];
     var tipTemplate = subContainer.getElementsByClassName('full-schedule-tip')[0];
     
-    for (var i = 0; i < this.scheduleData.numweeks; i++) {
+    for (var i = 0; i < this.scheduleData.schedulelength; i++) {
       var elemWeek = weekTemplate.cloneNode(true);
       UtilityKTS.setClass(elemWeek, 'template', false);
       UtilityKTS.setClass(elemWeek, this.config.hideClass, false);
       
-      var weekDate = this._calculateWeekDate(this.scheduleData.firstdate, i);
+      var weekDate = this._calculateWeekDate(this.scheduleData.schedulestart, i);
       var elemWeekLabel = elemWeek.getElementsByClassName('full-schedule-week-label')[0]
       elemWeekLabel.innerHTML = weekDate;
       elemWeekLabel.setAttribute('week-index', i);
@@ -323,12 +323,12 @@ class SchedulingDetails {
     var weekTemplate = subContainer.getElementsByClassName('full-schedule-week')[0];
     var tipTemplate = subContainer.getElementsByClassName('full-schedule-tip')[0];
     
-    for (var i = 0; i < this.scheduleData.numweeks; i++) {
+    for (var i = 0; i < this.scheduleData.schedulelength; i++) {
       var elemWeek = weekTemplate.cloneNode(true);
       UtilityKTS.setClass(elemWeek, 'template', false);
       UtilityKTS.setClass(elemWeek, this.config.hideClass, false);
       
-      var weekDate = this._calculateWeekDate(this.scheduleData.firstdate, i);
+      var weekDate = this._calculateWeekDate(this.scheduleData.schedulestart, i);
       var elemWeekLabel = elemWeek.getElementsByClassName('full-schedule-week-label')[0]
       elemWeekLabel.innerHTML = weekDate;
       elemWeekLabel.setAttribute('week-index', i);
@@ -383,16 +383,16 @@ class SchedulingDetails {
       this.tipListBody.appendChild(tipRow);    }
   }
   
-  _getCurrentWeekIndex(numWeeks, firstDate) {
+  _getCurrentWeekIndex(scheduleLength, scheduleStart) {
     var weekIndex = 0;
     
     var strNowDate = this._formatShortDate(new Date());
-    var strFirstDate = this._formatShortDate(this._addDays(new Date(firstDate), 1));
-    var strLastDate = this._formatShortDate(this._addDays(new Date(strFirstDate), 7 * numWeeks - 1));
+    var strFirstDate = this._formatShortDate(this._addDays(new Date(scheduleStart), 1));
+    var strLastDate = this._formatShortDate(this._addDays(new Date(strFirstDate), 7 * scheduleLength - 1));
      
     var strLastDayInWeek = this._formatShortDate(this._addDays(new Date(strFirstDate), 6));
     
-    for (var weekIndex = 0; weekIndex < numWeeks - 1; weekIndex++) {
+    for (var weekIndex = 0; weekIndex < scheduleLength - 1; weekIndex++) {
       if (strNowDate <= strLastDayInWeek) break;
       strLastDayInWeek = this._formatShortDate(this._addDays(new Date(strLastDayInWeek), 7));
     }
@@ -484,7 +484,7 @@ class SchedulingDetails {
     
     var success = await this.config.db.changeTipState({ 
       "scheduleid": this.scheduleId,
-      "weekindex": this.weekIndex,
+      "weekindex": tipInfo.weekindex,
       "tipid": tipInfo.tipid, 
       "value": e.target.checked 
     });
@@ -517,8 +517,8 @@ class SchedulingDetails {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  _calculateWeekDate(firstDate, weekIndex) {   
-    var weekDate = this._addDays( new Date(firstDate), weekIndex * 7 + 1);
+  _calculateWeekDate(scheduleStart, weekIndex) {   
+    var weekDate = this._addDays( new Date(scheduleStart), weekIndex * 7 + 1);
 
     return this._formatShortDate(weekDate);
   }

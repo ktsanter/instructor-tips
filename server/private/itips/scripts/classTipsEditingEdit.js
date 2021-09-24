@@ -49,7 +49,6 @@ class TipsEditingEdit {
   }
   
   beginEditOption(params) {   
-    console.log('TipsEditingEdit.beginEditOption', params);
     this.callbackEditComplete = params.callbackCompletion;
     
     if (params.showEditContainers == 'force-close') {
@@ -156,7 +155,6 @@ class TipsEditingEdit {
   
   _tagStringToArray(tagList) {
     var tagList = tagList.split(',');
-    console.log('split', tagList);
     var tagListCleaned = [];
 
     for (var i = 0; i < tagList.length; i++) {
@@ -175,7 +173,7 @@ class TipsEditingEdit {
   // handlers
   //--------------------------------------------------------------
   _handleEditorChange(e) {
-    console.log('_handleEditorChange');
+    // do nothing
   }
   
   async _handleSave(e) {
