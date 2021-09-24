@@ -7,6 +7,7 @@ class TipsEditingEdit {
   constructor(config) {
     this.config = config;
     this.editType = null;
+    this.callbackEditComplete = null;
   }
   
   //--------------------------------------------------------------
@@ -48,6 +49,9 @@ class TipsEditingEdit {
   }
   
   beginEditOption(params) {   
+    console.log('TipsEditingEdit.beginEditOption', params);
+    this.callbackEditComplete = params.callbackCompletion;
+    
     if (params.showEditContainers == 'force-close') {
       this._forceClose();
       return;
@@ -122,7 +126,7 @@ class TipsEditingEdit {
       } else if (this.editType == 'edit') {
         params = {
           "editType": this.editType,
-          "scheduleid": originalTipInfo.tipid,
+          "tipid": originalTipInfo.tipid,
           "tipcontent": this.tiny.tipContent_edit.getContent(),
           "taglist": this._tagStringToArray(subContainer.getElementsByClassName('input-tags')[0].value.trim())
         }
@@ -130,12 +134,13 @@ class TipsEditingEdit {
       } else if (this.editType == 'delete') {
         params = {
           "editType": this.editType,
-          "scheduleid": originalTipInfo.tipid
+          "tipid": originalTipInfo.tipid
         }
       }
 
       if (params) {
         var success = await this.config.db.updateTip(params);
+        this.callbackEditComplete();
       }
     }
 
@@ -151,16 +156,19 @@ class TipsEditingEdit {
   
   _tagStringToArray(tagList) {
     var tagList = tagList.split(',');
+    console.log('split', tagList);
+    var tagListCleaned = [];
 
     for (var i = 0; i < tagList.length; i++) {
-      tagList[i] = tagList[i].trim();
+      var tag = tagList[i].trim();
+      if (tag.length > 0) tagListCleaned.push(tag);
     }
 
-    tagList = tagList.sort(function(a, b) {
+    tagListCleaned = tagListCleaned.sort(function(a, b) {
       return a.toLowerCase().localeCompare(b.toLowerCase());
     });
     
-    return tagList;
+    return tagListCleaned;
   }
   
   //--------------------------------------------------------------

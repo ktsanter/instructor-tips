@@ -79,7 +79,7 @@ class SchedulingConfigure {
       
     } else if (params.configureType == 'edit') {
       subContainer.getElementsByClassName('input-name')[0].value = scheduleInfo.schedulename;
-      subContainer.getElementsByClassName('input-start')[0].value = scheduleInfo.firstdate;
+      subContainer.getElementsByClassName('input-start')[0].value = scheduleInfo.schedulestart;
       
     } else if (params.configureType == 'delete') {
       subContainer.getElementsByClassName('schedule-name')[0].innerHTML = scheduleInfo.schedulename;
@@ -87,6 +87,7 @@ class SchedulingConfigure {
   }
   
   async _endConfigureOption(save) {
+    console.log('_endConfigureOption', this.configureType, save);
     var result = null;
     
     if (save) {
@@ -117,6 +118,7 @@ class SchedulingConfigure {
         }
       }
       
+      console.log('params', params);
       if (params) {
         var dbResult = await this.config.db.saveScheduleConfiguration(params);
         if (dbResult) {

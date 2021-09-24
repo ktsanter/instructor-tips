@@ -7,12 +7,13 @@ class ITipsDB {
   constructor(config) {
     this.config = config;
     
+    /*
     this.dummyScheduleList = [
       {"schedulename": "second schedule", "scheduleid": 109, "numweeks": 20, "firstdate": '2021-08-28'},
       {"schedulename": "first schedule", "scheduleid": 108, "numweeks": 20, "firstdate": '2021-09-05'},
       {"schedulename": "third schedule", "scheduleid": 110, "numweeks": 13, "firstdate": '2021-09-05'}
     ];
-    
+    */
     this.dummyScheduleData = {
       "scheduleid": 1,
       "numweeks": 17,
@@ -147,6 +148,7 @@ class ITipsDB {
   }
   
   async getScheduleList() {
+    console.log('ITipsDB.getScheduleList');
     var dbResult = await SQLDBInterface.doGetQuery('itips/query', 'schedule-list', this.config.notice);;
     if (!dbResult.success) return null;
 
@@ -170,8 +172,15 @@ class ITipsDB {
     var result = null;
 
     var dbResult = {"success": false, "details": 'unrecognized action', "data": null};
+    
     if (params.configureType == 'add') {
       dbResult = await SQLDBInterface.doPostQuery('itips/insert', 'schedule', params, this.config.notice);
+      
+    } else if (params.configureType == 'edit') {
+      dbResult = await SQLDBInterface.doPostQuery('itips/update', 'schedule', params, this.config.notice);
+      
+    } else if (params.configureType == 'delete') {
+      dbResult = await SQLDBInterface.doPostQuery('itips/delete', 'schedule', params, this.config.notice);
     }
 
     if (dbResult.success) {
@@ -182,22 +191,34 @@ class ITipsDB {
   }
   
   async getTipList() {
-    var tipList = this.dummyTipList;
+    console.log('_getTipList');
+    
+    var dbResult = await SQLDBInterface.doGetQuery('itips/query', 'tip-list', this.config.notice);
 
-    tipList = tipList.sort(function(a, b) {
+    if (!dbResult.success) return null;
+
+    var tipList = dbResult.data.sort(function(a, b) {
       return a.tipcontent.toLowerCase().localeCompare(b.tipcontent.toLowerCase());
     })
     
-    var dbResult = {"success": true, "details": 'query succeeded', "data": tipList};
-    if (!dbResult.success) return null;
     
-    return dbResult.data;    
+    return tipList;    
   }
   
   async updateTip(params) {
     console.log('ITipsDB.updateTip', params);
-
-    var dbResult = {"success": true, "details": 'update succeeded', "data": null};
+    
+    var dbResult = {"success": false, "details": 'updateTip - unrecognized editType: ' + params.editType, "data": null};
+    
+    if (params.editType == 'add') {
+      dbResult = await SQLDBInterface.doPostQuery('itips/insert', 'tip', params, this.config.notice);
+      
+    } else if (params.editType == 'edit') {
+      dbResult = await SQLDBInterface.doPostQuery('itips/update', 'tip', params, this.config.notice);
+      
+    } else if (params.editType == 'delete') {
+      dbResult = await SQLDBInterface.doPostQuery('itips/delete', 'tip', params, this.config.notice);
+    }
     
     return dbResult.success;
   }

@@ -33,7 +33,7 @@ class SchedulingSelection {
   }
   
   async update(initialScheduleId) {
-    if (initialScheduleId && initialScheduleId >= 0) this.selectedSchedule.scheduleid = initialScheduleId;
+    if (initialScheduleId && initialScheduleId >= 0 && this.selectedSchedule) this.selectedSchedule.scheduleid = initialScheduleId;
     if (initialScheduleId && initialScheduleId == 0) this.selectedSchedule = null;
     
     this.config.callbackConfigureOption({"configureType": 'force-close'});
@@ -77,8 +77,6 @@ class SchedulingSelection {
   // private methods
   //--------------------------------------------------------------  
   async _doSelection(scheduleInfo) {
-    console.log('_doSelection', scheduleInfo);
-    
     this.selectedSchedule = scheduleInfo;
     await this.config.callbackScheduleSelect(this.selectedSchedule.scheduleid, this.config.db);
   }

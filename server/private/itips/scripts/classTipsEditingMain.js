@@ -69,7 +69,6 @@ class TipsEditingMain {
   _sortTipList(tipList) {
     var sortBy = this.sorting.sortBy;
     var direction = this.sorting.direction;
-    console.log(this.sorting);
     
     var sorted = tipList.sort(function(a, b) {
       var aval = a[sortBy];
@@ -128,7 +127,7 @@ class TipsEditingMain {
     this.config.callbackEditOption({
       "editType": 'add',
       "tipInfo": null,
-      "callbackCompletion": this.update
+      "callbackCompletion": () => { this.update(); }
     });
   }
   
@@ -136,7 +135,7 @@ class TipsEditingMain {
     this.config.callbackEditOption({
       "editType": 'edit',
       "tipInfo": JSON.parse(e.target.getAttribute('tip-info')),
-      "callbackCompletion": this.update
+      "callbackCompletion": () => { this.update(); }
     });
   }
   
@@ -144,7 +143,7 @@ class TipsEditingMain {
     this.config.callbackEditOption({
       "editType": 'delete',
       "tipInfo": JSON.parse(e.target.getAttribute('tip-info')),
-      "callbackCompletion": this.update
+      "callbackCompletion": () => { this.update(); }
     });
   }
   
