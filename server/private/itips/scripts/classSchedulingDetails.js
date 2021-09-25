@@ -220,7 +220,9 @@ class SchedulingDetails {
     var tipsContainer = subContainer.getElementsByClassName('single-week-tips')[0];
     var tipTemplate = subContainer.getElementsByClassName('single-week-tip')[0];
 
-    weekLabel.innerHTML = this._calculateWeekDate(this.scheduleData.schedulestart, this.weekIndex);
+    var strWeekLabel = (this.weekIndex + 1) + ': ' +
+      this._calculateWeekDate(this.scheduleData.schedulestart, this.weekIndex);
+    weekLabel.innerHTML = strWeekLabel;
     
     UtilityKTS.removeChildren(tipsContainer);
     for (var i = 0; i < weekData.length; i++) {
@@ -252,7 +254,9 @@ class SchedulingDetails {
     var tipsContainer = subContainer.getElementsByClassName('single-week-tips')[0];
     var tipTemplate = subContainer.getElementsByClassName('single-week-tip')[0];
 
-    weekLabel.innerHTML = this._calculateWeekDate(this.scheduleData.schedulestart, this.weekIndex);
+    var strWeekLabel = (this.weekIndex + 1) + ': ' +
+      this._calculateWeekDate(this.scheduleData.schedulestart, this.weekIndex);
+    weekLabel.innerHTML = strWeekLabel;
     
     UtilityKTS.removeChildren(tipsContainer);
     UtilityKTS.removeChildren(tipsContainer);
@@ -300,7 +304,7 @@ class SchedulingDetails {
       UtilityKTS.setClass(elemWeek, 'template', false);
       UtilityKTS.setClass(elemWeek, this.config.hideClass, false);
       
-      var weekDate = this._calculateWeekDate(this.scheduleData.schedulestart, i);
+      var weekDate = (i + 1) + ': ' + this._calculateWeekDate(this.scheduleData.schedulestart, i);
       var elemWeekLabel = elemWeek.getElementsByClassName('full-schedule-week-label')[0]
       elemWeekLabel.innerHTML = weekDate;
       elemWeekLabel.setAttribute('week-index', i);
@@ -344,7 +348,7 @@ class SchedulingDetails {
       UtilityKTS.setClass(elemWeek, 'template', false);
       UtilityKTS.setClass(elemWeek, this.config.hideClass, false);
       
-      var weekDate = this._calculateWeekDate(this.scheduleData.schedulestart, i);
+      var weekDate = (i + 1) + ': ' + this._calculateWeekDate(this.scheduleData.schedulestart, i);
       var elemWeekLabel = elemWeek.getElementsByClassName('full-schedule-week-label')[0]
       elemWeekLabel.innerHTML = weekDate;
       elemWeekLabel.setAttribute('week-index', i);

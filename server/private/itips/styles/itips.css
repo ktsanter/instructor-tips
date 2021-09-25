@@ -91,6 +91,11 @@ body {
 /*------------------------------------------------------------------------------
  * contents - navScheduling, selection
  *------------------------------------------------------------------------------*/
+.contents .contents-navScheduling .scheduling-selection-controls {
+  display: inline-block;
+  vertical-align: top;
+}
+
 .contents .contents-navScheduling .scheduling-selection-controls .selection-control {
   color: var(--bgPrimaryFaded);
   cursor: pointer;
@@ -115,6 +120,11 @@ body {
 
 .contents .contents-navScheduling .scheduling-selection-controls .selection-control.disable-me {
   color: #aaa;
+}
+
+.contents .contents-navScheduling .scheduling-select-container {
+  display: inline-block;
+  width: 95%;
 }
 
 /*------------------------------------------------------------------------------
@@ -433,6 +443,11 @@ body {
 
 .contents .contents-navTipsEditing .header.header-usage,
 .contents .contents-navTipsEditing .tiplist-body .tiplist-usage  { width: 5.0em; }
+
+.contents .contents-navTipsEditing .tiplist-body .tiplist-usage.has-handler:hover  { 
+  cursor: pointer;
+  text-decoration: underline;
+}
 
 /*------------------------------------------------------------------------------
  * contents - navSharing

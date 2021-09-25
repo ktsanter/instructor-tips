@@ -60,7 +60,14 @@ class TipsEditingMain {
       
       tipRow.getElementsByClassName('tiplist-content')[0].innerHTML = tip.tipcontent;
       tipRow.getElementsByClassName('tiplist-tags')[0].innerHTML = tip.taglist;
-      tipRow.getElementsByClassName('tiplist-usage')[0].innerHTML = tip.usagecount;
+      
+      var elemUsage = tipRow.getElementsByClassName('tiplist-usage')[0]
+      elemUsage.innerHTML = tip.usagecount;
+      if (tip.usagecount > 0) {
+        elemUsage.classList.add('has-handler');
+        elemUsage.setAttribute('tip-info', JSON.stringify(tip));
+        elemUsage.addEventListener('click', (e) => { this._handleTipUsage(e); });
+      }
       
       this.tipListBody.appendChild(tipRow);
     }
@@ -99,6 +106,24 @@ class TipsEditingMain {
       this.sorting.sortBy = sortBy;
       this.sorting.direction = 1;
     }
+  }
+  
+  async _showTipUsage(tipInfo) {
+    var result = await this.config.db.getSchedulesUsingTip({"tipid": tipInfo.tipid});
+    if (!result) return;
+    
+    console.log(result);
+    var msg = 'This tip is used in:';
+    for (var i = 0; i < result.length; i++) {
+      var scheduleUsage = result[i];
+      msg += '\n"' + scheduleUsage.schedulename + '"';
+      
+      var incremementedWeeks = scheduleUsage.weeks.map(x => x + 1);
+      var weekList = incremementedWeeks.join(', ');
+      msg += ' for week(s) ' + weekList;
+    }
+    
+    alert(msg);
   }
   
   //--------------------------------------------------------------
@@ -145,6 +170,11 @@ class TipsEditingMain {
       "tipInfo": JSON.parse(e.target.getAttribute('tip-info')),
       "callbackCompletion": () => { this.update(); }
     });
+  }
+  
+  async _handleTipUsage(e) {
+    var tipInfo = JSON.parse(e.target.getAttribute('tip-info'));
+    await this._showTipUsage(tipInfo);
   }
   
   //--------------------------------------------------------------

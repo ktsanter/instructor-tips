@@ -31,6 +31,9 @@ module.exports = internal.ITips = class {
     } else if (params.queryName == 'tip-list') {
       dbResult = await this._getTipList(params, postData, userInfo, funcCheckPrivilege);
       
+    } else if (params.queryName == 'schedules-using-tip') {
+      dbResult = await this._getSchedulesUsingTip(params, postData, userInfo, funcCheckPrivilege);
+      
     } else if (params.queryName == 'user-list') {
       dbResult = await this._getUserList(params, postData, userInfo, funcCheckPrivilege);
       
@@ -500,7 +503,6 @@ module.exports = internal.ITips = class {
       result.success = true;
       result.details = 'tip state change succeeded';
       result.data = queryResults.data;
-      console.log('changed week', postData.weekindex, 'tipid', postData.tipid, 'to', tipState);
 
     } else {
       result.details = queryResults.details;
@@ -508,6 +510,59 @@ module.exports = internal.ITips = class {
 
     return result;
   }  
+
+  async _getSchedulesUsingTip(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      usage:
+        'select a.scheduleid, a.schedulename, b.weekindex ' +
+        'from schedule as a, schedule_tip as b ' +
+        'where a.scheduleid = b.scheduleid ' +
+          'and b.tipid = ' + postData.tipid
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.detail;
+      return result;
+    }
+
+    var originalList = queryResults.data.usage;
+
+    var consolidated = {};
+    for (var i = 0; i < originalList.length; i++) {
+      var row = originalList[i];
+      
+      if (!consolidated.hasOwnProperty(row.scheduleid)) {
+        consolidated[row.scheduleid] = {
+          "scheduleid": row.scheduleid,
+          "schedulename": row.schedulename,
+          "weeks": []
+        }
+      }
+
+      consolidated[row.scheduleid].weeks.push(row.weekindex);
+    }
+    
+    var consolidatedArray = [];
+    for (var key in consolidated) {
+      consolidatedArray.push(consolidated[key]);
+    }
+
+    consolidatedArray = consolidatedArray.sort(function(a,b) {
+      return a.schedulename.toLowerCase().localeCompare(b.schedulename.toLowerCase());
+    });
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = consolidatedArray;
+
+    return result;
+  }
 
   async _getUserList(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 

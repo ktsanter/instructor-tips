@@ -245,6 +245,13 @@ class ITipsDB {
     return dbResult.success;
   }
   
+  async getSchedulesUsingTip(params) {
+    var dbResult = await SQLDBInterface.doPostQuery('itips/query', 'schedules-using-tip', params, this.config.notice);;
+    if (!dbResult.success) return null;
+
+    return dbResult.data;
+  }
+  
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
