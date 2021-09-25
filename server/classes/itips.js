@@ -295,7 +295,8 @@ module.exports = internal.ITips = class {
         'select b.tipid, count(b.schedule_tipid) as "usagecount" ' +
         'from schedule as a, schedule_tip as b ' +
         'where a.scheduleid = b.scheduleid ' +
-          'and a.userid = ' + userInfo.userId
+          'and a.userid = ' + userInfo.userId + ' ' +
+        'group by b.tipid'
     };
     
     queryResults = await this._dbManager.dbQueries(queryList);
@@ -455,7 +456,6 @@ module.exports = internal.ITips = class {
   }  
 
   async _removeTipFromWeek(params, postData, userInfo, funcCheckPrivilege) {
-    console.log('_removeTipFromWeek', params, postData);
     var result = this._dbManager.queryFailureResult();  
     
     var query, queryResults;
@@ -466,9 +466,7 @@ module.exports = internal.ITips = class {
         'and weekindex = ' + postData.weekindex + ' ' +
         'and tipid = ' + postData.tipid
 
-    console.log('query', query);
     queryResults = await this._dbManager.dbQuery(query);
-    console.log('queryResults', queryResults);
     
     if (queryResults.success) {
       result.success = true;

@@ -19,7 +19,9 @@ class TipsEditing {
       "container": containerEdit,
       "otherContainers": [containerMain],
       "hideClass": this.config.hideClass,
-      "db": this.config.db
+      "db": this.config.db,
+      "idTinyElementAdd": 'tipeditorAdd',
+      "idTinyElementEdit": 'tipeditorEdit'
     });
     await this.tipsEditingEdit.render();
     

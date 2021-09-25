@@ -11,7 +11,7 @@ class Scheduling {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
-  render() {
+  async render() {
     var containerDetails = this.config.container.getElementsByClassName('scheduling-detail-container')[0];
     var containerConfigure = this.config.container.getElementsByClassName('scheduling-configure-container')[0];
     var containerSelection = this.config.container.getElementsByClassName('scheduling-selection-container')[0];
@@ -21,7 +21,7 @@ class Scheduling {
       "hideClass": this.config.hideClass,
       "db": this.config.db
     });
-    this.scheduleDetails.render();
+    await this.scheduleDetails.render();
     
     this.scheduleConfigure = new SchedulingConfigure({
       "container": containerConfigure,

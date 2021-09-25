@@ -17,7 +17,7 @@ mixin schedulingDetails()
           
           .single-week-tip(class="template hide-me")
             .single-week-tip-controls
-              input(class="tip-check form-check-input" type="checkbox" checked)
+              input(class="tip-check form-check-input ms-1" type="checkbox" checked)
 
             .single-week-tip-content(class="ms-2") template
 
@@ -37,10 +37,9 @@ mixin schedulingDetails()
           
           .single-week-tip(class="template hide-me")
             .single-week-tip-controls(class="before-content")
-              i(class="tip-icon icon-moveup fas fa-arrow-up pe-1")
+              i(class="tip-icon icon-moveup fas fa-arrow-up ms-2 pe-1")
 
             .single-week-tip-content(class="me-2")
-              |content for tip
 
             .single-week-tip-controls(class="after-content")
               i(class="tip-icon icon-remove fas fa-times pe-1")
@@ -52,14 +51,14 @@ mixin schedulingDetails()
         input(type="checkbox" class="check-full-schedule btn-check" id="checkFullScheduleMode")
         label(class="btn btn-outline-aardvark p-1" for="checkFullScheduleMode") full schedule
         
-        .full-schedule-weeks
+        .full-schedule-weeks(class="mt-1")
 
         .full-schedule-week(class="template hide-me mb-2")
-          .full-schedule-week-label
+          .full-schedule-week-label(class="ps-1")
             
         .full-schedule-tip(class="template hide-me")
           .full-schedule-tip-controls
-            input(class="tip-check form-check-input" type="checkbox")
+            input(class="tip-check form-check-input ms-1" type="checkbox")
 
           .full-schedule-tip-content(class="ms-2")
 
@@ -67,17 +66,17 @@ mixin schedulingDetails()
       //- full schedule, edit mode
       //--------------------------------------------------------------
       .col-sm(class="subcontainer full-schedule editmode")
+        input(type="radio" class="viewmodecontrol-fullschedule tipbrowsing btn-check" name="viewmode-controls1" id="radioTipBrowsing1" autocomplete="off")
+        label(class="btn  btn-outline-aardvark p-1 me-1" for="radioTipBrowsing1") tip browsing
+        
         input(type="radio" class="viewmodecontrol-fullschedule fullschedule btn-check" name="viewmode-controls1" id="radioFullSchedule1" autocomplete="off")
         label(class="btn  btn-outline-aardvark p-1 me-1" for="radioFullSchedule1") full schedule
 
-        input(type="radio" class="viewmodecontrol-fullschedule tipbrowsing btn-check" name="viewmode-controls1" id="radioTipBrowsing1" autocomplete="off")
-        label(class="btn  btn-outline-aardvark p-1" for="radioTipBrowsing1") tip browsing
-        
-        .full-schedule-weeks
+        .full-schedule-weeks(class="mt-1")
         
         .full-schedule-week(class="template hide-me mb-2")
           .full-schedule-week-header
-            .full-schedule-week-label
+            .full-schedule-week-label(class="ps-1")
               
             .full-schedule-week-controls
               i(class="week-icon icon-insert far fa-plus-square pe-2" title="insert week after this one")
@@ -90,21 +89,44 @@ mixin schedulingDetails()
       //- tip browsing, only for edit mode
       //--------------------------------------------------------------
       .col-sm(class="subcontainer tip-browsing editmode")
+        input(type="radio" class="viewmodecontrol-tipbrowsing tipbrowsing btn-check" name="viewmode-controls2" id="radioTipBrowsing2" autocomplete="off")
+        label(class="btn  btn-outline-aardvark p-1 me-1" for="radioTipBrowsing2") tip browsing
+        
         input(type="radio" class="viewmodecontrol-tipbrowsing fullschedule btn-check" name="viewmode-controls2" id="radioFullSchedule2" autocomplete="off")
         label(class="btn  btn-outline-aardvark p-1 me-1" for="radioFullSchedule2") full schedule
 
-        input(type="radio" class="viewmodecontrol-tipbrowsing tipbrowsing btn-check" name="viewmode-controls2" id="radioTipBrowsing2" autocomplete="off")
-        label(class="btn  btn-outline-aardvark p-1" for="radioTipBrowsing2") tip browsing
+        .search-container
+          .form-floating(class="search-form mt-1")
+            input(type="text" class="input-search form-control" id="inputSearchBrowse" placeholder="search for tip")
+            label(for="inputSearchBrowse") search
 
-        .form-floating
-          input(type="text" class="input-search form-control" id="inputSearchBrowse" placeholder="search for tip")
-          label(for="inputSearchBrowse") search
+          i(class="icon-addtip far fa-plus-square ms-1" title="create new tip")
 
         .tagselect-container(class="my-1")
         
         table(class="table table-striped table-hover table-sm")
           thead
           tbody(class="tiplist-body")
+          
+      .col-sm(class="tipadd-container hide-me")
+        .container-fluid
+          .row
+            .col-sm
+            .tipeditor-container(class="tipeditor-container")
+              +makeTinyMCE("tipeditorAdd_Browsing")
+              
+          .row(class="mt-1")
+            .col-sm
+              .form-floating
+                input(type="text" class="input-tags form-control" id="tagsInput_add" placeholder="default")
+                label(for="tagsInput_add") tags
+          
+          .row(class="mt-1")
+            .col-sm
+              button(class="button-save btn btn-aardvark me-1") save
+              button(class="button-cancel btn btn-aardvark") cancel
+              
+
 
     div(class="hide-me")
       table

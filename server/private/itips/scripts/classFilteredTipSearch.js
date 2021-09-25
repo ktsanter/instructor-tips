@@ -6,7 +6,9 @@
 class FilteredTipSearch {
   constructor(config) {
     this.config = config;
+    
     this.fullTipList = [];
+    this.hasAddTipCallback = this.config.hasOwnProperty('callbackAddTip');
   }
   
   //--------------------------------------------------------------
@@ -14,6 +16,9 @@ class FilteredTipSearch {
   //--------------------------------------------------------------   
   render() {
     this.config.elemSearch.addEventListener('input', (e) => { this._handleSearchInput(e); });
+    if (this.hasAddTipCallback) {
+      this.config.callbackAddTip.elem.addEventListener('click', () => { this.config.callbackAddTip.callback(); });
+    }
     
     this.tagDropdownLabel = CreateElement.createDiv(null, 'tagselect-dropdown-label p-2', 'tags');
     this.tagDropdownLabel.addEventListener('click', (e) => { this._handleTagDropdown(e); });

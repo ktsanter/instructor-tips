@@ -8,16 +8,16 @@ mixin tipseditingEdit()
             .tipeditor-container(class="tipeditor-container")
               +makeTinyMCE("tipeditorAdd")
               
-          .row
+          .row(class="mt-1")
             .col-sm
               .form-floating
                 input(type="text" class="input-tags form-control" id="tagsInput_add" placeholder="default")
                 label(for="tagsInput_add") tags
           
-          .row
+          .row(class="mt-1")
             .col-sm
-              button(class="button-save btn btn-primary") save
-              button(class="button-cancel btn btn-primary") cancel
+              button(class="button-save btn btn-aardvark me-1") save
+              button(class="button-cancel btn btn-aardvark") cancel
               
     .row(class="subcontainer tipsediting-edit")
       .col-sm
@@ -27,30 +27,31 @@ mixin tipseditingEdit()
             .tipeditor-container(class="tipeditor-container")
               +makeTinyMCE("tipeditorEdit")
               
-          .row
+          .row(class="mt-1")
             .col-sm
               .form-floating
                 input(type="text" class="input-tags form-control" id="tagsInput_edit" placeholder="default")
                 label(for="tagsInput_edit") tags
           
-          .row
+          .row(class="mt-1")
             .col-sm
-              button(class="button-save btn btn-primary") save
-              button(class="button-cancel btn btn-primary") cancel
+              button(class="button-save btn btn-aardvark me-1") save
+              button(class="button-cancel btn btn-aardvark") cancel
              
     .row(class="subcontainer tipsediting-delete")
       .col-sm
         .container-fluid
           .row
             .col-sm
-              |This tip will be deleted and this action cannot be undone. 
-              span(class="tipusage-deletion") xx
-              br
-              .tipcontent-deletion
-              br
-              |Are you sure you want to delete this tip?
+              div
+                |This tip will be deleted and this action cannot be undone. 
+                span(class="tipusage-deletion") xx
+              div(class="mt-1")
+                .tipcontent-deletion
+              div(class="mt-2")
+                |Are you sure you want to delete this tip?
           
-          .row
+          .row(class="mt-1")
             .col-sm
-              button(class="button-save btn btn-primary") save
-              button(class="button-cancel btn btn-primary") cancel
+              button(class="button-save btn btn-aardvark me-1") confirm
+              button(class="button-cancel btn btn-aardvark") cancel

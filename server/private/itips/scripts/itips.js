@@ -40,7 +40,7 @@ const app = function () {
 
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
-    _renderContents();
+    await _renderContents();
     
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
@@ -95,11 +95,11 @@ const app = function () {
   //-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------
-  function _renderContents() {
+  async function _renderContents() {
     _renderShareCount();
     
-    _renderScheduling();
-    _renderTipsEditing();
+    await _renderScheduling();
+    await _renderTipsEditing();
     _renderSharing();
     _renderNotification();
     _renderAdmin();
@@ -112,7 +112,7 @@ const app = function () {
     page.shareCount = elemSharing;
   }
     
-  function _renderScheduling() {
+  async function _renderScheduling() {
     page.navScheduling = page.contents.getElementsByClassName('contents-navScheduling')[0];
     
     settings.scheduling = new Scheduling({
@@ -121,10 +121,10 @@ const app = function () {
       "db": settings.db
     });
     
-    settings.scheduling.render();
+    await settings.scheduling.render();
   }
 
-  function _renderTipsEditing() {
+  async function _renderTipsEditing() {
     page.navTipsEditing = page.contents.getElementsByClassName('contents-navTipsEditing')[0];
     
     settings.tipsEditing = new TipsEditing({
@@ -133,7 +133,7 @@ const app = function () {
       "db": settings.db
     });
     
-    settings.tipsEditing.render();
+    await settings.tipsEditing.render();
   }
 
   async function _renderSharing() {

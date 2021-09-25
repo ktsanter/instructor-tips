@@ -73,7 +73,7 @@ class SchedulingConfigure {
     subContainer.setAttribute('original-schedule-info', JSON.stringify(scheduleInfo));
 
     if (params.configureType == 'add') {
-      subContainer.getElementsByClassName('input-name')[0].value = 'default';
+      subContainer.getElementsByClassName('input-name')[0].value = 'new schedule';
       subContainer.getElementsByClassName('input-length')[0].value = 20;
       subContainer.getElementsByClassName('input-start')[0].value = this._formatShortDate(new Date(Date.now()))
       

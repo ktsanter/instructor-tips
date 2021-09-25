@@ -3,23 +3,19 @@ mixin schedulingConfigure()
     .row(class="subcontainer configure-add")
       .col-sm
         .container-fluid
-          .row
-            .col-sm
-              |create new schedule
-          
-          .row
+          .row(class="mb-2")
             .col-sm
               .form-floating
                 input(type="text" class="input-name form-control" id="inputName-Add" placeholder="schedule name")
                 label(for="inputName-Add") schedule name
 
-          .row
+          .row(class="mb-2")
             .col-sm
               .form-floating
                 input(type="number" class="input-length form-control" id="inputLength-Add" placeholder="number of weeks" value="20" min="4" max="40")
                 label(for="inputLength-Add") schedule length
 
-          .row
+          .row(class="mb-2")
             .col-sm
               .form-floating
                 input(type="date" class="input-start form-control" id="inputStart" placeholder="starting date")
@@ -27,23 +23,19 @@ mixin schedulingConfigure()
           
           .row
             .col-sm
-              button(class="button-save btn btn-primary") save
-              button(class="button-cancel btn btn-primary") cancel
+              button(class="button-save btn btn-aardvark me-1") save
+              button(class="button-cancel btn btn-aardvark") cancel
 
     .row(class="subcontainer configure-edit")
       .col-sm
         .container-fluid
-          .row
-            .col-sm
-              |edit schedule parameters
-          
-          .row
+          .row(class="mb-2")
             .col-sm
               .form-floating
                 input(type="text" class="input-name form-control" id="inputName-Edit" placeholder="schedule name")
                 label(for="inputName-Edit") schedule name
 
-          .row
+          .row(class="mb-2")
             .col-sm
               .form-floating
                 input(type="date" class="input-start form-control" id="inputStart" placeholder="starting date")
@@ -51,17 +43,13 @@ mixin schedulingConfigure()
           
           .row
             .col-sm
-              button(class="button-save btn btn-primary") save
-              button(class="button-cancel btn btn-primary") cancel
+              button(class="button-save btn btn-aardvark me-1") save
+              button(class="button-cancel btn btn-aardvark") cancel
           
     .row(class="subcontainer configure-delete")
       .col-sm
         .container-fluid
-          .row
-            .col-sm
-              |delete schedule
-              
-          .row
+          .row(class="mb-2")
             .col-sm
               |The schedule named "
               span(class="schedule-name")
@@ -74,5 +62,5 @@ mixin schedulingConfigure()
               
           .row
             .col-sm
-              button(class="button-save btn btn-primary") confirm
-              button(class="button-cancel btn btn-primary") cancel
+              button(class="button-save btn btn-aardvark me-1") confirm
+              button(class="button-cancel btn btn-aardvark") cancel

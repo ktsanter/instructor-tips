@@ -49,8 +49,18 @@ class ITipsDB {
     
     var dbResult = await SQLDBInterface.doPostQuery('itips/query', 'schedule-data', params, this.config.notice);;
     if (!dbResult.success) return null;
+    
+    var scheduleData = dbResult.data;
+    var tipList = scheduleData.tiplist;
+    for (var i = 0; i < tipList.length; i++) {
+      var tipsForWeek = tipList[i];
+      for (var j = 0; j < tipsForWeek.length; j++) {
+        var decoded = decodeURIComponent(tipsForWeek[j].tipcontent);
+        tipsForWeek[j].tipcontent = decoded;
+      }
+    }
 
-    return dbResult.data;
+    return scheduleData;
   }
   
   async saveScheduleConfiguration(params) {
@@ -79,8 +89,13 @@ class ITipsDB {
     var dbResult = await SQLDBInterface.doGetQuery('itips/query', 'tip-list', this.config.notice);
 
     if (!dbResult.success) return null;
-
-    var tipList = dbResult.data.sort(function(a, b) {
+    var tipList = dbResult.data;
+    for (var i = 0; i < tipList.length; i++) {
+      var decoded = decodeURIComponent(tipList[i].tipcontent);
+      tipList[i].tipcontent = decoded;
+    }
+    
+    var tipList = tipList.sort(function(a, b) {
       return a.tipcontent.toLowerCase().localeCompare(b.tipcontent.toLowerCase());
     })
         
@@ -89,6 +104,8 @@ class ITipsDB {
   
   async updateTip(params) {
     var dbResult = {"success": false, "details": 'updateTip - unrecognized editType: ' + params.editType, "data": null};
+
+    params.tipcontent = encodeURIComponent(params.tipcontent);
     
     if (params.editType == 'add') {
       dbResult = await SQLDBInterface.doPostQuery('itips/insert', 'tip', params, this.config.notice);
@@ -98,6 +115,10 @@ class ITipsDB {
       
     } else if (params.editType == 'delete') {
       dbResult = await SQLDBInterface.doPostQuery('itips/delete', 'tip', params, this.config.notice);
+    }
+    
+    if (!dbResult.success && dbResult.details && dbResult.details.includes('duplicate')) {
+      this.config.notice.setNotice('this tip already exists');
     }
     
     return dbResult.success;

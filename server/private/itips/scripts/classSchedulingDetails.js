@@ -8,7 +8,7 @@ class SchedulingDetails {
     this.config = config;
     
     this.editMode = false;
-    this.tipBrowsing = false;
+    this.tipBrowsing = true;
 
     this.scheduleId = null;
     this.scheduleData = null;    
@@ -18,7 +18,7 @@ class SchedulingDetails {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
-  render() {
+  async render() {
     this.subContainers = {
       "singleweek-editmode": this.config.container.getElementsByClassName('subcontainer single-week editmode')[0],
       "singleweek-noneditmode": this.config.container.getElementsByClassName('subcontainer single-week non-editmode')[0],
@@ -28,7 +28,7 @@ class SchedulingDetails {
     };
     
     this._renderViewModeInputs();
-    this._renderTipBrowser();
+    await this._renderTipBrowser();
     this._setContainerVisibility(true);
   }
     
@@ -126,19 +126,35 @@ class SchedulingDetails {
     );
   }
   
-  _renderTipBrowser() {
+  async _renderTipBrowser() {
     this.tipListBody = this.config.container.getElementsByClassName('tiplist-body')[0];
     this.tipListTemplateRow = this.config.container.getElementsByClassName('tiplist-templaterow')[0];
+    
+    var elemAddNewTip = this.config.container.getElementsByClassName('subcontainer tip-browsing')[0].getElementsByClassName('icon-addtip')[0];
     
     this.tipSearch = new FilteredTipSearch({
       "db": this.config.db,
       "elemSearch": this.config.container.getElementsByClassName('input-search')[0],
       "elemTagContainer": this.config.container.getElementsByClassName('tagselect-container')[0],
-      "callbackChange": () => { this._tipSearchChange(); }
+      "callbackChange": () => { this._tipSearchChange(); },
+      "callbackAddTip": {"elem": elemAddNewTip, "callback": () => { this._addNewTip(); }}
     });
     this.tipSearch.render();
 
     var tipListHead = this.config.container.getElementsByClassName('tiplist-head')[0];
+    
+    var containerEdit = this.config.container.getElementsByClassName('tipadd-container')[0];
+    var containerTipBrowse = this.config.container.getElementsByClassName('subcontainer tip-browsing')[0];
+    
+    this.tipAddDialog = new TipsEditingEdit({
+      "container": containerEdit,
+      "otherContainers": [],
+      "browseContainer": containerTipBrowse,
+      "hideClass": this.config.hideClass,
+      "db": this.config.db,
+      "idTinyElementAdd": 'tipeditorAdd_Browsing'
+    });
+    await this.tipAddDialog.render();    
   }
   
   async _fetchSchedule() {
@@ -512,6 +528,14 @@ class SchedulingDetails {
   //--------------------------------------------------------------
   _tipSearchChange() {
     this._updateTipBrowsingTable();
+  }
+  
+  _addNewTip() {
+    this.tipAddDialog.beginEditOption({
+      "editType": 'add',
+      "tipInfo": null,
+      "callbackCompletion": () => { this.update(); }
+    });
   }
   
   //--------------------------------------------------------------

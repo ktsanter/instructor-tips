@@ -20,6 +20,12 @@ class TipsEditingEdit {
       "delete": this.config.container.getElementsByClassName('subcontainer tipsediting-delete')[0]
     };
     
+    if (!this.subContainers.add) {
+      this.subContainers.add = this.config.container;
+      delete this.subContainers.edit
+      delete this.subContainers.delete;
+    }
+    
     var saveButtons = this.config.container.getElementsByClassName('button-save');
     for (var i = 0; i < saveButtons.length; i++) {
       saveButtons[i].addEventListener('click', (e) => { this._handleSave(e); });
@@ -30,22 +36,35 @@ class TipsEditingEdit {
       cancelButtons[i].addEventListener('click', (e) =>{ this._handleCancel(e); });
     }
     
-    this.tiny = {};
-    this.tiny.tipContent_add = new MyTinyMCE({
-      id: 'tipeditorAdd', 
-      selector: '#tipeditorAdd', 
-      changeCallback: (e) => { this._handleEditorChange(e); },
-      height: 450
-    });
-    this.tiny.tipContent_edit = new MyTinyMCE({
-      id: 'tipeditorEdit', 
-      selector: '#tipeditorEdit', 
-      changeCallback: (e) => { this._handleEditorChange(e); },
-      height: 450
-    });
+    var tagInputs = this.config.container.getElementsByClassName('input-tags')
+    for (var i = 0; i < tagInputs.length; i++) {
+      UtilityKTS.denyDoubleQuotes(tagInputs[i]);
+    }
     
-    await this.tiny.tipContent_add.init();
-    await this.tiny.tipContent_edit.init();
+    this.tiny = {};
+    if (this.config.hasOwnProperty('idTinyElementAdd')) {
+      var tinyId = this.config.idTinyElementAdd;
+      
+      this.tiny.tipContent_add = new MyTinyMCE({
+        id: tinyId, 
+        selector: '#' + tinyId, 
+        changeCallback: (e) => { this._handleEditorChange(e); },
+        height: 400
+      });
+      await this.tiny.tipContent_add.init();
+    }
+    
+    if (this.config.hasOwnProperty('idTinyElementEdit')) {
+      var tinyId = this.config.idTinyElementEdit;
+
+      this.tiny.tipContent_edit = new MyTinyMCE({
+        id: tinyId, 
+        selector: '#' + tinyId, 
+        changeCallback: (e) => { this._handleEditorChange(e); },
+        height: 400
+      });
+      await this.tiny.tipContent_edit.init();
+    }
   }
   
   beginEditOption(params) {   
@@ -71,17 +90,23 @@ class TipsEditingEdit {
   }
   
   _setContainerVisibility(editType, showEditContainers) {
-    for (var i = 0; i < this.config.otherContainers.length; i++) {
-      var containerRow = this.config.otherContainers[i].parentNode.parentNode;
-      UtilityKTS.setClass(containerRow, this.config.hideClass, showEditContainers);
+    if (this.config.hasOwnProperty('browseContainer')) {
+        UtilityKTS.setClass(this.config.browseContainer, this.config.hideClass, showEditContainers);
+        UtilityKTS.setClass(this.config.container, this.config.hideClass, !showEditContainers);
+        
+    } else {
+      for (var i = 0; i < this.config.otherContainers.length; i++) {
+        var containerRow = this.config.otherContainers[i].parentNode.parentNode;
+        UtilityKTS.setClass(containerRow, this.config.hideClass, showEditContainers);
+      }
+      
+      for (var key in this.subContainers) {
+        UtilityKTS.setClass(this.subContainers[key], this.config.hideClass, key != editType)
+      }
+      
+      var containerRow = this.config.container.parentNode.parentNode
+      UtilityKTS.setClass(containerRow, this.config.hideClass, !showEditContainers);
     }
-    
-    for (var key in this.subContainers) {
-      UtilityKTS.setClass(this.subContainers[key], this.config.hideClass, key != editType)
-    }
-    
-    var containerRow = this.config.container.parentNode.parentNode
-    UtilityKTS.setClass(containerRow, this.config.hideClass, !showEditContainers);
   }
    
   _loadFields(params) {
@@ -110,6 +135,8 @@ class TipsEditingEdit {
   }
   
   async _endEditOption(save) {
+    var success = true;
+    
     if (save) {
       var subContainer = this.subContainers[this.editType];
       var originalTipInfo = JSON.parse(subContainer.getAttribute('original-tip-info'));
@@ -138,13 +165,15 @@ class TipsEditingEdit {
       }
 
       if (params) {
-        var success = await this.config.db.updateTip(params);
-        this.callbackEditComplete();
+        success = await this.config.db.updateTip(params);
+        if (success) this.callbackEditComplete();
       }
     }
 
-    this._setContainerVisibility('all', false);
-    this.editType = null;
+    if (success) {
+      this._setContainerVisibility('all', false);
+      this.editType = null;
+    }
   }  
   
   _tagListToString(tagList) {
