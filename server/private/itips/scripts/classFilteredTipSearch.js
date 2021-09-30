@@ -39,7 +39,7 @@ class FilteredTipSearch {
     if (!tipList) return;
     
     this.fullTipList = tipList;
-    this.config.elemSearch.value = '';
+    //this.config.elemSearch.value = '';
     this._loadTagFilter(tipList);
   }
   
@@ -51,6 +51,8 @@ class FilteredTipSearch {
   // private methods
   //-------------------------------------------------------------- 
   _loadTagFilter(tipList) {
+    var selectedTagSetOld = new Set(this._getSelectedTags());
+    
     var tagSet = new Set([]);
     for (var i = 0; i < tipList.length; i++) {
       var tip = tipList[i];
@@ -61,6 +63,8 @@ class FilteredTipSearch {
     
     var fullTagList = Array.from(tagSet).sort();
     
+    var selectedTagSetNew = new Set([]);
+    
     UtilityKTS.removeChildren(this.tagDropdown);
     for (var i = 0; i < fullTagList.length; i++) {
       var tag = fullTagList[i];
@@ -68,10 +72,14 @@ class FilteredTipSearch {
       elem.setAttribute('tag-value', tag);
       elem.addEventListener('click', (e) => { this._handleTagsChange(e); });
       this.tagDropdown.appendChild(elem);
+      
+      if (selectedTagSetOld.has(tag)) selectedTagSetNew.add(tag);
     }
     
     UtilityKTS.removeChildren(this.selectedTagsContainer); 
-    this._setSelectedTags([]);    
+    
+    this._setSelectedTags(Array.from(selectedTagSetNew));  
+    this._displaySelectedTags();    
   }
   
   _applyFiltering(tipList) {

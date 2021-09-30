@@ -38,6 +38,12 @@ body {
    background-color: var(--bgPrimary);
  }
  
+ .btn-aardvark:disabled {
+   color: #777;
+   background-color: #eee;
+   border-color: #777;
+ }
+ 
 .btn-outline-aardvark {
   color: var(--bgPrimary);
   border-color: var(--bgPrimary);
@@ -454,8 +460,60 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navSharing {}
 
-.contents .contents-navSharing .pending-shares-container .controls i {
-  margin-right: 0.3em;
+.contents .contents-navSharing .share-label {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimary);
+  font-size: 1.1em;
+  border-radius: 4px;
+}
+
+.contents .contents-navSharing .select-schedule, 
+.contents .contents-navSharing .select-user {
+  width: 35.0em;
+}
+
+.contents .contents-navSharing .text-comment {
+  width: 50.0em;
+}
+
+.contents .contents-navSharing .pending-shares-table {
+  width: 67%;
+}
+
+.contents .contents-navSharing .pending-shares-head {
+  display: block;
+}
+
+.contents .contents-navSharing .pending-shares-body {
+  display: block;
+  height: 53.0vh;  /* couldn't get calc() to work */
+  overflow-y: auto;
+}
+
+.contents .contents-navSharing .pending-shares-head .header-controls,
+.contents .contents-navSharing .pending-shares-body .pendingshare-controls { width: 5.0em; }
+
+.contents .contents-navSharing .pending-shares-head .header-date,
+.contents .contents-navSharing .pending-shares-body .pendingshare-date { width: 15.0em; }
+
+.contents .contents-navSharing .pending-shares-head .header-sharedby,
+.contents .contents-navSharing .pending-shares-body .pendingshare-sharedby { width: 15.0em; }
+
+.contents .contents-navSharing .pending-shares-head .header-description,
+.contents .contents-navSharing .pending-shares-body .pendingshare-description { width: 55.0em; }
+
+.contents .contents-navSharing .pending-shares-body .pendingshare-icon {
+  color: var(--bgPrimary);
+}
+
+.contents .contents-navSharing .pending-shares-body .pendingshare-icon:hover {
+  color: var(--bgPrimary);
+  cursor: pointer;
+}
+
+.contents .contents-navSharing .pending-shares-body .pendingshare-comment {
+  font-style: italic;
 }
 
 /*------------------------------------------------------------------------------

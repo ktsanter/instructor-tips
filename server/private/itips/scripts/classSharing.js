@@ -86,40 +86,48 @@ class Sharing {
   }
 
   async _updatePendingShares() {
+    var tableContainer = this.config.container.getElementsByClassName('pending-shares-table-container')[0];
+    console.log(tableContainer);
     UtilityKTS.setClass(this.pendingSharesContainer, this.config.hideClass, true);
+    UtilityKTS.setClass(tableContainer, this.config.hideClass, true);
 
     this._setShareCount(0);
     var pendingList = await this.config.db.getPendingSharedSchedules();
     if (!pendingList || pendingList.length == 0) return;
     this._setShareCount(pendingList.length);
     
+    var tableBody = this.config.container.getElementsByClassName('pending-shares-body')[0];
+    var rowTemplate = this.config.container.getElementsByClassName('pendingshare-templaterow')[0];
     UtilityKTS.removeChildren(this.pendingSharesContainer);
+    UtilityKTS.removeChildren(tableBody);
     
     var elemLabel = this.pendingSharesLabel.cloneNode(true);
     UtilityKTS.setClass(elemLabel, this.config.hideClass, false);
     this.pendingSharesContainer.appendChild(elemLabel);
     
+    UtilityKTS.setClass(tableContainer, this.config.hideClass, false);
+    
     for (var i = 0; i < pendingList.length; i++) {
       var item = pendingList[i];
 
-      var elem = this.pendingSharesTemplate.cloneNode(true);
-      var elemAccept = elem.getElementsByClassName('accept')[0];
+      var tableRow = rowTemplate.cloneNode(true);
+      tableBody.appendChild(tableRow);
+
+      UtilityKTS.setClass(tableRow, 'pendingshare-templaterow', false);
+      var elemAccept = tableRow.getElementsByClassName('accept')[0];
       elemAccept.setAttribute("pending-schedule", JSON.stringify(item));
       elemAccept.addEventListener('click', (e) => { this._handleAcceptShared(e); });
       
-      var elemRemove = elem.getElementsByClassName('remove')[0];
+      var elemRemove = tableRow.getElementsByClassName('remove')[0];
       elemRemove.setAttribute("pending-schedule", JSON.stringify(item));
       elemRemove.addEventListener('click', (e) => { this._handleRemoveShared(e); });
-      
-      elem.getElementsByClassName('date-shared')[0].innerHTML = item.dateshared;
-      elem.getElementsByClassName('shared-by')[0].innerHTML = item.sharedby;
-      
-      var elemDescription = elem.getElementsByClassName('description')[0]
+
+      tableRow.getElementsByClassName('pendingshare-date')[0].innerHTML = item.dateshared;
+      tableRow.getElementsByClassName('pendingshare-sharedby')[0].innerHTML = item.sharedby;
+
+      var elemDescription = tableRow.getElementsByClassName('pendingshare-description')[0]
       elemDescription.appendChild(CreateElement.createDiv(null, null, item.schedulename));
-      if (item.comment.length > 0) elemDescription.appendChild(CreateElement.createDiv(null, null, item.comment));
-      
-      UtilityKTS.setClass(elem, this.config.hideClass, false);
-      this.pendingSharesContainer.appendChild(elem);
+      if (item.comment.length > 0) elemDescription.appendChild(CreateElement.createDiv(null, 'pendingshare-comment', item.comment));
     }
     
     UtilityKTS.setClass(this.pendingSharesContainer, this.config.hideClass, false);
