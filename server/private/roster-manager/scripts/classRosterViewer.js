@@ -28,6 +28,7 @@ class RosterViewer {
   //--------------------------------------------------------------  
   update(updatedInfo) {
     this.settings.currentInfo = updatedInfo;
+
     if (this.settings.selectedStudentInfo) {
       if (!updatedInfo.studentList.includes(this.settings.selectedStudentInfo.student)) {
         this.settings.selectedStudentInfo = null;
@@ -434,6 +435,16 @@ class RosterViewer {
       span.classList.add('no-preferredname');
     }
 
+    var elem = this._renderProperty('pronouns', info.pronouns, 'pronouns', handler);
+    this.studentContent.appendChild(elem);
+    var span = elem.getElementsByTagName('span')[1];
+    span.classList.add('hover-decorate');
+    span.title = 'edit pronouns';
+    if (info.pronouns.length == 0) {
+      span.innerHTML = 'none specified';
+      span.classList.add('no-preferredname');
+    }
+
     this.studentContent.appendChild(this._renderFlags(info));    
 
     var enrollmentTable = this._renderPropertyArray(
@@ -616,7 +627,7 @@ class RosterViewer {
 
     var msg = 'Please enter a value for "' + label + '"';
     var result = prompt(msg, currentValue);
-    if (!result || result == currentValue) return;
+    if (result == null || result == currentValue) return;
     result = this._sanitizeText(result);
     
     var studentName = this.settings.selectedStudentInfo.student;

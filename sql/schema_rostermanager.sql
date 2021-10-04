@@ -124,6 +124,18 @@ create table preferredname
   constraint unique(userid, studentname)
 );
 
+create table pronouns
+(
+  pronounid            int unsigned not null AUTO_INCREMENT,
+  userid               int unsigned not null,
+  studentname          varchar(200) not null,
+  pronouns             varchar(200) not null,
+  
+  primary key (pronounid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid, studentname)
+);
+
 create table note
 (
   noteid               int unsigned not null AUTO_INCREMENT,

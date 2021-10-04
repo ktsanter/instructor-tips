@@ -137,6 +137,9 @@ module.exports = internal.RosterManager = class {
     } else if (params.app == 'infodeck' && params.queryName == 'infodeck-preferredname') {
       dbResult = await this._infodeckUpdatePreferredName(params, postData, userInfo);
             
+    } else if (params.app == 'infodeck' && params.queryName == 'infodeck-pronouns') {
+      dbResult = await this._infodeckUpdatePronouns(params, postData, userInfo);
+            
     } else if (params.app == 'infodeck' && params.queryName == 'infodeck-addnote') {
       dbResult = await this._infodeckAddNote(params, postData, userInfo);
             
@@ -1106,6 +1109,11 @@ module.exports = internal.RosterManager = class {
         'from preferredname as p ' +
         'where p.userid = ' + userInfo.userId,
         
+      "pronouns":
+        'select p.studentname, p.pronouns ' +
+        'from pronouns as p ' +
+        'where p.userid = ' + userInfo.userId,
+        
       "notes": 
         'select n.noteid, n.studentname, n.datestamp, n.notetext ' +
         'from note as n ' +
@@ -1231,6 +1239,24 @@ module.exports = internal.RosterManager = class {
         "insert": 
           'insert ' +
           'into preferredname(userid, studentname, preferredname) ' + 
+          'values (' + 
+            userInfo.userId + ', ' +
+            '"' + postData.student + '", ' +
+            '"' + postData.value + '"' +
+          ') '
+      };
+      
+    } else if (postData.property == 'pronouns') {
+      queryList = {
+        "delete":
+          'delete ' +
+          'from pronouns ' +
+          'where userid = ' + userInfo.userId + ' ' +
+            'and studentname = "' + postData.student + '" ',
+          
+        "insert": 
+          'insert ' +
+          'into pronouns(userid, studentname, pronouns) ' + 
           'values (' + 
             userInfo.userId + ', ' +
             '"' + postData.student + '", ' +
@@ -1558,6 +1584,37 @@ module.exports = internal.RosterManager = class {
         "student": postData.student,
         "property": 'preferredname',
         "value": postData.preferredname
+      },
+      {"userId": userId}
+    );
+    
+    if (!updateResult.success) {
+      result.details = updateResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = postData;
+    
+    return result;
+  }
+
+  async _infodeckUpdatePronouns(params, postData) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var userId = await this._getUserIdFromAccessKey(postData.accesskey);
+    if (!userId) {
+      result.details = 'invalid access key';
+      return result;
+    }
+
+    var updateResult = await this._replaceStudentProperty(
+      { "app": 'roster-manager', "queryName": 'student-property' },
+      {
+        "student": postData.student,
+        "property": 'pronouns',
+        "value": postData.pronouns
       },
       {"userId": userId}
     );

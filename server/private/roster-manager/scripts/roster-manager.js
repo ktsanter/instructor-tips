@@ -366,6 +366,7 @@ const app = function () {
         "504": false,
         "homeschooled": false,
         "preferredname": '',
+        "pronouns": '',
         "notes": [],
         "enddateoverride": []
       }}
@@ -433,6 +434,15 @@ const app = function () {
       student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) {
         students[student].preferredname = item.preferredname;
+      }
+    }
+      
+    for (var i = 0; i < extraStudentInfo.pronouns.length; i++) {
+      var item = extraStudentInfo.pronouns[i];
+      var student = item.studentname;
+      student = student.replace(/&#39;/g, "'");
+      if (students.hasOwnProperty(student)) {
+        students[student].pronouns = item.pronouns;
       }
     }
       
