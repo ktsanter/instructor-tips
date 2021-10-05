@@ -9,6 +9,9 @@ mixin sharingContainer()
         select(class="select-schedule form-select" id="selectSchedule" aria-label="select schedule to share")
         label(for="selectSchedule") schedule
         
+    .col-sm
+      button(type="button" class="button-share btn btn-aardvark p-1" disabled) share
+
   .row
     .col-sm
       .form-floating(class="mb-1")
@@ -21,11 +24,8 @@ mixin sharingContainer()
         input(type="text" class="text-comment form-control" id="floatingInput" placeholder="some comment text")
         label(for="floatingInput") comment
 
-  .row
-    .col-sm(class="mb-1")
-      button(type="button" class="button-share btn btn-aardvark p-1" disabled) share
 
-  .row(class="pending-shares-container mt-5 hide-me")
+  .row(class="pending-shares-container mt-3 hide-me")
     |psc
   
   .row(class="pending-shares-label hide-me")

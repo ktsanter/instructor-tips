@@ -87,7 +87,7 @@ class Sharing {
 
   async _updatePendingShares() {
     var tableContainer = this.config.container.getElementsByClassName('pending-shares-table-container')[0];
-    console.log(tableContainer);
+
     UtilityKTS.setClass(this.pendingSharesContainer, this.config.hideClass, true);
     UtilityKTS.setClass(tableContainer, this.config.hideClass, true);
 
@@ -122,12 +122,12 @@ class Sharing {
       elemRemove.setAttribute("pending-schedule", JSON.stringify(item));
       elemRemove.addEventListener('click', (e) => { this._handleRemoveShared(e); });
 
-      tableRow.getElementsByClassName('pendingshare-date')[0].innerHTML = item.dateshared;
+      tableRow.getElementsByClassName('pendingshare-date')[0].innerHTML = item.sharedon.slice(0,11);
       tableRow.getElementsByClassName('pendingshare-sharedby')[0].innerHTML = item.sharedby;
 
       var elemDescription = tableRow.getElementsByClassName('pendingshare-description')[0]
       elemDescription.appendChild(CreateElement.createDiv(null, null, item.schedulename));
-      if (item.comment.length > 0) elemDescription.appendChild(CreateElement.createDiv(null, 'pendingshare-comment', item.comment));
+      if (item.sharecomment.length > 0) elemDescription.appendChild(CreateElement.createDiv(null, 'pendingshare-comment', item.sharecomment));
     }
     
     UtilityKTS.setClass(this.pendingSharesContainer, this.config.hideClass, false);
@@ -135,25 +135,26 @@ class Sharing {
   
   async _doShare() {
     var scheduleId = this.selectSchedule[this.selectSchedule.selectedIndex].value;
-    var userId = this.selectUser[this.selectUser.selectedIndex].value;
+    var shareWithUserId = this.selectUser[this.selectUser.selectedIndex].value;
     var comment = this.textComment.value;
     
     var shareParams = {
       "scheduleid": scheduleId,
-      "userid": userId,
+      "shareWithUserId": shareWithUserId,
       "comment": comment
     }
     
     var success = await this.config.db.shareSchedule(shareParams);
     var msg = "The schedule has been shared successfully";
     if (!success) msg = "Unfortunately something went wrong and the schedule was not shared";
+    if (success) this.update();
     alert(msg);
   }
   
   async _acceptShare(shareInfo) {
     var msg = 'Accept this shared schedule?';
     msg += '\n\n"' + shareInfo.schedulename + '"';
-    msg += '\nshared by ' + shareInfo.sharedby + ' on ' + shareInfo.dateshared;
+    msg += '\nshared by ' + shareInfo.sharedby + ' on ' + shareInfo.sharedon.slice(0,11);
     var proposedName = 'copy of ' + shareInfo.schedulename;
     
     var response = prompt(msg, proposedName);
@@ -163,27 +164,31 @@ class Sharing {
     if (response.length == 0) return;
     
     var acceptParams = {
-      "scheduleid": shareInfo.scheduleid,
+      "scheduleid": shareInfo.shared_scheduleid,
       "schedulename": response
     }
     
-    var success = await this.config.db.acceptSharedSchedule(acceptParams);
-    if (success) this.update();
+    var dbResult = await this.config.db.acceptSharedSchedule(acceptParams);
+    if (!dbResult.success && dbResult.details.includes('duplicate')) {
+      alert('You already have a schedule with this name.  Please try again');
+      this.config.db.config.notice.setNotice('');
+    }
+    
+    if (dbResult.success) this.update();
   }
   
   async _removeShare(shareInfo) {
     var msg = 'Remove this shared schedule?';
     msg += '\n\n"' + shareInfo.schedulename + '"';
-    msg += '\nshared by ' + shareInfo.sharedby + ' on ' + shareInfo.dateshared;
+    msg += '\nshared by ' + shareInfo.sharedby + ' on ' + shareInfo.sharedon.slice(0,11);
     msg += '\nwill be removed from your list.';
     msg += '\n\nChoose OK to continue';
     
     var response = confirm(msg);
     if (!response) return;
-    
+
     var removeParams = {
-      "scheduleid": shareInfo.scheduleid,
-      "schedulename": response
+      "scheduleid": shareInfo.shared_scheduleid
     }
     
     var success = await this.config.db.removeSharedSchedule(removeParams);

@@ -37,6 +37,9 @@ module.exports = internal.ITips = class {
     } else if (params.queryName == 'user-list') {
       dbResult = await this._getUserList(params, postData, userInfo, funcCheckPrivilege);
       
+    } else if (params.queryName == 'pending-shares') {
+      dbResult = await this._getPendingShares(params, postData, userInfo, funcCheckPrivilege);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -59,6 +62,9 @@ module.exports = internal.ITips = class {
     } else if (params.queryName == 'remove-tip-from-week') {
       dbResult = await this._removeTipFromWeek(params, postData, userInfo, funcCheckPrivilege);
 
+    } else if (params.queryName == 'share-schedule') {
+      dbResult = await this._insertSharedSchedule(params, postData, userInfo, funcCheckPrivilege);
+
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -78,6 +84,9 @@ module.exports = internal.ITips = class {
     } else if (params.queryName == 'change-tip-state') {
       dbResult = await this._changeTipState(params, postData, userInfo, funcCheckPrivilege);
 
+    } else if (params.queryName == 'accept-shared-schedule') {
+      dbResult = await this._acceptSharedSchedule(params, postData, userInfo, funcCheckPrivilege);
+
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -93,6 +102,9 @@ module.exports = internal.ITips = class {
 
     } else if (params.queryName == 'tip') {
       dbResult = await this._deleteTip(params, postData, userInfo);
+    
+    } else if (params.queryName == 'shared-schedule') {
+      dbResult = await this._deleteSharedSchedule(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -160,7 +172,7 @@ module.exports = internal.ITips = class {
       ') ';
     
     queryResults = await this._dbManager.dbQuery(query);
-    
+
     if (queryResults.success) {
       result.success = true;
       result.details = 'insert succeeded';
@@ -591,6 +603,135 @@ module.exports = internal.ITips = class {
     return result;
   }
   
+  async _insertSharedSchedule(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult();  
+    
+    var query, queryList, queryResults;
+    
+    query = 
+      'call add_shared_schedule (' + 
+        postData.scheduleid + ', ' +
+        userInfo.userId + ', ' +
+        postData.shareWithUserId + ', ' +
+        '"' + postData.comment + '" ' +
+      ') ';
+
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'insert succeeded';
+
+    return result;
+  }  
+
+  async _getPendingShares(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      shared_schedules:
+        'select ' + 
+          'a.shared_scheduleid, a.sharedon, a.schedulename, a.sharedby, a.sharecomment ' + 
+        'from shared_schedule as a ' +
+        'where a.userid = ' + userInfo.userId + ' ' +
+        'order by a.sharedon '
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = queryResults.data.shared_schedules;
+
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  async _deleteSharedSchedule(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult();  
+    
+    var query, queryResults;
+    
+    query = 
+      'delete from shared_schedule ' + 
+      'where ' +
+        'shared_scheduleid = ' + postData.scheduleid + ' and ' +
+        'userid = ' + userInfo.userId;
+   
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update succeeded';
+      result.data = queryResults.data;
+
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+
+  async _acceptSharedSchedule(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult();  
+    console.log('_acceptSharedSchedule');
+    console.log(params);
+    console.log(postData);
+    
+    var interimResult = await this._getSharedScheduleInfo(postData.scheduleid, userInfo.userId);
+    if (!interimResult.success) {
+      result.details = interimResult.details;
+      return result;
+    }
+    var scheduleInfo = interimResult.scheduleinfo;
+    scheduleInfo.schedulename = postData.schedulename;
+    var sharedTips = interimResult.sharedtips;
+    
+    interimResult = await this._makeNewScheduleFromShared(scheduleInfo, userInfo.userId);
+    console.log('interimResult #2', interimResult);
+    if (!interimResult.success) {
+      result.details = interimResult.details;
+      return result;
+    }
+    var newScheduleId = interimResult.newscheduleid;
+
+    interimResult = await this._incorporateSharedTips(userInfo.userId, newScheduleId, sharedTips);
+    console.log('interimResult #3', interimResult);
+    if (!interimResult.success) {
+      result.details = interimResult.details;
+      return result;
+    }
+    
+    interimResult = await this._incorporateSharedTips(userInfo.userId, newScheduleId, sharedTips);
+    console.log('interimResult #4', interimResult);
+    if (!interimResult.success) {
+      result.details = interimResult.details;
+      return result;
+    }
+    
+    interimResult = await this._deleteSharedSchedule(null, {"scheduleid": postData.scheduleid}, {"userid": userInfo.userId});
+    console.log('interimResult #5', interimResult);
+    if (!interimResult.success) {
+      result.details = interimResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'shared schedule accepted';
+    
+    return result;
+  }
+
 //----------------------------------------------------------------------
 // support methods and queries
 //----------------------------------------------------------------------  
@@ -723,6 +864,69 @@ module.exports = internal.ITips = class {
     
     return consolidated;
   }
+
+  async _getSharedScheduleInfo(sharedScheduleId, userId) {
+    var result = this._dbManager.queryFailureResult();
+
+    var queryList, queryResults;
+    
+    queryList = {
+      scheduleinfo: 
+        'select a.schedulelength, a.schedulestart ' +
+        'from shared_schedule as a ' +
+        'where a.shared_scheduleid = ' + sharedScheduleId + ' ' +
+          'and a.userid = ' + userId,
+          
+      sharedtips: 
+        'select a.weekindex, a.tipcontent ' +
+        'from shared_schedule_tip as a ' +
+        'where a.shared_scheduleid = ' + sharedScheduleId
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = '_getSharedScheduleInfo succeeded';
+    result.scheduleinfo = queryResults.data.scheduleinfo[0];
+    result.sharedtips = queryResults.data.sharedtips[0];
+    
+    return result;
+  }    
+
+  async _makeNewScheduleFromShared(scheduleInfo, userId) {
+    var result = this._dbManager.queryFailureResult();  
+    console.log('\n_makeNewScheduleFromShared', scheduleInfo, userId);
+
+    var interimResult = await this._insertSchedule(null, scheduleInfo, {"userId": userId});
+    console.log(interimResult);
+    if (!interimResult.success) {
+      result.details = interimResult.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = '_makeNewScheduleFromShared succeeded';
+    result.newscheduleid = interimResult.data.scheduleid;
+    
+    return result;
+  }    
+
+  async _incorporateSharedTips(userId, scheduleId, tipList) {
+    /*
+      - iterate through shared tips, adding if new or linking to existing
+    */
+    console.log('\n_incorporateSharedTips', userId, scheduleId, tipList);
+    
+    var result = this._dbManager.queryFailureResult();  
+    result.details = '_incorporateSharedTips failed';
+    
+    return result;
+  }    
 
 //----------------------------------------------------------------------
 // utility

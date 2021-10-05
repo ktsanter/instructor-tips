@@ -6,31 +6,6 @@
 class ITipsDB {
   constructor(config) {
     this.config = config;
-            
-    this.dummySharedScheduleList = [
-      {"scheduleid": 1, "schedulename": "some schedule", "comment": 'rando comment', "sharedby": 'Kevin Santer', "dateshared": '2021-09-25 10:58'},
-      {"scheduleid": 2, "schedulename": "some other schedule", "comment": '', "sharedby": 'Joe Instructor', "dateshared": '2021-09-20 14:23'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 3, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:20'},
-      {"scheduleid": 100, "schedulename": "one more schedule", "comment": 'enjoy!', "sharedby": 'Sturgis Podmore', "dateshared": '2021-09-22 9:30'},
-    ];
     
     this.dummyNotificationData = {
       "receivesharenotification": true,
@@ -181,22 +156,14 @@ class ITipsDB {
   }
   
   async shareSchedule(shareParams) {
-    console.log('ITipsDB.shareSchedule', shareParams);
-    
-    var dbResult = {"success": true, "details": 'share succeeded', "data": null};
+    var dbResult = await SQLDBInterface.doPostQuery('itips/insert', 'share-schedule', shareParams, this.config.notice);
     
     return dbResult.success;
   }
   
   async getPendingSharedSchedules() {
-    var sharedScheduleList = this.dummySharedScheduleList;
-    //sharedScheduleList = [];
+    var dbResult = await SQLDBInterface.doGetQuery('itips/query', 'pending-shares', this.config.notice);
     
-    sharedScheduleList = sharedScheduleList.sort(function(a, b) {
-      return a.dateshared.toLowerCase().localeCompare(b.dateshared.toLowerCase());
-    })
-    
-    var dbResult = {"success": true, "details": 'query succeeded', "data": sharedScheduleList};
     if (!dbResult.success) return null;
     
     return dbResult.data;    
@@ -205,15 +172,13 @@ class ITipsDB {
   async acceptSharedSchedule(shareParams) {
     console.log('ITipsDB.acceptSharedSchedule', shareParams);
     
-    var dbResult = {"success": true, "details": "accept succeeded", "data": null};
+    var dbResult = await SQLDBInterface.doPostQuery('itips/update', 'accept-shared-schedule', shareParams, this.config.notice);
     
-    return dbResult.success;
+    return dbResult;
   }
   
   async removeSharedSchedule(shareParams) {
-    console.log('ITipsDB.removeSharedSchedule', shareParams);
-    
-    var dbResult = {"success": true, "details": "remove succeeded", "data": null};
+    var dbResult = await SQLDBInterface.doPostQuery('itips/delete', 'shared-schedule', shareParams, this.config.notice);
     
     return dbResult.success;
   }

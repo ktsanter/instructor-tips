@@ -487,7 +487,7 @@ body {
 
 .contents .contents-navSharing .pending-shares-body {
   display: block;
-  height: 47.0vh;  /* couldn't get calc() to work */
+  height: 36.0vh;  /* couldn't get calc() to work */
   overflow-y: auto;
 }
 
