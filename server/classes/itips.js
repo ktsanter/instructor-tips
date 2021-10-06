@@ -683,7 +683,8 @@ module.exports = internal.ITips = class {
   }  
 
   async _acceptSharedSchedule(params, postData, userInfo, funcCheckPrivilege) {
-    var result = this._dbManager.queryFailureResult();  
+    var result = this._dbManager.queryFailureResult(); 
+    console.log('\n----------------------------------');    
     console.log('_acceptSharedSchedule');
     console.log(params);
     console.log(postData);
@@ -698,7 +699,7 @@ module.exports = internal.ITips = class {
     var sharedTips = interimResult.sharedtips;
     
     interimResult = await this._makeNewScheduleFromShared(scheduleInfo, userInfo.userId);
-    console.log('interimResult #2', interimResult);
+    console.log('interimResult (_makeNewScheduleFromShared)', interimResult);
     if (!interimResult.success) {
       result.details = interimResult.details;
       return result;
@@ -706,21 +707,14 @@ module.exports = internal.ITips = class {
     var newScheduleId = interimResult.newscheduleid;
 
     interimResult = await this._incorporateSharedTips(userInfo.userId, newScheduleId, sharedTips);
-    console.log('interimResult #3', interimResult);
-    if (!interimResult.success) {
-      result.details = interimResult.details;
-      return result;
-    }
-    
-    interimResult = await this._incorporateSharedTips(userInfo.userId, newScheduleId, sharedTips);
-    console.log('interimResult #4', interimResult);
+    console.log('interimResult (_incorporateSharedTips)', interimResult);
     if (!interimResult.success) {
       result.details = interimResult.details;
       return result;
     }
     
     interimResult = await this._deleteSharedSchedule(null, {"scheduleid": postData.scheduleid}, {"userid": userInfo.userId});
-    console.log('interimResult #5', interimResult);
+    console.log('interimResult (_deleteSharedSchedule)', interimResult);
     if (!interimResult.success) {
       result.details = interimResult.details;
       return result;
@@ -893,7 +887,7 @@ module.exports = internal.ITips = class {
     result.success = true;
     result.details = '_getSharedScheduleInfo succeeded';
     result.scheduleinfo = queryResults.data.scheduleinfo[0];
-    result.sharedtips = queryResults.data.sharedtips[0];
+    result.sharedtips = queryResults.data.sharedtips;
     
     return result;
   }    
@@ -921,6 +915,7 @@ module.exports = internal.ITips = class {
       - iterate through shared tips, adding if new or linking to existing
     */
     console.log('\n_incorporateSharedTips', userId, scheduleId, tipList);
+    console.log('this is where I left off');
     
     var result = this._dbManager.queryFailureResult();  
     result.details = '_incorporateSharedTips failed';

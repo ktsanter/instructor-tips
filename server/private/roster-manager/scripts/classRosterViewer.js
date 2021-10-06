@@ -562,6 +562,7 @@ class RosterViewer {
       table.getElementsByTagName('thead')[0].classList.add('table-primary');
 
       this._replaceTableIconElements(table, itemValues);
+      if (labelArray.includes('email')) this._addEmailIcon(table, labelArray)
     }
     
     return table;
@@ -604,6 +605,23 @@ class RosterViewer {
         }
       }
     }
+  }
+  
+  _addEmailIcon(table, headerLabels) {
+    var emailIndex = headerLabels.findIndex((a) => { return a == 'email'; });
+    var emailHeaderCell = table.getElementsByTagName('th')[emailIndex];
+    
+    var formattedEmails = '';
+    var tableRows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    for (var i = 0; i < tableRows.length; i++) {
+      var email = tableRows[i].getElementsByTagName('td')[emailIndex].innerHTML;
+      formattedEmails += email + ';';
+    }
+    
+    var icon = CreateElement.createIcon(null, 'icon-copyemail far fa-copy');
+    emailHeaderCell.appendChild(icon);
+    icon.title = 'copy emails';
+    icon.addEventListener('click', (e) => { this._copyEmailsToClipboard(formattedEmails); });
   }
   
   _addEndDateOverrides(table, overrides) {
@@ -769,6 +787,19 @@ class RosterViewer {
     }
   }
   
+  _copyEmailsToClipboard(emails) {
+    this._copyToClipboard(emails);
+  }
+  
+  //---------------------------------------
+  // clipboard functions
+  //----------------------------------------
+  _copyToClipboard(txt) {
+    if (!this.settings.clipboard) this.settings.clipboard = new ClipboardCopy(this.config.container, 'plain');
+
+    this.settings.clipboard.copyToClipboard(txt);
+	}	  
+    
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------

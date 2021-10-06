@@ -214,6 +214,14 @@ body {
 .contents .contents-navStudent .roster-headercol.roster-headercol-homeschooled { width: 6%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-term         { }
 
+.contents-navStudent .icon-copyemail {
+  color: var(--bgPrimary);
+  padding-left: 0.2em;
+  cursor: pointer;
+}
+
+
+
 /*------------------------------------------------------------------------------
  * contents - note editor
  *------------------------------------------------------------------------------*/
