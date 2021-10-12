@@ -1,0 +1,41 @@
+mixin recipesList()
+  .container-fluid(class="recipes-list-container")
+    .row
+      .col-sm
+        .form-floating
+          input(type="text" class="input-recipesearch form-control" id="inputRecipeSearch" placeholder="search for recipe")
+          label(for="inputRecipeSearch") search
+
+    .row
+      .col-sm
+        .tagselect-container
+          |[tag selection]
+        
+    .row
+      .col-sm
+        .ratingselect-container
+          |[rating selection]
+
+    .row
+      .col-sm
+        .recipelist-table-container
+          table(class="recipelist-table table table-striped table-hover table-sm")
+            thead(class="recipelist-head table-primary")
+              th(class="header header-recipe" field-name="recipe")
+                span(class="recipes-headerlabel label-recipe") recipe
+                i(class="recipes-addrecipe far fa-plus-square" title="add new recipe")
+              
+            tbody(class="recipelist-body")
+
+              
+          div(class="recipe-contextmenu")
+            div(class="recipe-dropdowncontent")
+              div(class="recipe-dropdownitem item-edit") edit
+              div(class="recipe-dropdownitem item-delete") delete
+
+    div(class="hide-me")
+      table
+        thead
+        tbody
+          tr(class="recipelist-templaterow")
+            td(class="recipelist-recipename")

@@ -19,6 +19,7 @@ const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
 const MARIA_DBNAME_ENDDATEMANAGER = getEnv('MARIA_DBNAME_ENDDATEMANAGER', true);
 const MARIA_DBNAME_ROSTERMANAGER = getEnv('MARIA_DBNAME_ROSTERMANAGER', true);
 const MARIA_DBNAME_ITIPS = getEnv('MARIA_DBNAME_ITIPS', true);
+const MARIA_DBNAME_RECIPES = getEnv('MARIA_DBNAME_RECIPES', true);
 
 const SESSION_HOST = getEnv('SESSION_HOST', true);
 const SESSION_USER = getEnv('SESSION_USER', true);
@@ -204,6 +205,15 @@ const mariadbParams_ITips = {
     connectionLimit: 5 */
 };
 
+const mariadbParams_Recipes = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_RECIPES /*, 
+    connectionLimit: 5 */
+};
+
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
 const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
@@ -217,6 +227,7 @@ const mariaDBManager_EndDateManager = new mariaDBManagerClass(mariadbParams_EndD
 const mariaDBManager_ASAdmin = new mariaDBManagerClass(mariadbParams_ASAdmin);
 const mariaDBManager_RosterManager = new mariaDBManagerClass(mariadbParams_RosterManager);
 const mariaDBManager_ITips = new mariaDBManagerClass(mariadbParams_ITips);
+const mariaDBManager_Recipes = new mariaDBManagerClass(mariadbParams_Recipes);
     
 //------------------------------------------
 // session management
@@ -365,6 +376,16 @@ const iTips = new iTipsClass({
 });
 
 //------------------------------------------
+// Recipes
+//------------------------------------------
+const recipesClass = require('./classes/recipes')
+const recipes = new recipesClass({
+  "dbManager": mariaDBManager_Recipes,
+  "userManagement": userManagement,  
+  "tempFileManager": tmp
+});
+
+//------------------------------------------
 // InstructorTips general query objects
 //------------------------------------------
 const dbTipManagerClass = require('./classes/tipmanager')
@@ -493,7 +514,8 @@ var dbManagerLookup = {
   "commentbuddy": dbCommentBuddy,
   "enddate-manager": endDateManager,
   "roster-manager": rosterManager,
-  "itips": iTips
+  "itips": iTips,
+  "recipes": recipes
 };
 
 var appLookup = {
@@ -587,6 +609,13 @@ var appLookup = {
     appName: 'CommentBuddy composer',
     routePug: 'commentbuddy/pug/composer.pug',
     loginReRoute: 'commentbuddy/composer'
+  }, 
+
+  "recipes" : {
+    appDescriptor: 'recipes',
+    appName: 'Recipes',
+    routePug: 'recipes/pug/recipes.pug',
+    loginReRoute: 'recipes/manage'
   }  
 };
 
@@ -1172,6 +1201,15 @@ app.get('/itips', function (req, res) {
 
 app.get('/itips/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'itips/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/recipes', function (req, res) {
+  routeIfLoggedIn(req, res, 'recipes');
+})
+
+app.get('/recipes/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'recipes/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 

@@ -1,0 +1,11 @@
+include ./mixins-recipes-list.pug
+include ./mixins-recipes-edit.pug
+
+mixin recipesContainer()
+  .row
+    .col-sm
+      +recipesList()
+      
+  .row
+    .col-sm
+      +recipesEdit()

@@ -1,0 +1,209 @@
+/*------------------------------------------------------------------------------
+ * Recipes
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgPrimaryFaded: rgba(66, 98, 150, 0.7);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+  
+  /*-- for slider switches --*/
+  --bgSecondaryChoice: rgba(66, 98, 150, 1.0);
+}
+
+body {
+  padding-top: 4.0em;
+  font-size: 90%;
+}
+
+.hide-me {
+  display: none;
+}
+
+.invisible-me {
+  visibility: hidden;
+}
+
+/*------------------------------------------------------------------------------
+ * Bootstrap overrides/replacements
+ *------------------------------------------------------------------------------*/
+ .btn-aardvark {
+   color: white;
+   background-color: var(--bgPrimaryFaded);
+   border-color: var(--bgPrimary);
+ }
+ 
+ .btn-aardvark:hover {
+   color: white;
+   background-color: var(--bgPrimary);
+ }
+ 
+ .btn-aardvark:disabled {
+   color: #777;
+   background-color: #eee;
+   border-color: #777;
+ }
+ 
+.btn-outline-aardvark {
+  color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+}
+
+.btn-outline-aardvark:hover {
+  color: var(--bgPrimary);
+}
+
+.btn-check:checked + label.btn-outline-aardvark {
+  color: white;
+  background-color: var(--bgPrimaryFaded);
+}
+
+/*------------------------------------------------------------------------------
+ * navbar
+ *------------------------------------------------------------------------------*/
+.navbar-brand {
+  border: 1px solid white;
+  border-radius: 5px;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+  font-size: 1.1em;
+}
+
+.navbar .dropdown-item .excel-icon {
+  color: #379164;
+}
+
+.navbar .dropdown-item.disabled .excel-icon  {
+  color: #adb5bd;
+}
+
+.navbar .navbar-super {
+  display: inline-block;
+  position: absolute;
+  top: 0.5em;
+  font-weight: bold;
+}
+
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {}
+
+/*------------------------------------------------------------------------------
+ * contents - navRecipes
+ *------------------------------------------------------------------------------*/
+.contents .contents-navRecipes {}
+
+.contents-navRecipes .recipe-contextmenu {
+  position: relative;
+  display: inline-block;
+  float: left;
+  top: 3vh;
+  left: 1.5vh;
+}
+
+.contents-navRecipes .recipe-dropdowncontent {
+  display: none;
+  position: absolute;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+
+.contents-navRecipes .recipe-dropdowncontent.show {
+  display: block;
+}
+
+.contents-navRecipes .recipe-dropdownitem {
+  padding: 0.2em 0.3em;
+  display: block;
+}
+
+.contents-navRecipes .recipe-dropdownitem:hover {background-color: #ddd}
+
+/*------------------------------------------------------------------------------
+ * contents - navMenu
+ *------------------------------------------------------------------------------*/
+.contents .contents-navMenu {}
+
+/*------------------------------------------------------------------------------
+ * contents - navShopping
+ *------------------------------------------------------------------------------*/
+.contents .contents-navShopping {}
+
+/*------------------------------------------------------------------------------
+ * contents - navAdmin
+ *------------------------------------------------------------------------------*/
+.contents .contents-navAdmin {}
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/
+
+/*---------------------------------------------------
+ * scrollbar
+ *---------------------------------------------------*/
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #ccc; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--bgPrimaryFaded); 
+  border-radius: 6px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bgPrimary);
+}
+
+ /*
+.itips-scrollbar::-webkit-scrollbar {
+  width: 16px;
+}
+.itips-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: blue green;
+}
+
+.itips-scrollbar::-webkit-scrollbar-track {
+  background: green;
+}
+.itips-scrollbar::-webkit-scrollbar-thumb {
+  background-color: blue) ;
+  border-radius: 8px;
+  border: 3px solid green;
+} 
+
+.itips-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--bgPrimaryFaded) ;
+} 
+*/
