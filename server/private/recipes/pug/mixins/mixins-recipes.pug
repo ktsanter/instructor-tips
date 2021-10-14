@@ -1,5 +1,6 @@
 include ./mixins-recipes-list.pug
 include ./mixins-recipes-edit.pug
+include ./mixins-recipes-show.pug
 
 mixin recipesContainer()
   .row
@@ -9,3 +10,7 @@ mixin recipesContainer()
   .row
     .col-sm
       +recipesEdit()
+
+  .row
+    .col-sm
+      +recipesShow()

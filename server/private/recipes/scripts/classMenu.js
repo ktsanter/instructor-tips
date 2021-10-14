@@ -17,6 +17,10 @@ class Menu {
   async update() {
   }
   
+  async addToMenu(recipe) {
+    console.log('Menu.addToMenu', recipe);
+  }
+  
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   

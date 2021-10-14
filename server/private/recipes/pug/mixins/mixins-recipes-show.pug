@@ -1,0 +1,22 @@
+mixin recipesShow()
+  .container-fluid(class="recipe-show-container")
+    .row
+      .col-sm
+        .icon-add(class="fas fa-plus-square me-2" title="add to menu")
+        .recipe-name
+        .rating(class="ms-2")
+        .icon-close(class="far fa-window-close" title="close recipe")
+
+    .row
+      .col-sm
+        .ingredient-container(class="mt-2")
+
+    .row
+      .col-sm
+        .recipe-section-title(class="mt-2") Instructions
+        .instructions
+
+    .row
+      .col-sm
+        .recipe-section-title(class="mt-2") Notes
+        .notes

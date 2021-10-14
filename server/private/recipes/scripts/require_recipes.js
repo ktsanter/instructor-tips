@@ -15,6 +15,7 @@ define(function (require) {
   require('classRecipes');
   require('classRecipesList');
   require('classRecipesEdit');
+  require('classRecipesShow');
   
   require('classMenu');
   

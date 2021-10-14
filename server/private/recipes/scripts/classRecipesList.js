@@ -12,7 +12,6 @@ class RecipesList {
   // public methods
   //--------------------------------------------------------------   
   render() {
-    console.log('RecipesList.render');
     this.config.container.getElementsByClassName('recipes-addrecipe')[0].addEventListener('click', (e) => { this._handleRecipeAdd(e); });
     
     this.recipeListBody = this.config.container.getElementsByClassName('recipelist-body')[0];
@@ -33,7 +32,6 @@ class RecipesList {
   }
   
   async update() {
-    console.log('RecipesList.update');
     this.recipeList = await this.config.db.getRecipeList();
     this._loadRecipeList();
   }
@@ -42,7 +40,6 @@ class RecipesList {
   // private methods
   //--------------------------------------------------------------   
   _loadRecipeList() {
-    console.log('RecipesList._loadRecipeList');
     var filteredList = this._sortAndFilterRecipes(this.recipeList);
     
     UtilityKTS.removeChildren(this.recipeListBody);
@@ -88,7 +85,11 @@ class RecipesList {
   // handlers
   //--------------------------------------------------------------
   _handleRecipeClick(e) {
-    console.log('RecipesList._handleRecipeClick', e.target);
+    var targetRow = this._upsearchForRow(e.target);
+    if (targetRow == null) return;
+    
+    var recipeInfo = JSON.parse(targetRow.getAttribute('recipe-info'));
+    this.config.callbackShow(recipeInfo);
   }
   
   _handleRecipeContextMenu(e) {
@@ -102,14 +103,14 @@ class RecipesList {
   }
   
   _handleRecipeEdit(e) {
-    var recipeInfo = this.recipeDropdownContainer.getAttribute('recipe-info');
+    var recipeInfo = JSON.parse(this.recipeDropdownContainer.getAttribute('recipe-info'));
     e.stopPropagation();
     this._closeRecipeDropdown();
     this.config.callbackEdit(recipeInfo);
   }
   
   _handleRecipeDelete(e) {
-    var recipeInfo = this.recipeDropdownContainer.getAttribute('recipe-info');
+    var recipeInfo = JSON.parse(this.recipeDropdownContainer.getAttribute('recipe-info'));
     e.stopPropagation();
     this._closeRecipeDropdown();
     this.config.callbackDelete(recipeInfo);

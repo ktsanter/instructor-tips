@@ -122,6 +122,87 @@ body {
 
 .contents-navRecipes .recipe-dropdownitem:hover {background-color: #ddd}
 
+/*----------------------------------------
+ * navRecipes, Show container 
+ *----------------------------------------*/
+.contents-navRecipes .recipe-show-container .recipe-name {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 120%;
+}  
+
+.contents-navRecipes .recipe-show-container .icon-close, 
+.contents-navRecipes .recipe-show-container .icon-add {
+  color: #aaa;
+  cursor: pointer;
+}  
+
+.contents-navRecipes .recipe-show-container .icon-close {
+  position: absolute;
+  right: 1.0em;
+}  
+
+.contents-navRecipes .recipe-show-container .icon-close {
+  font-size: 2.0em;
+}  
+
+.contents-navRecipes .recipe-show-container .icon-add {
+  font-size: 1.4em;
+}  
+
+.contents-navRecipes .recipe-show-container .icon-close:hover,
+.contents-navRecipes .recipe-show-container .icon-add:hover {
+  color: var(--bgPrimary);
+}  
+.contents-navRecipes .recipe-show-container .recipe-section-title {
+  font-weight: bold;
+}
+
+.contents-navRecipes .recipe-show-container .rating {
+  display: inline-block;
+  color: var(--bgPrimary);
+}
+
+/*----------------------------------------
+ * navRecipes, Edit container 
+ *----------------------------------------*/
+.contents-navRecipes .recipe-edit-container .recipe-deletion-name {
+  font-weight: bold;
+}
+
+.contents-navRecipes .recipe-edit-container .input-instructions {
+  height: 16.0em;
+}
+
+.contents-navRecipes .recipe-edit-container .input-notes {
+  height: 8.0em;
+}
+
+.contents-navRecipes .ingredients-table .header.header-controls {
+  width: 3%;
+}
+
+.contents-navRecipes .recipe-edit-container .single-ingredient .controls i {
+  cursor: pointer;
+  color: #aaa;
+}
+
+.contents-navRecipes .recipe-edit-container .single-ingredient .controls i:hover {
+  color: var(--bgPrimary);
+}
+
+.contents-navRecipes .recipe-edit-container .single-ingredient .ingredient-text {
+  cursor: pointer;
+}
+
+.contents-navRecipes .recipe-edit-container .single-ingredient .ingredient-text:hover {
+  text-decoration: underline;
+}
+
+.contents-navRecipes .recipe-edit-container .single-ingredient .ingredient-input {
+  width: 100%;
+}
+
 /*------------------------------------------------------------------------------
  * contents - navMenu
  *------------------------------------------------------------------------------*/

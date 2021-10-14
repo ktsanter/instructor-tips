@@ -110,7 +110,8 @@ const app = function () {
     settings.recipes = new Recipes({
       "container": page.navRecipes,
       "hideClass": settings.hideClass,
-      "db": settings.db
+      "db": settings.db,
+      "callbackAddToMenu": (recipe) => { _addToMenu(recipe); }
     });
     settings.recipes.render();
   }
@@ -304,6 +305,10 @@ const app = function () {
   function _toggleAdmin() {
     settings.adminDisable = !settings.adminDisable;
     _setAdminMenu();
+  }
+  
+  async function _addToMenu(recipe) {
+    await settings.menu.addToMenu(recipe);
   }
   
   //---------------------------------------
