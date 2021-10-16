@@ -9,6 +9,7 @@ include ./mixins/mixins-recipes.pug
 include ./mixins/mixins-menu.pug
 include ./mixins/mixins-shopping.pug
 include ./mixins/mixins-admin.pug
+include ./mixins/pdf-mixins.pug
 
 doctype html
 html(lang="en")
@@ -20,6 +21,7 @@ html(lang="en")
     +fontawesome()
     +bootstrapstyle()
     +tinyMCEscripts()
+    +pdf_parsing()
     
     style
       include ../../common/styles/classProfile.css
@@ -55,6 +57,7 @@ html(lang="en")
     
     .contents
       .error-container
+        a(href="dummy" id="linkNotice")
       
       .container-fluid(class="contents-container contents-navRecipes hide-me disable-container")
         +recipesContainer()      

@@ -94,6 +94,26 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navRecipes {}
 
+/*------------------------------------------------------------------------------
+ * contents - navRecipes, List container
+ *------------------------------------------------------------------------------*/
+.contents .contents-navRecipes .importfile {
+  opacity: 0;
+  z-index: -1;
+  position: absolute; /* don't let it take up space */
+}
+
+.contents .contents-navRecipes .importfile-label {
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--bgPrimary);
+  cursor: pointer;
+}
+
+.contents-navRecipes .recipes-addrecipe {
+   color: var(--bgPrimary);
+ }
+ 
 .contents-navRecipes .recipe-contextmenu {
   position: relative;
   display: inline-block;
@@ -122,6 +142,78 @@ body {
 
 .contents-navRecipes .recipe-dropdownitem:hover {background-color: #ddd}
 
+.contents .contents-navRecipes .tagselect-container {
+  position: relative;
+}
+
+.contents .contents-navRecipes .tagselect-dropdown-label {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimaryFaded);
+  padding: 0.2em 0.4em;
+}
+
+.contents .contents-navRecipes .tagselect-dropdown-label:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.contents .contents-navRecipes .tagselect-dropdown-label i {
+  margin-left: 0.2em;
+}
+
+.contents .contents-navRecipes .tagselect-dropdown:not(.dd-closed) {
+  display: inline-block;
+  position: absolute;
+  top: 2.5em;
+  left: 0.7em;  
+  background-color: white;
+  border: 1px solid #aaa;
+  filter: drop-shadow(4px 4px 6px #aaaaaa);
+  min-width: 10.0em;
+  padding-left: 0.2em;
+}
+
+.contents .contents-navRecipes .dd-closed {
+  display: none;
+}
+
+.contents .contents-navRecipes .tagselect-item:hover {
+  cursor: pointer;
+  background-color: #eee;
+}
+
+.contents .contents-navRecipes .tagselect-selected-container {
+  display: inline-block;
+  margin-left: 0.4em;
+}
+
+.contents .contents-navRecipes .tagitem {
+  display: inline-block;
+  border: 1px solid #bbb;
+  border-radius: 5px;
+  margin-right: 0.2em;
+}
+
+.contents .contents-navRecipes .tagitem .tagitem-value, 
+.contents .contents-navRecipes .tagitem .tagitem-control {
+  display: inline-block;  
+  padding: 0.2em 0.3em;
+}
+
+.contents .contents-navRecipes .tagitem .tagitem-control {
+  margin-left: 0.2em;
+  color: transparent;
+}
+
+.contents .contents-navRecipes .tagitem .tagitem-control.hovering {
+  color: #bbb;
+}
+
+.contents .contents-navRecipes .tagitem .tagitem-control:hover {
+  color: white;
+  background-color: var(--bgPrimaryFaded);
+}
 /*----------------------------------------
  * navRecipes, Show container 
  *----------------------------------------*/
@@ -171,11 +263,11 @@ body {
 }
 
 .contents-navRecipes .recipe-edit-container .input-instructions {
-  height: 16.0em;
+  height: 26.0em;
 }
 
 .contents-navRecipes .recipe-edit-container .input-notes {
-  height: 8.0em;
+  height: 10.0em;
 }
 
 .contents-navRecipes .ingredients-table .header.header-controls {

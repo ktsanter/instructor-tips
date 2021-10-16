@@ -16,6 +16,8 @@ define(function (require) {
   require('classRecipesList');
   require('classRecipesEdit');
   require('classRecipesShow');
+  require('classFilteredRecipeSearch');
+  require('classImportRecipe');
   
   require('classMenu');
   

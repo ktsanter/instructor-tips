@@ -16,6 +16,7 @@ class RecipesEdit {
     
     this.editContainer = this.config.container.getElementsByClassName('recipe-edit')[0];
     this.editRecipeName = this.editContainer.getElementsByClassName('input-name')[0];
+    this.editTags = this.editContainer.getElementsByClassName('input-tags')[0];
     this.editIngredientsTableBody = this.editContainer.getElementsByClassName('ingredients-body')[0];
     this.editInstructions = this.editContainer.getElementsByClassName('input-instructions')[0];
     this.editNotes = this.editContainer.getElementsByClassName('input-notes')[0];
@@ -33,8 +34,7 @@ class RecipesEdit {
     this.btnCancel.addEventListener('click', (e) => { this._handleCancel(e); });
   }
   
-  async update() {
-  }
+  async update() {}
   
   beginAdd() {
     this._initiateEditing();
@@ -78,6 +78,7 @@ class RecipesEdit {
   
   _loadRecipe(recipe) {
     this.editRecipeName.value = recipe.recipename;
+    this.editTags.value = '[TODO: put tags here]';
     this._loadIngredientList(recipe.ingredients);
     this.editInstructions.value = recipe.instructions;
     this.editNotes.value = recipe.notes;  
@@ -133,20 +134,23 @@ class RecipesEdit {
     return recipe;
   }
   
-  _saveChanges() {
+  async _saveChanges() {
+    var success = false;
+    
     var recipeMode = this.config.container.getAttribute('recipe-mode');
     var recipeId = this.config.container.getAttribute('recipe-id');
     
     if (recipeMode == 'add' || recipeMode == 'edit') {
-      console.log('add/edit recipe');
       var recipe = this._gatherContents();
-      console.log(recipeMode, recipe);
+      success = await this.config.db.saveRecipe(recipeMode, recipe);
       
     } else if (recipeMode == 'delete') {
-      console.log('delete id', recipeId);
+      success = await this.config.db.deleteRecipe(recipeId);
     }
-
-    this.config.callbackFinishEditing({});
+    
+    if (!success) this._focusOnNotice();
+    
+    return success;
   }
   
   _setIngredientVisiblity(row, editing) {
@@ -194,7 +198,6 @@ class RecipesEdit {
       var ingredientInput = ingredientCell.getElementsByClassName('ingredient-input')[0];
       
       if (!ingredientInput.classList.contains(this.config.hideClass)) {
-        console.log('hide', row);
         this._finishIngredientEdit(row, true);
       }
     }
@@ -204,13 +207,14 @@ class RecipesEdit {
   // handlers
   //--------------------------------------------------------------
   _handleContainerClick(e) {
-    console.log('_handleContainerClick', e.target);
     this._closeAllIngredientEdits();
   }
   
-  _handleOkay(e) {
-    this._saveChanges();
-    this.config.callbackFinishEditing({});
+  async _handleOkay(e) {
+    this._closeAllIngredientEdits();
+    var success = await this._saveChanges();
+
+    if (success) this.config.callbackFinishEditing({});
   }
   
   _handleCancel(e) {
@@ -222,7 +226,6 @@ class RecipesEdit {
   }
   
   _handleIngredientClick(e) {
-    console.log('_handleIngredientClick', e.target);
     this._closeAllIngredientEdits();
     
     var row = this._upsearchForRow(e.target);
@@ -265,4 +268,8 @@ class RecipesEdit {
     if (elemRow == null) console.log('RecipesEdit._upsearchForRow failed for', origNode);
     return elemRow;
   }  
+  
+  _focusOnNotice() {
+    document.getElementById('linkNotice').focus();    
+  }
 }

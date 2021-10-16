@@ -26,8 +26,7 @@ const app = function () {
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
-    page.notice.setNotice('loading...', true);
-    
+    page.notice.setNotice('loading...', true);    
     
     await _initializeDB();
     await _setAdminMenu();
@@ -46,9 +45,7 @@ const app = function () {
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
-    page.notice.setNotice('');
-    
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();  
   }
   
   async function _setAdminMenu() {

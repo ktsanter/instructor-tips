@@ -13,6 +13,7 @@ class RecipesDB {
         "recipeid": 100, 
         "recipename": "scrambled eggs",
         "rating": 3,
+        "taglist": ["eggs", "breakfast"],
         "ingredients": [
           {"ingredientid": 7,  "ingredientname": "3 large eggs"},
           {"ingredientid": 8,  "ingredientname": "1 Tbsp milk"},
@@ -31,6 +32,7 @@ class RecipesDB {
         "recipeid": 101, 
         "recipename": "another recipe",
         "rating": 1,
+        "taglist": ["eggs"],
         "ingredients": [],
         "instructions": "",
         "notes": ""
@@ -40,10 +42,21 @@ class RecipesDB {
         "recipeid": 102, 
         "recipename": "random recipe",
         "rating": 2,
+        "taglist": ["breakfast"],
         "ingredients": [],
         "instructions": "",
         "notes": ""
       },
+      
+      {
+        "recipeid": 103, 
+        "recipename": "one more recipe",
+        "rating": 4,
+        "taglist": [],
+        "ingredients": [],
+        "instructions": "",
+        "notes": ""
+      }
     ];    
   }
   
@@ -64,6 +77,30 @@ class RecipesDB {
     if (!dbResult.success) return null;
     
     return dbResult.data;    
+  }
+  
+  async saveRecipe(mode, recipe) {
+    var success = false;
+
+    console.log(recipe.recipeid);
+    if (mode == 'add' || recipe.recipeid == null || recipe.recipeid == 'null') {
+      console.log('RecipesDB.saveRecipe', 'add recipe', recipe);
+    } else {
+      console.log('RecipesDB.saveRecipe', 'update recipe', recipe);
+    }
+    
+    success = true;
+    
+    return success;
+  }
+  
+  async deleteRecipe(recipe) {
+    console.log('RecipesDB.deleteRecipe', recipe.recipeid);
+    var success = false;
+    
+    success = true;
+    
+    return success;
   }
   
   //--------------------------------------------------------------

@@ -6,6 +6,7 @@
 class Recipes {
   constructor(config) {
     this.config = config;
+    this.notice = this.config.db.config.notice;
   }
   
   //--------------------------------------------------------------
@@ -47,6 +48,7 @@ class Recipes {
   }
   
   async update() {
+    this.notice.setNotice('');
     await this.recipesList.update();
   }
   

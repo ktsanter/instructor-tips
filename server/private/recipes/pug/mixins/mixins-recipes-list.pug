@@ -6,10 +6,13 @@ mixin recipesList()
           input(type="text" class="input-recipesearch form-control" id="inputRecipeSearch" placeholder="search for recipe")
           label(for="inputRecipeSearch") search
 
+      .col-sm
+        label(for="file-import" class="importfile-label btn btn-secondary" title="import recipe") import
+        input(type="file" class="importfile" id="file-import" accept=".pdf")
+        
     .row
       .col-sm
-        .tagselect-container
-          |[tag selection]
+        .tagselect-container(class="my-2")
 
     .row
       .col-sm
@@ -17,7 +20,7 @@ mixin recipesList()
           table(class="recipelist-table table table-striped table-hover table-sm")
             thead(class="recipelist-head table-primary")
               th(class="header header-recipe" field-name="recipe")
-                span(class="recipes-headerlabel label-recipe") recipe
+                span(class="recipes-headerlabel label-recipe")
                 i(class="recipes-addrecipe far fa-plus-square" title="add new recipe")
               
             tbody(class="recipelist-body")
