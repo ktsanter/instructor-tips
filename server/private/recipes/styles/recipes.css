@@ -274,6 +274,12 @@ body {
   width: 3%;
 }
 
+.contents-navRecipes .ingredients-table .header .bulk-add-ingredients {
+  color: var(--bgPrimary);
+  float: right;
+  padding-top: 0.2em;
+}
+
 .contents-navRecipes .recipe-edit-container .single-ingredient .controls i {
   cursor: pointer;
   color: #aaa;

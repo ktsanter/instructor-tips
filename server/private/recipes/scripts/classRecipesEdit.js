@@ -26,6 +26,7 @@ class RecipesEdit {
     
     this.editContainer.getElementsByClassName('add-ingredient')[0].addEventListener('click', (e) => { this._handleAddIngredient(e); });
     this.editContainer.getElementsByClassName('importfile')[0].addEventListener('change', (e) => { this._handleImport(e); });
+    this.editContainer.getElementsByClassName('bulk-add-ingredients')[0].addEventListener('click', (e) => { this._handleBulkAddIngredients(e); });
         
     this.deleteContainer = this.config.container.getElementsByClassName('recipe-delete')[0];
     this.deleteRecipeName = this.deleteContainer.getElementsByClassName('recipe-deletion-name')[0]
@@ -120,6 +121,13 @@ class RecipesEdit {
     this._setIngredientVisiblity(row, false);
    
     this.editIngredientsTableBody.appendChild(row);
+  }
+  
+  _bulkAddIngredients(ingredientList) {
+    console.log('_bulkAddIngredients', ingredientList);
+    for (var i = 0; i < ingredientList.length; i++) {
+      this._addIngredientRow({"ingredientid": null, "ingredientname": ingredientList[i]});
+    }
   }
   
   _gatherContents() {
@@ -255,6 +263,13 @@ class RecipesEdit {
 
   _handleAddIngredient(e) {
     this._addIngredientRow({"ingredientid": null, "ingredientname": 'new ingredient'});
+  }
+  
+  _handleBulkAddIngredients(e) {
+    var response = window.prompt('Enter ingredients (on separate lines)');
+    if (response == null || response.trim().length == 0) return;
+    response = response.replace(/\r/g, '');
+    this._bulkAddIngredients(response.split('\n'));
   }
   
   _handleIngredientClick(e) {

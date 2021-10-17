@@ -30,7 +30,7 @@ class Admin {
   // handlers
   //--------------------------------------------------------------   
   async _test(e) {
-    console.log('Admin._test');
+    console.log('Admin._test: stubbed');
   }
   
   //--------------------------------------------------------------
