@@ -6,6 +6,7 @@
 class RecipesEdit {
   constructor(config) {
     this.config = config;
+    this.notice = this.config.db.config.notice;
   }
   
   //--------------------------------------------------------------
@@ -16,6 +17,7 @@ class RecipesEdit {
     
     this.editContainer = this.config.container.getElementsByClassName('recipe-edit')[0];
     this.editRecipeName = this.editContainer.getElementsByClassName('input-name')[0];
+    this.editImportControlLabel =this.editContainer.getElementsByClassName('importfile-label')[0];
     this.editTags = this.editContainer.getElementsByClassName('input-tags')[0];
     this.editIngredientsTableBody = this.editContainer.getElementsByClassName('ingredients-body')[0];
     this.editInstructions = this.editContainer.getElementsByClassName('input-instructions')[0];
@@ -23,7 +25,8 @@ class RecipesEdit {
     this.ingredientTemplateRow = this.config.container.getElementsByClassName('ingredients-templaterow')[0];
     
     this.editContainer.getElementsByClassName('add-ingredient')[0].addEventListener('click', (e) => { this._handleAddIngredient(e); });
-    
+    this.editContainer.getElementsByClassName('importfile')[0].addEventListener('change', (e) => { this._handleImport(e); });
+        
     this.deleteContainer = this.config.container.getElementsByClassName('recipe-delete')[0];
     this.deleteRecipeName = this.deleteContainer.getElementsByClassName('recipe-deletion-name')[0]
     
@@ -32,17 +35,21 @@ class RecipesEdit {
 
     this.btnCancel = this.config.container.getElementsByClassName('button-cancel')[0];
     this.btnCancel.addEventListener('click', (e) => { this._handleCancel(e); });
+    
+    this.recipeImport = new ImportRecipe({});    
   }
   
   async update() {}
   
   beginAdd() {
+    UtilityKTS.setClass(this.editImportControlLabel, this.config.hideClass, false);
     this._initiateEditing();
     this.config.container.setAttribute('recipe-mode', 'add');
     this.config.container.setAttribute('recipe-id', null);
   }
   
   beginEdit(recipe) {
+    UtilityKTS.setClass(this.editImportControlLabel, this.config.hideClass, true);
     this._initiateEditing();
     this._loadRecipe(recipe);
 
@@ -202,6 +209,19 @@ class RecipesEdit {
       }
     }
   }
+    
+  async _doRecipeImport(params) {
+    this.notice.setNotice('');
+    
+    var result = await this.recipeImport.importRecipe(params);
+    if (!result.success) {
+      console.log(result.details);
+      this.notice.setNotice(result.details);
+      return;
+    }
+    
+    this._loadRecipe(result.data);
+  }
   
   //--------------------------------------------------------------
   // handlers
@@ -209,6 +229,18 @@ class RecipesEdit {
   _handleContainerClick(e) {
     this._closeAllIngredientEdits();
   }
+  
+  async _handleImport(e) {
+    if (e.target.files.length == 0) return;  
+
+    var importParams = {
+      importFile: e.target.files[0]
+    }
+
+    await this._doRecipeImport(importParams);
+
+    e.target.value = null;    
+  }  
   
   async _handleOkay(e) {
     this._closeAllIngredientEdits();

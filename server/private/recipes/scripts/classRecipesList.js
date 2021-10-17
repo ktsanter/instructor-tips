@@ -20,8 +20,6 @@ class RecipesList {
     });
     this.recipeSearch.render();    
     
-    this.recipeImport = new ImportRecipe({});
-    
     this.config.container.getElementsByClassName('recipes-addrecipe')[0].addEventListener('click', (e) => { this._handleRecipeAdd(e); });
     
     this.recipeListBody = this.config.container.getElementsByClassName('recipelist-body')[0];
@@ -32,8 +30,6 @@ class RecipesList {
     this.recipeDropdownContainer.getElementsByClassName('recipe-dropdownitem item-edit')[0].addEventListener('click', (e) => { this._handleRecipeEdit(e); });
     this.recipeDropdownContainer.getElementsByClassName('recipe-dropdownitem item-delete')[0].addEventListener('click', (e) => { this._handleRecipeDelete(e); });
 
-    this.config.container.getElementsByClassName('importfile')[0].addEventListener('change', (e) => { this._handleImport(e); });
-    
     // to manage closing context menu
     document.onkeydown = (e) => { 
       if (e.key === 'Escape' || e.which === 27 || e.keyCode === 27) this._closeRecipeDropdown();
@@ -96,27 +92,9 @@ class RecipesList {
     UtilityKTS.setClass(this.recipeDropdownContents, 'show', false);
   }
   
-  async _doRecipeImport(params) {
-    var recipeInfo = await this.recipeImport.importRecipe(params);
-    if (recipeInfo != null) this.config.callbackEdit(recipeInfo);
-  }
-  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------
-  async _handleImport(e) {
-    if (e.target.files.length == 0) return;  
-
-    var importParams = {
-      importType: 'epicurious',
-      importFile: e.target.files[0]
-    }
-
-    await this._doRecipeImport(importParams);
-
-    e.target.value = null;    
-  }
-  
   _handleRecipeClick(e) {
     var targetRow = this._upsearchForRow(e.target);
     if (targetRow == null) return;

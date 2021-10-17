@@ -8,6 +8,10 @@ mixin recipesEdit()
               input(type="text" class="input-name form-control" id="inputName" placeholder="recipe name")
               label(for="inputName") recipe name
               
+          .col-sm
+            label(for="file-import" class="importfile-label btn btn-secondary" title="import recipe") import
+            input(type="file" class="importfile" id="file-import" accept=".pdf,.txt")
+              
         .row(class="mt-1")
           .col-sm
             .form-floating
@@ -23,7 +27,7 @@ mixin recipesEdit()
                     i(class="add-ingredient far fa-plus-square" title="add new ingredient")
                   
                   th(class="header header-ingredient" field-name="ingredient")
-                    span(class="recipes-headerlabel label-ingredient") 
+                    span(class="recipes-headerlabel label-ingredient") ingredients
                   
                 tbody(class="ingredients-body")               
             

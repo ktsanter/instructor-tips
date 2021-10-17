@@ -6,34 +6,73 @@
 class ImportRecipe {
   constructor(config) {
     this.config = config;
+
+    this.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    this.formatKeys = {
+      "epicurious": [this.months, ["Servings", "servings"], ["Step "]],
+      "bon_appetit": [this.months, ["Ingredient"], ["Steps", "Preparation"]]
+    };
   }
   
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
   async importRecipe(params) {
+    var result = {"success": false, "details": 'import failed for ' + params.importFile.name, "data": null};
     var recipe = null;
     
-    if (params.importType == 'epicurious') {
-      recipe = await this._importEpicurious(params.importFile);
+    var fileType = params.importFile.type;
+    if (fileType == 'application/pdf') {
+      recipe = await this._importPDF(params.importFile);
+      if (recipe != null) {
+        result.success = true;
+        result.details = 'import succeeded for ' + params.importFile.name;
+        result.data = recipe;
+      }
+
+    } else if (fileType == 'text/plain') {
+      recipe = await this._importText(params.importFile);
+      if (recipe != null) {
+        result.success = true;
+        result.details = 'import succeeded for ' + params.importFile.name;
+        result.data = recipe;
+      }
+      
+    } else {
+      result.details = 'invalid file type: ' + params.importFile.name;
     }
     
-    return recipe;
+    return result;
   }
 
   //--------------------------------------------------------------
   // private methods - for each import type
   //--------------------------------------------------------------
-  async _importEpicurious(file) {
+  async _importPDF(file) {
     var recipe = null;
     
     try {
-      var rawText = await this._extractTextPromise(file);
+      var rawText = await this._extractTextFromPDFPromise(file);
       var lineArrays = await this._makeLineArraysPromise(rawText);
       recipe = this._parsePDF(lineArrays);
       
     } catch (err) {
-      console.log('ImportRecipe._importEpicurious failed', err);
+      console.log('ImportRecipe._importPDF failed', err);
+    }
+
+    return recipe;
+  }
+  
+  async _importText(file) {
+    var recipe = null;
+    
+    try {
+      var rawText = await this._extractTextFromTextPromise(file);
+      recipe = this._parseText(rawText);
+      
+    } catch (err) {
+      console.log('ImportRecipe._importText failed', err);
     }
 
     return recipe;
@@ -42,10 +81,18 @@ class ImportRecipe {
   //--------------------------------------------------------------
   // private methods - getting text from PDF
   //--------------------------------------------------------------
-  _extractTextPromise(file) {
-    return new Promise((resolve) => {        
-      this._extractText(file, (array) => {
-        resolve(array);
+  _extractTextFromPDFPromise(file) {
+    return new Promise((resolve) => {
+      this._extractTextFromPDF(file, (result) => {
+        resolve(result);
+      });
+    })
+  }
+  
+  _extractTextFromTextPromise(file) {
+    return new Promise((resolve) => {
+      this._extractTextFromText(file, (result) => {
+        resolve(result);
       });
     })
   }
@@ -58,15 +105,14 @@ class ImportRecipe {
     })
   }
   
-  _extractText(file, callback) {
-    var BASE64_MARKER = ';base64,';
-    
+  _extractTextFromPDF(file, callback) {
     var fReader = new FileReader();
+    
     fReader.readAsDataURL(file);
-    var me = this;
     
     fReader.onloadend = function (event) {
       var dataURI = event.target.result;
+      var BASE64_MARKER = ';base64,';
       var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
       var base64 = dataURI.substring(base64Index);
       var raw = window.atob(base64);
@@ -78,6 +124,16 @@ class ImportRecipe {
       }
 
       callback(array);
+    }
+  }
+
+  _extractTextFromText(file, callback) {
+    var fReader = new FileReader();
+    
+    fReader.readAsText(file);
+    
+    fReader.onloadend = function (event) {
+      callback(fReader.result);
     }
   }
 
@@ -125,79 +181,125 @@ class ImportRecipe {
   // private methods - parsing PDF text
   //--------------------------------------------------------------  
   _parsePDF(lineArrays) {
+    var recipe = null;
     var pieces = [];
     
     for (var i = 0; i < lineArrays.length; i++) {
       pieces = pieces.concat(lineArrays[i]);
     }
-
     var combined = pieces.join('');
     
-    var title = this._findTitle(pieces, combined);
-    var ingredients = this._findIngredients(pieces, combined);
-    var instructions = this._findInstructions(pieces, combined);
-    
-    var instructionsFormatted = '';
-    var firstStep = true;
-    for (var i = 0; i < instructions.length; i++) {
-      var isStep = instructions[i].indexOf('Step ') >= 0;
-      if (isStep) {
-        if (!firstStep) instructionsFormatted += '\n\n';
-        firstStep = false;
-      }
-      instructionsFormatted += ' ' + instructions[i];
-      if (isStep) instructionsFormatted += '\n';
+    var pdfFormat = this._guessPDFFormat(combined);
+    if (pdfFormat == null) {
+      console.log('unrecognized PDF format');
+      return recipe;
     }
+    
+    var title = this._findTitle(pieces, combined, pdfFormat);
+    if (title == null) return recipe;
+    
+    var ingredients = this._findIngredients(pieces, combined, pdfFormat);
+    if (ingredients.length == 0) return recipe;
+    
+    var instructions = this._findInstructions(pieces, combined, pdfFormat);
+    if (instructions == null) return recipe;
     
     var ingredientObjects = [];
     for (var i = 0; i < ingredients.length; i++) {
       ingredientObjects.push({"ingredientid": null, "ingredientname": ingredients[i]});
     }
 
-    var recipe = {
+    recipe = {
       "recipeid": null,
       "recipename": title,
       "ingredients": ingredientObjects,
-      "instructions": instructionsFormatted,
+      "instructions": instructions,
       "notes": ''
     };      
     
     return recipe;
   }
   
-  _findTitle(pieces, combined) {
-    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-    var title = '[unknown title]';
+  _guessPDFFormat(combinedText) {
+    //console.log('combinedText', combinedText);
+    var format = null;
     
-    var locDate = this._findOccurrence(pieces, combined, months);
-    if (locDate.success) {
-      title = combined.substring(0, locDate.start.location);
+    for (var key in this.formatKeys) {
+      var keyWordArrays = this.formatKeys[key];
+      
+      var foundAllKeyWords = true;
+      for (var i = 0; i < keyWordArrays.length && foundAllKeyWords; i++) {
+        var keyWordArray = keyWordArrays[i];
+
+        var foundKeyWord = false;        
+        for (var j = 0; j < keyWordArray.length && !foundKeyWord; j++) {
+          var keyWord = keyWordArray[j];
+          foundKeyWord = (combinedText.indexOf(keyWord) >= 0);
+        }
+        
+        foundAllKeyWords = foundAllKeyWords && foundKeyWord;
+      }
+      
+      if (foundAllKeyWords) {
+        format = {
+          "key": key,
+          "formatInfo": keyWordArrays
+        };
+        break;
+      }
+    }      
+    
+    return format;
+  }
+  
+  _findTitle(pieces, combined, pdfFormat) {
+    var title = null;
+    
+    var locEnd = this._findOccurrence(pieces, combined, pdfFormat.formatInfo[0]);
+    if (locEnd.success) {
+      title = combined.substring(0, locEnd.start.location);
     }
     
     return title;
   }
   
-  _findIngredients(pieces, combined) {
+  _findIngredients(pieces, combined, pdfFormat) {
     var ingredients = [];
-    
-    var locServings = this._findOccurrence(pieces, combined, ["Servings", "servings"]);
-    var locInstructions = this._findOccurrence(pieces, combined, ["Step "]);
-    if (locServings.success && locInstructions.success) {
-      ingredients = pieces.slice(locServings.end.piecenum, locInstructions.start.piecenum);
+
+    var locStart = this._findOccurrence(pieces, combined, pdfFormat.formatInfo[1]);
+    var locEnd = this._findOccurrence(pieces, combined, pdfFormat.formatInfo[2]);
+    if (locStart.success && locEnd.success) {
+      ingredients = pieces.slice(locStart.end.piecenum, locEnd.start.piecenum);
     }
-    
+
     return ingredients;
   }
   
-  _findInstructions(pieces, combined) {
-    var instructions = [];
+  _findInstructions(pieces, combined, pdfFormat) {
+    var instructionsFormatted = '';
     
-    var locInstructions = this._findOccurrence(pieces, combined, ["Step "]);
-    if (locInstructions.success) {
-      instructions = pieces.slice(locInstructions.start.piecenum);
+    var locStart = this._findOccurrence(pieces, combined, pdfFormat.formatInfo[2]);
+    if (locStart.success) {
+      var instructions = pieces.slice(locStart.start.piecenum);
+      
+      var firstStep = true;
+      for (var i = 0; i < instructions.length; i++) {
+        if (pdfFormat.key == 'epicurious') {
+          var isStep = instructions[i].indexOf('Step ') >= 0;
+          if (isStep) {
+            if (!firstStep) instructionsFormatted += '\n\n';
+            firstStep = false;
+          }
+          instructionsFormatted += ' ' + instructions[i];
+          if (isStep) instructionsFormatted += '\n';
+
+        } else {
+          instructionsFormatted += instructions[i];
+        }
+      }
     }
     
-    return instructions;
+    return instructionsFormatted;
   }
   
   _findOccurrence(pieces, combined, targetList) {
@@ -208,6 +310,7 @@ class ImportRecipe {
       startLocation = combined.indexOf(target);
       if (startLocation >= 0) endLocation = startLocation + target.length;
     }
+    if (startLocation < 0) console.log(targetList);
     
     var result = {
       "success": startLocation >= 0,
@@ -241,7 +344,51 @@ class ImportRecipe {
 
     return result;
   }
-  
+
+  //--------------------------------------------------------------
+  // private methods - parsing text file data
+  //--------------------------------------------------------------  
+  _parseText(rawText) {
+    var recipe = null;
+
+    rawText = rawText.replace(/\r/g, '');
+    var arrLines = rawText.split('\n');
+    
+    var title = arrLines[0];
+    var ingredients = [];
+    var instructions = [];
+    
+    var mode = '';
+    for (var i = 1; i < arrLines.length; i++) {
+      var line = arrLines[i];
+      if (line.toLowerCase() == 'ingredients') {
+        mode = 'ingredients';
+        
+      } else if (line.toLowerCase() == 'instructions') {
+        mode = 'instructions';
+        
+      } else {
+        if (mode == 'ingredients') ingredients.push(line);
+        if (mode == 'instructions') instructions.push(line);
+      }
+    }
+        
+    var ingredientObjects = [];
+    for (var i = 0; i < ingredients.length; i++) {
+      ingredientObjects.push({"ingredientid": null, "ingredientname": ingredients[i]});
+    }
+
+    recipe = {
+      "recipeid": null,
+      "recipename": title,
+      "ingredients": ingredientObjects,
+      "instructions": instructions.join('\n'),
+      "notes": ''
+    };
+    
+    return recipe;
+  }
+    
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
