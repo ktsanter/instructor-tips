@@ -23,6 +23,10 @@ class RecipesEdit {
     this.editInstructions = this.editContainer.getElementsByClassName('input-instructions')[0];
     this.editNotes = this.editContainer.getElementsByClassName('input-notes')[0];
     this.ingredientTemplateRow = this.config.container.getElementsByClassName('ingredients-templaterow')[0];
+
+    UtilityKTS.denyDoubleQuotes(this.editTags);
+    UtilityKTS.denyDoubleQuotes(this.editInstructions);
+    UtilityKTS.denyDoubleQuotes(this.editNotes);
     
     this.editContainer.getElementsByClassName('add-ingredient')[0].addEventListener('click', (e) => { this._handleAddIngredient(e); });
     this.editContainer.getElementsByClassName('importfile')[0].addEventListener('change', (e) => { this._handleImport(e); });
@@ -86,7 +90,7 @@ class RecipesEdit {
   
   _loadRecipe(recipe) {
     this.editRecipeName.value = recipe.recipename;
-    this.editTags.value = '[TODO: put tags here]';
+    this.editTags.value = this._tagListToString(recipe.taglist);
     this._loadIngredientList(recipe.ingredients);
     this.editInstructions.value = recipe.instructions;
     this.editNotes.value = recipe.notes;  
@@ -124,7 +128,6 @@ class RecipesEdit {
   }
   
   _bulkAddIngredients(ingredientList) {
-    console.log('_bulkAddIngredients', ingredientList);
     for (var i = 0; i < ingredientList.length; i++) {
       this._addIngredientRow({"ingredientid": null, "ingredientname": ingredientList[i]});
     }
@@ -135,7 +138,11 @@ class RecipesEdit {
     recipe.recipeid = this.config.container.getAttribute('recipe-id');
     recipe.recipename = this.editRecipeName.value;
     
+    recipe.rating = 1;
+    
     var ingredientRows = this.editIngredientsTableBody.getElementsByClassName('single-ingredient');
+    
+    recipe.taglist = this._tagStringToArray(this.editTags.value);
     
     recipe.ingredients = [];
     for (var i = 0; i < ingredientRows.length; i++) {
@@ -163,6 +170,7 @@ class RecipesEdit {
       success = await this.config.db.deleteRecipe(recipeId);
     }
     
+    console.log('_saveChanges success', success);
     if (!success) this._focusOnNotice();
     
     return success;
@@ -319,4 +327,26 @@ class RecipesEdit {
   _focusOnNotice() {
     document.getElementById('linkNotice').focus();    
   }
+  
+  _tagListToString(tagList) {
+    var tagString = tagList.toString();
+    if (tagList.length == 0) tagString = ' ';
+    return tagString;
+  }
+  
+  _tagStringToArray(tagList) {
+    var tagList = tagList.split(',');
+    var tagListCleaned = [];
+
+    for (var i = 0; i < tagList.length; i++) {
+      var tag = tagList[i].trim();
+      if (tag.length > 0) tagListCleaned.push(tag);
+    }
+
+    tagListCleaned = tagListCleaned.sort(function(a, b) {
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
+    
+    return tagListCleaned;
+  }  
 }

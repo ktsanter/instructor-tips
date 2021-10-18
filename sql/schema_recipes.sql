@@ -12,6 +12,53 @@ USE recipes;
 #-----------------------------------------------------------------
 select "creating tables" as comment;
 
+create table recipe  
+(
+  recipeid           int unsigned not null AUTO_INCREMENT,
+  userid             int unsigned not null,
+  recipename         varchar(200),
+  reciperating       int unsigned not null,
+  recipeinstructions varchar(2000),
+  recipenotes        varchar(500),
+  
+  primary key (recipeid),
+  constraint foreign key (userid) references  instructortips.user (userid) on delete cascade,
+  constraint unique(userid, recipename)
+);
+
+create table ingredient
+(
+  ingredientid      int unsigned not null AUTO_INCREMENT,
+  recipeid          int unsigned not null,
+  ingredientname    varchar(250),
+  
+  primary key(ingredientid),
+  constraint foreign key (recipeid) references recipe(recipeid) on delete cascade
+);
+
+create table tag
+(
+  tagid             int unsigned not null AUTO_INCREMENT,
+  userid            int unsigned not null,
+  tagtext           varchar(20),
+  
+  primary key(tagid),
+  constraint foreign key (userid) references  instructortips.user (userid) on delete cascade,
+  constraint unique(userid, tagtext)
+);
+
+create table recipe_tag
+(
+  recipe_tagid      int unsigned not null AUTO_INCREMENT,
+  recipeid          int unsigned not null,
+  tagid             int unsigned not null,
+  
+  primary key(recipe_tagid),
+  constraint foreign key (recipeid) references  recipe (recipeid) on delete cascade,
+  constraint foreign key (tagid) references  tag (tagid) on delete cascade,
+  constraint unique(recipeid, tagid)
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------
@@ -26,3 +73,24 @@ select "creating views" as comment;
 #-- stored procedures
 #--------------------------------------------------------------------------
 select "creating stored procedures" as comment;
+
+DELIMITER //
+create procedure add_recipe(
+  in user_Id int, 
+  in recipe_Name varchar(200), 
+  in recipe_Rating int,
+  in recipe_Instructions varchar(2000),
+  in recipe_Notes varchar(500)
+) 
+begin
+  insert into recipe (
+    userid, recipename, reciperating, recipeinstructions, recipenotes
+    
+  ) values (
+    user_Id, recipe_Name, recipe_Rating, recipe_Instructions, recipe_Notes
+  );
+  
+  select LAST_INSERT_ID() as recipeid;
+end;
+//
+DELIMITER ;

@@ -1,25 +1,23 @@
-drop procedure if exists find_or_add_tip;
+source schema_recipes.sql;
 
-DELIMITER //
-create procedure find_or_add_tip(in user_Id int, in tip_Content varchar(2000))
-begin
-  set @tip_Id = null;
-  select a.tipid into @tip_Id
-  from tip as a
-  where a.userid = user_Id
-    and a.tipcontent = tip_Content
-  limit 1;
-    
-  if @tip_Id is null then
-    insert into tip (userid, tipcontent)
-    values(user_Id, tip_Content);
+call add_recipe(1,'first recipe', 3, "do some stuff", "these are important notes");
+call add_recipe(1,'second recipe', 2, "mix it all up", "do not burn it");
+call add_recipe(1,'third recipe', 2, "1) do something\n2) do something else\n3) do one more thing", "only use imported ingredients");
+call add_recipe(1,'fourth recipe', 1, "1) buy cookies\n2) serve cookies", "");
 
-    select LAST_INSERT_ID() into @tip_Id;
-  end if;
-  
-  select @tip_Id as 'tipid';
-end;
-//
-DELIMITER ;
+insert into ingredient (recipeid, ingredientname) values(2, 'parsley');
+insert into ingredient (recipeid, ingredientname) values(2, 'yak milk');
+insert into ingredient (recipeid, ingredientname) values(3, '1 eye of newt');
+insert into ingredient (recipeid, ingredientname) values(3, '3 cloves garlic');
+insert into ingredient (recipeid, ingredientname) values(3, '1 1/2 Tbsp nightshade');
+insert into ingredient (recipeid, ingredientname) values(4, 'cookies');
 
-/* %3Cp%3Etip%20C%3C%2Fp%3E */
+insert into tag (userid, tagtext) values (1, 'breakfast');
+insert into tag (userid, tagtext) values (1, 'lunch');
+insert into tag (userid, tagtext) values (1, 'dinner');
+insert into tag (userid, tagtext) values (1, 'garlic');
+
+insert into recipe_tag(recipeid, tagid) values(1,3);
+insert into recipe_tag(recipeid, tagid) values(2,2);
+insert into recipe_tag(recipeid, tagid) values(3,1);
+insert into recipe_tag(recipeid, tagid) values(3,4);

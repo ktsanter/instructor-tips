@@ -41,6 +41,8 @@ class RecipesList {
   
   async update() {
     this.recipeList = await this.config.db.getRecipeList();
+    if (this.recipeList == null) return;
+    
     await this.recipeSearch.update();
 
     this._loadRecipeList();
