@@ -48,8 +48,8 @@ module.exports = internal.Recipes = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._dummy(params, postData, userInfo, funcCheckPrivilege);
+    if (params.queryName == 'recipe') {
+      dbResult = await this._updateRecipe(params, postData, userInfo, funcCheckPrivilege);
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -61,8 +61,8 @@ module.exports = internal.Recipes = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      dbResult = await this._dumyy(params, postData, userInfo, funcCheckPrivilege);
+    if (params.queryName == 'recipe') {
+      dbResult = await this._deleteRecipe(params, postData, userInfo, funcCheckPrivilege);
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -96,7 +96,7 @@ module.exports = internal.Recipes = class {
     queryList = {
       recipes:
         'select ' + 
-          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeinstructions as "instructions", a.recipenotes as "notes" ' + 
+          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes" ' + 
         'from recipe as a ' +
         'where a.userid = ' + userInfo.userId + ' ' +
         'order by a.recipename',
@@ -142,6 +142,7 @@ module.exports = internal.Recipes = class {
           userInfo.userId + ', ' +
           '"' + postData.recipename + '", ' +
               + postData.rating + ', ' +
+          '"' + postData.recipeyield + '", ' +
           '"' + postData.instructions + '", ' +
           '"' + postData.notes + '" ' +
         ') '
@@ -162,6 +163,12 @@ module.exports = internal.Recipes = class {
       result.details = queryResults.details;
       return result;
     }    
+    
+    queryResults = await this._updateTagsForRecipe(recipeId, userInfo.userId, postData.taglist);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }    
       
     result.success = true;
     result.details = 'insert succeeded';
@@ -169,9 +176,50 @@ module.exports = internal.Recipes = class {
     return result;
   }  
   
+  async _updateRecipe(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult();  
+
+    var queryList, queryResults;
+    queryList = {
+      "recipe":       
+        'update recipe set ' + 
+          'recipename = "' + postData.recipename + '", ' +
+          'reciperating = ' + postData.rating + ', ' +
+          'recipeyield = "' + postData.recipeyield + '", ' +
+          'recipeinstructions = "' + postData.instructions + '", ' +
+          'recipenotes = "' + postData.notes + '" ' +
+        'where recipeid = ' + postData.recipeid
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+
+      if (queryResults.details.code == 'ER_DUP_ENTRY' || 
+          queryResults.details.indexOf('Duplicate entry') > 0) result.details = 'duplicate';
+      return result;
+    }
+    
+    var recipeId = postData.recipeid;
+    queryResults = await this._updateIngredientsForRecipe(recipeId, postData.ingredients);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    queryResults = await this._updateTagsForRecipe(recipeId, userInfo.userId, postData.taglist);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+      
+    result.success = true;
+    result.details = 'update succeeded';
+
+    return result;
+  }  
   
   async _updateIngredientsForRecipe(recipeId, ingredientList) {
-    console.log('_updateIngredientsForRecipe', recipeId, ingredientList);
     var result = this._dbManager.queryFailureResult();  
 
     var queryList, queryResults;
@@ -182,7 +230,6 @@ module.exports = internal.Recipes = class {
     };
     
     for (var i = 0; i < ingredientList.length; i++) {
-      console.log(ingredientList[i]);
       var ingredient = ingredientList[i];
       queryList['add' + i] = 
         'insert into ingredient (' +
@@ -193,10 +240,7 @@ module.exports = internal.Recipes = class {
         ')';
     }
     
-    console.log(queryList);
-    
     queryResults = await this._dbManager.dbQueries(queryList);
-    console.log(queryResults);
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -206,8 +250,51 @@ module.exports = internal.Recipes = class {
     result.details = 'update succeeded';
     
     return result;
-    
   }  
+  
+  async _updateTagsForRecipe(recipeId, userId, tagList) {
+    var result = this._dbManager.queryFailureResult();  
+
+    var queryResults = await this._updateTagsForUser(tagList, userId);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    queryResults = await this._setTagsForRecipe(recipeId, tagList, userId);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'tag update succeeded';
+    
+    return result;    
+  }
+  
+  async _deleteRecipe(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult();  
+
+    var queryList, queryResults;
+    queryList = {
+      "recipe":       
+        'delete from recipe ' +
+        'where recipeid = ' + postData.recipeid
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }    
+      
+    result.success = true;
+    result.details = 'delete succeeded';
+
+    return result;
+  }    
 
   async _dummy(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
@@ -244,6 +331,76 @@ module.exports = internal.Recipes = class {
     return collated;
   }
   
+  async _updateTagsForUser(tagList, userId) {
+    var result = this._dbManager.queryFailureResult();  
+
+    var queryList, queryResults;
+    
+    queryList = {};
+    for (var i = 0; i < tagList.length; i++) {
+      var tagText = tagList[i];
+      
+      queryList['tagindex_' + i] = 
+        'insert into tag (userid, tagtext) ' +
+        'values (' +
+          userId + ', ' +
+          '"' + tagText + '"' +
+        ') on duplicate key update tagtext = "' + tagText + '"';
+    }
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'update tags succeeded';
+    } else {
+      result.details = queryResults.details;
+    }
+    
+    return result;
+  }
+  
+  async _setTagsForRecipe(recipeId, tagList, userId) {
+    var result = this._dbManager.queryFailureResult();  
+
+    var queryList, queryResults;
+    
+    var inClause = '';
+    for (var i = 0; i < tagList.length; i++) {
+      if (i > 0) inClause += ', ';
+      inClause += '"' + tagList[i] + '"';
+    }
+    
+    queryList = {
+      removetags:
+        'delete from recipe_tag ' +
+        'where recipeid = ' + recipeId,
+    }
+    
+    if (tagList.length > 0) {
+      queryList.addtags = 
+        'insert into recipe_tag (recipeid, tagid) ' +
+        'select a.recipeid, b.tagid ' +
+        'from recipe as a, tag as b ' +
+        'where a.recipeid = ' + recipeId + ' ' +
+          'and a.userid = ' + userId + ' ' +
+          'and b.userid = ' + userId + ' ' +
+          'and b.tagtext in (' + inClause + ')'
+    }
+        
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result = queryResults.details;
+      return result;
+    }
+        
+    result.success = true;
+    result.details = 'tag setting for recipe succeeded';
+
+    return result;
+  }
+    
 //----------------------------------------------------------------------
 // utility
 //----------------------------------------------------------------------  

@@ -212,7 +212,9 @@ class ImportRecipe {
     recipe = {
       "recipeid": null,
       "recipename": title,
+      "rating": 0,
       "taglist": [],
+      "recipeyield": '',
       "ingredients": ingredientObjects,
       "instructions": instructions,
       "notes": ''
@@ -382,7 +384,9 @@ class ImportRecipe {
     recipe = {
       "recipeid": null,
       "recipename": title,
+      "rating": 0,
       "taglist": [],      
+      "recipeyield": '',
       "ingredients": ingredientObjects,
       "instructions": instructions.join('\n'),
       "notes": ''

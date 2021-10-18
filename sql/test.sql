@@ -1,9 +1,9 @@
 source schema_recipes.sql;
 
-call add_recipe(1,'first recipe', 3, "do some stuff", "these are important notes");
-call add_recipe(1,'second recipe', 2, "mix it all up", "do not burn it");
-call add_recipe(1,'third recipe', 2, "1) do something\n2) do something else\n3) do one more thing", "only use imported ingredients");
-call add_recipe(1,'fourth recipe', 1, "1) buy cookies\n2) serve cookies", "");
+call add_recipe(1,'first recipe', 3, "", "do some stuff", "these are important notes");
+call add_recipe(1,'second recipe', 2, "", "mix it all up", "do not burn it");
+call add_recipe(1,'third recipe', 2, "2 dozen", "1) do something\n2) do something else\n3) do one more thing", "only use imported ingredients");
+call add_recipe(1,'fourth recipe', 1, "as much as you by", "1) buy cookies\n2) serve cookies", "");
 
 insert into ingredient (recipeid, ingredientname) values(2, 'parsley');
 insert into ingredient (recipeid, ingredientname) values(2, 'yak milk');

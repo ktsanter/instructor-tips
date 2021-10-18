@@ -29,22 +29,22 @@ class RecipesDB {
     var success = false;
 
     if (mode == 'add' || recipe.recipeid == null || recipe.recipeid == 'null') {
-      console.log('RecipesDB.saveRecipe', 'add recipe', recipe);
       var dbResult = await SQLDBInterface.doPostQuery('recipes/insert', 'recipe', recipe, this.config.notice);
       success = dbResult.success;
 
     } else {
-      console.log('RecipesDB.saveRecipe', 'update recipe', recipe);
+      var dbResult = await SQLDBInterface.doPostQuery('recipes/update', 'recipe', recipe, this.config.notice);
+      success = dbResult.success;
     }
     
     return success;
   }
   
   async deleteRecipe(recipe) {
-    console.log('RecipesDB.deleteRecipe', recipe.recipeid);
     var success = false;
     
-    success = true;
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/delete', 'recipe', recipe, this.config.notice);    
+    success = dbResult.success;
     
     return success;
   }

@@ -15,6 +15,7 @@ class RecipesShow {
   render() {
     this.elemName = this.config.container.getElementsByClassName('recipe-name')[0];  
     this.elemRating = this.config.container.getElementsByClassName('rating')[0];  
+    this.elemYield = this.config.container.getElementsByClassName('yield-value')[0];
     this.elemIngredientContainer = this.config.container.getElementsByClassName('ingredient-container')[0];  
     this.elemInstructions = this.config.container.getElementsByClassName('instructions')[0];  
     this.elemNotes = this.config.container.getElementsByClassName('notes')[0];  
@@ -33,6 +34,7 @@ class RecipesShow {
     this.recipe = recipe;
     this._renderRecipeName(recipe.recipename);
     this._renderRecipeRating(recipe.rating);
+    this._renderRecipeYield(recipe.recipeyield);
     this._renderRecipeIngredients(recipe.ingredients);
     this._renderRecipeInstructions(recipe.instructions);
     this._renderRecipeNotes(recipe.notes);
@@ -48,10 +50,16 @@ class RecipesShow {
   
   _renderRecipeRating(rating) {
     UtilityKTS.removeChildren(this.elemRating);
-    for (var i = 0; i < rating; i++) {
+    for (var i = 0; i < 5; i++) {
       var elemStar = CreateElement.createIcon(null, 'fas fa-star');
+      if (i >= rating) UtilityKTS.setClass(elemStar, 'dim-star', true);
       this.elemRating.appendChild(elemStar);
     }
+  }
+  
+  _renderRecipeYield(recipeYield) {
+    UtilityKTS.removeChildren(this.elemYield);
+    this.elemYield.innerHTML = recipeYield;
   }
   
   _renderRecipeIngredients(ingredients) {

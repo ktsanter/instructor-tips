@@ -9,16 +9,37 @@ mixin recipesEdit()
               label(for="inputName") recipe name
               
           .col-sm
-            label(for="file-import" class="importfile-label btn btn-secondary" title="import recipe") import
-            input(type="file" class="importfile" id="file-import" accept=".pdf,.txt")
+            .rating-container
+              input(type="radio" id="star5" name="rating" class="recipe-rating-input" value="5")
+              label(for="star5" title="5 stars") 5 stars
+              input(type="radio" id="star4" name="rating" class="recipe-rating-input" value="4")
+              label(for="star4" title="4 stars") 4 stars
+              input(type="radio" id="star3" name="rating" class="recipe-rating-input" value="3")
+              label(for="star3" title="3 stars") 3 stars
+              input(type="radio" id="star2" name="rating" class="recipe-rating-input" value="2")
+              label(for="star2" title="2 stars") 2 stars
+              input(type="radio" id="star1" name="rating" class="recipe-rating-input" value="1")
+              label(for="star1" title="1 star") 1 star
               
         .row(class="mt-1")
           .col-sm
             .form-floating
               input(type="text" class="input-tags form-control" id="tagsInput" placeholder="default")
-              label(for="tagsInput") tags              
+              label(for="tagsInput") tags    
+
+          .col-sm
+            label(for="file-import" class="importfile-label btn btn-secondary" title="import recipe") import
+            input(type="file" class="importfile" id="file-import" accept=".pdf,.txt")
             
         .row(class="mt-1")
+          .col-sm
+            .form-floating
+              input(type="text" class="input-yield form-control" id="inputYield" placeholder="yield")
+              label(for="inputYield") yield
+
+          .col-sm
+                                        
+        .row(class="mt-2")
           .col-sm
             .ingredients-container
               table(class="ingredients-table table table-striped table-hover table-sm")

@@ -97,22 +97,17 @@ body {
 /*------------------------------------------------------------------------------
  * contents - navRecipes, List container
  *------------------------------------------------------------------------------*/
-.contents .contents-navRecipes .importfile {
-  opacity: 0;
-  z-index: -1;
-  position: absolute; /* don't let it take up space */
-}
-
-.contents .contents-navRecipes .importfile-label {
-  color: white;
-  background-color: var(--bgPrimary);
-  border: 1px solid var(--bgPrimary);
-  cursor: pointer;
-}
-
 .contents-navRecipes .recipes-addrecipe {
    color: var(--bgPrimary);
  }
+ 
+.contents-navRecipes .recipelist-recipename {
+  cursor: pointer;
+}
+ 
+.contents-navRecipes .recipelist-recipename:hover {
+  text-decoration: underline;
+}
  
 .contents-navRecipes .recipe-contextmenu {
   position: relative;
@@ -246,8 +241,13 @@ body {
 .contents-navRecipes .recipe-show-container .icon-add:hover {
   color: var(--bgPrimary);
 }  
+
 .contents-navRecipes .recipe-show-container .recipe-section-title {
   font-weight: bold;
+}
+
+.contents-navRecipes .recipe-show-container .yield-value {
+  font-weight: normal;
 }
 
 .contents-navRecipes .recipe-show-container .rating {
@@ -255,9 +255,26 @@ body {
   color: var(--bgPrimary);
 }
 
+.contents-navRecipes .recipe-show-container .rating .dim-star {
+  color: #ccc;
+}
+
 /*----------------------------------------
  * navRecipes, Edit container 
  *----------------------------------------*/
+.contents .contents-navRecipes .importfile {
+  opacity: 0;
+  z-index: -1;
+  position: absolute; 
+}
+
+.contents .contents-navRecipes .importfile-label {
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--bgPrimary);
+  cursor: pointer;
+}
+ 
 .contents-navRecipes .recipe-edit-container .recipe-deletion-name {
   font-weight: bold;
 }
@@ -315,6 +332,45 @@ body {
  * contents - navAdmin
  *------------------------------------------------------------------------------*/
 .contents .contents-navAdmin {}
+
+/*----------------------------------------
+ * 5 star rating container
+ *----------------------------------------*/
+.rating-container {
+    float: left;
+    height: 46px;
+    padding: 0 10px;
+}
+.rating-container:not(:checked) > input {
+    position:absolute;
+    top:-9999px;
+}
+.rating-container:not(:checked) > label {
+    float:right;
+    width:1em;
+    overflow:hidden;
+    white-space:nowrap;
+    cursor:pointer;
+    font-size:30px;
+    color:#ccc;  
+}
+.rating-container:not(:checked) > label:before {
+    content: '★ ';
+}
+.rating-container > input:checked ~ label {
+    color: #426296;    
+}
+.rating-container:not(:checked) > label:hover,
+.rating-container:not(:checked) > label:hover ~ label {
+    color: #354d78;  
+}
+.rating-container > input:checked + label:hover,
+.rating-container > input:checked + label:hover ~ label,
+.rating-container > input:checked ~ label:hover,
+.rating-container > input:checked ~ label:hover ~ label,
+.rating-container > label:hover ~ input:checked ~ label {
+    color: #1e2c45; 
+}
 
 /*------------------------------------------------------------------
  * standard error and notice

@@ -18,7 +18,8 @@ create table recipe
   userid             int unsigned not null,
   recipename         varchar(200),
   reciperating       int unsigned not null,
-  recipeinstructions varchar(2000),
+  recipeyield        varchar(100),
+  recipeinstructions mediumtext,
   recipenotes        varchar(500),
   
   primary key (recipeid),
@@ -79,15 +80,16 @@ create procedure add_recipe(
   in user_Id int, 
   in recipe_Name varchar(200), 
   in recipe_Rating int,
-  in recipe_Instructions varchar(2000),
+  in recipe_Yield varchar(100),
+  in recipe_Instructions mediumtext,
   in recipe_Notes varchar(500)
 ) 
 begin
   insert into recipe (
-    userid, recipename, reciperating, recipeinstructions, recipenotes
+    userid, recipename, reciperating, recipeyield, recipeinstructions, recipenotes
     
   ) values (
-    user_Id, recipe_Name, recipe_Rating, recipe_Instructions, recipe_Notes
+    user_Id, recipe_Name, recipe_Rating, recipe_Yield, recipe_Instructions, recipe_Notes
   );
   
   select LAST_INSERT_ID() as recipeid;

@@ -17,8 +17,10 @@ class RecipesEdit {
     
     this.editContainer = this.config.container.getElementsByClassName('recipe-edit')[0];
     this.editRecipeName = this.editContainer.getElementsByClassName('input-name')[0];
-    this.editImportControlLabel =this.editContainer.getElementsByClassName('importfile-label')[0];
+    this.editRating = this.editContainer.getElementsByClassName('recipe-rating-input');
+    this.editImportControlLabel = this.editContainer.getElementsByClassName('importfile-label')[0];
     this.editTags = this.editContainer.getElementsByClassName('input-tags')[0];
+    this.editYield = this.editContainer.getElementsByClassName('input-yield')[0];
     this.editIngredientsTableBody = this.editContainer.getElementsByClassName('ingredients-body')[0];
     this.editInstructions = this.editContainer.getElementsByClassName('input-instructions')[0];
     this.editNotes = this.editContainer.getElementsByClassName('input-notes')[0];
@@ -80,6 +82,9 @@ class RecipesEdit {
     this.btnOkay.innerHTML = 'save';
     
     this.editRecipeName.value = '';
+    this._setRadioValue(this.editRating, 0);
+    this.editTags.value = '';
+    this.editYield.value = '';
     this._loadIngredientList([]);
     this.editInstructions.value = '';
     this.editNotes.value = '';
@@ -90,7 +95,9 @@ class RecipesEdit {
   
   _loadRecipe(recipe) {
     this.editRecipeName.value = recipe.recipename;
+    this._setRadioValue(this.editRating, recipe.rating);
     this.editTags.value = this._tagListToString(recipe.taglist);
+    this.editYield.value = recipe.recipeyield;
     this._loadIngredientList(recipe.ingredients);
     this.editInstructions.value = recipe.instructions;
     this.editNotes.value = recipe.notes;  
@@ -105,6 +112,7 @@ class RecipesEdit {
   
   _addIngredientRow(ingredient) {
     var row = this.ingredientTemplateRow.cloneNode(true);
+    ingredient.ingredientname = this._replaceQuotes(ingredient.ingredientname);
     row.setAttribute('ingredient-info', JSON.stringify(ingredient));
     
     UtilityKTS.setClass(row, this.config.hideClass, false);
@@ -138,7 +146,8 @@ class RecipesEdit {
     recipe.recipeid = this.config.container.getAttribute('recipe-id');
     recipe.recipename = this.editRecipeName.value;
     
-    recipe.rating = 1;
+    recipe.rating = this._getRadioValue(this.editRating);
+    recipe.recipeyield = this._replaceQuotes(this.editYield.value);
     
     var ingredientRows = this.editIngredientsTableBody.getElementsByClassName('single-ingredient');
     
@@ -150,27 +159,35 @@ class RecipesEdit {
       recipe.ingredients.push(ingredientInfo);
     }
 
-    recipe.instructions = this.editInstructions.value;
-    recipe.notes = this.editNotes.value;  
+    recipe.instructions = this._replaceQuotes(this.editInstructions.value);
+    recipe.notes = this._replaceQuotes(this.editNotes.value);  
 
     return recipe;
   }
   
   async _saveChanges() {
     var success = false;
+
     
     var recipeMode = this.config.container.getAttribute('recipe-mode');
     var recipeId = this.config.container.getAttribute('recipe-id');
     
     if (recipeMode == 'add' || recipeMode == 'edit') {
       var recipe = this._gatherContents();
+          
+      if (recipe.recipename.trim().length == 0) {
+        this.notice.setNotice('recipe must have a name');
+        this.editRecipeName.focus();
+        
+        return success;
+      }
+      
       success = await this.config.db.saveRecipe(recipeMode, recipe);
       
     } else if (recipeMode == 'delete') {
-      success = await this.config.db.deleteRecipe(recipeId);
+      success = await this.config.db.deleteRecipe({"recipeid": recipeId});
     }
     
-    console.log('_saveChanges success', success);
     if (!success) this._focusOnNotice();
     
     return success;
@@ -205,7 +222,7 @@ class RecipesEdit {
       var ingredientInput = ingredientCell.getElementsByClassName('ingredient-input')[0];
     
       var ingredientInfo = JSON.parse(row.getAttribute('ingredient-info'));
-      ingredientInfo.ingredientname = ingredientInput.value;
+      ingredientInfo.ingredientname = this._replaceQuotes(ingredientInput.value);
       row.setAttribute('ingredient-info', JSON.stringify(ingredientInfo));
       ingredientText.innerHTML = ingredientInfo.ingredientname;
     }
@@ -349,4 +366,26 @@ class RecipesEdit {
     
     return tagListCleaned;
   }  
+  
+  _replaceQuotes(origStr) {
+    var str = origStr.replace(/\"/g, '&quot;');
+    return str;
+  }
+  
+  _getRadioValue(radioElements) {
+    var value = 0;
+    for (var i = 0; i < radioElements.length; i++) {
+      var elem = radioElements[i];
+      if (elem.checked) value = elem.value;
+    }
+    return value;
+  }
+  
+  _setRadioValue(radioElements, value) {
+    for (var i = 0; i < radioElements.length; i++) {
+      var elem = radioElements[i];
+      elem.checked = (elem.value == value);
+    }
+    return value;
+  }
 }
