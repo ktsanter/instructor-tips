@@ -108,7 +108,7 @@ const app = function () {
       "container": page.navRecipes,
       "hideClass": settings.hideClass,
       "db": settings.db,
-      "callbackAddToMenu": (recipe) => { _addToMenu(recipe); }
+      "callbackAddToMenu": (recipe) => { return _addToMenu(recipe); }
     });
     settings.recipes.render();
   }
@@ -305,7 +305,8 @@ const app = function () {
   }
   
   async function _addToMenu(recipe) {
-    await settings.menu.addToMenu(recipe);
+    var success = await settings.menu.addToMenu(recipe);
+    return success;
   }
   
   //---------------------------------------

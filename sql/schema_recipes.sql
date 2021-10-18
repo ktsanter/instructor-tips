@@ -60,6 +60,18 @@ create table recipe_tag
   constraint unique(recipeid, tagid)
 );
 
+create table menu
+(
+  menuid             int unsigned not null AUTO_INCREMENT,
+  userid             int unsigned not null,
+  recipeid           int unsigned not null,
+  
+  primary key (menuid),
+  constraint foreign key (userid) references  instructortips.user (userid) on delete cascade,
+  constraint foreign key (recipeid) references  recipe (recipeid) on delete cascade,
+  constraint unique(userid, recipeid)
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------

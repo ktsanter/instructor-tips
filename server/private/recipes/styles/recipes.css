@@ -224,6 +224,11 @@ body {
   cursor: pointer;
 }  
 
+.contents-navRecipes .recipe-show-container .icon-add.is-on-menu {
+  color: var(--bgPrimary);
+  cursor: default;
+}  
+
 .contents-navRecipes .recipe-show-container .icon-close {
   position: absolute;
   right: 1.0em;
@@ -237,8 +242,7 @@ body {
   font-size: 1.4em;
 }  
 
-.contents-navRecipes .recipe-show-container .icon-close:hover,
-.contents-navRecipes .recipe-show-container .icon-add:hover {
+.contents-navRecipes .recipe-show-container .icon-close:hover {
   color: var(--bgPrimary);
 }  
 

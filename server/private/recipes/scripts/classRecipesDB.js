@@ -49,6 +49,18 @@ class RecipesDB {
     return success;
   }
   
+  async getUserMenu() {
+    var dbResult = await SQLDBInterface.doGetQuery('recipes/query', 'menu', this.config.notice);
+    if (!dbResult.success) return null;
+    
+    return dbResult.data;
+  }
+  
+  async addToMenu(recipe) {
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/insert', 'menu', {"recipeid": recipe.recipeid}, this.config.notice);
+    return dbResult.success;
+  }
+  
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   

@@ -15,10 +15,14 @@ class Menu {
   }
   
   async update() {
+    console.log('Menu.update');
+    var userMenu = await this.config.db.getUserMenu();
+    console.log('userMenu', userMenu);
   }
   
   async addToMenu(recipe) {
-    console.log('Menu.addToMenu', recipe);
+    var success = await this.config.db.addToMenu(recipe);
+    return success;
   }
   
   //--------------------------------------------------------------

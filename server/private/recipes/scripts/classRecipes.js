@@ -40,7 +40,7 @@ class Recipes {
       "hideClass": this.config.hideClass,
       "db": this.config.db,
       "callbackFinishShowing": (params) => { this._finishShowing(params); },
-      "callbackAddToMenu": (params) => { this.config.callbackAddToMenu(params); }
+      "callbackAddToMenu": (params) => { return this.config.callbackAddToMenu(params); }
     });
     this.recipesShow.render();
         

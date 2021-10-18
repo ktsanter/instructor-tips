@@ -25,6 +25,9 @@ module.exports = internal.Recipes = class {
     } else if (params.queryName == 'recipe-list') {
       dbResult = await this._getRecipeList(params, postData, userInfo, funcCheckPrivilege);
             
+    } else if (params.queryName == 'menu') {
+      dbResult = await this._getMenu(params, postData, userInfo, funcCheckPrivilege);
+            
     }else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -38,6 +41,9 @@ module.exports = internal.Recipes = class {
     if (params.queryName == 'recipe') {
       dbResult = await this._insertRecipe(params, postData, userInfo, funcCheckPrivilege);
 
+    } else if (params.queryName == 'menu') {
+      dbResult = await this._addToMenu(params, postData, userInfo, funcCheckPrivilege);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -295,6 +301,62 @@ module.exports = internal.Recipes = class {
 
     return result;
   }    
+
+  async _getMenu(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      menu:
+        'select ' + 
+          'a.menuid, a.recipeid, ' +
+          'b.recipename ' +
+        'from menu as a, recipe as b ' +
+        'where a.userid = ' + userInfo.userId + ' ' +
+          'and a.recipeid = b.recipeid '
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = queryResults.data.menu;
+    
+    return result;
+  }
+
+  async _addToMenu(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      menu:
+        'insert ' + 
+        'into menu(userid, recipeid) values (' +
+          userInfo.userId + ', ' +
+          postData.recipeid + 
+        ') on duplicate key update userid = ' + userInfo.userId
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'query succeeded';
+    
+    return result;
+  }
 
   async _dummy(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 

@@ -21,3 +21,10 @@ insert into recipe_tag(recipeid, tagid) values(1,3);
 insert into recipe_tag(recipeid, tagid) values(2,2);
 insert into recipe_tag(recipeid, tagid) values(3,1);
 insert into recipe_tag(recipeid, tagid) values(3,4);
+
+insert into menu(userid, recipeid) values(1, 2);
+insert into menu(userid, recipeid) values(1, 3);
+
+call add_recipe(15, "recipe for other user", 2, "a bunch", "do some steps", "dummy notes");
+insert into ingredient (recipeid, ingredientname) values(5, "fig newtons");
+insert into menu(userid, recipeid) values(15, 5);
