@@ -72,6 +72,21 @@ class RecipesDB {
     var dbResult = await SQLDBInterface.doPostQuery('recipes/delete', 'menu', {"recipeid": recipe.recipeid}, this.config.notice);
     return dbResult.success;
   }
+
+  async getRecipeList() {
+    var dbResult = await SQLDBInterface.doGetQuery('recipes/query', 'recipe-list', this.config.notice);
+    if (!dbResult.success) return null;
+    
+    return dbResult.data;
+  }  
+  
+  async getShoppingList(recipeId) {
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/query', 'shopping-list', {"recipeid": recipeId}, this.config.notice);    
+    if (!dbResult.success) return null;
+    
+    return dbResult.data;
+  }
+
   
   //--------------------------------------------------------------
   // private methods

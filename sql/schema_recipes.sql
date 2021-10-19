@@ -72,6 +72,18 @@ create table menu
   constraint unique(userid, recipeid)
 );
 
+create table shopping
+(
+  shoppingid         int unsigned not null AUTO_INCREMENT,
+  userid             int unsigned not null,
+  ingredientid       int unsigned not null,
+  
+  primary key (shoppingid),
+  constraint foreign key (userid) references  instructortips.user (userid) on delete cascade,
+  constraint foreign key (ingredientid) references  ingredient (ingredientid) on delete cascade,
+  constraint unique(userid, ingredientid)
+);
+
 #--------------------------------------------------------------------------
 #-- triggers
 #--------------------------------------------------------------------------

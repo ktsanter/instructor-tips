@@ -31,7 +31,10 @@ module.exports = internal.Recipes = class {
     } else if (params.queryName == 'menu') {
       dbResult = await this._getMenu(params, postData, userInfo, funcCheckPrivilege);
             
-    }else {
+    } else if (params.queryName == 'shopping-list') {
+      dbResult = await this._getShoppingList(params, postData, userInfo, funcCheckPrivilege);
+            
+    } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
     
@@ -437,6 +440,36 @@ module.exports = internal.Recipes = class {
 
     result.success = true;
     result.details = 'delete succeeded';
+    
+    return result;
+  }
+
+  async _getShoppingList(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      shopping:
+        'select ' + 
+          'a.shoppingid, a.ingredientid, ' +
+          'b.ingredientname ' +
+        'from shopping as a, ingredient as b ' +
+        'where a.userid = ' + userInfo.userId + ' ' +
+          'and a.ingredientid = b.ingredientid ' +
+        'order by a.shoppingid'
+    };
+       
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = queryResults.data.shopping;
     
     return result;
   }

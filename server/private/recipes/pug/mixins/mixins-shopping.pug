@@ -1,4 +1,20 @@
 mixin shoppingContainer()
   .row
     .col-sm
-      |shopping
+      .shoppinglist-table-container
+        table(class="shoppinglist-table table table-striped table-hover table-sm")
+          thead(class="shoppinglist-head table-primary")
+            th(class="header header-controls" field-name="controls")
+
+            th(class="header header-ingredientname" field-name="ingredient") ingredient
+            
+          tbody(class="shoppinglist-body")
+          
+    div(class="hide-me")
+      table
+        thead
+        tbody
+          tr(class="shoppinglist-templaterow")
+            td(class="controls")
+              i(class="delete-icon far fa-trash-alt" title="remove ingredient from list")
+            td(class="ingredientname")
