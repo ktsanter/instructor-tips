@@ -36,8 +36,8 @@ html(lang="en")
     +makeNavbar("Recipes", 
       {
         items: [
-          {id: "navRecipes", type: "link", label: "recipes"},
           {id: "navMenu", type: "link", label: "menu"},
+          {id: "navRecipes", type: "link", label: "recipes"},
           {id: "navShopping", type: "link", label: "shopping"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
@@ -59,11 +59,11 @@ html(lang="en")
       .error-container
         a(href="dummy" id="linkNotice")
       
-      .container-fluid(class="contents-container contents-navRecipes hide-me disable-container")
-        +recipesContainer()      
-        
       .container-fluid(class="contents-container contents-navMenu hide-me disable-container")
         +menuContainer()      
+        
+      .container-fluid(class="contents-container contents-navRecipes hide-me disable-container")
+        +recipesContainer()      
         
       .container-fluid(class="contents-container contents-navShopping hide-me disable-container")
         +shoppingContainer()      

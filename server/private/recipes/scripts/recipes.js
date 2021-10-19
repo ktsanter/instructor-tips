@@ -45,6 +45,7 @@ const app = function () {
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
+    page.notice.setNotice('');
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();  
   }
   
@@ -108,7 +109,7 @@ const app = function () {
       "container": page.navRecipes,
       "hideClass": settings.hideClass,
       "db": settings.db,
-      "callbackAddToMenu": (recipe) => { return _addToMenu(recipe); }
+      "callbackChangeMenu": (recipe, changeMode) => { return _changeMenu(recipe, changeMode); }
     });
     settings.recipes.render();
   }
@@ -304,8 +305,13 @@ const app = function () {
     _setAdminMenu();
   }
   
-  async function _addToMenu(recipe) {
-    var success = await settings.menu.addToMenu(recipe);
+  async function _changeMenu(recipe, changeMode) {
+    var success = false;
+    if (changeMode == 'add') {
+      success = await settings.menu.addToMenu(recipe);
+    } else if (changeMode = 'remove') {
+      success = await settings.menu.removeFromMenu(recipe);
+    }
     return success;
   }
   

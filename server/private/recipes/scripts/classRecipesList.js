@@ -44,25 +44,37 @@ class RecipesList {
     if (this.recipeList == null) return;
     
     await this.recipeSearch.update();
-
-    this._loadRecipeList();
+    
+    await this._loadRecipeList();
   }
   
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
-  _loadRecipeList() {
+  async _loadRecipeList() {
     var filteredList = this._sortAndFilterRecipes();
+    var menuList = await this.config.db.getUserMenu();
+    if (menuList == null) return;
+    
+    for (var i = 0; i < filteredList.length; i++) {
+      var recipe = filteredList[i];
+      var found = menuList.find((a) => { return a.recipeid == recipe.recipeid; });
+      recipe.isOnMenu = (found != null);
+    }
     
     UtilityKTS.removeChildren(this.recipeListBody);
     for (var i = 0; i < filteredList.length; i++) {
       var recipe = filteredList[i];
+
       var row = this.recipeListTemplateRow.cloneNode(true);
-      UtilityKTS.setClass(row, 'recipelist-templaterow', false);
       row.setAttribute('recipe-info', JSON.stringify(recipe));
+      UtilityKTS.setClass(row, 'recipelist-templaterow', false);
+      UtilityKTS.setClass(row, 'single-recipe', true);
       
       var elemRecipeName = row.getElementsByClassName('recipelist-recipename')[0];
       elemRecipeName.innerHTML = recipe.recipename;
+      UtilityKTS.setClass(elemRecipeName, 'is-on-menu', recipe.isOnMenu);
+
       elemRecipeName.addEventListener('click', (e) => { this._handleRecipeClick(e); });
       elemRecipeName.addEventListener('contextmenu', (e) => { this._handleRecipeContextMenu(e); });
       
@@ -132,8 +144,8 @@ class RecipesList {
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------
-  _searchChange(params) {
-    this._loadRecipeList();
+  async _searchChange(params) {
+    await this._loadRecipeList();
   }
   
   //--------------------------------------------------------------

@@ -25,6 +25,9 @@ module.exports = internal.Recipes = class {
     } else if (params.queryName == 'recipe-list') {
       dbResult = await this._getRecipeList(params, postData, userInfo, funcCheckPrivilege);
             
+    } else if (params.queryName == 'recipe') {
+      dbResult = await this._getRecipe(params, postData, userInfo, funcCheckPrivilege);
+            
     } else if (params.queryName == 'menu') {
       dbResult = await this._getMenu(params, postData, userInfo, funcCheckPrivilege);
             
@@ -70,6 +73,9 @@ module.exports = internal.Recipes = class {
     if (params.queryName == 'recipe') {
       dbResult = await this._deleteRecipe(params, postData, userInfo, funcCheckPrivilege);
 
+    } else if (params.queryName == 'menu') {
+      dbResult = await this._removeFromMenu(params, postData, userInfo, funcCheckPrivilege);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -138,6 +144,56 @@ module.exports = internal.Recipes = class {
     return result;
   }
   
+  async _getRecipe(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    console.log('_getRecipe');
+    console.log(params);
+    console.log(postData);
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      recipe:
+        'select ' + 
+          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes" ' + 
+        'from recipe as a ' +
+        'where a.userid = ' + userInfo.userId + ' ' +
+          'and a.recipeid = ' + postData.recipeid,
+
+      ingredients:
+        'select ' +
+          'a.ingredientname ' +
+        'from ingredient as a ' +
+        'where a.recipeid = ' + postData.recipeid,
+        
+      tags:
+        'select ' +
+          'b.tagtext ' +
+        'from recipe_tag as a, tag as b ' +
+        'where a.recipeid = ' + postData.recipeid + ' ' +
+          'and a.tagid = b.tagid '
+    };
+    
+    console.log(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
+    console.log(queryResults);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var recipe = queryResults.data.recipe[0];
+    recipe.ingredients = queryResults.data.ingredients;
+    recipe.taglist = queryResults.data.tags;
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = recipe;
+    
+    return result;
+  }
+
   async _insertRecipe(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult();  
 
@@ -314,7 +370,8 @@ module.exports = internal.Recipes = class {
           'b.recipename ' +
         'from menu as a, recipe as b ' +
         'where a.userid = ' + userInfo.userId + ' ' +
-          'and a.recipeid = b.recipeid '
+          'and a.recipeid = b.recipeid ' +
+        'order by a.menuid'
     };
     
     queryResults = await this._dbManager.dbQueries(queryList);
@@ -354,6 +411,32 @@ module.exports = internal.Recipes = class {
 
     result.success = true;
     result.details = 'query succeeded';
+    
+    return result;
+  }
+
+  async _removeFromMenu(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      menu:
+        'delete ' + 
+        'from menu ' +
+        'where recipeid = ' + postData.recipeid + ' ' +
+          'and userid = ' + userInfo.userId
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'delete succeeded';
     
     return result;
   }

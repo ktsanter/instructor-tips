@@ -23,8 +23,15 @@ class RecipesDB {
     if (!dbResult.success) return null;
     
     return dbResult.data;
-  }
+  }  
   
+  async getRecipe(recipeId) {
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/query', 'recipe', {"recipeid": recipeId}, this.config.notice);    
+    if (!dbResult.success) return null;
+    
+    return dbResult.data;
+  }
+
   async saveRecipe(mode, recipe) {
     var success = false;
 
@@ -58,6 +65,11 @@ class RecipesDB {
   
   async addToMenu(recipe) {
     var dbResult = await SQLDBInterface.doPostQuery('recipes/insert', 'menu', {"recipeid": recipe.recipeid}, this.config.notice);
+    return dbResult.success;
+  }
+  
+  async removeFromMenu(recipe) {
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/delete', 'menu', {"recipeid": recipe.recipeid}, this.config.notice);
     return dbResult.success;
   }
   

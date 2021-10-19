@@ -105,6 +105,10 @@ body {
   cursor: pointer;
 }
  
+.contents-navRecipes .recipelist-recipename.is-on-menu {
+  font-weight: bold;
+}
+ 
 .contents-navRecipes .recipelist-recipename:hover {
   text-decoration: underline;
 }
@@ -124,6 +128,7 @@ body {
   min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
+  font-weight: normal;
 }
 
 .contents-navRecipes .recipe-dropdowncontent.show {
@@ -210,56 +215,72 @@ body {
   background-color: var(--bgPrimaryFaded);
 }
 /*----------------------------------------
- * navRecipes, Show container 
+ * navRecipes, Show container and
+ * navMenu, Show container
  *----------------------------------------*/
-.contents-navRecipes .recipe-show-container .recipe-name {
+.contents-navRecipes .recipe-show-container .recipe-name,
+.contents-navMenu .menu-show-container .recipe-name {
   display: inline-block;
   font-weight: bold;
   font-size: 120%;
 }  
 
 .contents-navRecipes .recipe-show-container .icon-close, 
-.contents-navRecipes .recipe-show-container .icon-add {
+.contents-navRecipes .recipe-show-container .icon-add,
+.contents-navMenu .menu-show-container .icon-close, 
+.contents-navMenu .menu-show-container .icon-add {
   color: #aaa;
   cursor: pointer;
 }  
 
-.contents-navRecipes .recipe-show-container .icon-add.is-on-menu {
+.contents-navRecipes .recipe-show-container .icon-add.is-on-menu,
+.contents-navMenu .menu-show-container .icon-add.is-on-menu {
   color: var(--bgPrimary);
-  cursor: default;
 }  
 
-.contents-navRecipes .recipe-show-container .icon-close {
+.contents-navRecipes .recipe-show-container .icon-close,
+.contents-navMenu .menu-show-container .icon-close {
   position: absolute;
   right: 1.0em;
 }  
 
-.contents-navRecipes .recipe-show-container .icon-close {
+.contents-navRecipes .recipe-show-container .icon-close,
+.contents-navMenu .menu-show-container .icon-close {
   font-size: 2.0em;
 }  
 
-.contents-navRecipes .recipe-show-container .icon-add {
+.contents-navRecipes .recipe-show-container .icon-add,
+.contents-navMenu .menu-show-container .icon-add {
   font-size: 1.4em;
 }  
 
-.contents-navRecipes .recipe-show-container .icon-close:hover {
+.contents-navMenu .menu-show-container .icon-add {
+  display: none;
+}  
+
+.contents-navRecipes .recipe-show-container .icon-close:hover,
+.contents-navMenu .menu-show-container .icon-close:hover {
   color: var(--bgPrimary);
 }  
 
-.contents-navRecipes .recipe-show-container .recipe-section-title {
+.contents-navRecipes .recipe-show-container .recipe-section-title,
+.contents-navMenu .menu-show-container .recipe-section-title {
   font-weight: bold;
 }
 
-.contents-navRecipes .recipe-show-container .yield-value {
+.contents-navRecipes .recipe-show-container .yield-value,
+.contents-navMenu .menu-show-container .yield-value {
   font-weight: normal;
 }
 
-.contents-navRecipes .recipe-show-container .rating {
+.contents-navRecipes .recipe-show-container .rating,
+.contents-navMenu .menu-show-container .rating {
   display: inline-block;
   color: var(--bgPrimary);
 }
 
-.contents-navRecipes .recipe-show-container .rating .dim-star {
+.contents-navRecipes .recipe-show-container .rating .dim-star,
+.contents-navMenu .menu-show-container .rating .dim-star {
   color: #ccc;
 }
 
@@ -326,6 +347,27 @@ body {
  * contents - navMenu
  *------------------------------------------------------------------------------*/
 .contents .contents-navMenu {}
+
+.contents-navMenu .menulist-table .header.header-controls {
+  width: 3%;
+}
+
+.contents-navMenu .menulist-table .delete-icon {
+  color: #aaa;
+  cursor: pointer;
+}
+
+.contents-navMenu .menulist-table .delete-icon:hover {
+  color: var(--bgPrimary);
+}
+
+.contents-navMenu .menulist-table .recipename {
+  cursor: pointer;
+}
+
+.contents-navMenu .menulist-table .recipename:hover {
+  text-decoration: underline;
+}
 
 /*------------------------------------------------------------------------------
  * contents - navShopping

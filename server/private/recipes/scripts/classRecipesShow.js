@@ -24,7 +24,7 @@ class RecipesShow {
     var btn = this.config.container.getElementsByClassName('icon-close')[0];
     btn.addEventListener('click', (e) => { this.config.callbackFinishShowing(); });  
 
-    this.elemIconAdd.addEventListener('click', (e) => { this._handleAddToMenu(e); });  
+    this.elemIconAdd.addEventListener('click', (e) => { this._handleChangeMenu(e); });  
   }
   
   async update() {
@@ -56,7 +56,7 @@ class RecipesShow {
     var isOnMenu = filtered.length > 0;
     UtilityKTS.setClass(this.elemIconAdd, 'is-on-menu', isOnMenu);
     if (isOnMenu) {
-      this.elemIconAdd.title = 'recipe is on menu';
+      this.elemIconAdd.title = 'remove from menu';
     } else {
       this.elemIconAdd.title = 'add to menu';
     }
@@ -102,10 +102,15 @@ class RecipesShow {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------
-  async _handleAddToMenu(e) {
-    if (this.elemIconAdd.classList.contains('is-on-menu')) return;
+  async _handleChangeMenu(e) {
+    var success = false;
     
-    var success = await this.config.callbackAddToMenu(this.recipe);
+    if (this.elemIconAdd.classList.contains('is-on-menu')) {
+      success = await this.config.callbackChangeMenu(this.recipe, 'remove');
+    } else {
+      success = await this.config.callbackChangeMenu(this.recipe, 'add');
+    }
+    
     await this.showRecipe(this.recipe);
   }
   

@@ -1,4 +1,27 @@
+include ./mixins-menu-show.pug
+
 mixin menuContainer()
+  .row(class="menu-main-container")
+    .col-sm
+      .menulist-table-container
+        table(class="menulist-table table table-striped table-hover table-sm")
+          thead(class="menulist-head table-primary")
+            th(class="header header-controls" field-name="controls")
+
+            th(class="header header-recipename" field-name="recipe") menu item
+            
+          tbody(class="menulist-body")
+          
   .row
     .col-sm
-      |menu
+      +menuShow()
+          
+    div(class="hide-me")
+      table
+        thead
+        tbody
+          tr(class="menulist-templaterow")
+            td(class="controls")
+              i(class="delete-icon far fa-trash-alt" title="remove recipe from menu")
+            td(class="recipename")
+
