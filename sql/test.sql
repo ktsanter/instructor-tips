@@ -22,11 +22,6 @@ insert into recipe_tag(recipeid, tagid) values(2,2);
 insert into recipe_tag(recipeid, tagid) values(3,1);
 insert into recipe_tag(recipeid, tagid) values(3,4);
 
-insert into menu(userid, recipeid) values(1, 2);
-insert into menu(userid, recipeid) values(1, 3);
-
-insert into shopping(userid, ingredientid) values(1, 3);
-insert into shopping(userid, ingredientid) values(1, 4);
 
 # second user
 call add_recipe(15, "recipe for other user", 2, "a bunch", "do some steps", "dummy notes");

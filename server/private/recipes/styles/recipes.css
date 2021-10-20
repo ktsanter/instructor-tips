@@ -374,6 +374,27 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navShopping {}
 
+.contents-navShopping .shoppinglist-table .header.header-controls {
+  width: 3%;
+}
+
+.contents-navShopping .shoppinglist-table .shoppingitem-check:hover {
+  cursor: pointer;
+}
+
+.contents-navShopping .shoppinglist-table .shoppingitem-check:checked {
+  background-color: var(--bgPrimaryFaded);
+}
+
+
+.contents-navShopping .shoppinglist-table .delete-icon {
+  visibility: hidden;
+}
+
+.contents-navShopping .shoppinglist-table .ingredientname:hover > .delete-icon {
+  visibility: visible;
+}
+
 /*------------------------------------------------------------------------------
  * contents - navAdmin
  *------------------------------------------------------------------------------*/

@@ -120,3 +120,21 @@ begin
 end;
 //
 DELIMITER ;
+
+DELIMITER //
+create procedure add_ingredient(
+  in recipe_Id int, 
+  in ingredient_Name varchar(250)
+) 
+begin
+  insert into ingredient (
+    recipeid, ingredientname
+    
+  ) values (
+    recipe_Id, ingredient_Name
+  );
+  
+  select LAST_INSERT_ID() as ingredientid;
+end;
+//
+DELIMITER ;

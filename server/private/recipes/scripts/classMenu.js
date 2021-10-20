@@ -39,11 +39,13 @@ class Menu {
   
   async addToMenu(recipe) {
     var success = await this.config.db.addToMenu(recipe);
+    if (success) success = await this.config.db.addRecipeToShopping(recipe.recipeid);
     return success;
   }
   
   async removeFromMenu(recipe) {
     var success = await this.config.db.removeFromMenu(recipe);
+    if (success) success = await this.config.db.removeRecipeFromShopping(recipe.recipeid);
     return success;
   }
   

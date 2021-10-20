@@ -87,6 +87,20 @@ class RecipesDB {
     return dbResult.data;
   }
 
+  async addRecipeToShopping(recipeId) {
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/insert', 'shopping-recipe', {"recipeid": recipeId}, this.config.notice);    
+    return dbResult.success;
+  }
+
+  async removeRecipeFromShopping(recipeId) {
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/delete', 'shopping-recipe', {"recipeid": recipeId}, this.config.notice);    
+    return dbResult.success;
+  }
+
+  async removeShoppingItem(ingredientId) {
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/delete', 'shopping-item', {"ingredientid": ingredientId}, this.config.notice);    
+    return dbResult.success;
+  }
   
   //--------------------------------------------------------------
   // private methods

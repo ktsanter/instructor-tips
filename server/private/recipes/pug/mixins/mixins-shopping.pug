@@ -6,7 +6,7 @@ mixin shoppingContainer()
           thead(class="shoppinglist-head table-primary")
             th(class="header header-controls" field-name="controls")
 
-            th(class="header header-ingredientname" field-name="ingredient") ingredient
+            th(class="header header-ingredientname" field-name="ingredient") shopping list item
             
           tbody(class="shoppinglist-body")
           
@@ -16,5 +16,8 @@ mixin shoppingContainer()
         tbody
           tr(class="shoppinglist-templaterow")
             td(class="controls")
-              i(class="delete-icon far fa-trash-alt" title="remove ingredient from list")
+              input(class="shoppingitem-check form-check-input ms-1" type="checkbox")
+              
             td(class="ingredientname")
+              span(class="ingredientnamet-text")
+              i(class="delete-icon far fa-trash-alt ms-2" title="remove ingredient from list")
