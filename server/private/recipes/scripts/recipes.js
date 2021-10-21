@@ -28,8 +28,9 @@ const app = function () {
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('loading...', true);
     page.message = CreateElement.createSpan(null, 'app-message');
-    var menuOptionsSibling = page.body.getElementsByClassName('navbar-nav')[0].nextSibling;
-    menuOptionsSibling.parentNode.insertBefore(page.message, menuOptionsSibling);
+    //var menuOptionsSibling = page.body.getElementsByClassName('navbar-nav')[0].nextSibling;
+    //menuOptionsSibling.parentNode.insertBefore(page.message, menuOptionsSibling);
+    page.body.getElementsByClassName('navbar')[0].appendChild(page.message);
     
     await _initializeDB();
     await _setAdminMenu();

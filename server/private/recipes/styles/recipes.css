@@ -104,6 +104,7 @@ body {
  *------------------------------------------------------------------------------*/
 .contents-navRecipes .recipes-addrecipe {
    color: var(--bgPrimary);
+   font-size: 125%;
  }
  
 .contents-navRecipes .recipelist-recipename {

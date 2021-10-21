@@ -58,9 +58,7 @@ class Shopping {
     var nameSpan = nameCell.getElementsByClassName('ingredientnamet-text')[0];
     nameSpan.innerHTML = ingredient.ingredientname;
     
-    UtilityKTS.setClass(row, this.config.hideClass, (this.filterIsOn && isChecked));
-    
-    this.shoppingTableBody.appendChild(row);
+    if (!this.filterIsOn || !isChecked) this.shoppingTableBody.appendChild(row);
   }  
   
   _setFilter(turnFilterOn) {
@@ -73,15 +71,7 @@ class Shopping {
       this.filterIcon.title = 'show all items';
     }
 
-    var rows = this.shoppingTableBody.getElementsByClassName('single-ingredient');
-    for (var i = 0; i < rows.length; i++) {
-      if (turnFilterOn) {
-        var isChecked = this._isRowChecked(rows[i]);
-        UtilityKTS.setClass(rows[i], this.config.hideClass, isChecked);
-      } else {
-        UtilityKTS.setClass(rows[i], this.config.hideClass, false);
-      }        
-    }
+    this.update();
   }
   
   _isRowChecked(row) {
@@ -107,11 +97,9 @@ class Shopping {
     
     var rows = this.shoppingTableBody.getElementsByClassName('single-ingredient');
     for (var i = 0; i < rows.length; i++) {
-      if (!rows[i].classList.contains(this.config.hideClass)) {
-        var ingredientName = rows[i].getElementsByClassName('ingredientnamet-text')[0].innerHTML;
-        if (i > 0) strList += '\n';
-        strList += ingredientName
-      }
+      var ingredientName = rows[i].getElementsByClassName('ingredientnamet-text')[0].innerHTML;
+      if (i > 0) strList += '\n';
+      strList += ingredientName
     }
     
     this._copyToClipboard(strList);
