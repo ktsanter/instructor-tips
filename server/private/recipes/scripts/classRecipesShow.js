@@ -27,8 +27,7 @@ class RecipesShow {
     this.elemIconAdd.addEventListener('click', (e) => { this._handleChangeMenu(e); });  
   }
   
-  async update() {
-  }
+  async update() {}
   
   async showRecipe(recipe) {
     var menu = await this.config.db.getUserMenu();

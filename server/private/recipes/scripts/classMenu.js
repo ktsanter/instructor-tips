@@ -24,7 +24,7 @@ class Menu {
       "container": this.recipeShowContainer,
       "hideClass": this.config.hideClass,
       "db": this.config.db,
-      "callbackFinishShowing": (params) => { this._finishShowing(params); },
+      "callbackFinishShowing": () => { this._finishShowing(); },
       "callbackChangeMenu": (recipe, changeMode) => { return this.config.callbackChangeMenu(recipe, changeMode); }
     });
     this.recipeShow.render();    
@@ -34,6 +34,7 @@ class Menu {
     var recipeList = await this.config.db.getUserMenu();
     if (recipeList == null) return;
     
+    this._finishShowing();
     this._loadMenu(recipeList);
   }
   

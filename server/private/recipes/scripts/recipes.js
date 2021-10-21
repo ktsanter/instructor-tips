@@ -26,7 +26,10 @@ const app = function () {
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
-    page.notice.setNotice('loading...', true);    
+    page.notice.setNotice('loading...', true);
+    page.message = CreateElement.createSpan(null, 'app-message');
+    var menuOptionsSibling = page.body.getElementsByClassName('navbar-nav')[0].nextSibling;
+    menuOptionsSibling.parentNode.insertBefore(page.message, menuOptionsSibling);
     
     await _initializeDB();
     await _setAdminMenu();
@@ -131,7 +134,8 @@ const app = function () {
     settings.shopping = new Shopping({
       "container": page.navShopping,
       "hideClass": settings.hideClass,
-      "db": settings.db
+      "db": settings.db,
+      "setAppMessage": (msg) => { _setAppMessage(msg); }
     });
     settings.shopping.render();
   }
@@ -246,6 +250,7 @@ const app = function () {
     var dispatchTarget = e.target.id;
     if (e.target.classList.contains('use-parentid')) dispatchTarget = e.target.parentNode.id;
     
+    _setAppMessage();
     if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
     if (dispatchTarget == settings.currentNavOption) return;
     if (settings.currentNavOption == 'navStudent') settings.rosterViewer.closeDialogs();
@@ -338,6 +343,12 @@ const app = function () {
     UtilityKTS.setClass(elem, 'hide-me', !visible);
     elem.disabled = !enable;    
   }
+  
+  function _setAppMessage(msg) {
+    var actualMessage = msg;
+    if (msg == null || msg.trim().length == 0) actualMessage = '';
+    page.message.innerHTML = actualMessage;
+  }  
   
 	//-----------------------------------------------------------------------------------
 	// init:

@@ -5,8 +5,10 @@ mixin shoppingContainer()
         table(class="shoppinglist-table table table-striped table-hover table-sm")
           thead(class="shoppinglist-head table-primary")
             th(class="header header-controls" field-name="controls")
+              i(class="icon icon-filter filter-off fas fa-filter ps-1" title="show only unchecked")
 
             th(class="header header-ingredientname" field-name="ingredient") shopping list item
+              i(class="icon icon-copy far fa-copy ps-2" title="copy to clipboard")
             
           tbody(class="shoppinglist-body")
           
@@ -20,4 +22,4 @@ mixin shoppingContainer()
               
             td(class="ingredientname")
               span(class="ingredientnamet-text")
-              i(class="delete-icon far fa-trash-alt ms-2" title="remove ingredient from list")
+

@@ -84,6 +84,11 @@ body {
   font-weight: bold;
 }
 
+.navbar .app-message {
+  font-style: italic;
+  margin-right: 0.2em;
+}
+
 /*------------------------------------------------------------------------------
  * contents
  *------------------------------------------------------------------------------*/
@@ -376,6 +381,16 @@ body {
 
 .contents-navShopping .shoppinglist-table .header.header-controls {
   width: 3%;
+}
+
+.contents-navShopping .shoppinglist-table .icon {
+  font-size: 1.0em;
+  color: var(--bgPrimary);
+  cursor: pointer;
+}
+
+.contents-navShopping .shoppinglist-table .icon.icon-filter.filter-off {
+  color: #999;
 }
 
 .contents-navShopping .shoppinglist-table .shoppingitem-check:hover {

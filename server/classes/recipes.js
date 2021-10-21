@@ -65,7 +65,10 @@ module.exports = internal.Recipes = class {
     
     if (params.queryName == 'recipe') {
       dbResult = await this._updateRecipe(params, postData, userInfo, funcCheckPrivilege);
-
+      
+    } else if (params.queryName = 'shopping-item-check') {
+      dbResult = await this._updateShoppingItemCheck(params, postData, userInfo, funcCheckPrivilege);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -81,9 +84,6 @@ module.exports = internal.Recipes = class {
 
     } else if (params.queryName == 'menu') {
       dbResult = await this._removeFromMenu(params, postData, userInfo, funcCheckPrivilege);
-            
-    } else if (params.queryName == 'shopping-item') {
-      dbResult = await this._removeShoppingItem(params, postData, userInfo, funcCheckPrivilege);
             
     } else if (params.queryName == 'shopping-recipe') {
       dbResult = await this._removeRecipeFromShopping(params, postData, userInfo, funcCheckPrivilege);
@@ -293,16 +293,31 @@ module.exports = internal.Recipes = class {
 
     var queryList, queryResults;
     
+    var queryList = {
+      originalIngredients: 
+        'select a.ingredientid ' + 
+        'from ingredient as a ' +
+        'where recipeid = ' + recipeId
+    };
+    queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+
     var toAdd = ingredientList.filter( (a) => {return a.ingredientid == null;} );
     var toUpdate = ingredientList.filter( (a) => {return a.ingredientid != null;} );
-    var preExistingIds = toUpdate.map( (a) => {return a.ingredientid; } );
+
+    var originalIngredientIdSet = new Set(queryResults.data.originalIngredients.map( (a) => { return a.ingredientid; } ));
+    var updateIdSet = new Set(toUpdate.map( (a) => {return a.ingredientid; } ));
+    var toDelete = Array.from(new Set( [...originalIngredientIdSet].filter(x => !updateIdSet.has(x)) ));
     
     queryList = {};
-    if (preExistingIds.length > 0) {
-      var inClause = ' ingredientid not in (' + preExistingIds.join(',') + ')' ;
+    if (toDelete.length > 0) {
       queryList['delete'] = 
         'delete from ingredient ' +
-        'where ingredientid not in (' + preExistingIds.join(',') + ') ';
+        'where ingredientid in (' + toDelete.join(',') + ') ';
     }
     
     for (var i = 0; i < toUpdate.length; i++) {
@@ -319,19 +334,18 @@ module.exports = internal.Recipes = class {
           '"' + toAdd[i].ingredientname + '" ' +
         ') ';
     }
-    
+
     queryResults = await this._dbManager.dbQueries(queryList);
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
     var addedIngredientIds = [];
     for (var i = 0; i < toAdd.length; i++) {
       var key = 'insert' + i;
       addedIngredientIds.push(queryResults.data[key][0][0].ingredientid);
     }      
-    console.log(addedIngredientIds);
-    
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
     
     if (toAdd.length > 0) {
       queryList = {"menucount": 'select count(menuid) as "count" from menu where recipeid = ' + recipeId};
@@ -346,27 +360,25 @@ module.exports = internal.Recipes = class {
         queryList = {
           insertshopping: 
             'insert into shopping ( ' +
-              'userid, ingredientid ' +
+              'userid, ingredientid, ingredientchecked ' +
             ') select ' +
                  userId + ', ' +
-                 'a.ingredientid ' +
+                 'a.ingredientid, ' +
+                 '0 ' + 
                'from ingredient as a ' +
                'where a.recipeid = ' + recipeId + ' ' +
                  'and ingredientid in (' + addedIngredientIds.join(',') + ') '               
         }
-        // what if no pre-existing?
-        // 
 
-        console.log(queryList);
         queryResults = await this._dbManager.dbQueries(queryList);
-        console.log(queryResults);
+
         if (!queryResults.success) {
           result.details = queryResults.details;
           return result;
         }        
       }
     }
-    
+
     result.success = true;
     result.details = 'update succeeded';
     
@@ -508,7 +520,7 @@ module.exports = internal.Recipes = class {
     queryList = {
       shopping:
         'select ' + 
-          'a.shoppingid, a.ingredientid, ' +
+          'a.shoppingid, a.ingredientid, a.ingredientchecked, ' +
           'b.ingredientname ' +
         'from shopping as a, ingredient as b ' +
         'where a.userid = ' + userInfo.userId + ' ' +
@@ -530,46 +542,20 @@ module.exports = internal.Recipes = class {
     return result;
   }
 
-  async _removeShoppingItem(params, postData, userInfo, funcCheckPrivilege) {
-    var result = this._dbManager.queryFailureResult(); 
-    
-    var queryList, queryResults;
-    
-    queryList = {
-      shopping_item:
-        'delete ' + 
-        'from shopping ' +
-        'where ingredientid = ' + postData.ingredientid + ' ' +
-          'and userid = ' + userInfo.userId
-    };
-    
-    queryResults = await this._dbManager.dbQueries(queryList);
-    
-    if (!queryResults.success) {
-      result.details = queryResults.details;
-      return result;
-    }
-
-    result.success = true;
-    result.details = 'delete succeeded';
-    
-    return result;
-  }
-
   async _addRecipeToShopping(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
-    console.log('\n_addRecipeToShopping', postData.recipeid);
     
     var queryList, queryResults;
     
     queryList = {
       shopping: 
         'insert into shopping (' +
-          'userid, ingredientid ' +
+          'userid, ingredientid, ingredientchecked ' +
           ') ' +
           'select ' + 
             userInfo.userId + ',' +
-            'a.ingredientid ' +
+            'a.ingredientid, ' +
+            '0 ' +
             'from ingredient as a ' +
             'where a.recipeid = ' + postData.recipeid + ' ' +
             'on duplicate key update userid = ' + userInfo.userId
@@ -590,7 +576,6 @@ module.exports = internal.Recipes = class {
 
   async _removeRecipeFromShopping(params, postData, userInfo, funcCheckPrivilege) {
     var result = this._dbManager.queryFailureResult(); 
-    console.log('\n_removeRecipeFromShopping', postData.recipeid);
     
     var queryList, queryResults;
     
@@ -615,6 +600,31 @@ module.exports = internal.Recipes = class {
 
     result.success = true;
     result.details = 'delete succeeded';
+    
+    return result;
+  }
+  
+  async _updateShoppingItemCheck(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    var queryList, queryResults;
+    
+    queryList = {
+      shopping_item:
+        'update shopping ' + 
+        'set ingredientchecked = ' + postData.ingredientchecked + ' ' +
+        'where shoppingid = ' + postData.shoppingid
+    };
+  
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'update succeeded';
     
     return result;
   }

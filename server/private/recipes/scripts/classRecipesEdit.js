@@ -128,6 +128,7 @@ class RecipesEdit {
     ingredientText.addEventListener('click', (e) => { this._handleIngredientClick(e); });
 
     var ingredientInput = ingredientCell.getElementsByClassName('ingredient-input')[0];
+    ingredientInput.addEventListener('click', (e) => { e.stopPropagation(); });
     ingredientInput.addEventListener('keyup', (e) => { this._handleIngredientInput(e); });
 
     this._setIngredientVisiblity(row, false);

@@ -77,6 +77,7 @@ create table shopping
   shoppingid         int unsigned not null AUTO_INCREMENT,
   userid             int unsigned not null,
   ingredientid       int unsigned not null,
+  ingredientchecked  boolean not null default 0,
   
   primary key (shoppingid),
   constraint foreign key (userid) references  instructortips.user (userid) on delete cascade,

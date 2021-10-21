@@ -39,7 +39,7 @@ class Recipes {
       "container": this.recipeShowContainer,
       "hideClass": this.config.hideClass,
       "db": this.config.db,
-      "callbackFinishShowing": (params) => { this._finishShowing(params); },
+      "callbackFinishShowing": () => { this._finishShowing(); },
       "callbackChangeMenu": (recipe, changeMode) => { return this.config.callbackChangeMenu(recipe, changeMode); }
     });
     this.recipesShow.render();
@@ -50,6 +50,7 @@ class Recipes {
   async update() {
     this.notice.setNotice('');
     await this.recipesList.update();
+    this._finishShowing();
   }
   
   //--------------------------------------------------------------

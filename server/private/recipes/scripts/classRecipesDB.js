@@ -96,9 +96,9 @@ class RecipesDB {
     var dbResult = await SQLDBInterface.doPostQuery('recipes/delete', 'shopping-recipe', {"recipeid": recipeId}, this.config.notice);    
     return dbResult.success;
   }
-
-  async removeShoppingItem(ingredientId) {
-    var dbResult = await SQLDBInterface.doPostQuery('recipes/delete', 'shopping-item', {"ingredientid": ingredientId}, this.config.notice);    
+  
+  async setShoppingItemCheck(params) {
+    var dbResult = await SQLDBInterface.doPostQuery('recipes/update', 'shopping-item-check', params, this.config.notice);    
     return dbResult.success;
   }
   

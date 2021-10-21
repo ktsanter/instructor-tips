@@ -5,7 +5,7 @@ define(function (require) {
   require('/scripts/sqldbinterface');
   require('/scripts/classProfile');
   require('/scripts/usermanagement');
-  require('/scripts/mytinymce');
+  require('/scripts/clipboard_copy');    
   
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
