@@ -313,11 +313,13 @@ const app = function () {
   
   async function _changeMenu(recipe, changeMode) {
     var success = false;
+
     if (changeMode == 'add') {
       success = await settings.menu.addToMenu(recipe);
     } else if (changeMode = 'remove') {
       success = await settings.menu.removeFromMenu(recipe);
     }
+
     return success;
   }
   

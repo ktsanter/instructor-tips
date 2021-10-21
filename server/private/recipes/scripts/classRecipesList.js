@@ -71,6 +71,10 @@ class RecipesList {
       UtilityKTS.setClass(row, 'recipelist-templaterow', false);
       UtilityKTS.setClass(row, 'single-recipe', true);
       
+      var elemRecipeCheck = row.getElementsByClassName('recipe-check')[0];
+      elemRecipeCheck.checked = recipe.isOnMenu;
+      elemRecipeCheck.addEventListener('click', (e) => { this._handleRecipeCheck(e); });
+      
       var elemRecipeName = row.getElementsByClassName('recipelist-recipename')[0];
       elemRecipeName.innerHTML = recipe.recipename;
       UtilityKTS.setClass(elemRecipeName, 'is-on-menu', recipe.isOnMenu);
@@ -106,6 +110,11 @@ class RecipesList {
     UtilityKTS.setClass(this.recipeDropdownContents, 'show', false);
   }
   
+  async makeMenuChange(recipeInfo, changeMode) {
+    var success = await this.config.callbackChangeMenu(recipeInfo, changeMode);
+    return success;
+  }
+  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------
@@ -115,6 +124,18 @@ class RecipesList {
     
     var recipeInfo = JSON.parse(targetRow.getAttribute('recipe-info'));
     this.config.callbackShow(recipeInfo);
+  }
+  
+  async _handleRecipeCheck(e) {
+    var row = this._upsearchForRow(e.target);
+    if (row == null) return;
+    
+    var recipeInfo = JSON.parse(row.getAttribute('recipe-info'));
+    var changeMode = e.target.checked ? 'add': 'remove';
+    var success = await this.makeMenuChange(recipeInfo, changeMode);
+    if (!success) return;
+    
+    this.update();
   }
   
   _handleRecipeContextMenu(e) {

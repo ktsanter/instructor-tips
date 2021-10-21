@@ -15,9 +15,11 @@ mixin recipesList()
         .recipelist-table-container
           table(class="recipelist-table table table-striped table-hover table-sm")
             thead(class="recipelist-head table-primary")
+              th(class="header header-controls" field-name="controls")
+                i(class="recipes-addrecipe far fa-plus-square ms-1" title="add new recipe")
+
               th(class="header header-recipe" field-name="recipe")
                 span(class="recipes-headerlabel label-recipe")
-                i(class="recipes-addrecipe far fa-plus-square" title="add new recipe")
               
             tbody(class="recipelist-body")
               
@@ -31,4 +33,7 @@ mixin recipesList()
         thead
         tbody
           tr(class="recipelist-templaterow")
+            td(class="recipelist-recipecontrols")
+              input(class="recipe-check form-check-input ms-1" type="checkbox")
+
             td(class="recipelist-recipename")

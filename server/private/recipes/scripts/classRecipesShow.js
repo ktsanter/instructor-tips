@@ -13,7 +13,6 @@ class RecipesShow {
   // public methods
   //--------------------------------------------------------------   
   render() {
-    this.elemIconAdd = this.config.container.getElementsByClassName('icon-add')[0];
     this.elemName = this.config.container.getElementsByClassName('recipe-name')[0];  
     this.elemRating = this.config.container.getElementsByClassName('rating')[0];  
     this.elemYield = this.config.container.getElementsByClassName('yield-value')[0];
@@ -23,8 +22,6 @@ class RecipesShow {
 
     var btn = this.config.container.getElementsByClassName('icon-close')[0];
     btn.addEventListener('click', (e) => { this.config.callbackFinishShowing(); });  
-
-    this.elemIconAdd.addEventListener('click', (e) => { this._handleChangeMenu(e); });  
   }
   
   async update() {}
@@ -34,7 +31,6 @@ class RecipesShow {
     if (menu == null) return;
     
     this.recipe = recipe;
-    this._setAddToMenuControl(recipe, menu);
     
     this._renderRecipeName(recipe.recipename);
     this._renderRecipeRating(recipe.rating);
@@ -46,21 +42,7 @@ class RecipesShow {
   
   //--------------------------------------------------------------
   // private methods
-  //--------------------------------------------------------------   
-  _setAddToMenuControl(recipe, menu) {
-    var filtered = menu.filter(function (a) {
-      return a.recipeid == recipe.recipeid;
-    });
-    
-    var isOnMenu = filtered.length > 0;
-    UtilityKTS.setClass(this.elemIconAdd, 'is-on-menu', isOnMenu);
-    if (isOnMenu) {
-      this.elemIconAdd.title = 'remove from menu';
-    } else {
-      this.elemIconAdd.title = 'add to menu';
-    }
-  }
-  
+  //--------------------------------------------------------------     
   _renderRecipeName(name) {
     UtilityKTS.removeChildren(this.elemName);
     this.elemName.innerHTML = name;
@@ -101,17 +83,6 @@ class RecipesShow {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------
-  async _handleChangeMenu(e) {
-    var success = false;
-    
-    if (this.elemIconAdd.classList.contains('is-on-menu')) {
-      success = await this.config.callbackChangeMenu(this.recipe, 'remove');
-    } else {
-      success = await this.config.callbackChangeMenu(this.recipe, 'add');
-    }
-    
-    await this.showRecipe(this.recipe);
-  }
   
   //--------------------------------------------------------------
   // utility

@@ -21,7 +21,8 @@ class Recipes {
       "callbackAdd": () => { this._beginRecipeAdd(); },
       "callbackEdit": (params) => { this._beginRecipeEdit(params); },
       "callbackDelete": (params) => { this._beginRecipeDelete(params); },
-      "callbackShow": (params) => { this._showRecipe(params); }
+      "callbackShow": (params) => { this._showRecipe(params); },
+      "callbackChangeMenu": (recipe, changeMode) => { return this.config.callbackChangeMenu(recipe, changeMode); }
     });
     this.recipesList.render();
 
@@ -39,8 +40,7 @@ class Recipes {
       "container": this.recipeShowContainer,
       "hideClass": this.config.hideClass,
       "db": this.config.db,
-      "callbackFinishShowing": () => { this._finishShowing(); },
-      "callbackChangeMenu": (recipe, changeMode) => { return this.config.callbackChangeMenu(recipe, changeMode); }
+      "callbackFinishShowing": () => { this._finishShowing(); }
     });
     this.recipesShow.render();
         

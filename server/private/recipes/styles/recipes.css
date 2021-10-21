@@ -102,11 +102,23 @@ body {
 /*------------------------------------------------------------------------------
  * contents - navRecipes, List container
  *------------------------------------------------------------------------------*/
+.contents-navRecipes .recipelist-table .header.header-controls {
+  width: 3%;
+}
+
 .contents-navRecipes .recipes-addrecipe {
    color: var(--bgPrimary);
    font-size: 125%;
  }
  
+.contents-navRecipes .recipe-check:hover {
+  cursor: pointer;
+}
+
+.contents-navRecipes .recipe-check:checked {
+  background-color: var(--bgPrimaryFaded);
+}
+
 .contents-navRecipes .recipelist-recipename {
   cursor: pointer;
 }
@@ -402,13 +414,8 @@ body {
   background-color: var(--bgPrimaryFaded);
 }
 
-
 .contents-navShopping .shoppinglist-table .delete-icon {
   visibility: hidden;
-}
-
-.contents-navShopping .shoppinglist-table .ingredientname:hover > .delete-icon {
-  visibility: visible;
 }
 
 /*------------------------------------------------------------------------------
