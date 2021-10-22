@@ -10,7 +10,8 @@ module.exports = internal.Recipes = class {
   constructor(params) {
     this._dbManager = params.dbManager;
     this._userManagement = params.userManagement;    
-    this._tempFileManager = params.tempFileManager;  
+    this._tempFileManager = params.tempFileManager; 
+    this._apiKey = params.apiKey;
   }
   
 //---------------------------------------------------------------
@@ -33,6 +34,9 @@ module.exports = internal.Recipes = class {
             
     } else if (params.queryName == 'shopping-list') {
       dbResult = await this._getShoppingList(params, postData, userInfo, funcCheckPrivilege);
+            
+    } else if (params.queryName == 'ocr-apikey') {
+      dbResult = await this._getOCRAPIKey(params, postData, userInfo, funcCheckPrivilege);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -108,6 +112,20 @@ module.exports = internal.Recipes = class {
     result.success = true;
     result.details = 'query succeeded';
     result.data = {adminallowed: funcCheckPrivilege(userInfo, 'admin')};
+
+    return result;
+  }  
+
+  async _getOCRAPIKey(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    if (!funcCheckPrivilege(userInfo, 'admin')) {
+      result.details = 'denied';
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {apikey: this._apiKey};
 
     return result;
   }  

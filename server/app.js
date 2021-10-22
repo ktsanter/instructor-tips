@@ -28,6 +28,7 @@ const SESSION_DBNAME = getEnv('SESSION_DBNAME', true);
 const SESSION_SECRET = getEnv('SESSION_SECRET', true);
 
 const APIKEY_ENDDATEMANAGER = getEnv('APIKEY_ENDDATEMANAGER', true);
+const APIKEY_RECIPES = getEnv('APIKEY_RECIPES', true);
 
 const INSTRUCTORTIPS_URL = getEnv('INSTRUCTORTIPS_URL', true);
 
@@ -382,7 +383,8 @@ const recipesClass = require('./classes/recipes')
 const recipes = new recipesClass({
   "dbManager": mariaDBManager_Recipes,
   "userManagement": userManagement,  
-  "tempFileManager": tmp
+  "tempFileManager": tmp,
+  "apiKey": APIKEY_RECIPES
 });
 
 //------------------------------------------

@@ -103,7 +103,7 @@ const app = function () {
     await _renderRecipes();
     await _renderMenu();
     await _renderShopping();
-    _renderAdmin();
+    await _renderAdmin();
   }
   
   async function _renderRecipes() {

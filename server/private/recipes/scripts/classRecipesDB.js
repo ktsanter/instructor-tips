@@ -18,6 +18,13 @@ class RecipesDB {
     return dbResult.data.adminallowed;
   }
   
+  async getOCRAPIKey() {
+    var dbResult = await SQLDBInterface.doGetQuery('recipes/query', 'ocr-apikey', this.config.notice);
+    if (!dbResult.success) return false;
+    
+    return dbResult.data.apikey;
+  }
+  
   async getRecipeList() {
     var dbResult = await SQLDBInterface.doGetQuery('recipes/query', 'recipe-list', this.config.notice);
     if (!dbResult.success) return null;

@@ -6,4 +6,13 @@ mixin adminContainer()
   .row(class="pb-2")
     .col-sm
       button(class="btnTest") test
+      
+  .row
+    .col-sm
+      form(class="ocr-form")
+        input(class="ocr-inputfile" type="file" value="File" data-maxwidth="500" data-maxheight="500"  accept=".jpg,.jpeg" multiple)
+
+  .row
+    .col-sm
+      .ocr-preview
 

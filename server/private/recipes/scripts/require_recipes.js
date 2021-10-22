@@ -18,6 +18,8 @@ define(function (require) {
   require('classRecipesShow');
   require('classFilteredRecipeSearch');
   require('classImportRecipe');
+  require('classImageCompressor');
+  require('classImageOCR');
   
   require('classMenu');
   
