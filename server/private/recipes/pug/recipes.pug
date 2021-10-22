@@ -8,7 +8,7 @@ include ../../common/pug/tinyMCE-mixins.pug
 include ./mixins/mixins-recipes.pug
 include ./mixins/mixins-menu.pug
 include ./mixins/mixins-shopping.pug
-include ./mixins/mixins-admin.pug
+include ./mixins/mixins-ocr.pug
 include ./mixins/pdf-mixins.pug
 
 doctype html
@@ -39,7 +39,7 @@ html(lang="en")
           {id: "navMenu", type: "link", label: "menu"},
           {id: "navRecipes", type: "link", label: "recipes"},
           {id: "navShopping", type: "link", label: "shopping"},
-          {id: "navAdmin", type: "link", label: "admin"},
+          {id: "navOCR", type: "link", label: "ocr"},
           {type: "dropdown", label: "other", items: [
             {id: "navHelp", type: "link", label: "help"},
             {id: "navSignout", type: "link", label: "sign out"},
@@ -68,7 +68,7 @@ html(lang="en")
       .container-fluid(class="contents-container contents-navShopping hide-me disable-container")
         +shoppingContainer()      
 
-      .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
-        +adminContainer()     
-        
+      .container-fluid(class="contents-container contents-navOCR hide-me disable-container")
+        +ocrContainer()      
+
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")

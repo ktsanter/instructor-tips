@@ -13,9 +13,7 @@ const app = function () {
     logoutURL: '/usermanagement/logout/recipes',
     
     dirtyBit: {
-    },
-
-    adminDisable: false
+    }
   };
     
 	//---------------------------------------
@@ -28,12 +26,9 @@ const app = function () {
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('loading...', true);
     page.message = CreateElement.createSpan(null, 'app-message');
-    //var menuOptionsSibling = page.body.getElementsByClassName('navbar-nav')[0].nextSibling;
-    //menuOptionsSibling.parentNode.insertBefore(page.message, menuOptionsSibling);
     page.body.getElementsByClassName('navbar')[0].appendChild(page.message);
     
     await _initializeDB();
-    await _setAdminMenu();
 
     page.navbar = page.body.getElementsByClassName('navbar')[0];
     _setMainNavbarEnable(false);
@@ -51,15 +46,6 @@ const app = function () {
     
     page.notice.setNotice('');
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();  
-  }
-  
-  async function _setAdminMenu() {
-    _enableNavOption('navAdmin', false, false);
-    
-    var adminAllowed = await settings.db.isAdminAllowedForUser();
-    adminAllowed = adminAllowed && !settings.adminDisable;
-    
-    _enableNavOption('navAdmin', adminAllowed, adminAllowed);
   }
   
   async function _initializeProfile(sodium) {
@@ -103,7 +89,7 @@ const app = function () {
     await _renderRecipes();
     await _renderMenu();
     await _renderShopping();
-    await _renderAdmin();
+    await _renderOCR();
   }
   
   async function _renderRecipes() {
@@ -141,17 +127,16 @@ const app = function () {
     settings.shopping.render();
   }
 
-  function _renderAdmin() {
-    page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
+  function _renderOCR() {
+    page.navOCR = page.contents.getElementsByClassName('contents-navOCR')[0];
     
-    settings.admin = new Admin({
-      "container": page.navAdmin,
+    settings.ocr = new OCR({
+      "container": page.navOCR,
       "hideClass": settings.hideClass,
-      "db": settings.db,
-      "callbackAdminToggle": _toggleAdmin
+      "db": settings.db
     });
     
-    settings.admin.render();       
+    settings.ocr.render();       
   }
     
   //-----------------------------------------------------------------------------
@@ -169,7 +154,7 @@ const app = function () {
     if (contentsId == 'navRecipes') _showRecipes();
     if (contentsId == 'navMenu') _showMenu();
     if (contentsId == 'navShopping') _showShopping();
-    if (contentsId == 'navAdmin') _showAdmin();
+    if (contentsId == 'navOCR') _showOCR();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
@@ -190,9 +175,9 @@ const app = function () {
     UtilityKTS.setClass(page.navShopping, settings.hideClass, false);
   }
   
-  function _showAdmin() {
-    settings.admin.update();
-    UtilityKTS.setClass(page.navAdmin, settings.hideClass, false);
+  function _showOCR() {
+    settings.ocr.update();
+    UtilityKTS.setClass(page.navOCR, settings.hideClass, false);
   }
   
   function _setNavOptions() {
@@ -228,7 +213,7 @@ const app = function () {
         containers[i].classList.contains('contents-navRecipes') ||
         containers[i].classList.contains('contents-navMenu') ||
         containers[i].classList.contains('contents-navShopping') ||
-        containers[i].classList.contains('contents-navAdmin')
+        containers[i].classList.contains('contents-navOCR')
       ) {
         UtilityKTS.setClass(containers[i], 'disable-container', !enable);
         containers[i].disabled = !enable;   
@@ -263,7 +248,7 @@ const app = function () {
       "navRecipes": function() { _showContents('navRecipes');},
       "navMenu": function() { _showContents('navMenu');},
       "navShopping": function() { _showContents('navShopping');},     
-      "navAdmin": function() { _showContents('navAdmin'); },
+      "navOCR": function() { _showContents('navOCR'); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
@@ -275,7 +260,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navRecipes', 'navMenu', 'navShopping', 'navAdmin']);
+    var mainOptions = new Set(['navRecipes', 'navMenu', 'navShopping', 'navOCR']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);
@@ -306,11 +291,6 @@ const app = function () {
   //----------------------------------------
   // callbacks
   //----------------------------------------
-  function _toggleAdmin() {
-    settings.adminDisable = !settings.adminDisable;
-    _setAdminMenu();
-  }
-  
   async function _changeMenu(recipe, changeMode) {
     var success = false;
 
@@ -323,21 +303,6 @@ const app = function () {
     return success;
   }
   
-  //---------------------------------------
-  // DB interface
-  //----------------------------------------  
-  async function _checkAdminAllowed() {
-    dbResult = await SQLDBInterface.doGetQuery('roster-manager/query', 'admin-allowed', page.notice);
-    if (!dbResult.success) return false;
-    
-    var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
-    return adminAllowed;
-  }
-    
-  //--------------------------------------------------------------------------
-  // admin
-  //--------------------------------------------------------------------------
-
   //--------------------------------------------------------------------------
   // utility
 	//--------------------------------------------------------------------------  

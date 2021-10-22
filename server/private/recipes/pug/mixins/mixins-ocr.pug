@@ -1,18 +1,16 @@
-mixin adminContainer()   
-  .row(class="py-2")
-    .col-sm
-      button(class="btnToggleAdmin" title="toggle admin menu option") toggle admin
-
-  .row(class="pb-2")
-    .col-sm
-      button(class="btnTest") test
-      
+mixin ocrContainer()   
   .row
     .col-sm
       form(class="ocr-form")
         input(class="ocr-inputfile" type="file" value="File" data-maxwidth="500" data-maxheight="500"  accept=".jpg,.jpeg" multiple)
 
+    .col-sm
+      .ocr-message
+
   .row
     .col-sm
       .ocr-preview
+      
+    .col-sm
+      .ocr-result
 

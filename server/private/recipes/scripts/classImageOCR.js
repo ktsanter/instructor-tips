@@ -71,12 +71,21 @@ class ImageOCR {
     };
     
     try {
+      console.log('fetching...');
       const resp = await fetch(url, requestOptions);
       
+      console.log('getting resp.text...');
       const resultText = await resp.text();
+      
+      console.log('validating...');
+      var validate = this._validateResultData(JSON.parse(resultText));
+      if (!validate.success) {
+        result.details = validate.details;
+        return result;
+      }
       result.success = true;
       result.details = 'OCR succeeded';
-      result.data = JSON.parse(resultText);
+      result.data = validate.data;
       
     } catch(error) {
       var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
@@ -90,5 +99,39 @@ class ImageOCR {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
+  _validateResultData(resultJSON) {
+    var result = {success: false, details: 'unspecified validation failure', data: null};
+    
+    if (resultJSON.isErroredOnProcessing) {
+      result.details = 'IsErroredOnProcessing:' + resultJSON.ErrorMessage + '<br>' + resultJSON.ErrorDetails;
+      console.log(result.details);
+      console.log(resultJSON);
+      return result;
+    }
+    if (!resultJSON.hasOwnProperty('ParsedResults')) {
+      result.details = 'missing ParsedResults';
+      console.log(result.details);
+      console.log(resultJSON);
+      return result;
+    }
+    if (resultJSON.ParsedResults.length == 0) {
+      result.details = 'ParsedResults is empty array';
+      console.log(result.details);
+      console.log(resultJSON);
+      return result;
+    }
+    if (!resultJSON.ParsedResults[0].hasOwnProperty('ParsedText')) {
+      result.details('missing ParsedText');
+      console.log(result.details);
+      console.log(resultJSON);
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'validated';
+    result.data = resultJSON;
+    
+    return result;
+  }
 }
   

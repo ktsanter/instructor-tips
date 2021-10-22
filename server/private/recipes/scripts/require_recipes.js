@@ -18,14 +18,14 @@ define(function (require) {
   require('classRecipesShow');
   require('classFilteredRecipeSearch');
   require('classImportRecipe');
-  require('classImageCompressor');
-  require('classImageOCR');
   
   require('classMenu');
   
   require('classShopping');
-  
-  require('classAdmin');
+
+  require('classOCR');
+  require('classImageOCR');
+  require('classImageCompressor');
   
   require('recipes');
 
