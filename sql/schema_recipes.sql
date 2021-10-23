@@ -22,6 +22,7 @@ create table recipe
   recipeinstructions mediumtext,
   recipenotes        varchar(500),
   recipemade         boolean not null default 0,
+  recipeimage        varchar(400) not null default '',
   
   primary key (recipeid),
   constraint foreign key (userid) references  instructortips.user (userid) on delete cascade,
@@ -108,14 +109,15 @@ create procedure add_recipe(
   in recipe_Rating int,
   in recipe_Yield varchar(100),
   in recipe_Instructions mediumtext,
-  in recipe_Notes varchar(500)
+  in recipe_Notes varchar(500),
+  in recipe_Made int
 ) 
 begin
   insert into recipe (
-    userid, recipename, reciperating, recipeyield, recipeinstructions, recipenotes
+    userid, recipename, reciperating, recipeyield, recipeinstructions, recipenotes, recipemade
     
   ) values (
-    user_Id, recipe_Name, recipe_Rating, recipe_Yield, recipe_Instructions, recipe_Notes
+    user_Id, recipe_Name, recipe_Rating, recipe_Yield, recipe_Instructions, recipe_Notes, recipe_Made
   );
   
   select LAST_INSERT_ID() as recipeid;

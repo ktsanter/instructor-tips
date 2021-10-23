@@ -138,7 +138,7 @@ module.exports = internal.Recipes = class {
     queryList = {
       recipes:
         'select ' + 
-          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes", a.recipemade ' + 
+          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes", a.recipemade, a.recipeimage ' + 
         'from recipe as a ' +
         'where a.userid = ' + userInfo.userId + ' ' +
         'order by a.recipename',
@@ -182,7 +182,7 @@ module.exports = internal.Recipes = class {
     queryList = {
       recipe:
         'select ' + 
-          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes", a.recipemade ' + 
+          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes", a.recipemade, a.recipeimage ' + 
         'from recipe as a ' +
         'where a.userid = ' + userInfo.userId + ' ' +
           'and a.recipeid = ' + postData.recipeid,
