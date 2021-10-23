@@ -3,7 +3,7 @@ mixin recipesEdit()
     .row(class="recipe-edit")
       .container-fluid('edit')
         .row
-          .col-sm
+          .col-sm-6
             .form-floating
               input(type="text" class="input-name form-control" id="inputName" placeholder="recipe name")
               label(for="inputName") recipe name
@@ -20,6 +20,11 @@ mixin recipesEdit()
               label(for="star2" title="2 stars") 2 stars
               input(type="radio" id="star1" name="rating" class="recipe-rating-input" value="1")
               label(for="star1" title="1 star") 1 star
+              
+          .col-sm-2
+            .form-check(class="mt-2 pt-1")
+              input(class="check-made form-check-input" type="checkbox" name="checkMade" id="checkMade")
+              label(class="form-check-label" for="checkMade") made
               
         .row(class="mt-1")
           .col-sm
@@ -38,6 +43,10 @@ mixin recipesEdit()
               label(for="inputYield") yield
 
           .col-sm
+            .form-floating
+              input(type="text" class="input-imageurl form-control" id="inputImageURL" placeholder="image url")
+              label(for="inputImageURL") image URL
+
                                         
         .row(class="mt-2")
           .col-sm

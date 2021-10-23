@@ -93,14 +93,18 @@ class FilteredRecipeSearch {
     var searchMadeValue = this._getSelectedMadeValue();
     var searchRatingSet = new Set(this._getSelectedRatings());
     
-    console.log('searchMadeValue', searchMadeValue);
-    
     var filtered = recipeList.filter(function(a) {
       var include = a.recipename.toLowerCase().includes(searchValue);
 
       var tagSet = new Set(a.taglist);
       var diff = UtilityKTS.setDifference(searchTagSet, tagSet);
       include = include && diff.size == 0;
+      
+      if (searchMadeValue == 'made') {
+        include = include && (a.recipemade != 0);
+      } else if (searchMadeValue == 'notmade') {
+        include = include && (a.recipemade == 0);
+      }
       
       include = include && searchRatingSet.has(a.rating);
 

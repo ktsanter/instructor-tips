@@ -138,7 +138,7 @@ module.exports = internal.Recipes = class {
     queryList = {
       recipes:
         'select ' + 
-          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes" ' + 
+          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes", a.recipemade ' + 
         'from recipe as a ' +
         'where a.userid = ' + userInfo.userId + ' ' +
         'order by a.recipename',
@@ -182,7 +182,7 @@ module.exports = internal.Recipes = class {
     queryList = {
       recipe:
         'select ' + 
-          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes" ' + 
+          'a.recipeid, a.recipename, a.reciperating as "rating", a.recipeyield, a.recipeinstructions as "instructions", a.recipenotes as "notes", a.recipemade ' + 
         'from recipe as a ' +
         'where a.userid = ' + userInfo.userId + ' ' +
           'and a.recipeid = ' + postData.recipeid,
@@ -264,7 +264,7 @@ module.exports = internal.Recipes = class {
   }  
   
   async _updateRecipe(params, postData, userInfo, funcCheckPrivilege) {
-    var result = this._dbManager.queryFailureResult();  
+    var result = this._dbManager.queryFailureResult();
 
     var queryList, queryResults;
     queryList = {
@@ -274,7 +274,8 @@ module.exports = internal.Recipes = class {
           'reciperating = ' + postData.rating + ', ' +
           'recipeyield = "' + postData.recipeyield + '", ' +
           'recipeinstructions = "' + postData.instructions + '", ' +
-          'recipenotes = "' + postData.notes + '" ' +
+          'recipenotes = "' + postData.notes + '", ' +
+          'recipemade = ' + (postData.recipemade ? 1 : 0) + ' ' +
         'where recipeid = ' + postData.recipeid
     };
     

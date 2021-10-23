@@ -338,6 +338,14 @@ body {
   font-weight: bold;
 }
 
+.contents-navRecipes .recipe-edit-container .check-made {
+  cursor: pointer;
+}
+
+.contents-navRecipes .recipe-edit-container .check-made:checked {
+  background-color: var(--bgPrimaryFaded);
+}
+
 .contents-navRecipes .recipe-edit-container .input-instructions {
   height: 34.0em;
 }

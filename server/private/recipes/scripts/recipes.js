@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// ITips
+// recipes
 //-----------------------------------------------------------------------
 // TODO: 
 //-----------------------------------------------------------------------
@@ -12,19 +12,14 @@ const app = function () {
     helpURL: '/recipes/help',
     logoutURL: '/usermanagement/logout/recipes',
     
-    dirtyBit: {
-    }
+    dirtyBit: {}
   };
     
 	//---------------------------------------
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {
-    console.log('TODO: add filtering on recipe list by rating');
-    console.log('TODO: add made flag to recipe and UI on edit recipe');
-    console.log('TODO: add filtering by made/not made on recipe list');
-    console.log('TODO: add image to recipe');
-    console.log('TODO: add export/print options (on recipe edit view?)');
+    console.log('TODO: add image to recipe?');
     
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
