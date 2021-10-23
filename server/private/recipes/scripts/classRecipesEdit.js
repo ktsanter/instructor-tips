@@ -96,6 +96,7 @@ class RecipesEdit {
   }
   
   _loadRecipe(recipe) {
+    console.log(recipe);
     this.editRecipeName.value = recipe.recipename;
     this._setRadioValue(this.editRating, recipe.rating);
     this.editTags.value = this._tagListToString(recipe.taglist);

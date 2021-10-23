@@ -220,7 +220,9 @@ module.exports = internal.Recipes = class {
   }
 
   async _insertRecipe(params, postData, userInfo, funcCheckPrivilege) {
-    var result = this._dbManager.queryFailureResult();  
+    var result = this._dbManager.queryFailureResult(); 
+    console.log('_insertRecipe');
+    console.log(postData);    
 
     var queryList, queryResults;
     queryList = {
@@ -228,14 +230,18 @@ module.exports = internal.Recipes = class {
         'call add_recipe(' + 
           userInfo.userId + ', ' +
           '"' + postData.recipename + '", ' +
-              + postData.rating + ', ' +
+                postData.rating + ', ' +
           '"' + postData.recipeyield + '", ' +
           '"' + postData.instructions + '", ' +
-          '"' + postData.notes + '" ' +
+          '"' + postData.notes + '", ' +
+                (postData.recipemade ? 1 : 0) + ', ' +
+          '"' + postData.recipeimage + '" ' +
         ') '
     };
     
+    console.log(queryList);
     queryResults = await this._dbManager.dbQueries(queryList);
+    console.log(queryResults);
     if (!queryResults.success) {
       result.details = queryResults.details;
 
