@@ -267,9 +267,9 @@ body {
   cursor: pointer;
 }  
 
-.contents-navRecipes .recipe-show-container .icon-add.is-on-menu,
-.contents-navMenu .menu-show-container .icon-add.is-on-menu {
-  color: var(--bgPrimary);
+.contents-navRecipes .recipe-show-container .image-container .recipe-image,
+.contents-navMenu .menu-show-container .image-container .recipe-image {
+  max-width: 40%;
 }  
 
 .contents-navRecipes .recipe-show-container .icon-close,

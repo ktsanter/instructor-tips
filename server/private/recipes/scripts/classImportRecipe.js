@@ -217,7 +217,9 @@ class ImportRecipe {
       "recipeyield": '',
       "ingredients": ingredientObjects,
       "instructions": instructions,
-      "notes": ''
+      "notes": '',
+      "recipemade": 0,
+      "recipeimage": ''
     };      
     
     return recipe;
@@ -389,7 +391,9 @@ class ImportRecipe {
       "recipeyield": '',
       "ingredients": ingredientObjects,
       "instructions": instructions.join('\n'),
-      "notes": ''
+      "notes": '',
+      "recipemade": 0,
+      "recipeimage": ''
     };
     
     return recipe;

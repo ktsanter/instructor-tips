@@ -18,7 +18,8 @@ class RecipesShow {
     this.elemYield = this.config.container.getElementsByClassName('yield-value')[0];
     this.elemIngredientContainer = this.config.container.getElementsByClassName('ingredient-container')[0];  
     this.elemInstructions = this.config.container.getElementsByClassName('instructions')[0];  
-    this.elemNotes = this.config.container.getElementsByClassName('notes')[0];  
+    this.elemNotes = this.config.container.getElementsByClassName('notes')[0];
+    this.elemImageContainer = this.config.container.getElementsByClassName('image-container')[0];
 
     var btn = this.config.container.getElementsByClassName('icon-close')[0];
     btn.addEventListener('click', (e) => { this.config.callbackFinishShowing(); });  
@@ -38,6 +39,7 @@ class RecipesShow {
     this._renderRecipeIngredients(recipe.ingredients);
     this._renderRecipeInstructions(recipe.instructions);
     this._renderRecipeNotes(recipe.notes);
+    this._renderRecipeImage(recipe.recipeimage);
   }
   
   //--------------------------------------------------------------
@@ -78,6 +80,18 @@ class RecipesShow {
   _renderRecipeNotes(notes) {
     UtilityKTS.removeChildren(this.elemNotes);
     this.elemNotes.innerHTML = notes;
+  }
+  
+  _renderRecipeImage(imageURL) {
+    console.log(this.elemImageContainer);
+    console.log(imageURL);
+    UtilityKTS.removeChildren(this.elemImageContainer);
+
+    if (imageURL.trim().length > 0) {
+      var elemImage = CreateElement.createImage(null, 'recipe-image', imageURL);
+      elemImage.alt = 'recipe image';
+      this.elemImageContainer.appendChild(elemImage);
+    }
   }
   
   //--------------------------------------------------------------

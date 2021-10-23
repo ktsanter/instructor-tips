@@ -25,6 +25,7 @@ class RecipesEdit {
     this.editInstructions = this.editContainer.getElementsByClassName('input-instructions')[0];
     this.editNotes = this.editContainer.getElementsByClassName('input-notes')[0];
     this.editMade = this.editContainer.getElementsByClassName('check-made')[0];
+    this.editImageURL = this.editContainer.getElementsByClassName('input-imageurl')[0];
     this.ingredientTemplateRow = this.config.container.getElementsByClassName('ingredients-templaterow')[0];
 
     UtilityKTS.denyDoubleQuotes(this.editTags);
@@ -90,13 +91,13 @@ class RecipesEdit {
     this.editInstructions.value = '';
     this.editNotes.value = '';
     this.editMade.checked = false;
+    this.editImageURL.value = '';
 
     UtilityKTS.setClass(this.editContainer, this.config.hideClass, false);
     UtilityKTS.setClass(this.deleteContainer, this.config.hideClass, true);
   }
   
   _loadRecipe(recipe) {
-    console.log(recipe);
     this.editRecipeName.value = recipe.recipename;
     this._setRadioValue(this.editRating, recipe.rating);
     this.editTags.value = this._tagListToString(recipe.taglist);
@@ -105,6 +106,7 @@ class RecipesEdit {
     this.editInstructions.value = recipe.instructions;
     this.editNotes.value = recipe.notes;
     this.editMade.checked = recipe.recipemade;    
+    this.editImageURL.value = recipe.recipeimage;
   }
   
   _loadIngredientList(ingredients) {
@@ -166,8 +168,8 @@ class RecipesEdit {
 
     recipe.instructions = this._replaceQuotes(this.editInstructions.value);
     recipe.notes = this._replaceQuotes(this.editNotes.value);  
-    
     recipe.recipemade = this.editMade.checked;
+    recipe.recipeimage = this._replaceQuotes(this.editImageURL.value);    
 
     return recipe;
   }
