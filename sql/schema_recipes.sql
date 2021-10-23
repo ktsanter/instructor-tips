@@ -21,6 +21,7 @@ create table recipe
   recipeyield        varchar(100),
   recipeinstructions mediumtext,
   recipenotes        varchar(500),
+  recipemade         boolean not null default 0,
   
   primary key (recipeid),
   constraint foreign key (userid) references  instructortips.user (userid) on delete cascade,

@@ -1,3 +1,13 @@
+mixin makeRatingIcons(numHighlighted)
+  - var n = 0;
+  while n < numHighlighted
+    i(class="icon-check-rating highlight-star fas fa-star")
+    - n++;
+    
+  while n < 5
+    i(class="icon-check-rating fas fa-star")
+    - n++;
+  
 mixin recipesList()
   .container-fluid(class="recipes-list-container")
     .row
@@ -6,9 +16,53 @@ mixin recipesList()
           input(type="text" class="input-recipesearch form-control" id="inputRecipeSearch" placeholder="search for recipe")
           label(for="inputRecipeSearch") search
 
-    .row
-      .col-sm
-        .tagselect-container(class="my-2")
+    .row(class="my-2")
+      .col-sm-6
+        .tagselect-container
+
+      .col-sm(class="madeselect-container")
+        .form-check
+          input(class="radio-made form-check-input" type="radio" name="radioMade" id="radioMade_Either" value="either" checked)
+          label(class="form-check-label" for="radioMade_Either") either
+
+        .form-check
+          input(class="radio-made form-check-input" type="radio" name="radioMade" id="radioMade_Made" value="made")
+          label(class="form-check-label" for="radioMade_Made") made
+
+        .form-check
+          input(class="radio-made form-check-input" type="radio" name="radioMade" id="radioMade_NotMade" value="notmade")
+          label(class="form-check-label" for="radioMade_NotMade") not made
+
+      .col-sm(class='ratingselect-container')
+        .form-check
+          input(class="check-rating form-check-input" type="checkbox" name="checkRating" id="checkRating0" value="0" checked)
+          label(class="form-check-label" for="checkRating1")
+            +makeRatingIcons(0)
+
+        .form-check
+          input(class="check-rating form-check-input" type="checkbox" name="checkRating" id="checkRating1" value="1" checked)
+          label(class="form-check-label" for="checkRating1")
+            +makeRatingIcons(1)
+
+        .form-check
+          input(class="check-rating form-check-input" type="checkbox" name="checkRating" id="checkRating2" value="2" checked)
+          label(class="form-check-label" for="checkRating1")
+            +makeRatingIcons(2)
+
+        .form-check
+          input(class="check-rating form-check-input" type="checkbox" name="checkRating" id="checkRating3" value="3" checked)
+          label(class="form-check-label" for="checkRating1")
+            +makeRatingIcons(3)
+
+        .form-check
+          input(class="check-rating form-check-input" type="checkbox" name="checkRating" id="checkRating4" value="4" checked)
+          label(class="form-check-label" for="checkRating1")
+            +makeRatingIcons(4)
+
+        .form-check
+          input(class="check-rating form-check-input" type="checkbox" name="checkRating" id="checkRating5" value="5" checked)
+          label(class="form-check-label" for="checkRating1")
+            +makeRatingIcons(5)
 
     .row
       .col-sm
@@ -37,3 +91,10 @@ mixin recipesList()
               input(class="recipe-check form-check-input ms-1" type="checkbox")
 
             td(class="recipelist-recipename")
+              span(class="recipename-text")
+              span(class="recipe-rating ms-2")
+                i(class='star star1 fas fa-star')
+                i(class='star star2 fas fa-star')
+                i(class='star star3 fas fa-star')
+                i(class='star star4 fas fa-star')
+                i(class='star star5 fas fa-star')

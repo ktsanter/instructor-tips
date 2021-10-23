@@ -27,6 +27,16 @@ class FilteredRecipeSearch {
     
     this.selectedTagsContainer = CreateElement.createDiv(null, 'tagselect-selected-container', '[selected tags container]');
     this.config.elemTagContainer.appendChild(this.selectedTagsContainer);
+    
+    this.madeInputs = this.config.elemMadeContainer.getElementsByTagName('input');
+    for (var i = 0; i < this.madeInputs.length; i++) {
+      this.madeInputs[i].addEventListener('change', (e) => { this._handleMadeInput(e); });
+    }
+    
+    this.ratingInputs = this.config.elemRatingContainer.getElementsByTagName('input');
+    for (var i = 0; i < this.ratingInputs.length; i++) {
+      this.ratingInputs[i].addEventListener('change', (e) => { this._handleRatingInput(e); });
+    }
   }
   
   async update() {
@@ -80,6 +90,10 @@ class FilteredRecipeSearch {
   _applyFiltering(recipeList) {
     var searchValue = this.config.elemSearch.value.toLowerCase();
     var searchTagSet = new Set(this._getSelectedTags());
+    var searchMadeValue = this._getSelectedMadeValue();
+    var searchRatingSet = new Set(this._getSelectedRatings());
+    
+    console.log('searchMadeValue', searchMadeValue);
     
     var filtered = recipeList.filter(function(a) {
       var include = a.recipename.toLowerCase().includes(searchValue);
@@ -87,6 +101,8 @@ class FilteredRecipeSearch {
       var tagSet = new Set(a.taglist);
       var diff = UtilityKTS.setDifference(searchTagSet, tagSet);
       include = include && diff.size == 0;
+      
+      include = include && searchRatingSet.has(a.rating);
 
       return include;
     });
@@ -96,6 +112,26 @@ class FilteredRecipeSearch {
   
   _getSelectedTags() {
     return JSON.parse(this.selectedTagsContainer.getAttribute('selected-tag-list'));
+  }
+  
+  _getSelectedMadeValue() {
+    var madeValue;
+    for (var i = 0; i < this.madeInputs.length && madeValue == null; i++) {
+      var elem = this.madeInputs[i];
+      if (elem.checked) madeValue = elem.value;
+    }
+    
+    return madeValue;
+  }
+  
+  _getSelectedRatings() {
+    var ratings = [];
+    for (var i = 0; i < this.ratingInputs.length; i++) {
+      var elem = this.ratingInputs[i];
+      if (elem.checked) ratings.push(parseInt(elem.value));
+    }
+    
+    return ratings;
   }
   
   _setSelectedTags(tagList) {
@@ -173,6 +209,14 @@ class FilteredRecipeSearch {
   _handleTagItemHover(e, enter) {
     var controlContainer = e.target.nextSibling;
     UtilityKTS.setClass(controlContainer, 'hovering', enter);
+  }
+  
+  _handleMadeInput(e) {
+    this.config.callbackChange();
+  }
+  
+  _handleRatingInput(e) {
+    this.config.callbackChange();
   }
   
   //--------------------------------------------------------------

@@ -125,7 +125,7 @@ class ImageOCR {
       console.log(result.details);
       console.log(resultJSON);
       return result;
-    }
+    } 
     
     result.success = true;
     result.details = 'validated';

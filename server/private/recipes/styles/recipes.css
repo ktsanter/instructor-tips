@@ -119,15 +119,31 @@ body {
   background-color: var(--bgPrimaryFaded);
 }
 
-.contents-navRecipes .recipelist-recipename {
+.contents-navRecipes .recipelist-recipename .recipename-text {
   cursor: pointer;
 }
  
-.contents-navRecipes .recipelist-recipename.is-on-menu {
+.contents-navRecipes .recipelist-recipename .recipename-text.is-on-menu {
   font-weight: bold;
 }
  
-.contents-navRecipes .recipelist-recipename:hover {
+.contents-navRecipes .recipelist-recipename .recipe-rating,
+.contents-navRecipes .icon-check-rating {
+  color: #ccc;
+  font-size: 80%;
+}
+
+.contents-navRecipes .recipelist-recipename .recipe-rating .highlight-star,
+.contents-navRecipes .icon-check-rating.highlight-star {
+  color: var(--bgPrimaryFaded);
+}
+
+.contents-navRecipes .radio-made:checked,
+.contents-navRecipes .check-rating:checked {
+  background-color: var(--bgPrimaryFaded);
+}
+
+.contents-navRecipes .recipelist-recipename .recipename-text:hover {
   text-decoration: underline;
 }
  

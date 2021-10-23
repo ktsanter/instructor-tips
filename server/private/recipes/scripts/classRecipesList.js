@@ -16,6 +16,8 @@ class RecipesList {
       "db": this.config.db,
       "elemSearch": this.config.container.getElementsByClassName('input-recipesearch')[0],
       "elemTagContainer": this.config.container.getElementsByClassName('tagselect-container')[0],
+      "elemMadeContainer": this.config.container.getElementsByClassName('madeselect-container')[0],
+      "elemRatingContainer": this.config.container.getElementsByClassName('ratingselect-container')[0],
       "callbackChange": () => { this._searchChange(); }
     });
     this.recipeSearch.render();    
@@ -75,12 +77,18 @@ class RecipesList {
       elemRecipeCheck.checked = recipe.isOnMenu;
       elemRecipeCheck.addEventListener('click', (e) => { this._handleRecipeCheck(e); });
       
-      var elemRecipeName = row.getElementsByClassName('recipelist-recipename')[0];
+      var cellRecipeName = row.getElementsByClassName('recipelist-recipename')[0];
+      var elemRecipeName = cellRecipeName.getElementsByClassName('recipename-text')[0];
       elemRecipeName.innerHTML = recipe.recipename;
       UtilityKTS.setClass(elemRecipeName, 'is-on-menu', recipe.isOnMenu);
 
       elemRecipeName.addEventListener('click', (e) => { this._handleRecipeClick(e); });
       elemRecipeName.addEventListener('contextmenu', (e) => { this._handleRecipeContextMenu(e); });
+      
+      for (var star = 0; star < recipe.rating; star++) {
+        var elemStar = cellRecipeName.getElementsByClassName('star' + (star + 1))[0];
+        UtilityKTS.setClass(elemStar, 'highlight-star', true);
+      }
       
       this.recipeListBody.appendChild(row);
     }
@@ -139,7 +147,7 @@ class RecipesList {
   }
   
   _handleRecipeContextMenu(e) {
-    if (!e.target.classList.contains('recipelist-recipename')) return false;
+    if (!e.target.classList.contains('recipename-text')) return false;
     e.preventDefault();
     this._openRecipeDropdown(e.target, e.clientX, e.clientY);
   }
