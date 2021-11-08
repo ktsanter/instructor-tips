@@ -54,6 +54,7 @@ class RosterViewer {
     this.studentImages = this.config.container.getElementsByClassName('item-images')[0];
     this.studentImageIEP = this.studentImages.getElementsByClassName('item-image image-iep')[0];
     this.studentImage504 = this.studentImages.getElementsByClassName('item-image image-504')[0];
+    this.studentImageCoach = this.studentImages.getElementsByClassName('item-image image-coach')[0];
     this.studentIconHomeSchooled = this.config.container.getElementsByClassName('item-icon icon-homeschooled')[0];
     this.studentImageInfo = this.studentImages.getElementsByClassName('item-image image-info')[0];
     
@@ -75,7 +76,7 @@ class RosterViewer {
     noteButton = this.config.containerNoteEditor.getElementsByClassName('button-editor-cancel')[0];
     noteButton.addEventListener('click', (e) => { this._finishNoteEdit(false); });
     
-    this.settings.filterControls = this._createFilterControls(['section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'term']);
+    this.settings.filterControls = this._createFilterControls(['section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term']);
 
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
   }
@@ -113,8 +114,8 @@ class RosterViewer {
     var studentList = this.settings.currentInfo.studentList;
     var rosterInfo = this._filterAndSortRoster(this.settings.currentInfo.students);
     
-    var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'term'];
-    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'term'];
+    var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'coach', 'term'];
+    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term'];
     var tableClasses = 'table table-striped table-hover table-sm';
     
     var table = CreateElement.createTable(null, tableClasses, headerArray, []);
@@ -195,6 +196,14 @@ class RosterViewer {
       if (rosterItem.homeschooled) {
         cell.classList.add('has-icon');
         cell.appendChild(this._createCheckIcon('student is homeschooled'));
+      }      
+        
+      cell = CreateElement._createElement('td', null, null);
+      cell.setAttribute('filter-value', rosterItem.hascoach);
+      row.appendChild(cell);
+      if (rosterItem.hascoach) {
+        cell.classList.add('has-icon');
+        cell.appendChild(this._createCheckIcon('student has coach'));
       }      
         
       cell = CreateElement._createElement('td', null, null);
@@ -518,6 +527,7 @@ class RosterViewer {
     if (studentInfo.iep) col2.appendChild(this.studentImageIEP.cloneNode(true));
     if (studentInfo['504']) col2.appendChild(this.studentImage504.cloneNode(true));
     if (studentInfo.homeschooled) col2.appendChild(this.studentIconHomeSchooled.cloneNode(true));
+    if (studentInfo.hascoach) col2.appendChild(this.studentImageCoach.cloneNode(true));
     
     return row;
   }

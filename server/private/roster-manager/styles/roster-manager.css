@@ -207,11 +207,12 @@ body {
 .contents .contents-navStudent .roster-headercol {}
 .contents .contents-navStudent .roster-headercol.roster-headercol-student      { width: 15%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-section      { width: 25%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-startdate    { width: 10%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-enddate      { width: 10%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-startdate    { width: 7%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-enddate      { width: 7%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-iep          { width: 5%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-504          { width: 5%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-homeschooled { width: 6%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-hascoach     { width: 6%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-term         { }
 
 .contents-navStudent .icon-copyemail {

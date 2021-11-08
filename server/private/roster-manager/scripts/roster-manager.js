@@ -341,7 +341,7 @@ const app = function () {
       "extraStudentInfo": extraStudentInfo,
       "extraMentorInfo": extraMentorInfo
     };
-    
+        
     _setExportUIEnable({
       "student": settings.currentInfo.studentList.length > 0, 
       "mentor": settings.currentMentorInfo.mentorList.length > 0
@@ -361,6 +361,7 @@ const app = function () {
         students[student] = {
         "enrollments": [], 
         "mentors": [], 
+        "hascoach": false,
         "guardians": [],
         "iep": false,
         "504": false,
@@ -379,6 +380,10 @@ const app = function () {
       student = student.replace(/&#39;/g, "'");
       if (students.hasOwnProperty(student)) {
         students[student].mentors.push(item);
+        if (item.name.includes('Coach')) {
+          students[student].hascoach = true;
+        }
+        
       } else {
         console.log('mentor for unknown student', student, item);
       }
