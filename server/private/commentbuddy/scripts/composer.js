@@ -101,6 +101,7 @@ const app = function () {
       id: 'contenteditor-navComposer', 
       selector: '#contenteditor-navComposer', 
       changeCallback: _handleEditorChange,
+      initializationParams: {wiris: true},
       height: 450
     });
     

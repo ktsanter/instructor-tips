@@ -20,6 +20,9 @@ class MyTinyMCE {
     
     this._initializationParams = {};
     if (params.hasOwnProperty('initializationParams')) this._initializationParams = params.initializationParams;
+    
+    this.btnMathFormula = null;
+    this.btnChemistryFormula = null;
   }
   
   //---------------------------------------------------------------------------------
@@ -52,18 +55,39 @@ class MyTinyMCE {
   
   show(makeVisible) {
     if (makeVisible) {
-      tinymce.show();
+      tinymce.get(this._id).show();
     } else {
-      tinymce.hide();
+      tinymce.get(this._id).hide();
     }
   }
 
+  triggerButton(buttonType) {
+    console.log('MyTinyMCE.triggerButton', buttonType);
+    if (buttonType == 'math-formula' && this.btnMathFormula != null) {
+      this.btnMathFormula.click();
+    } else if (buttonType == 'chemistry-formula' && this.btnChemistryFormula != null) {
+      this.btnChemistryFormula.click();
+    } else {
+      console.log('unrecognized buttonType', buttonType);
+    }
+  }
+  
   //---------------------------------------------------------------------------------
   // private methods
   //---------------------------------------------------------------------------------
   _initPromise() {
     return new Promise((resolve) => {        
       this._init(() => {
+        var buttons = tinymce.get(this._id).editorContainer.getElementsByTagName('button');
+        this.btnMathFormula = null;
+        this.btnChemistryFormula = null;
+        for (var i = 0; i < buttons.length; i++) {
+          var btn = buttons[i];
+          var ariaLabel = btn.getAttribute('aria-label');
+          if (ariaLabel && ariaLabel.includes('math equation')) this.btnMathFormula = btn;
+          if (ariaLabel && ariaLabel.includes('chemistry formula')) this.btnChemistryFormula = btn;
+        }
+
         resolve();
       });
     })
@@ -76,17 +100,24 @@ class MyTinyMCE {
     var paramPlugins = 'advlist link image lists charmap code codesample fullscreen table lists';
     var paramMenubar = 'edit view insert format tools';
     var paramToolbar = 'image link  table code fullscreen numlist bullist';
+    var paramExternalPlugins = {};
 
     if (this._initializationParams.hasOwnProperty('readonly')) paramReadOnly = this._initializationParams.readonly;
     if (this._initializationParams.hasOwnProperty('plugins')) paramPlugins = this._initializationParams.plugins;
     if (this._initializationParams.hasOwnProperty('menubar')) paramMenubar = this._initializationParams.menubar;
     if (this._initializationParams.hasOwnProperty('toolbar')) paramToolbar = this._initializationParams.toolbar;
-    
+    if (this._initializationParams.hasOwnProperty('wiris') && this._initializationParams.wiris) {
+      paramToolbar += ' tiny_mce_wiris_formulaEditor tiny_mce_wiris_formulaEditorChemistry';
+      paramExternalPlugins.tiny_mce_wiris = 'https://www.wiris.net/demo/plugins/tiny_mce/plugin.js';
+    }
+
     tinymce.init({
       selector: this._selector,
       height: this._height,
       readonly: paramReadOnly,
       convert_urls: false,
+      //external_plugins: { tiny_mce_wiris: 'https://www.wiris.net/demo/plugins/tiny_mce/plugin.js' },
+      external_plugins: paramExternalPlugins,
 
       plugins: paramPlugins,
       menubar: paramMenubar,

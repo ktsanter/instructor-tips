@@ -78,6 +78,11 @@ app.use(bodyParser.urlencoded({ extended: true })); // for form data
 const url = require('url');
 
 //------------------------------------------
+// axios - for fetch-like requests
+//------------------------------------------
+const axios = require('axios');
+
+//------------------------------------------
 // file services
 //------------------------------------------
 const fileservices = require('fs');
@@ -385,6 +390,17 @@ const recipes = new recipesClass({
   "userManagement": userManagement,  
   "tempFileManager": tmp,
   "apiKey": APIKEY_RECIPES
+});
+
+//------------------------------------------
+// AS Equations
+//------------------------------------------
+const asEquationsClass = require('./classes/asequations');
+const asEquations = new asEquationsClass({
+  "axios": axios,
+  "fs": fileservices,
+  "tempFileMaker": tmp,
+  "baseDir": __dirname
 });
 
 //------------------------------------------
@@ -1156,6 +1172,41 @@ app.get('/mathml/testbed', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'mathml/pug/mathml.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
+
+app.get('/asequations/testbed', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'asequations/pug/equation.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/asequations/render/:info', function (req, res) {
+  req.params.queryName = 'render';
+  req.params.callback = function(result) {
+    if (!result.success) {
+      res.send('image conversion failed');
+      return;
+    }
+    
+    var imageFile = result.data;
+    res.sendFile(imageFile, null, function(err) {
+      if (err) {
+        console.log('error sending image file', err);
+        
+      } else {
+        try {
+          fileservices.unlink(imageFile, function(err) {
+            if (err) console.log('error unlinking image file', err);
+          });
+        } catch(e) {
+          console.log('error sending/removing equation image file', e);
+        }
+      }
+    });
+  };
+  
+  asEquations.doQuery(req.params, req.body);
+});
+
+
 
 app.get('/roster-manager', function (req, res) {
   routeIfLoggedIn(req, res, 'roster-manager');

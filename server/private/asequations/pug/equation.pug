@@ -1,0 +1,55 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title Equation tester
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +tinyMCEscripts()
+    
+    style
+      include ../styles/equation.css
+    
+    script(data-main="/scripts/asequations/require_equation", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    h3 Equation test bed
+
+    div
+      button(id="test") test
+      
+    div
+      +makeTinyMCE("contenteditor-composer")
+      
+    div
+      input(type="radio" id="imageTypePNG" name="imageType" value="png" checked)
+      label(for="imageTypePNG") PNG      
+
+      input(type="radio" id="imageTypeSVG" name="imageType" value="svg")
+      label(for="imageTypeSVG") SVG
+
+    div
+      textarea(id="areaMathML" class="area-mathml" rows="10" cols="100" placeholder="enter MathML")
+    
+    div
+      textarea(id="areaEncoded" class="area-mathml" rows="10" cols="100")
+    
+    div
+      button(id="btnConvert" class="button-convert") convert
+    
+    .error-result(class="hide-me")
+    
+    .result(class="hide-me")
+      h4 result image
+      img(id="imgResult" class="result-image")
+      
+      div
+        a(id="downloadLink" class="download-link") download image
+        
+      .result-svg-container
+        h4 result SVG
+        div(id="resultSVG" class="result-svg")
