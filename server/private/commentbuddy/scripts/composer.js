@@ -101,7 +101,7 @@ const app = function () {
       id: 'contenteditor-navComposer', 
       selector: '#contenteditor-navComposer', 
       changeCallback: _handleEditorChange,
-      initializationParams: {wiris: true},
+      //initializationParams: {wiris: true},  //disabled for now as it doesn't seem to play well with the CB renderer
       height: 450
     });
     
