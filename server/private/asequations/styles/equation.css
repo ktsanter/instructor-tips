@@ -12,19 +12,19 @@ body {
   font-size: 13px;
 }
 
+.busy {
+  cursor: progress;
+}
+
 .hide-me {
   display: none;
 }
 
-#imgResult, #resultSVG {
-  border: 1px solid black;
+#imgResult {
+  border: 1px solid #aaa;
   padding: 1.0em;
   margin-right: 0.5em;
   margin-bottom: 0.4em;
-}
-
-#resultSVG {
-  display: inline-block;
 }
 
 .result {
@@ -41,12 +41,20 @@ body {
   color: red;
 }
 
-#downloadLink {
-  color: black;
-  text-decoration: none;
-  background-color: #eee;
-  border: 1px solid black;
-  border-radius: 2px;
-  padding: 0.3em;        
+.mathml-container, .encoded-container {
+  display: inline-block;
 }
 
+.wrs_modal_button_accept:disabled {
+  color: #778e9a;
+  background-color: transparent;
+}
+
+.wrs_modal_button_accept:hover:disabled {
+  color: #778e9a;
+  background-color: transparent;
+}
+
+.wrs_modal_button_accept.busy {
+  cursor: progress !important;
+}

@@ -8,7 +8,9 @@ const app = function () {
   const settings = {
     hideClass: 'hide-me',
     
-    conversionBaseURL: 'https://www.wiris.net/demo/editor/render'
+    conversionBaseURL: 'https://www.wiris.net/demo/editor/render',
+    imageFormat: 'PNG',
+    blankImageSrc: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
   };
     
 	//---------------------------------------
@@ -20,14 +22,9 @@ const app = function () {
     
     page.result = page.body.getElementsByClassName('result')[0];
     page.resultImage = page.result.getElementsByClassName('result-image')[0];
-    page.resultSVGContainer = page.result.getElementsByClassName('result-svg-container')[0];
-    page.resultSVG = page.result.getElementsByClassName('result-svg')[0];
-    page.downloadLink = page.result.getElementsByClassName('download-link')[0];
     
-    document.getElementById('test').addEventListener('click', function() {
-      settings.tiny.composer.show(false);
-      settings.tiny.composer.triggerButton('math-formula');
-    });
+    page.pasteURL = page.body.getElementsByClassName('paste-url')[0];
+    page.pasteURL.addEventListener('input', (e) => { _handlePasteURL(e); });
     
     await _renderContents();
   }
@@ -40,9 +37,6 @@ const app = function () {
     for (var i = 0; i < elems.length; i++) {
       elems[i].addEventListener('click', (e) => { _handleImageTypeChange(); });
     }
-
-    page.body.getElementsByClassName('button-convert')[0].addEventListener('click', (e) => { _handleConvert(e); });
-    page.body.getElementsByClassName('area-mathml')[0].addEventListener('input', (e) => { _handleTextAreaChange(e); });
     
     settings.tiny = {};
     settings.tiny.composer = new MyTinyMCE({
@@ -53,131 +47,106 @@ const app = function () {
       initializationParams: {wiris: true}
     });
     
-    await settings.tiny.composer.init();    
+    UtilityKTS.setClass(document.getElementById(settings.tiny.composer._id), settings.hideClass, true);
+
+    await settings.tiny.composer.init();
+    _triggerComposer(page.body.getElementsByClassName('contenteditor-composer-container')[0]);
   }
 
   //-----------------------------------------------------------------------------
 	// updating
 	//-----------------------------------------------------------------------------
-  async function _showResult(result) {
-    UtilityKTS.setClass(page.errorResult, 'hide-me', result.success);
-    UtilityKTS.setClass(page.result, 'hide-me', !result.success);
-    
-    if (!result.success) {
-      page.errorResult.innerHTML = result.details;
-      return;
-    }
-    
-    const urlCreator = window.URL || window.webkitURL;
-    if (page.resultImage.src != '') {
-      urlCreator.revokeObjectURL(page.resultImage.src); 
-    }
-
-    var imageURL = urlCreator.createObjectURL(result.data);
-    page.resultImage.src = imageURL;
-    
-    page.downloadLink.href = imageURL;
-    page.downloadLink.download = 'image-from-mathml.' + _getImageType();
-    
-    var imageType = _getImageType();
-    UtilityKTS.setClass(page.resultSVGContainer, 'hide-me', imageType != 'svg');
-    if (imageType == 'svg') page.resultSVG.innerHTML = await result.data.text();
-  }
-  
-  function _getImageType() {
-    var imageType = null;
-    var elems = document.getElementsByName('imageType');
-    
-    for (var i = 0; i < elems.length && !imageType; i++) {
-      if (elems[i].checked) imageType = elems[i].value;
-    }
-    
-    return imageType;
-  }   
 
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
-  async function _handleConvert(e) {
-    var format = 'png';
+  function _triggerComposer(appendToContainer) {
+    settings.tiny.composer.show(false);
+    settings.tiny.composer.triggerButton('math-formula');
     
-    var mml = document.getElementById('areaMathML').value;
-    var result = await _convertMathMLToImage(mml, _getImageType());
+    var composerDialog = page.body.getElementsByClassName('wrs_modal_desktop')[0];
+    UtilityKTS.setClass(composerDialog, 'wrs_modal_dialogContainer', false);
+    appendToContainer.appendChild(composerDialog);
+    
+    var acceptButton = composerDialog.getElementsByClassName('wrs_modal_button_accept')[0];
+    acceptButton.innerHTML = 'convert';
 
-    await _showResult(result);
+    var cancelButton = composerDialog.getElementsByClassName('wrs_modal_button_cancel')[0];
+    UtilityKTS.setClass(cancelButton, settings.hideClass, true);
   }
   
-  function _handleImageTypeChange(e) {
-    _showResult({success: false, details:'', data: null});
-  } 
-  
-  function _handleTextAreaChange(e) {
-    _showResult({success: false, details:'', data: null});
+  function _handlePasteURL() {
+    var url = page.pasteURL.value;
+    settings.tiny.composer.setContent(url);
+    var ed = settings.tiny.composer.getObj();
+    ed.selection.select(ed.getBody(), true);
+    
+    setTimeout(function() {
+      var composerDialog = page.body.getElementsByClassName('wrs_modal_desktop')[0];
+      var acceptButton = composerDialog.getElementsByClassName('wrs_modal_button_accept')[0];
+
+      settings.tiny.composer.triggerButton('math-formula');
+      UtilityKTS.setClass(page.body, 'busy', false);
+      UtilityKTS.setClass(acceptButton, 'busy', false);
+      acceptButton.disabled = false;
+    }, 200);
   }
   
   function _handleEditorChange(e) {
-    document.getElementById('areaMathML').value = settings.tiny.composer.getContent();
+    if (!_prepForConversion()) return;
     
-    var encoded = encodeURIComponent(settings.tiny.composer.getContent());
-    document.getElementById('areaEncoded').value = 'http://localhost:8000/asequations/render/' + encoded;
-    
-    page.body.getElementsByClassName('button-convert')[0].click();
-  }   
+    _doConversion();
+    _cleanupAfterConversion();
+  } 
   
-  //--------------------------------------------------------------------------
-  // service calls
-	//--------------------------------------------------------------------------  
-  async function _convertMathMLToImage(mathML, format) {
-    const METHOD_TITLE = '_convertMathMLToImage';
+  function _prepForConversion() {
+    page.resultImage.src = settings.blankImageSrc;
+    document.getElementById('areaMathML').value = '';
+    document.getElementById('areaEncoded').value = '';
     
-    mathML = mathML.replace(/\+/g, '%2B');
-    mathML = mathML.replace(/&/g, '%26');
-    mathML = mathML.replace(/#/g, '%23');
-    
-    var paramFormat = 'format=' + format;
-    var paramMML = 'mml=' + mathML;
-  ;
-    var url = settings.conversionBaseURL + '?' + paramFormat + '&' + paramMML;
+    var composerDialog = page.body.getElementsByClassName('wrs_modal_desktop')[0];
+    var acceptButton = composerDialog.getElementsByClassName('wrs_modal_button_accept')[0];
+    acceptButton.disabled = true;
 
-    var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE, data: null};
-
-    try {
-      var myHeaders = new Headers();
-      myHeaders.append("Cookie", "JSESSIONID=BFE999C5D299AA600335E3927132EA27");
-
-      var requestOptions = {
-        method: 'GET',
-        //headers: myHeaders,
-        redirect: 'follow'
-      };
-      
-      const resp = await fetch(url, requestOptions);
-
-      if (!resp.ok) {
-        var errmsg = 'error: status=' + resp.status;
-        result.details = errmsg;
-        
-      } else {
-        var blobData = await resp.blob();
-;
-        if (blobData.type.indexOf('image') < 0) {
-          console.log('fail');
-          result.details = 'error: unexpected data type - ' + blobData.type;
-          
-        } else {
-          result.success = true;
-          result.details = 'conversion succeeded';
-          result.data = blobData;
-        }
-      }
-      
-    } catch (error) {
-      var errmsg = '**ERROR: in ' + METHOD_TITLE + ', ' + error;
-      result.details = errmsg;
+    var mathML = settings.tiny.composer.getContent();
+    if (mathML.trim().length == 0) {
+      settings.tiny.composer.setContent('');
+      acceptButton.disabled = false;
+      return false;
     }
     
-    return result;
-  }    
+    UtilityKTS.setClass(page.body, 'busy', true);
+    UtilityKTS.setClass(acceptButton, 'busy', true);
+    
+    return true;
+  }
+  
+  function _doConversion(mathML) {
+    var mathML = settings.tiny.composer.getContent();
+    
+    document.getElementById('areaMathML').value = mathML;
+    
+    var encoded = encodeURIComponent(mathML);
+    var imageURL = 'http://localhost:8000/asequations/render/' + encoded;
+    document.getElementById('areaEncoded').value = imageURL;
+    
+    page.resultImage.src = imageURL;    
+  }
+  
+  function _cleanupAfterConversion() {
+    var ed = settings.tiny.composer.getObj();
+    ed.selection.select(ed.getBody(), true);
+    
+    setTimeout(function() {
+      var composerDialog = page.body.getElementsByClassName('wrs_modal_desktop')[0];
+      var acceptButton = composerDialog.getElementsByClassName('wrs_modal_button_accept')[0];
+
+      settings.tiny.composer.triggerButton('math-formula');
+      UtilityKTS.setClass(page.body, 'busy', false);
+      UtilityKTS.setClass(acceptButton, 'busy', false);
+      acceptButton.disabled = false;
+    }, 200);
+  }
 
   //--------------------------------------------------------------------------
   // utility

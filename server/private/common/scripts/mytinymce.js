@@ -23,6 +23,8 @@ class MyTinyMCE {
     
     this.btnMathFormula = null;
     this.btnChemistryFormula = null;
+    
+    this.isShowing = true;
   }
   
   //---------------------------------------------------------------------------------
@@ -31,6 +33,10 @@ class MyTinyMCE {
   async init() {
     // note the textarea element must exist and be part of the DOM before this
     await this._initPromise();
+  }
+  
+  getObj() {
+    return tinymce.get(this._id);
   }
   
   setContent(content) {
@@ -56,13 +62,14 @@ class MyTinyMCE {
   show(makeVisible) {
     if (makeVisible) {
       tinymce.get(this._id).show();
+      this.isShowing = true;
     } else {
       tinymce.get(this._id).hide();
+      this.isShowing = false;
     }
   }
 
   triggerButton(buttonType) {
-    console.log('MyTinyMCE.triggerButton', buttonType);
     if (buttonType == 'math-formula' && this.btnMathFormula != null) {
       this.btnMathFormula.click();
     } else if (buttonType == 'chemistry-formula' && this.btnChemistryFormula != null) {
