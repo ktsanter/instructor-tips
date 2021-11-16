@@ -1179,8 +1179,10 @@ app.get('/equations/editor', function (req, res) {
 })
 
 app.get('/equations/render/:info', function (req, res) {
+  console.log('app.get /equations/render/:info');
   req.params.queryName = 'render';
   req.params.callback = function(result) {
+    console.log('render callback', result);
     if (!result.success) {
       res.send('image conversion failed');
       return;

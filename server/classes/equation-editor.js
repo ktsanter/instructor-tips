@@ -40,18 +40,25 @@ module.exports = internal.EquationEditor = class {
 // specific query methods
 //---------------------------------------------------------------    
   _getRenderedEquation(params) {
+    console.log('_getRenderedEquation');
+    console.log(params);
     var result = this._queryFailureResult();
     
     var mathML = params.info;
     var imageFileName = this.tempFileMaker.tmpNameSync({tmpdir: this.tempDir}) + '.png'; 
-    this._convertMathMLToImage2(mathML, 'png', imageFileName, params.callback);
+    this._convertMathMLToImage(mathML, 'png', imageFileName, params.callback);
   }  
   
 //----------------------------------------------------------------------
 // support methods and queries
 //----------------------------------------------------------------------  
-  async _convertMathMLToImage2(mathML, format, targetFile, callback) {
-    const METHOD_TITLE = '_convertMathMLToImage';
+  async _convertMathMLToImage(mathML, format, targetFile, callback) {
+    const METHOD_TITLE = '_convertMathMLToImage2';
+    console.log(METHOD_TITLE);
+    console.log('mathML', mathML);
+    console.log('format', format);
+    console.log('targetFile', targetFile);
+    
     var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE, data: null};
     
     mathML = mathML.replace(/\+/g, '%2B');
