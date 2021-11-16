@@ -77,6 +77,12 @@ module.exports = internal.EquationEditor = class {
       });      
       console.log('axios response', response.status, response.statusText);
       const w = response.data.pipe(this.fs.createWriteStream(targetFile));
+      w.on('error', (err) => {
+        console.log('problem writing stream', err);
+        result.details = 'problem writing stream: ' + err;
+        callback(result);
+      });
+      
       w.on('finish', () => {
         console.log('piping finished');
         callback({"success": true, "details": 'conversion succeeded', "data": targetFile});
