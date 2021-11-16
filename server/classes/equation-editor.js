@@ -40,8 +40,6 @@ module.exports = internal.EquationEditor = class {
 // specific query methods
 //---------------------------------------------------------------    
   _getRenderedEquation(params) {
-    console.log('_getRenderedEquation');
-    console.log(params);
     var result = this._queryFailureResult();
     
     var mathML = params.info;
@@ -54,10 +52,6 @@ module.exports = internal.EquationEditor = class {
 //----------------------------------------------------------------------  
   async _convertMathMLToImage(mathML, format, targetFile, callback) {
     const METHOD_TITLE = '_convertMathMLToImage2';
-    console.log(METHOD_TITLE);
-    console.log('mathML', mathML);
-    console.log('format', format);
-    console.log('targetFile', targetFile);
     
     var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE, data: null};
     
@@ -75,7 +69,7 @@ module.exports = internal.EquationEditor = class {
         "url": url,
         "responseType": 'stream',
       });      
-      console.log('axios response', response.status, response.statusText);
+
       const w = response.data.pipe(this.fs.createWriteStream(targetFile));
       w.on('error', (err) => {
         console.log('problem writing stream', err);
@@ -84,7 +78,6 @@ module.exports = internal.EquationEditor = class {
       });
       
       w.on('finish', () => {
-        console.log('piping finished');
         callback({"success": true, "details": 'conversion succeeded', "data": targetFile});
       });    
 
