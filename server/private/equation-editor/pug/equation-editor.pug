@@ -45,8 +45,15 @@ html(lang="en")
             textarea(class="area-intermediate-result area-mathml" rows="10" cols="80" placeholder="MathML")
             textarea(class="area-intermediate-result area-encoded" rows="10" cols="80" placeholder="image URL")
 
-      .row(class="mt-4")
+      .row(class="mt-4")          
         .col-sm                
-          .result-container
+          .result-container(class="hide-me")
             img(class="result-image img-fluid img-thumbnail")
+
+      .row(class="mt-2")
+        .col-sm                
+          .result-buttons-container(class="hide-me")
+            button(type="button" class="copy-url btn btn-primary") URL
+            button(type="button" class="copy-mathml btn btn-primary ms-1") MathML
+            a(class="download-link btn btn-primary ms-1") download
 

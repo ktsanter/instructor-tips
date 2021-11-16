@@ -47,6 +47,16 @@ body {
   display: inline-block;
 }
 
+.btn {
+  font-size: 90%;
+}
+
+.btn.btn-primary {
+  background-color: var(--bgPrimary);
+  color: white;
+  border-color: var(--bgPrimary);
+}
+
 /*----------------------------------------------
  * Wiris dialog
  *----------------------------------------------*/

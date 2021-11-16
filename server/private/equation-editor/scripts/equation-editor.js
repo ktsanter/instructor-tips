@@ -7,10 +7,9 @@ const app = function () {
 	const page = {};
   const settings = {
     hideClass: 'hide-me',
-    
     baseRenderURL: '/equations/render/',
-    
-    blankImageSrc: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='
+    blankImageSrc: 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=',
+    downloadFileName: 'as-equation-image.png'
   };
     
 	//---------------------------------------
@@ -41,6 +40,16 @@ const app = function () {
     page.resultContainer = page.body.getElementsByClassName('result-container')[0];
     page.resultImage = page.resultContainer.getElementsByClassName('result-image')[0];
     page.resultImage.src = settings.blankImageSrc;
+
+    page.resultButtonsContainer = page.body.getElementsByClassName('result-buttons-container')[0];
+    
+    page.copyURL = page.body.getElementsByClassName('copy-url')[0];
+    page.copyURL.addEventListener('click', () => { handleCopyURL(); });
+
+    page.copyMathML = page.body.getElementsByClassName('copy-mathml')[0];
+    page.copyMathML.addEventListener('click', () => { handleCopyMathML(); });    
+    
+    page.downloadLink = page.body.getElementsByClassName('download-link')[0];    
     
     settings.tiny = {};
     settings.tiny.composer = new MyTinyMCE({
@@ -118,6 +127,8 @@ const app = function () {
   }
 
   function prepForConversion(ignoreEmpty) {
+    UtilityKTS.setClass(page.resultContainer, settings.hideClass, true);
+    UtilityKTS.setClass(page.resultButtonsContainer, settings.hideClass, true);
     page.pasteURL.disabled = true;
 
     page.resultImage.src = settings.blankImageSrc;
@@ -133,6 +144,7 @@ const app = function () {
       settings.tiny.composer.setContent('');
       acceptButton.disabled = false;
       page.pasteURL.disabled = false;
+      page.pasteURL.value = '';
       return false;
     }
     
@@ -148,10 +160,12 @@ const app = function () {
     page.intermediateMathML.value = mathML;
     
     var encoded = encodeURIComponent(mathML);
-    var imageURL = getBaseRenderURL() + encoded; //'http://localhost:8000/asequations/render/' + encoded;
+    var imageURL = getBaseRenderURL() + encoded;
     page.intermediateEncoded.value = imageURL;
     
-    page.resultImage.src = imageURL;    
+    page.resultImage.src = imageURL;
+    page.downloadLink.href = imageURL;
+    page.downloadLink.download = settings.downloadFileName;
   }
   
   function cleanupAfterConversion() {
@@ -166,7 +180,11 @@ const app = function () {
       UtilityKTS.setClass(page.body, 'busy', false);
       UtilityKTS.setClass(acceptButton, 'busy', false);
       acceptButton.disabled = false;
-      page.pasteURL.disabled = false;
+      page.pasteURL.value = '';      
+      page.pasteURL.disabled = false; 
+
+      UtilityKTS.setClass(page.resultContainer, settings.hideClass, false);
+      UtilityKTS.setClass(page.resultButtonsContainer, settings.hideClass, false);
     }, 200);
   }
   
@@ -191,6 +209,14 @@ const app = function () {
   function handleEditorChange(e) {
     fullConversion();
   } 
+  
+  function handleCopyURL() {
+    copyToClipboard(page.resultImage.src);
+  }
+  
+  function handleCopyMathML() {
+    copyToClipboard(page.intermediateMathML.value);
+  }
 
   //--------------------------------------------------------------------------
   // utility
@@ -203,6 +229,12 @@ const app = function () {
     if (msg != null) page.message.innerHTML = msg;
     UtilityKTS.setClass(page.message, settings.hideClass, msg == null || msg.trim().length == 0);
   }
+  
+  function copyToClipboard(txt) {
+    if (!settings.clipboard) settings.clipboard = new ClipboardCopy(page.body, 'plain');
+
+    settings.clipboard.copyToClipboard(txt);
+	}	    
   
 	//-----------------------------------------------------------------------------------
 	// init:
