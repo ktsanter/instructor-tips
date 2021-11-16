@@ -3,7 +3,7 @@ define(function (require) {
   require('/scripts/create_element');
   require('/scripts/mytinymce');
   
-  require('equation');
+  require('equation-editor');
 
   document.addEventListener('DOMContentLoaded', app.init());
 });

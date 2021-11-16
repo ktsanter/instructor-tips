@@ -1,12 +1,12 @@
 "use strict";
 //---------------------------------------------------------------
-// server-side for AS Equations
+// server-side for Equation editor
 //---------------------------------------------------------------
 // TODO: 
 //---------------------------------------------------------------
 const internal = {};
 
-module.exports = internal.asEquations = class {
+module.exports = internal.EquationEditor = class {
   constructor(params) {
     this.axios = params.axios;
     this.fs = params.fs;
@@ -41,12 +41,6 @@ module.exports = internal.asEquations = class {
 //---------------------------------------------------------------    
   _getRenderedEquation(params) {
     var result = this._queryFailureResult();
-    
-    console.log('_getRenderedEquation');
-    console.log(params);
-
-    //var mathML = '<p><math xmlns="http://www.w3.org/1998/Math/MathML"><mo>&#8734;</mo><mo>&#8709;</mo></math></p>';
-    //var mathML = '<p><math xmlns="http://www.w3.org/1998/Math/MathML"><mi>d</mi><mo>=</mo><msqrt><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo><msup><mi>y</mi><mn>2</mn></msup></msqrt></math></p>';
     
     var mathML = params.info;
     var imageFileName = this.tempFileMaker.tmpNameSync({tmpdir: this.tempDir}) + '.png'; 

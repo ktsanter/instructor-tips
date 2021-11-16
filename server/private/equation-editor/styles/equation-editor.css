@@ -1,0 +1,65 @@
+/*------------------------------------------------------------------------------
+ * Equation editor
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: #778e9a;
+}
+
+body {
+  font-size: 13px;
+}
+
+.hide-me {
+  display: none;
+}
+
+.busy {
+  cursor: progress;
+}
+
+.logo-image, .title {
+  display: inline-block;
+}
+
+.logo-image {
+  width: 2.0em;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 120%;
+}
+
+.label-imageurl, .input-imageurl {
+  font-size: 90%;
+}
+
+.label-imageurl {
+  color: white;
+  background-color: var(--bgPrimary);
+}
+
+.message {
+  font-style: italic;
+}
+
+.area-intermediate-result {
+  display: inline-block;
+}
+
+/*----------------------------------------------
+ * Wiris dialog
+ *----------------------------------------------*/
+.wrs_modal_button_accept:disabled {
+  color: var(--bgPrimary);
+  background-color: transparent;
+}
+
+.wrs_modal_button_accept:hover:disabled {
+  color: var(--bgPrimary);
+  background-color: transparent;
+}
+
+.wrs_modal_button_accept.busy:hover {
+  cursor: progress !important;
+}

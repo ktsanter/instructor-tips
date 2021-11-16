@@ -1,0 +1,52 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/tinyMCE-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title Equation editor
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()    
+    +tinyMCEscripts()
+    
+    style
+      include ../styles/equation-editor.css
+    
+    script(data-main="/scripts/equation-editor/require_equation-editor", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    .container-fluid(class="contents")
+      .row
+        .col-sm 
+          img(class="logo-image img-fluid" src="https://res.cloudinary.com/ktsanter/image/upload/v1637069351/Aardvark%20Studios/aardvark-studios-logo-graygreen.png")
+          .title(class="ms-2") Equation editor
+      
+      .row(class="mt-2")
+        .col-sm-2
+          div(class="input-group")
+            span(class="label-imageurl input-group-text" id="inputImageURL") image URL
+            input(type="text" class="input-imageurl form-control" placeholder="paste image URL here" aria-label="ImageURL" area-describedby="inputImageURL2")
+            
+        .col-sm
+          .message(class='hide-me')
+              
+      .row(class="mt-4")
+        .col-sm            
+          .contenteditor-composer-container
+            +makeTinyMCE("contenteditor-composer")
+
+      .row(class="hide-me")
+        .col-sm            
+          .intermediate-container
+            textarea(class="area-intermediate-result area-mathml" rows="10" cols="80" placeholder="MathML")
+            textarea(class="area-intermediate-result area-encoded" rows="10" cols="80" placeholder="image URL")
+
+      .row(class="mt-4")
+        .col-sm                
+          .result-container
+            img(class="result-image img-fluid img-thumbnail")
+

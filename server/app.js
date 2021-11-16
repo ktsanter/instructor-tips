@@ -393,10 +393,10 @@ const recipes = new recipesClass({
 });
 
 //------------------------------------------
-// AS Equations
+// Equation editor
 //------------------------------------------
-const asEquationsClass = require('./classes/asequations');
-const asEquations = new asEquationsClass({
+const equationEditorClass = require('./classes/equation-editor');
+const equationEditor = new equationEditorClass({
   "axios": axios,
   "fs": fileservices,
   "tempFileMaker": tmp,
@@ -1173,12 +1173,12 @@ app.get('/mathml/testbed', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.get('/asequations/testbed', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'asequations/pug/equation.pug');
+app.get('/equations/editor', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'equation-editor/pug/equation-editor.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.get('/asequations/render/:info', function (req, res) {
+app.get('/equations/render/:info', function (req, res) {
   req.params.queryName = 'render';
   req.params.callback = function(result) {
     if (!result.success) {
@@ -1203,10 +1203,8 @@ app.get('/asequations/render/:info', function (req, res) {
     });
   };
   
-  asEquations.doQuery(req.params, req.body);
+  equationEditor.doQuery(req.params, req.body);
 });
-
-
 
 app.get('/roster-manager', function (req, res) {
   routeIfLoggedIn(req, res, 'roster-manager');
