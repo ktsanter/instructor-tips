@@ -81,7 +81,7 @@ class PngImage {
         success = this.processIendChunk(chunk);
 
       } else {
-        console.log('unprocessed type ' + chunk.type);
+        console.log('unprocessed chunk, type=' + chunk.type);
       }
       
       pos += chunk.totalLength;

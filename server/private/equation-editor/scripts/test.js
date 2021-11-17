@@ -43,7 +43,6 @@ const app = function () {
     }
     
     var parsed = await parseImage(imageFileURL);
-    console.log('parsed', parsed);
     if (!parsed.success) {
       msg += ' - fail: ' + parsed.details;
       message(msg);
@@ -55,15 +54,14 @@ const app = function () {
   
   async function processHTML(html) {
     var msg = 'text/html';
-    console.log(html);
     showResult(html);
     var imageFileURL = getImageFileURL(html);
     if (imageFileURL == null) {
       msg += ' - no image found';
       
     } else {
+      msg += ' - image URL found';
       var parsed = await parseImage(imageFileURL);
-      console.log('parsed', parsed);
       if (!parsed.success) {
         msg += ' - fail: ' + parsed.details;
         message(msg);
@@ -91,30 +89,23 @@ const app = function () {
   function getImageFileURL(html) {
     var regexSrc = /img .*src="([^\s]*)"/;
     var matchResults = html.match(regexSrc);
-    console.log(matchResults);
     
     if (matchResults == null || matchResults.length < 2) {
-      console.log('no match for ' + html);
+      console.log('no img tag match for ' + html);
       return null;
     }
     var imgSrc = matchResults[1];
-    console.log(imgSrc);
     
     return imgSrc;
   }
   
   async function parseImage(imageFileURL) {
-    console.log('parseImage', imageFileURL);
+    console.log('\nparseImage', imageFileURL);
     var result = {
       "success": false,
       "details": 'unspecified error in parseImage',
       "metadata": {}
     };
-
-    var img = document.createElement('img');
-    img.src = imageFileURL;
-    console.log(img);
-    page.body.appendChild(img);
     
     var httpResponse = await fetch(imageFileURL);
     if (!httpResponse.ok) throw new Error('no bueno');
@@ -141,6 +132,10 @@ const app = function () {
     console.log('base', pngImage.base);
     console.log('idat', pngImage.idat);
     console.log('text', pngImage.text);
+    for (var i = 0; i < pngImage.text.keyValuePairs.length; i++) {
+      var pair = pngImage.text.keyValuePairs[i];
+      console.log('key: ' + pair[0], 'value: ' + pair[1]);
+    }
     console.log('iend', pngImage.iend);
     
     return result;
