@@ -60,6 +60,10 @@ body {
 /*----------------------------------------------
  * Wiris dialog
  *----------------------------------------------*/
+.wrs_modal_title {
+  display: none;
+}
+
 .wrs_modal_button_accept:disabled {
   color: var(--bgPrimary);
   background-color: transparent;

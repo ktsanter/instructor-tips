@@ -21,12 +21,12 @@ html(lang="en")
   body(class="colorscheme")
     .container-fluid(class="contents")
       .row
-        .col-sm 
+        .col-sm
           img(class="logo-image img-fluid" src="https://res.cloudinary.com/ktsanter/image/upload/v1637069351/Aardvark%20Studios/aardvark-studios-logo-graygreen.png")
           .title(class="ms-2") Equation editor
       
       .row(class="mt-2")
-        .col-sm-2
+        .col-sm-2(class="ms-1")
           div(class="input-group")
             span(class="label-imageurl input-group-text" id="inputImageURL") image URL
             input(type="text" class="input-imageurl form-control" placeholder="paste image URL here" aria-label="ImageURL" area-describedby="inputImageURL2")
@@ -34,7 +34,7 @@ html(lang="en")
         .col-sm
           .message(class='hide-me')
               
-      .row(class="mt-4")
+      .row(class="mt-1")
         .col-sm            
           .contenteditor-composer-container
             +makeTinyMCE("contenteditor-composer")
@@ -45,13 +45,13 @@ html(lang="en")
             textarea(class="area-intermediate-result area-mathml" rows="10" cols="80" placeholder="MathML")
             textarea(class="area-intermediate-result area-encoded" rows="10" cols="80" placeholder="image URL")
 
-      .row(class="mt-4")          
-        .col-sm                
+      .row          
+        .col-sm(class="ms-1")      
           .result-container(class="hide-me")
             img(class="result-image img-fluid img-thumbnail")
 
       .row(class="mt-2")
-        .col-sm                
+        .col-sm(class="ms-1")         
           .result-buttons-container(class="hide-me")
             button(type="button" class="copy-url btn btn-primary") URL
             button(type="button" class="copy-mathml btn btn-primary ms-1") MathML

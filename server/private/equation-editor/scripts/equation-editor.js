@@ -189,6 +189,7 @@ const app = function () {
   }
   
   function parseURL(url) {
+    console.log('parseURL', url);
     if (url.trim().length == 0) return null;
     
     var searchFor = settings.baseRenderURL;

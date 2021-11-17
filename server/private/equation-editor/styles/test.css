@@ -1,0 +1,24 @@
+/*------------------------------------------------------------------------------
+ * Equation test bed
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: #778e9a;
+}
+
+body {
+  font-size: 13px;
+}
+
+.hide-me {
+  display: none;
+}
+
+.target {
+  border:1px solid black; 
+  height: 20em;  
+}
+
+.message {
+  font-style: italic;
+  color: blue;
+}
