@@ -7,6 +7,8 @@ const app = function () {
 	const page = {};
   const settings = {
     hideClass: 'hide-me',
+    
+    baseRenderURL: '/equations/render/'
   };
     
 	//---------------------------------------
@@ -24,6 +26,7 @@ const app = function () {
   async function renderContents() {
     page.target = page.body.getElementsByClassName('target')[0];
     page.message = page.body.getElementsByClassName('message')[0];
+    page.result = page.body.getElementsByClassName('result')[0];
     
     page.target.addEventListener('paste', (e) => { handlePaste(e); });
   }
@@ -32,48 +35,61 @@ const app = function () {
 	// updating
 	//-----------------------------------------------------------------------------
   async function processFile(file, html) {
-    var msg = 'file name: ' + file.name + ' type: ' + file.type;
+    message('file pasted');
+    page.result.innerHTML = '';
     
     showResult(html);
     var imageFileURL = getImageFileURL(html);
     if (imageFileURL == null) {
-      msg += ' - unable to find image ';
-      message(msg);
+      page.result.innerHTML = 'file pasted: unable to find image in html';
       return;
     }
     
     var parsed = await parseImage(imageFileURL);
     if (!parsed.success) {
-      msg += ' - fail: ' + parsed.details;
-      message(msg);
+      page.result.innerHTML = 'file pasted: parseImage failed - ' + parsed.details;
       return;
     }
-      
-    message(msg);
+    
+    showImageInfo(parsed.metadata);
   }
   
   async function processHTML(html) {
-    var msg = 'text/html';
+    message('text/html pasted');
+    page.result.innerHTML = '';
+    
     showResult(html);
+
     var imageFileURL = getImageFileURL(html);
-    if (imageFileURL == null) {
-      msg += ' - no image found';
-      
-    } else {
-      msg += ' - image URL found';
+    if (imageFileURL != null) {
       var parsed = await parseImage(imageFileURL);
       if (!parsed.success) {
-        msg += ' - fail: ' + parsed.details;
-        message(msg);
+        message('text/html pasted: includes img');
+        page.result.innerHTML = 'text/html pasted: parseImage failed - ' + parsed.details;
         return;
-      }      
+      }
+      
+      showImageInfo(parsed.metadata);
+      
+    } else {
+      page.result.innerHTML = 'could not find MathML';
     }
-    
-    message(msg);
   }
   
   function processPlain(plainText) {
-    message('text/plain');
+    message('text/plain pasted');
+    page.result.innerHTML = '';
+    
+    var mathML = _mathMLFromPlainText(plainText);
+    if (mathML != null) {
+      mathML = mathML.replace(/</g, '&lt;');
+      mathML = mathML.replace(/>/g, '&gt;');
+      page.result.innerHTML = mathML;
+      
+    } else {
+      page.result.innerHTML = 'could not find MathML';
+    }
+
     showResult(plainText);
   }
   
@@ -91,7 +107,6 @@ const app = function () {
     var matchResults = html.match(regexSrc);
     
     if (matchResults == null || matchResults.length < 2) {
-      console.log('no img tag match for ' + html);
       return null;
     }
     var imgSrc = matchResults[1];
@@ -99,47 +114,83 @@ const app = function () {
     return imgSrc;
   }
   
-  async function parseImage(imageFileURL) {
-    console.log('\nparseImage', imageFileURL);
+  async function parseImage(imageURL) {
     var result = {
       "success": false,
       "details": 'unspecified error in parseImage',
       "metadata": {}
     };
     
-    var httpResponse = await fetch(imageFileURL);
-    if (!httpResponse.ok) throw new Error('no bueno');
-    var buffer = await httpResponse.arrayBuffer();
-    var bytes = new Uint8Array(buffer);
-
-    try {
-      var pngImage = new PngImage(bytes);
-    } catch(err) {
-      console.log(err);
-      result.details = 'error in making PngImage: ' + err;
+    var bytes = await PngImage.fetchImageData(imageURL);
+    if (bytes == null) {
+      result.details = 'failed to fetch';
       return result;
     }
     
-    if (!pngImage.parseData()) {
-      result.details = 'error in parseData';
+    var pngImage = new PngImage(bytes);
+    if (!pngImage.valid) {
+      result.details = pngImage.error;
       return result;
     }
 
     result.success = true;
     result.details = 'image parsed';
-    console.log('ihdr', pngImage.ihdr);
-    console.log('phys', pngImage.phys);
-    console.log('base', pngImage.base);
-    console.log('idat', pngImage.idat);
-    console.log('text', pngImage.text);
-    for (var i = 0; i < pngImage.text.keyValuePairs.length; i++) {
-      var pair = pngImage.text.keyValuePairs[i];
-      console.log('key: ' + pair[0], 'value: ' + pair[1]);
-    }
-    console.log('iend', pngImage.iend);
+    result.metadata = {
+      "size": pngImage.getSize(),
+      "header": pngImage.getIhdr(),
+      "textinfo": pngImage.getText()
+    };
     
     return result;
   }
+  
+  function showImageInfo(metadata) {
+    var msg = '';
+    var mathMLMsg = 'could not find mathML';
+    
+    msg += 'size: ' + metadata.size;
+    msg += '<br>header';
+    for (var key in metadata.header) {
+      msg += '<br>&nbsp;&nbsp&nbsp;' + key + ': ' + metadata.header[key];
+    }
+    
+    msg += '<br>text:';
+    if (metadata.textinfo.length == 0) {
+      msg += ' <em>none</em>';
+    } else {
+      for (var i = 0; i < metadata.textinfo.length; i++) {
+        var item = metadata.textinfo[i];
+        var valueString = item.value.replace(/</g, '&lt;');
+        valueString = valueString.replace(/>/g, '&gt;');
+        msg += '<br>&nbsp;&nbsp;&nbsp;"' + item.key + '": &nbsp;&nbsp;"' + valueString + '"';
+        
+        if (item.key == 'MathML') mathMLMsg = valueString;
+      }
+    }
+    
+    msg += '<br>' + mathMLMsg;
+   
+    page.result.innerHTML = msg;
+  }
+  
+  function _mathMLFromPlainText(plainText) {
+    if (plainText.trim().length == 0) return null;
+    
+    var searchFor = settings.baseRenderURL;
+    var index = plainText.indexOf(searchFor);
+    if (index >= 0) {
+      var encoded = plainText.slice(index + searchFor.length);
+      return decodeURIComponent(encoded);
+    }
+    
+    var regexMathML = /<math .*>.+<\/math>/;
+    var matchMathML = plainText.match(regexMathML);
+    if (matchMathML != null) {
+      return matchMathML[0];
+    }
+    
+    return null;
+  }  
   
   //--------------------------------------------------------------------------
   // handlers

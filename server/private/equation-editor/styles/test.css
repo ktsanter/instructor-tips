@@ -18,6 +18,10 @@ body {
   height: 20em;  
 }
 
+.target img {
+  max-height: 100%;
+}
+
 .message {
   font-style: italic;
   color: blue;

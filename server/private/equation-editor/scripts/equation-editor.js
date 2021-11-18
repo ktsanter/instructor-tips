@@ -20,19 +20,20 @@ const app = function () {
     page.message = page.body.getElementsByClassName('message')[0];
 
     message('loading...');
-
-    await renderContents();
     
+    await renderContents();
+    settings.mathMLFinder = new FindMathML();
+        
     message();
   }
- 
+  
   //-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------
   async function renderContents() {
     page.pasteURL = page.body.getElementsByClassName('input-imageurl')[0];
     page.pasteURL.disabled = true;
-    page.pasteURL.addEventListener('input', (e) => { handlePasteURL(e); });
+    page.pasteURL.addEventListener('paste', (e) => { handlePaste(e); });
     
     page.intermediateMathML = page.body.getElementsByClassName('area-mathml')[0];
     page.intermediateEncoded = page.body.getElementsByClassName('area-encoded')[0];
@@ -95,20 +96,19 @@ const app = function () {
     cleanupAfterConversion();
   }
   
-  function parseAndShowURLContent() {
+  function loadMathML(mathML) {
     var composerDialog = page.body.getElementsByClassName('wrs_modal_desktop')[0];
     var acceptButton = composerDialog.getElementsByClassName('wrs_modal_button_accept')[0];
     message();
 
     prepForConversion(true);
 
-    var mathML = parseURL(page.pasteURL.value);
     if (mathML == null) {
       UtilityKTS.setClass(page.body, 'busy', false);
       UtilityKTS.setClass(acceptButton, 'busy', false);
       acceptButton.disabled = false;
       page.pasteURL.disabled = false;
-      if (page.pasteURL.value.trim().length > 0) message('invalid image URL');
+      message('invalid equation info');
       return;
     }
     
@@ -203,8 +203,11 @@ const app = function () {
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
-  function handlePasteURL() {
-    parseAndShowURLContent();
+  async function handlePaste(e) {
+    e.preventDefault();
+    
+    var mathML = await settings.mathMLFinder.find(e.clipboardData);
+    loadMathML(mathML);
   }
   
   function handleEditorChange(e) {

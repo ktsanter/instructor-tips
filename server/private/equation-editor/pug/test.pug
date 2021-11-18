@@ -1,10 +1,16 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+
 doctype html
 html(lang="en")
   head
     title Equation test bed
     meta(charset="utf-8")
     meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
-        
+
+    +fontawesome()
+    +bootstrapstyle()  
+    
     style
       include ../styles/test.css
     
@@ -19,3 +25,7 @@ html(lang="en")
       .row
         .col-sm
           div(class="target" contenteditable="true")
+
+      .row(class="mt-2")
+        .col-sm
+          div(class="result")

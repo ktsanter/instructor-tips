@@ -5,10 +5,11 @@
 //-------------------------------------------------------------------
 class PngChunk {
   constructor(bytes) {
-    this.dataLength = this.getLength(bytes);
-    this.type = this.getType(bytes);
-    this.data = this.getData(bytes);
-    this.crc = this.getCRC(bytes);
+    this.dataLength = this._getLength(bytes);
+    this.type = this._getType(bytes);
+    this.data = this._getData(bytes);
+    this.crc = this._getCRC(bytes);
+    
     this.totalLength = this.dataLength + 12;
   }
 
@@ -19,27 +20,26 @@ class PngChunk {
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
-  getLength(bytes) {
+  _getLength(bytes) {
     return this._toNum(bytes.slice(0, 4));
   }
 
-  getType(bytes) {
+  _getType(bytes) {
     const type_byte = bytes.slice(4, 8);
     return (new TextDecoder("ascii")).decode(type_byte);
   }
 
-  getData(bytes) {
+  _getData(bytes) {
     return bytes.slice(8, 8 + this.dataLength);
   }
 
-  getCRC(bytes) {
+  _getCRC(bytes) {
     return bytes.slice(8 + this.dataLength, 8 + this.dataLength + 4);
   }
 
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  
   _toNum(bytes) {
     var hexString = '0x' + this._toHex(bytes);
     return parseInt(Number(hexString), 10);

@@ -6,82 +6,141 @@
 class PngImage {
   constructor(bytes) {
     this.content = bytes;
+    this.error = 'PngImage: unspecified error';
+    
+    this.size = bytes.length;
+    
+    this.chunks = {
+      "ihdr": {
+        chunk: null,
+        width: -1,
+        height: -1,
+        bitDepth: -1,
+        colorType: -1,
+        compressionMethod: -1,
+        filterMethod:  -1,
+        interlaceMethod: -1
+      },
+      
+      "phys": [],
+      "base": [],
+      "idat": [],
+      "text": [],
+      
+      "iend": {
+        chunk: null
+      },
+      
+      "other": []
+    }
 
-    this.ihdr = {
-      chunk: null,
-      width: -1,
-      height: -1,
-      bitDepth: -1,
-      colorType: -1,
-      compressionMethod: -1,
-      filterMethod:  -1,
-      interlaceMethod: -1
-    };
-    
-    this.phys = {
-      chunk: null,
-      pixelsPerUnitX: -1,
-      pixelsPerUnitY: -1,
-      unitSpecified: -1
-    };
-    
-    this.base = {
-      chunk: null
-    };
-    
-    this.idat = {
-      chunk: null
-    };
-    
-    this.text = {
-      chunk: null,
-      keyValuePairs: []
-    };
-    
-    this.iend = {
-      chunk: null
+
+    this.valid = this._validate(bytes);
+    if (!this.valid) {
+      this.error = 'PngImage: not a valid PNG image';
+      return;
     }
     
-    var magicNumberBytes = bytes.slice(0, 8);
-    var magicNumber = this._toHex(magicNumberBytes);
-    
-    if (magicNumber != '89504e470d0a1a0a') {
-      throw new Error('not a png file');
+    this.valid = this._parseData();
+    if (!this.valid) {
+      this.error = 'PngImage: failed to parse image';
+      return;
     }
   }
   
   //--------------------------------------------------------------
   // public methods
-  //--------------------------------------------------------------   
-  parseData() {
+  //-------------------------------------------------------------- 
+  static async fetchImageData(imageURL) {
+    try {
+      var httpResponse = await fetch(imageURL);
+      if (!httpResponse.ok) {
+        console.log('PngImage.fetchImageData error', 'failed to fetch');
+        return null;
+      }
+      var buffer = await httpResponse.arrayBuffer();
+      var bytes = new Uint8Array(buffer);
+      
+    } catch(err) {
+      console.log('PngImage.fetchImageData error', err);
+      return null;
+    }
+    
+    return bytes;
+  }
+  
+  getSize() {
+    if (!this.valid) return -1;
+    
+    return this.size;
+  }
+  
+  getChunks() {
+    if (!this.valid) return null;
+    
+    return this.chunks;
+  }
+  
+  getIhdr() {
+    if (!this.valid) return null;
+    
+    var ihdrCopy = { ...this.chunks.ihdr };
+    delete ihdrCopy.chunk;
+    
+    return ihdrCopy;
+  }
+  
+  getText() {
+    if (!this.valid) return null;
+    
+    var textArr = [];
+    for (var i = 0; i < this.chunks.text.length; i++) {
+      var textCopy = { ...this.chunks.text[i] };
+      delete textCopy.chunk;
+      textArr.push(textCopy);
+    }
+    
+    return textArr;
+  }
+  
+  //--------------------------------------------------------------
+  // private methods
+  //--------------------------------------------------------------  
+  _validate(bytes) {
+    var magicNumberBytes = bytes.slice(0, 8);
+    var magicNumber = this._toHex(magicNumberBytes);
+    
+    return magicNumber == '89504e470d0a1a0a';
+  }
+  
+  _parseData() {
     var pos = 8;
-    console.log('size', this.content.length);
     
     var success = true;
     
     while (pos < this.content.length && success) {
       var chunk = new PngChunk(this.content.slice(pos));
-      
+
       if (chunk.type == 'IHDR') {
-        success = this.processIhdrChunk(chunk);
+        success = this._processIhdrChunk(chunk);
         
       } else if (chunk.type == 'pHYs') {
-        success = this.processPhysChunk(chunk);
+        success = this._processPhysChunk(chunk);
         
       } else if (chunk.type == 'baSE') {
-        success = this.processBaseChunk(chunk);
+        success = this._processBaseChunk(chunk);
         
       } else if (chunk.type == 'IDAT') {
-        success = this.processIdatChunk(chunk);
+        success = this._processIdatChunk(chunk);
 
       } else if (chunk.type == 'tEXt') {
-        success = this.processTextChunk(chunk);
+        success = this._processTextChunk(chunk);
 
       } else if (chunk.type == 'IEND') {
-        success = this.processIendChunk(chunk);
+        success = this._processIendChunk(chunk);
 
       } else {
-        console.log('unprocessed chunk, type=' + chunk.type);
+        success = this._processOtherChunk(chunk);
       }
       
       pos += chunk.totalLength;
@@ -90,46 +149,46 @@ class PngImage {
     return success;
   }
 
-  processIhdrChunk(chunk) {
-    this.ihdr.chunk = chunk;
-    
-    this.ihdr.width = this._toNum(chunk.data.slice(0, 4));
-    this.ihdr.height = this._toNum(chunk.data.slice(4, 8));
-    this.ihdr.bitDepth = this._toNum(chunk.data.slice(8, 9));
-    this.ihdr.colorType = this._toNum(chunk.data.slice(9, 10));
-    this.ihdr.compressionMethod = this._toNum(chunk.data.slice(10, 11));
-    this.ihdr.filterMethod = this._toNum(chunk.data.slice(11, 12));
-    this.ihdr.interlaceMethod = this._toNum(chunk.data.slice(12, 13));
-    
-    return true;
-  }
-  
-  processPhysChunk(chunk) {
-    this.phys.chunk = chunk;
-    
-    this.phys.pixelsPerUnitX = this._toNum(chunk.data.slice(0, 4));
-    this.phys.pixelsPerUnitY = this._toNum(chunk.data.slice(4, 8));
-    this.phys.unitSpecified = this._toNum(chunk.data.slice(8, 9));
+  _processIhdrChunk(chunk) {
+    this.chunks.ihdr = {
+      "chunk": chunk,
+      "width": this._toNum(chunk.data.slice(0, 4)),
+      "height": this._toNum(chunk.data.slice(4, 8)),
+      "bitDepth": this._toNum(chunk.data.slice(8, 9)),
+      "colorType": this._toNum(chunk.data.slice(9, 10)),
+      "compressionMethod": this._toNum(chunk.data.slice(10, 11)),
+      "filterMethod": this._toNum(chunk.data.slice(11, 12)),
+      "interlaceMethod": this._toNum(chunk.data.slice(12, 13)),
+    }
     
     return true;
   }
   
-  processBaseChunk(chunk) {
-    this.base.chunk = chunk;
+  _processPhysChunk(chunk) {
+    this.chunks.phys.push({
+      "chunk": chunk
+    });
     
     return true;
   }
   
-  processIdatChunk(chunk) {
-    this.idat.chunk = chunk;
+  _processBaseChunk(chunk) {
+    this.chunks.base.push({
+      "chunk": chunk
+    });
     
     return true;
   }
   
-  processTextChunk(chunk) {
-    this.text.chunk = chunk;
+  _processIdatChunk(chunk) {
+    this.chunks.idat.push({
+      "chunk": chunk
+    });
     
-    var pairs = [];
+    return true;
+  }
+  
+  _processTextChunk(chunk) {
     var pos = 0;
     var delimIndex = chunk.data.indexOf(0x00, pos);
     var keyArr = chunk.data.slice(pos, delimIndex);
@@ -138,14 +197,26 @@ class PngImage {
     pos += keyArr.length + 1;
     var valueArr = chunk.data.slice(pos);
     var value = new TextDecoder().decode(valueArr);
-    
-    this.text.keyValuePairs.push([key, value]);    
+
+    this.chunks.text.push({
+      "chunk": chunk,
+      "key": key,
+      "value": value
+    });
     
     return true;
   }
   
-  processIendChunk(chunk) {
-    this.iend.chunk = chunk;
+  _processIendChunk(chunk) {
+    this.chunks.iend.chunk = chunk;
+    
+    return true;
+  }
+  
+  _processOtherChunk(chunk) {
+    this.chunks.other.push({
+      "chunk": chunk
+    });
     
     return true;
   }
@@ -153,16 +224,6 @@ class PngImage {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  _failResult(msg, methodName) {
-    if (methodName) msg += ' in ' + methodName;
-    
-    return {
-      success: false,
-      details: msg,
-      data: null
-    };
-  }
-  
   _toNum(bytes) {
     var hexString = '0x' + this._toHex(bytes);
     return parseInt(Number(hexString), 10);
