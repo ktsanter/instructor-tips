@@ -10,7 +10,17 @@ class FindMathML {
   
   //--------------------------------------------------------------
   // public methods
-  //-------------------------------------------------------------- 
+  //--------------------------------------------------------------
+  includesMathML(clipboardData) {
+    if (!clipboardData.types.includes('text/plain')) return false;
+    
+    var plainText = clipboardData.getData('text/plain');
+    var regexMathML = /<math[\s]+xmlns=.*>.+<\/math>/;
+    var matchMathML = plainText.match(regexMathML);
+    
+    return matchMathML != null;
+  }
+  
   async find(clipboardData) {
     var mathML = null;
     
@@ -33,19 +43,22 @@ class FindMathML {
   //--------------------------------------------------------------
   async _processHTML(html) {
     var imageURL = this._getImageURL(html);
-
     if (imageURL == null) return null;    
 
+/*
     var parsed = await this._parseImage(imageURL);
     if (!parsed.success) return null;
     
     var mathML = null;
     var textInfo = parsed.metadata.textinfo;
+
     for (var i = 0; i < textInfo.length && mathML == null; i++) {
       var item = textInfo[i];
       if (item.key == 'MathML') mathML = item.value
     }      
-    
+*/  
+    var mathML = this._mathMLFromPlainText(imageURL);
+
     return mathML;
   }
   
@@ -96,11 +109,11 @@ class FindMathML {
   _mathMLFromPlainText(plainText) {
     if (plainText.trim().length == 0) return null;
     
-    var searchFor = this.baseRenderURL;
-    var index = plainText.indexOf(searchFor);
-    if (index >= 0) {
-      var encoded = plainText.slice(index + searchFor.length);
-      return decodeURIComponent(encoded);
+    var searchFor = this.baseRenderURL.replace(/\//g, '\/');
+    var regexSearchFor = new RegExp(searchFor);
+    var matchSearchFor = plainText.match(regexSearchFor);
+    if (matchSearchFor != null) {                                                                     
+      plainText = decodeURIComponent(plainText);
     }
     
     var regexMathML = /<math .*>.+<\/math>/;

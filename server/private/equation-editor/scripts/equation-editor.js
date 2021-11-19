@@ -30,11 +30,7 @@ const app = function () {
   //-----------------------------------------------------------------------------
 	// page rendering
 	//-----------------------------------------------------------------------------
-  async function renderContents() {
-    page.pasteURL = page.body.getElementsByClassName('input-imageurl')[0];
-    page.pasteURL.disabled = true;
-    page.pasteURL.addEventListener('paste', (e) => { handlePaste(e); });
-    
+  async function renderContents() {    
     page.intermediateMathML = page.body.getElementsByClassName('area-mathml')[0];
     page.intermediateEncoded = page.body.getElementsByClassName('area-encoded')[0];
     
@@ -65,8 +61,6 @@ const app = function () {
 
     await settings.tiny.composer.init();
     triggerComposer(page.body.getElementsByClassName('contenteditor-composer-container')[0]);
-    
-    page.pasteURL.disabled = false;
   }
 
   function triggerComposer(appendToContainer) {
@@ -82,14 +76,19 @@ const app = function () {
     acceptButton.style.fontSize = '90%';
 
     var cancelButton = composerDialog.getElementsByClassName('wrs_modal_button_cancel')[0];
-    UtilityKTS.setClass(cancelButton, settings.hideClass, true);
+    UtilityKTS.setClass(cancelButton, settings.hideClass, true);    
+
+    setTimeout(function() {
+      console.log('ready');
+      var formulaDisplay = page.body.getElementsByClassName('wrs_formulaDisplay')[0];
+      formulaDisplay.addEventListener('paste', (e) => { handlePaste(e); });
+    }, 400);
   }
   
   //-----------------------------------------------------------------------------
 	// updating
 	//-----------------------------------------------------------------------------
   function fullConversion() {
-    message();
     if (!prepForConversion(false)) return;
     
     doConversion();
@@ -97,20 +96,12 @@ const app = function () {
   }
   
   function loadMathML(mathML) {
+    if (mathML == null) return;
+
     var composerDialog = page.body.getElementsByClassName('wrs_modal_desktop')[0];
     var acceptButton = composerDialog.getElementsByClassName('wrs_modal_button_accept')[0];
-    message();
 
     prepForConversion(true);
-
-    if (mathML == null) {
-      UtilityKTS.setClass(page.body, 'busy', false);
-      UtilityKTS.setClass(acceptButton, 'busy', false);
-      acceptButton.disabled = false;
-      page.pasteURL.disabled = false;
-      message('invalid equation info');
-      return;
-    }
     
     settings.tiny.composer.setContent(mathML);
     var ed = settings.tiny.composer.getObj();
@@ -120,16 +111,13 @@ const app = function () {
       settings.tiny.composer.triggerButton('math-formula');
       UtilityKTS.setClass(page.body, 'busy', false);
       UtilityKTS.setClass(acceptButton, 'busy', false);
-      page.pasteURL.value = '';
       acceptButton.disabled = false;
-      page.pasteURL.disabled = false;
     }, 200);
   }
 
   function prepForConversion(ignoreEmpty) {
     UtilityKTS.setClass(page.resultContainer, settings.hideClass, true);
     UtilityKTS.setClass(page.resultButtonsContainer, settings.hideClass, true);
-    page.pasteURL.disabled = true;
 
     page.resultImage.src = settings.blankImageSrc;
     page.intermediateMathML.value = '';
@@ -143,8 +131,6 @@ const app = function () {
     if (mathML.trim().length == 0 && !ignoreEmpty) {
       settings.tiny.composer.setContent('');
       acceptButton.disabled = false;
-      page.pasteURL.disabled = false;
-      page.pasteURL.value = '';
       return false;
     }
     
@@ -180,34 +166,69 @@ const app = function () {
       UtilityKTS.setClass(page.body, 'busy', false);
       UtilityKTS.setClass(acceptButton, 'busy', false);
       acceptButton.disabled = false;
-      page.pasteURL.value = '';      
-      page.pasteURL.disabled = false; 
-
+  
       UtilityKTS.setClass(page.resultContainer, settings.hideClass, false);
       UtilityKTS.setClass(page.resultButtonsContainer, settings.hideClass, false);
     }, 200);
   }
   
-  function parseURL(url) {
-    console.log('parseURL', url);
-    if (url.trim().length == 0) return null;
+  function firePasteEvent(sourceElement, mathML, postTriggerUndo) {
+    console.log('***dispatching', mathML, postTriggerUndo);
+    var dt = new DataTransfer();
+    dt.setData('text/plain', mathML);
+    dt.setData('text/html', mathML);
+
+    var ev = new Event('paste', {bubbles: true});
+    ev.clipboardData = dt;
+    ev.asOneShot = true;
+    ev.asPostTriggerUndo = postTriggerUndo;
     
-    var searchFor = settings.baseRenderURL;
-    var index = url.indexOf(searchFor);
-    if (index < 0) return null;
-    
-    var encoded = url.slice(index + searchFor.length);
-    return decodeURIComponent(encoded);
+    sourceElement.dispatchEvent(ev);    
   }
 
+  function triggerUndo() {
+    console.log('triggerUndo');
+    var composerDialog = page.body.getElementsByClassName('wrs_modal_desktop')[0];
+    var buttons = composerDialog.getElementsByTagName('button');
+    var undoButton = null;
+
+    var titles = [];
+    for (var i = 0; i < buttons.length; i++) {
+      if (buttons[i].title == 'Undo') undoButton = buttons[i];
+    }
+    
+    undoButton.click();
+  }
+  
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
   async function handlePaste(e) {
+    console.log(e);
     e.preventDefault();
+    e.stopPropagation();
     
+    if (e.hasOwnProperty('asOneShot')) {
+      console.log('***one shot - cancelling');
+      if (e.asPostTriggerUndo) setTimeout(() => { triggerUndo(); }, 2000);
+      return false;
+    }
+
+    var includesMathML = settings.mathMLFinder.includesMathML(e.clipboardData);
+    if (includesMathML) {
+      console.log('*** no dispatch');
+      return true;
+    }
+
     var mathML = await settings.mathMLFinder.find(e.clipboardData);
-    loadMathML(mathML);
+    if (mathML == null) {
+      console.log('*** no MathML - bailing');
+      return false;
+    }
+    
+    firePasteEvent(e.target, mathML, e.clipboardData.types.includes('Files'));
+    
+    return false;
   }
   
   function handleEditorChange(e) {
