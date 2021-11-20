@@ -1178,11 +1178,6 @@ app.get('/equations/editor', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.get('/equations/test', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'equation-editor/pug/test.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
-})
-
 app.get('/equations/render/:info', function (req, res) {
   req.params.queryName = 'render';
   req.params.callback = function(result) {

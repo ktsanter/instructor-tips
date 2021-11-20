@@ -3,6 +3,7 @@
  *------------------------------------------------------------------------------*/
 .colorscheme {
   --bgPrimary: #778e9a;
+  --bgDisabled: rgba(119, 142, 154, 0.3);
 }
 
 body {
@@ -76,4 +77,8 @@ body {
 
 .wrs_modal_button_accept.busy:hover {
   cursor: progress !important;
+}
+
+.wrs_handWrapper input:disabled {
+  background-color: var(--bgDisabled) !important;
 }

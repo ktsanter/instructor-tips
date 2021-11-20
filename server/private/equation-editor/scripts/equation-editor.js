@@ -76,13 +76,19 @@ const app = function () {
     acceptButton.style.fontSize = '90%';
 
     var cancelButton = composerDialog.getElementsByClassName('wrs_modal_button_cancel')[0];
-    UtilityKTS.setClass(cancelButton, settings.hideClass, true);    
+    UtilityKTS.setClass(cancelButton, settings.hideClass, true);   
 
     setTimeout(function() {
       console.log('ready');
-      var formulaDisplay = page.body.getElementsByClassName('wrs_formulaDisplay')[0];
-      formulaDisplay.addEventListener('paste', (e) => { handlePaste(e); });
-    }, 400);
+      var focusElement = page.body.getElementsByClassName('wrs_focusElement')[0];
+      focusElement.addEventListener('paste', (e) => { handlePaste(e); });
+
+      var contextualTab = composerDialog.getElementsByClassName('wrs_context')[0];
+      contextualTab.style.display = 'none';      
+      
+      var handButton = composerDialog.getElementsByClassName('wrs_handWrapper')[0].getElementsByTagName('input')[0];
+      handButton.disabled = true;
+    }, 1000);
   }
   
   //-----------------------------------------------------------------------------
@@ -172,8 +178,8 @@ const app = function () {
     }, 200);
   }
   
-  function firePasteEvent(sourceElement, mathML, postTriggerUndo) {
-    console.log('***dispatching', mathML, postTriggerUndo);
+  function dispatchPasteEvent(sourceElement, mathML, postTriggerUndo) {
+    console.log('***dispatching paste event'); //, mathML, postTriggerUndo);
     var dt = new DataTransfer();
     dt.setData('text/plain', mathML);
     dt.setData('text/html', mathML);
@@ -187,7 +193,10 @@ const app = function () {
   }
 
   function triggerUndo() {
-    console.log('triggerUndo');
+    console.log('***triggering undo');
+    console.log('stubbed');
+    return;
+    
     var composerDialog = page.body.getElementsByClassName('wrs_modal_desktop')[0];
     var buttons = composerDialog.getElementsByTagName('button');
     var undoButton = null;
@@ -204,29 +213,44 @@ const app = function () {
   // handlers
 	//--------------------------------------------------------------------------
   async function handlePaste(e) {
+    /**/
     console.log(e);
-    e.preventDefault();
-    e.stopPropagation();
+    var types = e.clipboardData.types;
+    console.log('types', types);
+    if (types.includes('text/plain')) console.log('text/plain', e.clipboardData.getData('text/plain'));
+    if (types.includes('text/html')) console.log('text/html', e.clipboardData.getData('text/html'));
+    /**/
     
     if (e.hasOwnProperty('asOneShot')) {
       console.log('***one shot - cancelling');
+      e.preventDefault();
+      e.stopPropagation();    
       if (e.asPostTriggerUndo) setTimeout(() => { triggerUndo(); }, 2000);
       return false;
     }
 
+    UtilityKTS.setClass(page.resultContainer, settings.hideClass, true);
+    UtilityKTS.setClass(page.resultButtonsContainer, settings.hideClass, true);
+
+    if (e.clipboardData.types.includes('Files')) {
+      console.log('figure out way to cancel original paste');
+    }
+    
     var includesMathML = settings.mathMLFinder.includesMathML(e.clipboardData);
     if (includesMathML) {
-      console.log('*** no dispatch');
+      console.log('*** MathML, pasting as-is');
       return true;
     }
 
     var mathML = await settings.mathMLFinder.find(e.clipboardData);
     if (mathML == null) {
-      console.log('*** no MathML - bailing');
-      return false;
+      console.log('*** no MathML, pasting as-is');
+      return true;
     }
     
-    firePasteEvent(e.target, mathML, e.clipboardData.types.includes('Files'));
+    e.preventDefault();
+    e.stopPropagation();    
+    dispatchPasteEvent(e.target, mathML, e.clipboardData.types.includes('Files'));
     
     return false;
   }
