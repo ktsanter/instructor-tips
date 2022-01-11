@@ -1,0 +1,51 @@
+mixin configureContainer()
+  .row
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") required
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              label(for="file-upload-enrollment" class="uploadfile-label uploadfile-label-enrollment btn btn-secondary" title="upload SLP Enrollments exported spreadsheet") enrollment
+              input(type="file" class="uploadfile uploadfile-enrollment" id="file-upload-enrollment" accept=".xlsx")
+              span(class="upload-result enrollment ms-3")
+              
+    .col-sm
+      fieldset(class="border configure-fieldset optional pb-2")
+        legend(class="w-auto") optional
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              label(for="file-upload-mentor" class="uploadfile-label uploadfile-label-mentor btn btn-secondary" title="upload \"List of Students Mentor and Guardian\" SLP report") mentor/guardian
+              input(type="file" class="uploadfile uploadfile-mentor" id="file-upload-mentor" accept=".xlsx")
+              span(class="upload-result mentor ms-3")
+
+          .row(class="mb-1")
+            .col-sm
+              label(for="file-upload-flags" class="uploadfile-label uploadfile-label-flags btn btn-secondary" title="upload \"Student with Flags (Home School, IEP, 504)\" SLP report") students with flags
+              input(type="file" class="uploadfile uploadfile-flags" id="file-upload-flags" accept=".xlsx")
+              span(class="upload-result studentflags ms-3")
+
+          .row(class="mb-1 hide-me")
+            .col-sm
+              label(for="file-upload-iep" class="uploadfile-label uploadfile-label-iep btn btn-secondary" title="choose IEP report file to upload and process") IEP
+              input(type="file" class="uploadfile uploadfile-iep" id="file-upload-iep" accept=".xlsx")
+              span(class="upload-result iep ms-3")
+
+          .row(class="mb-1 hide-me")
+            .col-sm
+              label(for="file-upload-504" class="uploadfile-label uploadfile-label-504 btn btn-secondary" title="choose 504 report file to upload and process") 504
+              input(type="file" class="uploadfile uploadfile-504" id="file-upload-504" accept=".xlsx")
+              span(class="upload-result 504 ms-3")
+
+          .row(class="mb-1 hide-me")
+            .col-sm
+              label(for="file-upload-homeschooled" class="uploadfile-label uploadfile-label-homeschooled btn btn-secondary" title="choose home schooled report file to upload and process") home schooled
+              input(type="file" class="uploadfile uploadfile-homeschooled" id="file-upload-homeschooled" accept=".xlsx")
+              span(class="upload-result homeschooled ms-3")
+
+  .row(class="py-2")
+    .col-sm
+      .changed-data

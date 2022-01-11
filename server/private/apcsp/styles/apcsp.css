@@ -1,0 +1,62 @@
+/*------------------------------------------------------------------------------
+ * AP CS Principles resources
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+}
+
+body {
+}
+
+.hide-me {
+  display: none;
+}
+
+
+/*------------------------------------------------------------------------------
+ * contents
+ *------------------------------------------------------------------------------*/
+.contents {}
+
+/*------------------------------------------------------------------------------
+ * title
+ *------------------------------------------------------------------------------*/
+.title {
+  color: white;
+  background-color: var(--bgPrimary);
+  padding-left: 0.3em;
+}
+
+/*------------------------------------------------------------------------------
+ * resources
+ *------------------------------------------------------------------------------*/
+.resource-container {
+  margin-left: 0.3em;
+}
+
+/*------------------------------------------------------------------
+ * standard error and notice
+ *------------------------------------------------------------------*/
+.standard_error {
+  display: none;
+  font-style: italic;
+  color: blue;
+  margin-bottom: 0.4em;;
+}
+
+.standard-notice { 
+  display: inline-block;
+  font-size: 1em;
+  font-style: italic;
+  margin-left: 1.0em;
+  margin-right: 0.2em;
+}
+
+#noticeSpinner {
+  font-size: 0.9em;
+  margin-left: 0.2em;
+  margin-right: 0.2em;
+}
+/*-- end of standard notice and error --*/

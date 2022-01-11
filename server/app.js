@@ -1140,6 +1140,15 @@ app.get('/basic-web-design/:app', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
+app.get('/apcsp', function (req, res) {
+  res.redirect('/apcsp/home');
+})
+
+app.get('/apcsp/:app', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'apcsp/pug/' + req.params.app + '.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
 app.get('/countdown/:app', function (req, res) {
   const appParams = {params: url.parse(req.url,true).query};
   

@@ -1,0 +1,28 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+
+//include ./mixins/mixins-admin.pug
+
+doctype html
+html(lang="en")
+  head
+    title binary conversion
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+    
+    style
+      include ../styles/binary-conversion.css
+    
+    +addJQuery()
+    script(data-main="/scripts/apcsp/require_binary-conversion", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    .contents
+      .error-container
+      
+      .title binary conversion
+ 
