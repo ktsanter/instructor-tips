@@ -2,7 +2,20 @@ include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 
-//include ./mixins/mixins-admin.pug
+mixin placeValueBinary(exponent)
+  .app-col(class="placeval binary-value")
+    span(class="placeval-binary-base") 2 
+    span(class="placeval-binary-exponent")= exponent
+
+mixin placeValueDecimal(decimalValue)
+  .app-col(class="placeval decimal-value")
+    span= decimalValue
+
+mixin bitSelector(groupName, exponent)
+  - var inputId = "bit-selector" + groupName + exponent
+  .app-col(class="placeval selector-container")
+    input(type="checkbox" class="selector btn-check" id=inputId, autocomplete="off")
+    label(class="selector-label btn btn-outline-primary" for=inputId) 0
 
 doctype html
 html(lang="en")
@@ -25,4 +38,44 @@ html(lang="en")
       .error-container
       
       .title binary conversion
- 
+      
+      .header
+        .prompt click on a bit to toggle its value
+        .controls
+            div(class="form-check form-switch")
+              input(class="form-check-input switch-decimal" type="checkbox" id="flexSwitchCheckDefault")
+              label(class="form-check-label" for="flexSwitchCheckDefault") include decimal values
+        
+      .app(class="integer hide-me")
+        .app-row
+          each exponent in [7, 6, 5, 4, 3, 2, 1, 0]
+            +placeValueBinary(exponent)
+
+        .app-row
+          each decimalValue in [128, 64, 32, 16, 8, 4, 2, 1]
+            +placeValueDecimal(decimalValue)
+
+        .app-row(class="selector-container")
+          each exponent in [7, 6, 5, 4, 3, 2, 1, 0]
+            +bitSelector("integer", exponent)
+            
+      .app(class="decimal hide-me")
+        .app-row
+          each exponent in [5, 4, 3, 2, 1, 0, -1, -2]
+            +placeValueBinary(exponent)
+
+        .app-row
+          each decimalValue in [32, 16, 8, 4, 2, 1, 0.5, 0.25]
+            +placeValueDecimal(decimalValue)
+
+        .app-row(class="selector-container")
+          each exponent in [5, 4, 3, 2, 1, 0, -1, -2]
+            +bitSelector("decimal", exponent)
+                    
+      .placevalue-summary(class="form-floating mb-3")
+        input(type="text" class="summary form-control" id="placeValueSummary" placeholder=" " value=" ")
+        label(for="placeValueSummary") place value summary
+            
+      .decimal-result(class="form-floating mb-3")
+        input(type="text" class="result form-control" id="floatingInput" placeholder=" " value="0")
+        label(for="floatingInput") decimal result
