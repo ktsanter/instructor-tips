@@ -112,14 +112,14 @@ body {
  * results
  *------------------------------------------------------------------------------*/
 .placevalue-summary {
-  width: 32.0em;
+  width: 24.0em;
   margin-top: 0.3em;
   margin-bottom: 0rem !important;
   padding-left: 0.2em;
 }
 
 .decimal-result {
-  width: 32.0em;
+  width: 24.0em;
   margin-top: 0.2em;
   margin-bottom: 0rem !important;
   padding-left: 0.2em;
