@@ -990,11 +990,6 @@ app.get('/scripts/:scriptfile', function (req, res) {
 //------------------------------------------------------
 // app specific scripts, CSS, and pug
 //------------------------------------------------------
-app.get('/binary-conversion/:mode', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'binary-conversion/pug/binary-conversion.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});
-})
-
 app.get('/slidedeck-sizer', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'slidedeck-sizer/pug/slidedeck-sizer.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {mode: req.params.mode}});
