@@ -78,6 +78,15 @@ body {
   margin-left: -0.3em;
 }
 
+.app .radix-point {
+  display: inline-block;
+  transform: translateY(0.5em);
+}
+
+.app .radix-point.radix-point-selector{
+  transform: translateY(0.8em);
+}
+
 .app .selector-container {
   margin-top: 0.1em;
 }

@@ -17,6 +17,12 @@ mixin bitSelector(groupName, exponent)
     input(type="checkbox" class="selector btn-check" id=inputId, autocomplete="off")
     label(class="selector-label btn btn-outline-primary" for=inputId) 0
 
+mixin radixPoint()
+  .radix-point() &bull;
+  
+mixin radixPointSelector()
+  .radix-point-selector(class="radix-point") &bull;
+  
 doctype html
 html(lang="en")
   head
@@ -63,14 +69,20 @@ html(lang="en")
         .app-row
           each exponent in [5, 4, 3, 2, 1, 0, -1, -2]
             +placeValueBinary(exponent)
+            if exponent == 0
+              +radixPoint()
 
         .app-row
           each decimalValue in [32, 16, 8, 4, 2, 1, 0.5, 0.25]
             +placeValueDecimal(decimalValue)
+            if decimalValue == 1
+              +radixPoint()
 
         .app-row(class="selector-container")
           each exponent in [5, 4, 3, 2, 1, 0, -1, -2]
             +bitSelector("decimal", exponent)
+            if exponent == 0
+              +radixPointSelector()
                     
       .placevalue-summary(class="form-floating mb-3")
         input(type="text" class="summary form-control" id="placeValueSummary" placeholder=" " value=" ")
