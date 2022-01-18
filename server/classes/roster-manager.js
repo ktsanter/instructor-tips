@@ -362,7 +362,7 @@ module.exports = internal.RosterManager = class {
     var uploadedGuardianData = result.data.guardians
     var currentMentorData = currentRosterData.raw_mentor_data;
     var currentGuardianData = currentRosterData.raw_guardian_data;
-
+    
     var mentorDifferences = thisObj._findDifferences(thisObj, currentMentorData, uploadedMentorData, 
       (item) => {return item.student + '\t' + item.term + '\t' + item.section + '\t' + item.name}
     );
@@ -599,13 +599,13 @@ module.exports = internal.RosterManager = class {
     });
     
     var mentors = entries.filter(function(item) { return item.role == 'MENTOR' } );
-    mentors = thisObj._removeDuplicates(mentors, function(item) { return item.student + '\t' + item.name; });
+    mentors = thisObj._removeDuplicates(mentors, function(item) { return item.student + '\t' + item.name + '\t' + item.term + '\t' + item.section; });
     for (var i = 0; i < mentors.length; i++) {
       delete mentors[i].role;
     }
     
     var guardians = entries.filter(function(item) { return item.role == 'GUARDIAN' } );
-    guardians = thisObj._removeDuplicates(guardians, function(item) { return item.student + '\t' + item.name; });
+    guardians = thisObj._removeDuplicates(guardians, function(item) { return item.student + '\t' + item.name + '\t' + item.term + '\t' + item.section; });
     for (var i = 0; i < guardians.length; i++) {
       delete guardians[i].role;
     }
