@@ -335,6 +335,7 @@ const app = function () {
     var extraMentorInfo = result.data.mentorextra;
 
     settings.currentInfo = _packageStudentInfo(rosterInfo, extraStudentInfo);
+
     settings.currentMentorInfo = _packageMentorInfo(rosterInfo, extraStudentInfo, extraMentorInfo);
     settings.currentRawInfo = {
       "rosterInfo": rosterInfo,
@@ -474,7 +475,7 @@ const app = function () {
 
     var studentList = [];
     for (var key in students) studentList.push(key);
-    
+  
     return {
       "students": students,
       "studentList": studentList.sort()
@@ -774,7 +775,21 @@ const app = function () {
     var value = params.value;
     var student = params.student;
     
-    settings.currentInfo.students[student][property] = value;
+    if (property == 'welcomeletter') {
+      var term = params.term;
+      var section = params.section;
+      
+      var enrollments = settings.currentInfo.students[student].enrollments;
+      for (var i = 0; i < enrollments.length; i++) {
+        var item = enrollments[i];
+        if (item.term == term && item.section == section) {
+          item.welcomeletter = params.welcomeletter;
+        }
+      }
+
+    } else {
+      settings.currentInfo.students[student][property] = value;
+    }
     settings.rosterViewer.update(settings.currentInfo);
     
     return result;

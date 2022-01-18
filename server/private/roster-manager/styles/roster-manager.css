@@ -204,16 +204,25 @@ body {
   padding-left: 0.1em;
 }
 
+.contents .contents-navStudent td
+{
+ max-width: 0;
+ overflow: hidden;
+ text-overflow: ellipsis;
+ white-space: nowrap;
+}
+
 .contents .contents-navStudent .roster-headercol {}
-.contents .contents-navStudent .roster-headercol.roster-headercol-student      { width: 15%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-section      { width: 25%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-startdate    { width: 7%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-enddate      { width: 7%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-iep          { width: 5%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-504          { width: 5%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-homeschooled { width: 6%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-hascoach     { width: 6%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-term         { }
+.contents .contents-navStudent .roster-headercol.roster-headercol-student       { width: 15%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-section       { width: 25%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-startdate     { width: 7%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-enddate       { width: 7%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-iep           { width: 5%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-504           { width: 5%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-homeschooled  { width: 6%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-hascoach      { width: 6%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-term          { }
+.contents .contents-navStudent .roster-headercol.roster-headercol-welcomeletter { width: 9%; }
 
 .contents-navStudent .icon-copyemail {
   color: var(--bgPrimary);

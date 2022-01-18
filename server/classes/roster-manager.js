@@ -1180,7 +1180,7 @@ module.exports = internal.RosterManager = class {
     
     queryList = {
       "raw_enrollment_data":
-        'select e.student, e.term, e.section, e.startdate, e.enddate, e.email, e.affiliation ' +
+        'select e.student, e.term, e.section, e.startdate, e.enddate, e.email, e.affiliation, e.welcomeletter ' +
         'from enrollment as e ' +
         'where e.userid = ' + userInfo.userId,
         
@@ -1263,6 +1263,16 @@ module.exports = internal.RosterManager = class {
             '"' + postData.value + '"' +
           ') '
       };
+      
+    } else if (postData.property == 'welcomeletter') {
+      queryList = {
+        "welcome": 
+          'update enrollment ' +
+          'set welcomeletter = ' + postData.welcomeletter + ' ' +
+          'where term = "' + postData.term + '" ' +
+            'and section = "' + postData.section + '" ' +
+            'and student = "' + postData.student + '" '
+      }
       
     } else {
       result.details = 'invalid property: ' + postData.property;

@@ -76,7 +76,7 @@ class RosterViewer {
     noteButton = this.config.containerNoteEditor.getElementsByClassName('button-editor-cancel')[0];
     noteButton.addEventListener('click', (e) => { this._finishNoteEdit(false); });
     
-    this.settings.filterControls = this._createFilterControls(['section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term']);
+    this.settings.filterControls = this._createFilterControls(['section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomeletter']);
 
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
   }
@@ -114,8 +114,8 @@ class RosterViewer {
     var studentList = this.settings.currentInfo.studentList;
     var rosterInfo = this._filterAndSortRoster(this.settings.currentInfo.students);
     
-    var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'coach', 'term'];
-    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term'];
+    var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'coach', 'term', 'welcome'];
+    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomeletter'];
     var tableClasses = 'table table-striped table-hover table-sm';
     
     var table = CreateElement.createTable(null, tableClasses, headerArray, []);
@@ -150,12 +150,14 @@ class RosterViewer {
       var cell = CreateElement._createElement('td', 'test1', 'student-from-roster');
       row.appendChild(cell);
       cell.innerHTML = studentName;
+      cell.title = studentName;
       cell.setAttribute('filter-value', studentName);
       cell.addEventListener('click', (e) => { this._handleRosterSelect(e); });
 
       cell = CreateElement._createElement('td', null, null);
       row.appendChild(cell);
       cell.innerHTML = rosterItem.section;
+      cell.title = rosterItem.section;
       cell.setAttribute('filter-value', rosterItem.section);
       
       cell = CreateElement._createElement('td', null, null);
@@ -209,8 +211,19 @@ class RosterViewer {
       cell = CreateElement._createElement('td', null, null);
       row.appendChild(cell);
       cell.innerHTML = rosterItem.term;
+      cell.title = rosterItem.term;
       cell.setAttribute('filter-value', rosterItem.term);
 
+      var checkVal = JSON.stringify(rosterItem);
+      var checked = rosterItem.welcomeletter
+      var handler = (e) => { this._handleStudentWelcomeClick(e); };
+
+      var cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      var check = CreateElement.createCheckbox(null, 'student-welcome-control', 'student-welcome', checkVal, '', checked, handler);
+      check.getElementsByTagName('input')[0].classList.add('form-check-input');      
+      check.getElementsByTagName('input')[0].classList.add('ms-4');
+      cell.appendChild(check);      
     }
     
     this._attachFilterControls(table);
@@ -394,6 +407,7 @@ class RosterViewer {
     for (var i = 0; i < headerNodes.length; i++) {
       var node = headerNodes[i];
       var fieldName = node.getAttribute('field-name');
+      
       if (this.settings.filterControls.hasOwnProperty(fieldName)) {
         this.settings.filterControls[fieldName].attachTo(node, true);
       }
@@ -655,6 +669,20 @@ class RosterViewer {
     }
   }
 
+  async _saveStudentWelcomeSetting(target) {
+    var rosterItem = JSON.parse(target.value);
+
+    var params = {
+      "property": "welcomeletter",
+      "term": rosterItem.term,
+      "section": rosterItem.section,
+      "student": rosterItem.student,
+      "welcomeletter": target.checked
+    };
+
+    var result = await this.config.callbackPropertyChange(params);   
+  }
+  
   async _doPropertyEdit(label, property, targetElement) {
     var currentValue = targetElement.innerHTML;
 
@@ -801,6 +829,13 @@ class RosterViewer {
       this._deleteNote(student, item);
     }
   }
+  
+  async _handleStudentWelcomeClick(e) {
+    await this._saveStudentWelcomeSetting(e.target);
+    this._updateUI();
+  }
+  
+  
   
   _copyEmailsToClipboard(emails) {
     this._copyToClipboard(emails);

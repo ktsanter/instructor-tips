@@ -24,6 +24,7 @@ create table enrollment
   enddate          varchar(30) not null,
   email            varchar(200) not null,
   affiliation      varchar(200) not null,
+  welcomeletter    int unsigned not null,
   
   primary key (enrollmentid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
