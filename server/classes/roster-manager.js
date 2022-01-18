@@ -947,7 +947,12 @@ module.exports = internal.RosterManager = class {
 
   _writeStudentDataToWorkbook(studentData, workbook) {
     var sheet = workbook.addWorksheet('students');
-    sheet.addRow(['student', 'term', 'section', 'start date', 'end date', 'enrollment end date', 'email', 'affiliation', 'preferred', 'IEP', '504', 'homeshcooled', 'notes']);
+    sheet.addRow([
+      'student', 'term', 'section', 'start date', 'end date', 'enrollment end date', 
+      'email', 'affiliation', 'preferred', 
+      'IEP', '504', 'homeshcooled', 'welcome', 
+      'notes'
+    ]);
     sheet.getRow(1).font = {bold: true};
     sheet.getRow(1).fill = {type: 'pattern', pattern:'solid', fgColor:{argb:'CCCCCCCC'}};
 
@@ -964,6 +969,7 @@ module.exports = internal.RosterManager = class {
       {width: 8, style: {alignment: {vertical: 'top', horizontal: 'center'}}}, 
       {width: 8, style: {alignment: {vertical: 'top', horizontal: 'center'}}}, 
       {width: 13, style: {alignment: {vertical: 'top', horizontal: 'center'}}},
+      {width: 10, style: {alignment: {vertical: 'top', horizontal: 'center'}}},
       {width: 60, style: {alignment: {vertical: 'top'}}}
     ]
 
@@ -986,9 +992,12 @@ module.exports = internal.RosterManager = class {
           enrollment.email,
           enrollment.affiliation,
           studentItem.preferredname,
-          studentItem.iep,
-          studentItem["504"],
-          studentItem.homeschooled
+          studentItem.iep ? '☑️' : '',
+          studentItem["504"] ? '☑️' : '',
+//          mentorItem.welcomelettersent ? '☑️' : '',
+
+          studentItem.homeschooled ? '☑️' : '',
+          enrollment.welcomeletter ? '☑️' : ''
         ];
         
         var notesCombined = ''
