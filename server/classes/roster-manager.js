@@ -1213,6 +1213,11 @@ module.exports = internal.RosterManager = class {
     queryResults = await this._dbManager.dbQueries(queryList); 
     
     if (queryResults.success) {
+      for (var i = 0; i < queryResults.data.raw_enrollment_data.length; i++) {
+        var item = queryResults.data.raw_enrollment_data[i];
+        item.welcomeletter = (item.welcomeletter == 1);
+      }
+      
       result.success = true;
       result.details = 'query succeeded';
       result.data = queryResults.data;

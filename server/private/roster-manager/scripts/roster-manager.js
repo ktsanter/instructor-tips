@@ -789,8 +789,8 @@ const app = function () {
 
     } else {
       settings.currentInfo.students[student][property] = value;
+      settings.rosterViewer.update(settings.currentInfo);
     }
-    settings.rosterViewer.update(settings.currentInfo);
     
     return result;
   }

@@ -680,7 +680,8 @@ class RosterViewer {
       "welcomeletter": target.checked
     };
 
-    var result = await this.config.callbackPropertyChange(params);   
+    var result = await this.config.callbackPropertyChange(params);
+   
   }
   
   async _doPropertyEdit(label, property, targetElement) {
