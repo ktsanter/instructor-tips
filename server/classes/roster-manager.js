@@ -266,6 +266,7 @@ module.exports = internal.RosterManager = class {
 // private methods - file processing
 //--------------------------------------------------------------- 
   async _processExcelFile(req, res, uploadType, userInfo) {
+    console.log('_processExcelFile', uploadType);
     var thisObj = this;
     
     var dbResult = await thisObj._getRosterInfo(null, null, userInfo);
@@ -274,6 +275,7 @@ module.exports = internal.RosterManager = class {
       return;
     }
     var currentRosterData = dbResult.data;
+    console.log('currentRosterData', currentRosterData);
 
     var form = new this._formManager.IncomingForm();
     form.parse(req, async function(err, fields, files) {
@@ -284,7 +286,7 @@ module.exports = internal.RosterManager = class {
       
       var origFileName = files.file.name;
       var filePath = files.file.path;
-      
+      console.log(origFileName, filePath);
       const exceljs = require('exceljs');
       var workbook = new exceljs.Workbook();
       await workbook.xlsx.readFile(filePath);
@@ -318,6 +320,7 @@ module.exports = internal.RosterManager = class {
   // process specific Excel file
   //----------------------------------------------------------------------
   async _processEnrollmentFile(res, thisObj, worksheet, currentRosterData, userInfo) {    
+    console.log('_processEnrollmentFile');
     var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Enrollment);
     if (!validate.success) {
       thisObj._sendFail(res, 'missing one or more required columns');
@@ -337,7 +340,7 @@ module.exports = internal.RosterManager = class {
     
     var result = await thisObj._postExcelData(thisObj, 'enrollment', uploadedData, userInfo);
     if (!result.success) {
-      thisObj._sendFail(res, '** failed to post values');
+      thisObj._sendFail(res, '** failed to post enrollment values');
       return;
     }
     
@@ -372,13 +375,13 @@ module.exports = internal.RosterManager = class {
     
     var result = await thisObj._postExcelData(thisObj, 'mentor', uploadedMentorData, userInfo);
     if (!result.success) {
-      thisObj._sendFail(res, '** failed to post values');
+      thisObj._sendFail(res, '** failed to post mentor values');
       return;
     }
     
     var result = await thisObj._postExcelData(thisObj, 'guardian', uploadedGuardianData, userInfo);
     if (!result.success) {
-      thisObj._sendFail(res, '** failed to post values');
+      thisObj._sendFail(res, '** failed to post guardian values');
       return;
     }
     
@@ -453,7 +456,7 @@ module.exports = internal.RosterManager = class {
     
     var result = await thisObj._postExcelData(thisObj, 'iep', uploadedData, userInfo);
     if (!result.success) {
-      thisObj._sendFail(res, '** failed to post values');
+      thisObj._sendFail(res, '** failed to post IEP values');
       return;
     }
     
@@ -483,7 +486,7 @@ module.exports = internal.RosterManager = class {
     
     var result = await thisObj._postExcelData(thisObj, 'student504', uploadedData, userInfo);
     if (!result.success) {
-      thisObj._sendFail(res, '** failed to post values');
+      thisObj._sendFail(res, '** failed to post 504 values');
       return;
     }
     
@@ -513,7 +516,7 @@ module.exports = internal.RosterManager = class {
     
     var result = await thisObj._postExcelData(thisObj, 'homeschooled', uploadedData, userInfo);
     if (!result.success) {
-      thisObj._sendFail(res, '** failed to post values');
+      thisObj._sendFail(res, '** failed to post homeschooled values');
       return;
     }
     
@@ -814,6 +817,7 @@ module.exports = internal.RosterManager = class {
   // post uploaded Excel data to DB
   //------------------------------------------------------------
   async _postExcelData(thisObj, dataName, data, userInfo) {
+    console.log('_postExcelData', dataName);
     var result = thisObj._dbManager.queryFailureResult(); 
     var queryList, queryResults;
     
@@ -833,7 +837,7 @@ module.exports = internal.RosterManager = class {
     } 
 
     queryResults = await this._dbManager.dbQueries(queryList); 
-
+    console.log(queryResults);
     if (!queryResults.success) {
       result.details = 'failed to delete old ' + dataName + ' data for user';
       return result;
@@ -845,7 +849,7 @@ module.exports = internal.RosterManager = class {
       if (dataName == 'enrollment') {  
         queryList[i] = 
           'insert into enrollment (' +
-          'userid, student, term, section, startdate, enddate, email, affiliation ' +
+          'userid, student, term, section, startdate, enddate, email, affiliation, welcomeletter ' +
           ') values (' +
               userInfo.userId + ', ' +
               '"' + item.student + '", ' +
@@ -854,7 +858,8 @@ module.exports = internal.RosterManager = class {
               '"' + thisObj._formatDate(item.startdate) + '", ' +
               '"' + thisObj._formatDate(item.enddate) + '", ' +
               '"' + item.email + '", ' +
-              '"' + item.affiliation + '" ' +
+              '"' + item.affiliation + '", ' +
+              0 + ' ' +
           ') ';
           
       } else if (dataName == 'mentor') {  
@@ -924,7 +929,9 @@ module.exports = internal.RosterManager = class {
       }
     }
     
+    console.log(queryList);
     queryResults = await this._dbManager.dbQueries(queryList); 
+    console.log(queryResults);
 
     if (queryResults.success) {
       result.success = true;
