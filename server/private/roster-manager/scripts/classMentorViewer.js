@@ -125,6 +125,7 @@ class MentorViewer {
       activeFilters[fieldName] = {"filterType": 'in', "filterValue": this.settings.filterControls[fieldName].getFilterSettings()};
     }
 
+    
     var filtered = flattened.filter(function(a) { 
       var result = true;
 
@@ -139,7 +140,11 @@ class MentorViewer {
           }
           
         } else if (filter.filterType == 'in') {
-          result = result && filterVal.includes(fieldVal);
+          var filterValueList = filter.filterValue.map( function(a) {
+            return a.toLowerCase();
+          });
+
+          result = result && filterValueList.includes(fieldVal);
         }
       }
       

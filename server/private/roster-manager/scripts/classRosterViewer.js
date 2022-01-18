@@ -280,7 +280,12 @@ class RosterViewer {
           }
           
         } else if (filter.filterType == 'in') {
-          result = result && filterVal.includes(fieldVal);
+          var filterValueList = filter.filterValue.map( function(a) {
+            return a.toLowerCase();
+          });
+
+          result = result && filterValueList.includes(fieldVal);          
+          //result = result && filterVal.includes(fieldVal);
         }
       }
       
