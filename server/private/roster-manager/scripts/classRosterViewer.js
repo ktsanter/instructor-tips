@@ -223,7 +223,7 @@ class RosterViewer {
       var check = CreateElement.createCheckbox(null, 'student-welcome-control', 'student-welcome', checkVal, '', checked, handler);
       check.getElementsByTagName('input')[0].classList.add('form-check-input');      
       check.getElementsByTagName('input')[0].classList.add('ms-4');
-      cell.appendChild(check);      
+      //cell.appendChild(check);      
     }
     
     this._attachFilterControls(table);
