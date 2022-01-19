@@ -23,11 +23,24 @@ create table enrollment
   startdate        varchar(30) not null,
   enddate          varchar(30) not null,
   email            varchar(200) not null,
-  affiliation      varchar(200) not null,
-  welcomeletter    int unsigned not null,
+  affiliation      varchar(200) not null
   
   primary key (enrollmentid),
   constraint foreign key (userid) references instructortips.user (userid) on delete cascade
+);
+
+create or replace table studentwelcome
+(
+  studentwelcomeid          int unsigned not null AUTO_INCREMENT,
+  userid                 int unsigned not null,
+  term                   varchar(200) not null,
+  section                varchar(200) not null,
+  student                varchar(200) not null,
+  datestamp              varchar(40) not null,
+  
+  primary key (studentwelcomeid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid, term, section, student)
 );
 
 create or replace table mentor

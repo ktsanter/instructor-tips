@@ -266,7 +266,6 @@ module.exports = internal.RosterManager = class {
 // private methods - file processing
 //--------------------------------------------------------------- 
   async _processExcelFile(req, res, uploadType, userInfo) {
-    console.log('_processExcelFile', uploadType);
     var thisObj = this;
     
     var dbResult = await thisObj._getRosterInfo(null, null, userInfo);
@@ -275,7 +274,6 @@ module.exports = internal.RosterManager = class {
       return;
     }
     var currentRosterData = dbResult.data;
-    console.log('currentRosterData', currentRosterData);
 
     var form = new this._formManager.IncomingForm();
     form.parse(req, async function(err, fields, files) {
@@ -286,7 +284,6 @@ module.exports = internal.RosterManager = class {
       
       var origFileName = files.file.name;
       var filePath = files.file.path;
-      console.log(origFileName, filePath);
       const exceljs = require('exceljs');
       var workbook = new exceljs.Workbook();
       await workbook.xlsx.readFile(filePath);
@@ -320,7 +317,6 @@ module.exports = internal.RosterManager = class {
   // process specific Excel file
   //----------------------------------------------------------------------
   async _processEnrollmentFile(res, thisObj, worksheet, currentRosterData, userInfo) {    
-    console.log('_processEnrollmentFile');
     var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Enrollment);
     if (!validate.success) {
       thisObj._sendFail(res, 'missing one or more required columns');
@@ -760,6 +756,7 @@ module.exports = internal.RosterManager = class {
     
     for (var i = 0; i < originalData.length; i++) {
       var item = originalData[i];
+
       var searchResult = thisObj._findObjInList(thisObj, item, funcMakeKey(item), newData, funcMakeKey)
       if (searchResult.found) {
         if (!searchResult.exactMatch) {
@@ -797,6 +794,8 @@ module.exports = internal.RosterManager = class {
   }  
   
   _shallowEqual(object1, object2) {
+delete object1.welcomelettersent;
+delete object2.welcomelettersent;
     const keys1 = Object.keys(object1);
     const keys2 = Object.keys(object2);
 
@@ -817,7 +816,6 @@ module.exports = internal.RosterManager = class {
   // post uploaded Excel data to DB
   //------------------------------------------------------------
   async _postExcelData(thisObj, dataName, data, userInfo) {
-    console.log('_postExcelData', dataName);
     var result = thisObj._dbManager.queryFailureResult(); 
     var queryList, queryResults;
     
@@ -837,7 +835,6 @@ module.exports = internal.RosterManager = class {
     } 
 
     queryResults = await this._dbManager.dbQueries(queryList); 
-    console.log(queryResults);
     if (!queryResults.success) {
       result.details = 'failed to delete old ' + dataName + ' data for user';
       return result;
@@ -849,7 +846,7 @@ module.exports = internal.RosterManager = class {
       if (dataName == 'enrollment') {  
         queryList[i] = 
           'insert into enrollment (' +
-          'userid, student, term, section, startdate, enddate, email, affiliation, welcomeletter ' +
+          'userid, student, term, section, startdate, enddate, email, affiliation ' +
           ') values (' +
               userInfo.userId + ', ' +
               '"' + item.student + '", ' +
@@ -858,8 +855,7 @@ module.exports = internal.RosterManager = class {
               '"' + thisObj._formatDate(item.startdate) + '", ' +
               '"' + thisObj._formatDate(item.enddate) + '", ' +
               '"' + item.email + '", ' +
-              '"' + item.affiliation + '", ' +
-              0 + ' ' +
+              '"' + item.affiliation + '" ' +
           ') ';
           
       } else if (dataName == 'mentor') {  
@@ -929,9 +925,7 @@ module.exports = internal.RosterManager = class {
       }
     }
     
-    console.log(queryList);
     queryResults = await this._dbManager.dbQueries(queryList); 
-    console.log(queryResults);
 
     if (queryResults.success) {
       result.success = true;
@@ -1001,10 +995,8 @@ module.exports = internal.RosterManager = class {
           studentItem.preferredname,
           studentItem.iep ? '☑️' : '',
           studentItem["504"] ? '☑️' : '',
-//          mentorItem.welcomelettersent ? '☑️' : '',
-
           studentItem.homeschooled ? '☑️' : '',
-          enrollment.welcomeletter ? '☑️' : ''
+          enrollment.welcomelettersent ? '☑️' : ''
         ];
         
         var notesCombined = ''
@@ -1196,9 +1188,14 @@ module.exports = internal.RosterManager = class {
     
     queryList = {
       "raw_enrollment_data":
-        'select e.student, e.term, e.section, e.startdate, e.enddate, e.email, e.affiliation, e.welcomeletter ' +
+        'select e.student, e.term, e.section, e.startdate, e.enddate, e.email, e.affiliation ' +
         'from enrollment as e ' +
         'where e.userid = ' + userInfo.userId,
+        
+      "raw_studentwelcome_data":
+        'select a.student, a.term, a.section, a.datestamp ' +
+        'from studentwelcome as a ' +
+        'where a.userid = ' + userInfo.userId,
         
       "raw_mentor_data":
         'select m.student, m.term, m.section, m.name, m.email, m.phone, m.affiliation, m.affiliationphone ' +
@@ -1225,22 +1222,29 @@ module.exports = internal.RosterManager = class {
         'from homeschooled as a ' +
         'where a.userid = ' + userInfo.userId,
     };
-
+    
     queryResults = await this._dbManager.dbQueries(queryList); 
     
-    if (queryResults.success) {
-      for (var i = 0; i < queryResults.data.raw_enrollment_data.length; i++) {
-        var item = queryResults.data.raw_enrollment_data[i];
-        item.welcomeletter = (item.welcomeletter == 1);
-      }
-      
-      result.success = true;
-      result.details = 'query succeeded';
-      result.data = queryResults.data;
-      
-    } else {
+    if (!queryResults.success) {
       result.details = queryResults.details;
+      return result;
     }
+    
+    // merge student welcome letter data with enrollments
+    for (var i = 0; i < queryResults.data.raw_enrollment_data.length; i++) {
+      var enrollment = queryResults.data.raw_enrollment_data[i];
+      enrollment.welcomelettersent = false;
+      for (var j = 0; j < queryResults.data.raw_studentwelcome_data.length; j++) {
+        var welcome = queryResults.data.raw_studentwelcome_data[j];
+        if (enrollment.term == welcome.term && enrollment.section == welcome.section && enrollment.student == welcome.student) {
+          enrollment.welcomelettersent = true;
+        }
+      }
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = queryResults.data;
 
     return result;
   }
@@ -1285,14 +1289,30 @@ module.exports = internal.RosterManager = class {
           ') '
       };
       
-    } else if (postData.property == 'welcomeletter') {
-      queryList = {
-        "welcome": 
-          'update enrollment ' +
-          'set welcomeletter = ' + postData.welcomeletter + ' ' +
-          'where term = "' + postData.term + '" ' +
-            'and section = "' + postData.section + '" ' +
-            'and student = "' + postData.student + '" '
+    } else if (postData.property == 'welcomelettersent') {
+      if (postData.welcomeletter) {
+        queryList = {
+          "replace":
+            'replace ' +
+            'into studentwelcome (userid, term, section, student, datestamp) ' +
+            'values (' +
+              userInfo.userId + ', ' +
+              '"' + postData.term + '", ' +
+              '"' + postData.section + '", ' +
+              '"' + postData.student + '", ' +
+              'substring(now(), 1, 10) ' +
+            ')'
+        };
+      } else {
+        queryList = {
+          "delete":
+            'delete ' +
+            'from studentwelcome ' +
+            'where userid = ' + userInfo.userId + ' ' +
+              'and term = "' + postData.term + '" ' +
+              'and section = "' + postData.section + '" ' +
+              'and student = "' + postData.student + '" '
+        }
       }
       
     } else {

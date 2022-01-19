@@ -775,7 +775,7 @@ const app = function () {
     var value = params.value;
     var student = params.student;
     
-    if (property == 'welcomeletter') {
+    if (property == 'welcomelettersent') {
       var term = params.term;
       var section = params.section;
       
@@ -783,7 +783,7 @@ const app = function () {
       for (var i = 0; i < enrollments.length; i++) {
         var item = enrollments[i];
         if (item.term == term && item.section == section) {
-          item.welcomeletter = params.welcomeletter;
+          item.welcomelettersent = params.welcomeletter;
         }
       }
 

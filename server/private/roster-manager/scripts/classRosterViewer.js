@@ -28,7 +28,6 @@ class RosterViewer {
   //--------------------------------------------------------------  
   update(updatedInfo) {
     this.settings.currentInfo = updatedInfo;
-
     if (this.settings.selectedStudentInfo) {
       if (!updatedInfo.studentList.includes(this.settings.selectedStudentInfo.student)) {
         this.settings.selectedStudentInfo = null;
@@ -76,7 +75,7 @@ class RosterViewer {
     noteButton = this.config.containerNoteEditor.getElementsByClassName('button-editor-cancel')[0];
     noteButton.addEventListener('click', (e) => { this._finishNoteEdit(false); });
     
-    this.settings.filterControls = this._createFilterControls(['section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomeletter']);
+    this.settings.filterControls = this._createFilterControls(['section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomelettersent']);
 
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
   }
@@ -115,7 +114,7 @@ class RosterViewer {
     var rosterInfo = this._filterAndSortRoster(this.settings.currentInfo.students);
     
     var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'coach', 'term', 'welcome'];
-    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomeletter'];
+    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomelettersent'];
     var tableClasses = 'table table-striped table-hover table-sm';
     
     var table = CreateElement.createTable(null, tableClasses, headerArray, []);
@@ -215,7 +214,7 @@ class RosterViewer {
       cell.setAttribute('filter-value', rosterItem.term);
 
       var checkVal = JSON.stringify(rosterItem);
-      var checked = rosterItem.welcomeletter
+      var checked = rosterItem.welcomelettersent;
       var handler = (e) => { this._handleStudentWelcomeClick(e); };
 
       var cell = CreateElement._createElement('td', null, null);
@@ -223,7 +222,7 @@ class RosterViewer {
       var check = CreateElement.createCheckbox(null, 'student-welcome-control', 'student-welcome', checkVal, '', checked, handler);
       check.getElementsByTagName('input')[0].classList.add('form-check-input');      
       check.getElementsByTagName('input')[0].classList.add('ms-4');
-      //cell.appendChild(check);      
+      cell.appendChild(check);      
     }
     
     this._attachFilterControls(table);
@@ -673,15 +672,14 @@ class RosterViewer {
     var rosterItem = JSON.parse(target.value);
 
     var params = {
-      "property": "welcomeletter",
+      "property": "welcomelettersent",
       "term": rosterItem.term,
       "section": rosterItem.section,
       "student": rosterItem.student,
       "welcomeletter": target.checked
     };
 
-    var result = await this.config.callbackPropertyChange(params);
-   
+    var result = await this.config.callbackPropertyChange(params);   
   }
   
   async _doPropertyEdit(label, property, targetElement) {
