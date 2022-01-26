@@ -50,6 +50,8 @@ class RosterViewer {
     
     this.statusMessage = this.config.container.getElementsByClassName('status-message')[0];
     
+    this.matchCountMessage = this.config.container.getElementsByClassName('filter-count')[0];
+    
     this.studentImages = this.config.container.getElementsByClassName('item-images')[0];
     this.studentImageIEP = this.studentImages.getElementsByClassName('item-image image-iep')[0];
     this.studentImage504 = this.studentImages.getElementsByClassName('item-image image-504')[0];
@@ -90,6 +92,7 @@ class RosterViewer {
     
     if (!this.settings.currentInfo || this.settings.currentInfo.studentList.length == 0) {
       this.statusMessage.innerHTML = 'no student data available';
+      this._showMatchingCount(null);
       UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
 
     } else {
@@ -105,6 +108,19 @@ class RosterViewer {
     this._setNoteEditVisiblity(false);    
   }
 
+  _showMatchingCount(count) {
+    var msg = '';
+    if (count != null) {
+      if (count == 1) {
+        msg = count + ' item matches your criteria';
+      } else {
+        msg = count + ' items match your criteria';
+      }
+    }
+    
+    this.matchCountMessage.innerHTML = msg;
+  }
+  
   _clearRosterTable() {
     UtilityKTS.removeChildren(this.rosterContent);    
   }
@@ -112,6 +128,7 @@ class RosterViewer {
   _buildRosterTable() {
     var studentList = this.settings.currentInfo.studentList;
     var rosterInfo = this._filterAndSortRoster(this.settings.currentInfo.students);
+    this._showMatchingCount(rosterInfo.length);
     
     var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'coach', 'term', 'welcome'];
     var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomelettersent'];

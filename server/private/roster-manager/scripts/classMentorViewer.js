@@ -46,6 +46,8 @@ class MentorViewer {
   _initUI() {
     this.statusMessage = this.config.container.getElementsByClassName('status-message')[0];
     
+    this.matchCountMessage = this.config.container.getElementsByClassName('filter-count')[0];
+    
     this.settings.byTermAndSection = this.config.container.getElementsByClassName('mentors-listing')[0];
     this.settings.mentorListContainer = this.config.container.getElementsByClassName('mentors-listing')[0];
     this.settings.singleMentorContainer = this.config.container.getElementsByClassName('single-mentor-listing')[0];
@@ -69,6 +71,7 @@ class MentorViewer {
     if (!this.settings.currentInfo || this.settings.currentInfo.mentorList.length == 0) {
       this.statusMessage.innerHTML = 'no mentor data available';
       UtilityKTS.setClass(this.statusMessage, this.settings.hideClass, false);
+      this._showMatchingCount(null);      
       
     } else {
       var filteredAndSortedMentors = this._filterAndSortMentors(this.settings.currentInfo.mentorsByTermAndSection);
@@ -83,6 +86,20 @@ class MentorViewer {
       
       this._setClearFilterVisibility();
     }
+  }
+  
+
+  _showMatchingCount(count) {
+    var msg = '';
+    if (count != null) {
+      if (count == 1) {
+        msg = count + ' item matches your criteria';
+      } else {
+        msg = count + ' items match your criteria';
+      }
+    }
+    
+    this.matchCountMessage.innerHTML = msg;
   }
   
   _filterAndSortMentors(mentorsByTermAndSection) {
@@ -197,6 +214,7 @@ class MentorViewer {
     
   _renderMentorTable(mentorData, container) {
     UtilityKTS.removeChildren(container);
+    this._showMatchingCount(mentorData.length);
     
     var headerArray = ['mentor', 'section', 'email', 'phone', 'first start', 'welcome'];
     var headerFields = ['name', 'section', 'email', 'phone', 'earlieststartdate', 'welcomelettersent'];
