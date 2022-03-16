@@ -222,7 +222,8 @@ body {
 .contents .contents-navStudent .roster-headercol.roster-headercol-homeschooled  { width: 6%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-hascoach      { width: 6%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-term          { }
-.contents .contents-navStudent .roster-headercol.roster-headercol-welcomeletter { width: 9%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-welcomelettersent { width: 6%; }
+.contents .contents-navStudent .roster-headercol.roster-headercol-progresscheck { }
 
 .contents-navStudent .icon-copyemail {
   color: var(--bgPrimary);

@@ -130,8 +130,8 @@ class RosterViewer {
     var rosterInfo = this._filterAndSortRoster(this.settings.currentInfo.students);
     this._showMatchingCount(rosterInfo.length);
     
-    var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'coach', 'term', 'welcome'];
-    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomelettersent'];
+    var headerArray = ['student', 'section', 'start date', 'end date', 'IEP', '504', 'home', 'coach', 'term', 'welcome', 'progress'];
+    var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomelettersent', 'progresscheck'];
     var tableClasses = 'table table-striped table-hover table-sm';
     
     var table = CreateElement.createTable(null, tableClasses, headerArray, []);
@@ -240,6 +240,12 @@ class RosterViewer {
       check.getElementsByTagName('input')[0].classList.add('form-check-input');      
       check.getElementsByTagName('input')[0].classList.add('ms-4');
       cell.appendChild(check);      
+
+      cell = CreateElement._createElement('td', null, null);
+      row.appendChild(cell);
+      var dummyVal = 'XXXX-XX-XX';
+      cell.innerHTML = dummyVal;
+      cell.setAttribute('filter-value', dummyVal);
     }
     
     this._attachFilterControls(table);
