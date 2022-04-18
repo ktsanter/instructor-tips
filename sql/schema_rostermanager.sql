@@ -173,7 +173,18 @@ create table accesskey
   constraint unique(userid)
 );
 
-
+create or replace table progresscheck
+(
+  progresscheckid    int unsigned not null AUTO_INCREMENT,
+  userid             int unsigned not null,
+  student            varchar(200) not null,
+  term               varchar(200) not null,
+  section            varchar(200) not null,
+  progresscheckdate   varchar(30) not null,
+  
+  primary key (progresscheckid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade
+);
 
 #--------------------------------------------------------------------------
 #-- triggers

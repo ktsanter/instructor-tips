@@ -231,7 +231,10 @@ body {
   cursor: pointer;
 }
 
-
+.contents-navStudent .progress-check-cell:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
 
 /*------------------------------------------------------------------------------
  * contents - note editor

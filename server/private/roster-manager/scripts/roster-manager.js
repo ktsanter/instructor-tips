@@ -352,11 +352,14 @@ const app = function () {
     if (settings.currentNavOption == 'navMentor') _showMentor();
   }
   
-  function _packageStudentInfo(rawData, extraStudentInfo) {
+  function _packageStudentInfo(rawData, extraStudentInfo) {    
     var students = {};
     
     for (var i = 0; i < rawData.raw_enrollment_data.length; i++) {
       var item = rawData.raw_enrollment_data[i];
+      
+      item.progresscheck = _getProgressCheckInfo(item, rawData.raw_progresscheck_data);
+      
       var student = item.student;
       if (!students.hasOwnProperty(student)) {
         students[student] = {
@@ -475,11 +478,24 @@ const app = function () {
 
     var studentList = [];
     for (var key in students) studentList.push(key);
-  
+
     return {
       "students": students,
       "studentList": studentList.sort()
     };
+  }
+  
+  function _getProgressCheckInfo(enrollmentItem, rawProgressCheckData) {
+    var pcList = [];
+    
+    for (var i = 0; i < rawProgressCheckData.length; i++) {
+      var pcItem = rawProgressCheckData[i];
+      if (enrollmentItem.student == pcItem.student && enrollmentItem.term == pcItem.term && enrollmentItem.section == pcItem.section) {
+        pcList.push(pcItem.progresscheckdate);
+      }
+    }
+    
+    return pcList;
   }
   
   function _packageMentorInfo(rawData, extraStudentInfo, extraMentorInfo) {

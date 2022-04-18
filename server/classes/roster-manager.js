@@ -1221,6 +1221,11 @@ delete object2.welcomelettersent;
         'select a.student, a.term, a.section ' +
         'from homeschooled as a ' +
         'where a.userid = ' + userInfo.userId,
+        
+      "raw_progresscheck_data":
+        'select a.student, a.term, a.section, a.progresscheckdate ' +
+        'from progresscheck as a ' +
+        'where a.userid = ' + userInfo.userId
     };
     
     queryResults = await this._dbManager.dbQueries(queryList); 

@@ -77,7 +77,14 @@ class RosterViewer {
     noteButton = this.config.containerNoteEditor.getElementsByClassName('button-editor-cancel')[0];
     noteButton.addEventListener('click', (e) => { this._finishNoteEdit(false); });
     
-    this.settings.filterControls = this._createFilterControls(['section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomelettersent']);
+    this.settings.filterControls = this._createFilterControls([
+      'section', 
+      'startdate', 'enddate', 
+      'iep', '504', 'homeschooled', 'hascoach', 
+      'term', 
+      'welcomelettersent',
+      'progresscheck'
+    ]);
 
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
   }
@@ -241,11 +248,14 @@ class RosterViewer {
       check.getElementsByTagName('input')[0].classList.add('ms-4');
       cell.appendChild(check);      
 
-      cell = CreateElement._createElement('td', null, null);
+      cell = CreateElement._createElement('td', null, 'progress-check-cell');
       row.appendChild(cell);
-      var dummyVal = 'XXXX-XX-XX';
-      cell.innerHTML = dummyVal;
-      cell.setAttribute('filter-value', dummyVal);
+      var progressCheck = new ProgressCheck(rosterItem);
+      var latestPCDate = progressCheck.getLatestDate();
+      cell.innerHTML = latestPCDate;
+      cell.setAttribute('filter-value', latestPCDate);
+      cell.pcWidget = progressCheck;
+      cell.addEventListener('click', (e) => { this._handleProgressCheck(e); });
     }
     
     this._attachFilterControls(table);
@@ -254,7 +264,7 @@ class RosterViewer {
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, true);
   }
-  
+    
   _sortRosterBy(fieldToSortBy) {
     var currentSorting = this.settings.sorting;
     
@@ -278,6 +288,7 @@ class RosterViewer {
       var enrollmentList = rosterItem.enrollments;
       for (var i = 0; i < enrollmentList.length; i++) {
         var enrollmentItem = enrollmentList[i];
+
         var flattenedItem = rosterItem;
         delete flattenedItem.enrollments;
         flattenedItem = {
@@ -299,7 +310,12 @@ class RosterViewer {
 
       for (var fieldName in activeFilters) {
         var filter = activeFilters[fieldName];
+        
         var fieldVal = a[fieldName].toString().toLowerCase();
+        if (fieldName == 'progresscheck') {
+          var pc = new ProgressCheck(a);
+          fieldVal = pc.getLatestDate();
+        }
         var filterVal = filter.filterValue.toString().toLowerCase();
         
         if (fieldName == 'enddate' && a.enddateoverride.length > 0) {
@@ -320,18 +336,27 @@ class RosterViewer {
           });
 
           result = result && filterValueList.includes(fieldVal);          
-          //result = result && filterVal.includes(fieldVal);
         }
       }
       
       return result;
     });
-    
+
     var sortField = this.settings.sorting.field;
     var sortDirection = this.settings.sorting.direction;
+
     var sorted = filtered.sort(function(a, b) {
       var aValue = a[sortField];
       var bValue = b[sortField];
+
+      if (sortField == 'progresscheck') {
+        var pcWidgetA = new ProgressCheck(a);
+        var pcWidgetB = new ProgressCheck(b);
+        aValue = pcWidgetA.getLatestDate();
+        bValue = pcWidgetB.getLatestDate();
+        //console.log(a,b);
+        //console.log(aValue, bValue);
+      }
       
       if (sortField == 'enddate' && a.enddateoverride.length > 0) {
         for (var i = 0; i < a.enddateoverride.length; i++) {
@@ -400,6 +425,7 @@ class RosterViewer {
       
       for (var i = 0; i < studentItem.enrollments.length; i++) {
         var enrollmentItem = studentItem.enrollments[i];
+
         for (var enrollmentKey in enrollmentItem) {
           if (valueSets.hasOwnProperty(enrollmentKey)) {
             if (enrollmentKey == 'enddate'  && studentItem.enddateoverride.length > 0) {
@@ -409,6 +435,10 @@ class RosterViewer {
                 if (overrideItem.section = enrollmentItem.section) enddate = overrideItem.enddate;
               }
               valueSets[enrollmentKey].add(enddate);
+            
+            } else if (enrollmentKey == 'progresscheck') {
+              var pc = new ProgressCheck(enrollmentItem);
+              valueSets[enrollmentKey].add(pc.getLatestDate());
               
             } else {
               valueSets[enrollmentKey].add(enrollmentItem[enrollmentKey]);
@@ -857,10 +887,15 @@ class RosterViewer {
     this._updateUI();
   }
   
-  
-  
   _copyEmailsToClipboard(emails) {
     this._copyToClipboard(emails);
+  }
+  
+  _handleProgressCheck(e) {
+    console.log('_handleProgressCheck');
+    var widget = e.target.pcWidget;
+    console.log(e.target);
+    widget.test();
   }
   
   //---------------------------------------
