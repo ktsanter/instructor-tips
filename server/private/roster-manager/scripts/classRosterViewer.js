@@ -250,12 +250,16 @@ class RosterViewer {
 
       cell = CreateElement._createElement('td', null, 'progress-check-cell');
       row.appendChild(cell);
+
       var progressCheck = new ProgressCheck(rosterItem);
       var latestPCDate = progressCheck.getLatestDate();
-      cell.innerHTML = latestPCDate;
       cell.setAttribute('filter-value', latestPCDate);
       cell.pcWidget = progressCheck;
       cell.addEventListener('click', (e) => { this._handleProgressCheck(e); });
+
+      cell.appendChild(CreateElement.createSpan(null, null, latestPCDate));
+      var iconClasses = 'far fa-plus-square add-pc-icon ' + this.settings.hideClass
+      cell.appendChild(CreateElement.createIcon(null, iconClasses, 'add progress check'));
     }
     
     this._attachFilterControls(table);
@@ -354,8 +358,6 @@ class RosterViewer {
         var pcWidgetB = new ProgressCheck(b);
         aValue = pcWidgetA.getLatestDate();
         bValue = pcWidgetB.getLatestDate();
-        //console.log(a,b);
-        //console.log(aValue, bValue);
       }
       
       if (sortField == 'enddate' && a.enddateoverride.length > 0) {
@@ -891,11 +893,21 @@ class RosterViewer {
     this._copyToClipboard(emails);
   }
   
-  _handleProgressCheck(e) {
-    console.log('_handleProgressCheck');
-    var widget = e.target.pcWidget;
-    console.log(e.target);
-    widget.test();
+  async _handleProgressCheck(e) {
+    var elem = e.target;
+    var action = 'unknown';
+    
+    if (elem.classList.contains('add-pc-icon')) {
+      elem = elem.parentNode;
+      action = 'add';
+
+    } else {
+      if (elem.nodeName != 'TD') elem = elem.parentNode;
+      action = 'edit';
+    }
+
+    var widget = elem.pcWidget;
+    await widget.action(action, this.config.callbackProgressCheckChange);
   }
   
   //---------------------------------------

@@ -236,6 +236,16 @@ body {
   cursor: pointer;
 }
 
+.contents-navStudent .progress-check-cell .add-pc-icon {
+  float: right;
+  color: var(--bgPrimary);
+  background-color: transparent;
+}
+
+.contents-navStudent .progress-check-cell:hover > .add-pc-icon {
+  display: inline-block;
+}
+
 /*------------------------------------------------------------------------------
  * contents - note editor
  *------------------------------------------------------------------------------*/

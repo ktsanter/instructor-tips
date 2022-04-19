@@ -171,6 +171,9 @@ module.exports = internal.RosterManager = class {
     } else if (params.queryName == 'student-note') {
       dbResult = await this._addStudentNote(params, postData, userInfo);
   
+    } else if (params.queryName == 'progress-check') {
+      dbResult = await this._addProgressCheck(params, postData, userInfo);
+  
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -1468,6 +1471,45 @@ delete object2.welcomelettersent;
     return result;
   }  
   
+  async _addProgressCheck(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "delete": 
+        'delete from progresscheck ' +
+        'where userid = ' + userInfo.userId + ' ' +
+          'and student = "' + postData.student + '" ' +
+          'and term = "' + postData.term + '" ' +
+          'and section = "' + postData.section + '" ' +
+          'and progresscheckdate = "' + postData.datestamp + '" ',
+        
+      "insert": 
+        'insert ' +
+        'into progresscheck(userid, student, term, section, progresscheckdate) ' + 
+        'values (' + 
+          userInfo.userId + ', ' +
+          '"' + postData.student + '", ' +
+          '"' + postData.term + '", ' +
+          '"' + postData.section + '", ' +
+          '"' + postData.datestamp + '" ' +
+        ') '
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = postData;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+
   async _removeTermData(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;

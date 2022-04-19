@@ -100,7 +100,8 @@ const app = function () {
       "container": page.navStudent,
       "containerNoteEditor": page.contents.getElementsByClassName('edit-container')[0],
       "callbackPropertyChange": _callbackRosterViewerPropertyChange,
-      "callbackNoteChange": _callbackRosterViewerNoteChange
+      "callbackNoteChange": _callbackRosterViewerNoteChange,
+      "callbackProgressCheckChange": _callbackProgressCheckChange
     });
   }
   
@@ -829,6 +830,22 @@ const app = function () {
     return result;
   }
   
+  async function _callbackProgressCheckChange(actionType, params) {
+    console.log('_callbackProgressCheckChange', actionType, params);
+    var result = {success: false, details: 'unrecognized action', data: null};
+    
+    if (actionType == 'add') {
+      result = await _addProgressCheckToDB(params);
+      
+    } else if (actionType == 'edit') {
+      console.log('edit');
+    }
+
+    if (result.success) await _getCurrentInfo();
+    
+    return result;
+  }
+  
   async function _callbackMentorViewerPropertyChange(params) {
     var result = await _saveMentorPropertyToDB(params);
     if (!result.success) return result;
@@ -908,6 +925,13 @@ const app = function () {
     return dbResult
   }
   
+  async function _addProgressCheckToDB(params) {
+    console.log('_addProgressCheckToDB', params);
+    dbResult = await SQLDBInterface.doPostQuery('roster-manager/insert', 'progress-check', params, page.notice);
+    
+    return dbResult
+  }
+
   async function _removeTermData(term) {
     var msg = '⚠️ All data for this term will be permanently deleted from the database';
     msg += '\n\n';

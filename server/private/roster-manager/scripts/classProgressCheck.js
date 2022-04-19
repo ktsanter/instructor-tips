@@ -5,7 +5,6 @@
 //-------------------------------------------------------------------
 class ProgressCheck {
   constructor(config) {
-    //console.log('config', config);
     this.config = config;
     this.settings = {
       hideClass: 'hide-me',
@@ -40,8 +39,16 @@ class ProgressCheck {
     return latest;
   }
   
-  test() {
-    console.log('test', this.config);
+  async action(actionType, callback) {
+    if (actionType == 'add') {
+      await this._addProgressCheck(callback);
+      
+    } else if (actionType == 'edit') {
+      this._editProgressChecks();
+      
+    } else {
+      console.log('ProgressCheck.action unknown actionType "' + actionType + '"');
+    }
   }
   
   //--------------------------------------------------------------
@@ -53,6 +60,21 @@ class ProgressCheck {
 
   _updateUI() {
     console.log('ProgressCheck._updateUI');
+  }
+  
+  async _addProgressCheck(callback) {
+    var params = {
+      "student": this.config.student,
+      "term": this.config.term,
+      "section": this.config.section,
+      "datestamp": this._shortDateStamp(),
+    }
+    await callback('add', params);
+
+  }
+
+  _editProgressChecks() {
+    console.log('_editProgressChecks', this.config);
   }
 
   //--------------------------------------------------------------
