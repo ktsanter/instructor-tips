@@ -171,9 +171,6 @@ module.exports = internal.RosterManager = class {
     } else if (params.queryName == 'student-note') {
       dbResult = await this._addStudentNote(params, postData, userInfo);
   
-    } else if (params.queryName == 'progress-check') {
-      dbResult = await this._addProgressCheck(params, postData, userInfo);
-  
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -186,7 +183,10 @@ module.exports = internal.RosterManager = class {
     
     if (params.queryName == 'student-note') {
       dbResult = await this._updateStudentNote(params, postData, userInfo);
-    
+
+    } else if (params.queryName = 'progress-check') {
+      dbResult = await this._updateProgressCheckList(params, postData, userInfo);
+      
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -1497,6 +1497,48 @@ delete object2.welcomelettersent;
     };
     
     queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (queryResults.success) {
+      result.success = true;
+      result.details = 'query succeeded';
+      result.data = postData;
+      
+    } else {
+      result.details = queryResults.details;
+    }
+
+    return result;
+  }  
+
+  async _updateProgressCheckList(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "delete": 
+        'delete from progresscheck ' +
+        'where userid = ' + userInfo.userId + ' ' +
+          'and student = "' + postData.student + '" ' +
+          'and term = "' + postData.term + '" ' +
+          'and section = "' + postData.section + '" '
+    }
+    
+    for (var i = 0; i < postData.datestamp.length; i++) {
+      queryList["insert" + i] = 
+        'insert ' +
+        'into progresscheck(userid, student, term, section, progresscheckdate) ' + 
+        'values (' + 
+          userInfo.userId + ', ' +
+          '"' + postData.student + '", ' +
+          '"' + postData.term + '", ' +
+          '"' + postData.section + '", ' +
+          '"' + postData.datestamp[i] + '" ' +
+        ') '
+    }
+        
+    console.log(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
+    console.log(queryResults);
     
     if (queryResults.success) {
       result.success = true;

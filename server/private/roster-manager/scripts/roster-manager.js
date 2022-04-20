@@ -831,14 +831,14 @@ const app = function () {
   }
   
   async function _callbackProgressCheckChange(actionType, params) {
-    console.log('_callbackProgressCheckChange', actionType, params);
     var result = {success: false, details: 'unrecognized action', data: null};
     
     if (actionType == 'add') {
-      result = await _addProgressCheckToDB(params);
+      result = await _updateProgressChecksToDB(params);
       
-    } else if (actionType == 'edit') {
-      console.log('edit');
+    } else if (actionType == 'update') {
+      console.log('_callbackProgressCheckChange update', params.datestamp)
+      result = await _updateProgressChecksToDB(params);
     }
 
     if (result.success) await _getCurrentInfo();
@@ -925,9 +925,9 @@ const app = function () {
     return dbResult
   }
   
-  async function _addProgressCheckToDB(params) {
-    console.log('_addProgressCheckToDB', params);
-    dbResult = await SQLDBInterface.doPostQuery('roster-manager/insert', 'progress-check', params, page.notice);
+  async function _updateProgressChecksToDB(params) {
+    console.log('_updateProgressChecksToDB', params);
+    dbResult = await SQLDBInterface.doPostQuery('roster-manager/update', 'progress-check', params, page.notice);
     
     return dbResult
   }

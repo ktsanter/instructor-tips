@@ -40,6 +40,7 @@ class RosterViewer {
     
   closeDialogs() {
     this._finishNoteEdit(false);
+    ProgressCheck.closeDialogs();
   }
   
   //--------------------------------------------------------------
@@ -112,7 +113,8 @@ class RosterViewer {
     }
     
     UtilityKTS.setClass(this.config.container, this.settings.hideClass, false);
-    this._setNoteEditVisiblity(false);    
+    this._setNoteEditVisiblity(false);
+    ProgressCheck.closeDialogs();    
   }
 
   _showMatchingCount(count) {
@@ -141,8 +143,11 @@ class RosterViewer {
     var headerFields = ['student', 'section', 'startdate', 'enddate', 'iep', '504', 'homeschooled', 'hascoach', 'term', 'welcomelettersent', 'progresscheck'];
     var tableClasses = 'table table-striped table-hover table-sm';
     
+    var tableContainer = CreateElement.createDiv(null, 'table-responsive');
+    this.rosterContent.appendChild(tableContainer);
+    
     var table = CreateElement.createTable(null, tableClasses, headerArray, []);
-    this.rosterContent.appendChild(table);
+    tableContainer.appendChild(table);
     table.getElementsByTagName('thead')[0].classList.add('table-primary');
     
     var headerCells = table.getElementsByTagName('th');
@@ -257,9 +262,12 @@ class RosterViewer {
       cell.pcWidget = progressCheck;
       cell.addEventListener('click', (e) => { this._handleProgressCheck(e); });
 
-      cell.appendChild(CreateElement.createSpan(null, null, latestPCDate));
+      var elem = CreateElement.createSpan(null, null, latestPCDate);
+      cell.appendChild(elem);
+      elem.title = progressCheck.formatDateList('\n');
+
       var iconClasses = 'far fa-plus-square add-pc-icon ' + this.settings.hideClass
-      cell.appendChild(CreateElement.createIcon(null, iconClasses, 'add progress check'));
+      cell.appendChild(CreateElement.createIcon(null, iconClasses, 'add progress check date'));
     }
     
     this._attachFilterControls(table);
@@ -494,7 +502,7 @@ class RosterViewer {
   }
   
   _selectStudent(studentName) {
-    var info = this.settings.currentInfo.students[studentName];
+    var info = this.settings.currentInfo.students[studentName];//xxxxxxxx
     this.settings.selectedStudentInfo = {...{"student": studentName, ...info}};
 
     UtilityKTS.removeChildren(this.studentContent);
@@ -530,8 +538,8 @@ class RosterViewer {
     this.studentContent.appendChild(this._renderFlags(info));    
 
     var enrollmentTable = this._renderPropertyArray(
-      ['term', 'section', 'startdate', 'enddate'], 
-      ['term', 'section', 'start date', 'end date'],
+      ['term', 'section', 'startdate', 'enddate', 'progresscheck'], 
+      ['term', 'section', 'start date', 'end date', 'progress check'],
       info.enrollments, 
       this.studentContent
     );
@@ -550,7 +558,7 @@ class RosterViewer {
       info.guardians, 
       this.studentContent
     );
-    
+        
     this._renderPropertyArray(
       ['datestamp', 'notetext', '[edit-delete-icons]'], 
       ['date', 'note', '[add-icon]'],
@@ -631,6 +639,10 @@ class RosterViewer {
         var value = item[property];
         if (property == 'startdate' || property == 'enddate') value = value.slice(0, 10);
         if (property == '[edit-delete-icons]') value = property;
+        if (property == 'progresscheck') {
+          var pc = new ProgressCheck(item);
+          value = pc.getLatestDate();
+        }
         rowContents.push(value);
       }
       
@@ -854,6 +866,7 @@ class RosterViewer {
   }  
   
   _handleRosterSelect(e) {
+    ProgressCheck.closeDialogs();
     this._selectStudent(e.target.innerHTML);
   }
   
@@ -895,19 +908,19 @@ class RosterViewer {
   
   async _handleProgressCheck(e) {
     var elem = e.target;
-    var action = 'unknown';
+    var actionType = 'unknown';
     
     if (elem.classList.contains('add-pc-icon')) {
       elem = elem.parentNode;
-      action = 'add';
+      actionType = 'add';
 
     } else {
       if (elem.nodeName != 'TD') elem = elem.parentNode;
-      action = 'edit';
+      actionType = 'edit';
     }
 
     var widget = elem.pcWidget;
-    await widget.action(action, this.config.callbackProgressCheckChange);
+    await widget.action(actionType, this.config.callbackProgressCheckChange, elem);
   }
   
   //---------------------------------------

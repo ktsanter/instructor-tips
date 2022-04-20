@@ -223,7 +223,7 @@ body {
 .contents .contents-navStudent .roster-headercol.roster-headercol-hascoach      { width: 6%; }
 .contents .contents-navStudent .roster-headercol.roster-headercol-term          { }
 .contents .contents-navStudent .roster-headercol.roster-headercol-welcomelettersent { width: 6%; }
-.contents .contents-navStudent .roster-headercol.roster-headercol-progresscheck { }
+.contents .contents-navStudent .roster-headercol.roster-headercol-progresscheck {  width: 12% }
 
 .contents-navStudent .icon-copyemail {
   color: var(--bgPrimary);
@@ -232,8 +232,11 @@ body {
 }
 
 .contents-navStudent .progress-check-cell:hover {
-  text-decoration: underline;
   cursor: pointer;
+}
+
+.contents-navStudent .progress-check-cell .pc-hide-me {
+  display: none;
 }
 
 .contents-navStudent .progress-check-cell .add-pc-icon {
@@ -244,6 +247,28 @@ body {
 
 .contents-navStudent .progress-check-cell:hover > .add-pc-icon {
   display: inline-block;
+}
+
+.contents-navStudent .progress-check-cell:hover > .add-pc-icon.pc-hide-me {
+  display: none;
+}
+
+.contents-navStudent .progress-check-cell:hover > .pc-edit-dialog {
+  text-decoration: none;
+  cursor: default;
+}
+
+.contents-navStudent .pc-edit-dialog {
+  text-decoration: none;
+}
+
+.contents-navStudent .pc-edit-dialog .pc-delete-icon {
+  padding-right: 0.3em;
+  color: var(--bgPrimary);
+}
+
+.contents-navStudent .pc-edit-dialog .pc-add-icon {
+  color: var(--bgPrimary);
 }
 
 /*------------------------------------------------------------------------------
