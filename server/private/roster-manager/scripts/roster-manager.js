@@ -837,7 +837,6 @@ const app = function () {
       result = await _updateProgressChecksToDB(params);
       
     } else if (actionType == 'update') {
-      console.log('_callbackProgressCheckChange update', params.datestamp)
       result = await _updateProgressChecksToDB(params);
     }
 
@@ -926,7 +925,6 @@ const app = function () {
   }
   
   async function _updateProgressChecksToDB(params) {
-    console.log('_updateProgressChecksToDB', params);
     dbResult = await SQLDBInterface.doPostQuery('roster-manager/update', 'progress-check', params, page.notice);
     
     return dbResult

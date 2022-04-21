@@ -1536,9 +1536,7 @@ delete object2.welcomelettersent;
         ') '
     }
         
-    console.log(queryList);
     queryResults = await this._dbManager.dbQueries(queryList);
-    console.log(queryResults);
     
     if (queryResults.success) {
       result.success = true;

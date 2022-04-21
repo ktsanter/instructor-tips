@@ -113,7 +113,7 @@ class ProgressCheck {
   
   _buildEditTable(anchorElement, pcList) {
     var container = CreateElement.createDiv(null, 'pc-table-container');
-    this.editingPCList = pcList;
+    var me = this;
     
     pcList = pcList.sort();
     for (var i = 0; i < pcList.length; i++) {
@@ -125,9 +125,10 @@ class ProgressCheck {
       elem.setAttribute("pcIndex", i);
       elem.addEventListener('click', (e) => { 
         e.stopPropagation();
-        this.editingPCList.splice(e.target.getAttribute("pcIndex"), 1);
+        var pcList = this._getPCListFromDialog();
+        pcList.splice(e.target.getAttribute("pcIndex"), 1);
         ProgressCheck._closeEditDialogs()
-        this._openEditDialog(anchorElement, this.editingPCList);
+        this._openEditDialog(anchorElement, pcList);
       });
       
       var pc = pcList[i];
@@ -138,19 +139,30 @@ class ProgressCheck {
       elem.addEventListener('click', (e) => { e.stopPropagation(); });
     }
     
-    var elem = CreateElement.createIcon(null, 'far fa-plus-square pc-add-icon', 'add pc date');
+    var elem = CreateElement.createIcon(null, 'far fa-plus-square pc-add-icon', 'add progress check date');
     container.appendChild(elem);
-    var me = this;
+
     elem.addEventListener('click', (e) => { 
-      me.editingPCList.push(me._shortDateStamp());
-      me.editingPCList = Array.from(new Set(me.editingPCList));
+      var pcList = me._getPCListFromDialog();
+      pcList.push(me._shortDateStamp());
+      pcList = Array.from(new Set(pcList));
       ProgressCheck._closeEditDialogs()
-      me._openEditDialog(anchorElement, me.editingPCList);
+      me._openEditDialog(anchorElement, pcList);
       
       e.stopPropagation();
     });
     
     return container;
+  }
+  
+  _getPCListFromDialog() {
+    var pcList = [];
+    var editInputs = this.editContainer.getElementsByClassName('pc-edit-input');
+    for (var i = 0; i < editInputs.length; i++) {
+      pcList.push(editInputs[i].value);
+    }
+    
+    return pcList;
   }
 
   //--------------------------------------------------------------
@@ -164,22 +176,13 @@ class ProgressCheck {
     e.stopPropagation();
     
     if (finishType == 'save') {
-      var pcList = [];
-      var editInputs = this.editContainer.getElementsByClassName('pc-edit-input');
-      for (var i = 0; i < editInputs.length; i++) {
-        pcList.push(editInputs[i].value);
-      }
-      
-      console.log(pcList);
-      
       var params = {
         "student": this.config.student,
         "term": this.config.term,
         "section": this.config.section,
-        "datestamp": pcList
+        "datestamp": this._getPCListFromDialog()
       }
 
-      console.log('save params', params);
       await this.editCompletionCallback('update', params);
     }
     
