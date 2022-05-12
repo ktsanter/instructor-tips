@@ -16,10 +16,10 @@ class GoogleCalendar {
   // public methods
   //--------------------------------------------------------------   
   getCalendarInfo(callback) {
-    console.log('GoogleCalendar.getCalendarInfo');
+    //console.log('GoogleCalendar.getCalendarInfo');
     return gapi.client.calendar.calendarList.list({}).then (
       function(response) {
-        console.log('gapi.client.calendar.calendarList.list succeeded');
+        //console.log('gapi.client.calendar.calendarList.list succeeded');
         callback(true, response.result);
       },
       
@@ -36,7 +36,7 @@ class GoogleCalendar {
    * }
    */
   getEventInfo(params, callback, timeMin, timeMax) {
-    console.log('GoogleCalendar.getEventInfo', params);
+    //console.log('GoogleCalendar.getEventInfo', params);
     var params = {
       'calendarId': params.calendarId,
       'timeMin': (new Date()).toISOString(),
@@ -48,7 +48,7 @@ class GoogleCalendar {
     return gapi.client.calendar.events.list(params).then (
       function(response) {
         var events = response.result.items;
-        console.log('GoogleCalendar.getEventInfo succeeded', events);
+        //console.log('GoogleCalendar.getEventInfo succeeded', events);
         callback(true, response.result);
       },
       
