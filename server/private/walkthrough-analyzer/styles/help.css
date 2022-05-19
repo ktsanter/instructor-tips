@@ -1,0 +1,78 @@
+/*-------------------------------------------------------------------
+ * styling for Walkthrough Analyzer help
+ *------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded: #e9ecef;
+  --borderPrimary: #ced4da;
+}
+
+body {
+  padding-top: 4.0em;
+  margin-bottom: 10.0em;
+}
+
+.hide-me {
+  display: none;
+}
+
+.logotext {
+  display: inline-block;
+  color: white;
+  background-color: var(--bgPrimary);
+  border: 1px solid var(--bgPrimary);
+  border-radius: 0.4em;  
+  padding: 0 0.2em;
+}
+
+/*-------------------------------------------------------------------
+ * sections
+ *------------------------------------------------------------------*/
+.helpsection {
+  padding-top: 4.0em;
+}
+
+.helpsection .helpsection-title {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.helpsection .helpsection-content {
+  margin-top: 0.4em;
+}
+
+.helpsection .helpsection-content.shrink {
+  max-width: 50%;
+}
+
+.helpsection .helpsection-content .icon {
+  color: var(--bgPrimary);
+}
+
+.helpsection .helpsection-imagelink { 
+  display: inline-block;
+  margin-left: 0.4em;
+  margin-right: 0.6em;
+}
+
+.helpsection .helpsection-imagecontainer img {
+  border: 1px solid var(--borderPrimary);  
+  width: 22.0em;
+}
+
+.helpsection .helpsection-imagecontainer.medium img {
+  width: 26.0em;
+}
+
+.helpsection .helpsection-imagecontainer.bigger img {
+  width: 50.0em;
+}
+
+.helpsection .helpsection-content .helpsection-subcontent {
+  max-width: 55.0em;
+  margin-bottom: 0.4em;
+}
+
+.helpsection .helpsection-subcontent.demo-video {
+  max-width: 30%;
+}

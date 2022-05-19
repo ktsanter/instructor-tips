@@ -1,0 +1,23 @@
+mixin configureContainer()
+  .row
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") upload
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              label(for="file-upload-walkthrough" class="uploadfile-label uploadfile-label-walkthrough btn btn-secondary" title="upload walkthrough data spreadsheet") walkthrough data
+              input(type="file" class="uploadfile uploadfile-walkthrough" id="file-upload-walkthrough" accept=".xlsx")
+              span(class="upload-result walkthrough ms-3")
+              
+    .col-sm
+      fieldset(class="border configure-fieldset optional pb-2")
+        legend(class="w-auto") walkthrough dates
+        
+        .container-fluid
+          |build list of dates from data
+
+  .row(class="py-2")
+    .col-sm
+      .configure-status

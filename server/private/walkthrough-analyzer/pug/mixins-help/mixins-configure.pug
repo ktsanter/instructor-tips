@@ -1,0 +1,33 @@
+mixin helpcontent_Configure()  
+  .helpsection-title configure
+
+  .helpsection-content
+    |Use the  
+    em: strong configure 
+    |option to upload SLP reports with student and mentor information
+
+  .helpsection-content
+    |Download each report from the SLP to an Excel file and choose the 
+    |corresponding option on this page to upload the file and add it
+    |to your data.
+    br
+    |The available choices are:
+    ul
+      li
+        em enrollment - 
+        |use the SLP Enrollments tab to get data for all of your students and export it to Excel.  
+        |Note you may need to customize the columns - they must include 
+        em Student, Section, StudentEmail, StartDate, EndDate, Affiliation, LMSTerm 
+        |although the order doesn't matter
+        .helpsection-imagecontainer(class="bigger")
+          img(src="https://res.cloudinary.com/ktsanter/image/upload/v1626970156/Roster%20Manager/rostermanager_report_enrollments.png")
+        br
+        
+      li
+        em mentor/guardian and flags - 
+        |use the relevant SLP report, either 
+        em List of Students Mentor and Guardian
+        |, or 
+        em Students Flags (Home School, IEP, 504)
+        .helpsection-imagecontainer(class="bigger")
+          img(src="https://res.cloudinary.com/ktsanter/image/upload/v1633622505/Roster%20Manager/rostermanager_reports_mg_and_flags.png")

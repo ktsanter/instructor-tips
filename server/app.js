@@ -18,6 +18,7 @@ const MARIA_DBNAME_WALKTHROUGH = getEnv('MARIA_DBNAME_WALKTHROUGH', true);
 const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
 const MARIA_DBNAME_ENDDATEMANAGER = getEnv('MARIA_DBNAME_ENDDATEMANAGER', true);
 const MARIA_DBNAME_ROSTERMANAGER = getEnv('MARIA_DBNAME_ROSTERMANAGER', true);
+const MARIA_DBNAME_WALKTHROUGHANALYZER = getEnv('MARIA_DBNAME_WALKTHROUGHANALYZER', true);
 const MARIA_DBNAME_ITIPS = getEnv('MARIA_DBNAME_ITIPS', true);
 const MARIA_DBNAME_RECIPES = getEnv('MARIA_DBNAME_RECIPES', true);
 
@@ -202,6 +203,15 @@ const mariadbParams_RosterManager = {
     connectionLimit: 5 */
 };
 
+const mariadbParams_WalkthroughAnalyzer = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_WALKTHROUGHANALYZER /*, 
+    connectionLimit: 5 */
+};
+
 const mariadbParams_ITips = {
     reqd: mariadb,
     host: MARIA_HOST,
@@ -232,6 +242,7 @@ const mariaDBManager_CommentBuddy = new mariaDBManagerClass(mariadbParams_Commen
 const mariaDBManager_EndDateManager = new mariaDBManagerClass(mariadbParams_EndDateManager);
 const mariaDBManager_ASAdmin = new mariaDBManagerClass(mariadbParams_ASAdmin);
 const mariaDBManager_RosterManager = new mariaDBManagerClass(mariadbParams_RosterManager);
+const mariaDBManager_WalkthroughAnalyzer = new mariaDBManagerClass(mariadbParams_WalkthroughAnalyzer);
 const mariaDBManager_ITips = new mariaDBManagerClass(mariadbParams_ITips);
 const mariaDBManager_Recipes = new mariaDBManagerClass(mariadbParams_Recipes);
     
@@ -366,6 +377,17 @@ const rosterManagerClass = require('./classes/roster-manager')
 const rosterManager = new rosterManagerClass({
   "dbManager": mariaDBManager_RosterManager,
   "dbManager_enddate": mariaDBManager_EndDateManager,
+  "userManagement": userManagement,  
+  "tempFileManager": tmp, 
+  "formManager": formidable
+});
+
+//------------------------------------------
+// WalkthroughAnalyzer
+//------------------------------------------
+const walkthroughAnalyzerClass = require('./classes/walkthrough-analyzer')
+const walkthroughAnalyzer = new walkthroughAnalyzerClass({
+  "dbManager": mariaDBManager_WalkthroughAnalyzer,
   "userManagement": userManagement,  
   "tempFileManager": tmp, 
   "formManager": formidable
@@ -532,6 +554,7 @@ var dbManagerLookup = {
   "commentbuddy": dbCommentBuddy,
   "enddate-manager": endDateManager,
   "roster-manager": rosterManager,
+  "walkthrough-analyzer": walkthroughAnalyzer,
   "itips": iTips,
   "recipes": recipes
 };
@@ -613,6 +636,13 @@ var appLookup = {
     appName: 'Roster Manager',
     routePug: 'roster-manager/pug/roster-manager.pug',
     loginReRoute: 'roster-manager/manage'
+  }, 
+
+  "walkthrough-analyzer" : {
+    appDescriptor: 'walkthrough-analyzer',
+    appName: 'Walkthrough Analyzer',
+    routePug: 'walkthrough-analyzer/pug/walkthrough-analyzer.pug',
+    loginReRoute: 'walkthrough-analyzer/manage'
   }, 
 
   "itips" : {
@@ -1246,6 +1276,41 @@ async function processRosterManagerExportResult(req, res, result) {
     
   } else {
     var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/export-error.pug');
+    renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {description: result.description}});
+  }
+}
+
+app.get('/walkthrough-analyzer', function (req, res) {
+  routeIfLoggedIn(req, res, 'walkthrough-analyzer');
+})
+
+app.get('/walkthrough-analyzer/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'walkthrough-analyzer/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.post('/usermanagement/routeToApp/walkthrough-analyzer/upload/:uploadType', function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);  
+  walkthroughAnalyzer.processUploadedFile(req, res, req.params.uploadType, userInfo); 
+})
+
+app.post('/usermanagement/routeToApp/walkthrough-analyzer/export', function (req, res) {
+  walkthroughAnalyzer.exportToExcel(req, res, processWalkthroughAnalayzerExportResult); 
+})
+
+async function processWalkthroughAnalayzerExportResult(req, res, result) {
+  if (result.success) {
+    var fileName = result.targetfilename;
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + fileName);
+
+    await result.workbook.xlsx.write(res);
+
+    res.end();
+    
+  } else {
+    var pugFileName = path.join(__dirname, 'private', 'walkthrough-analyzer/pug/export-error.pug');
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {description: result.description}});
   }
 }
