@@ -13,23 +13,16 @@ module.exports = internal.WalkthroughAnalyzer = class {
     this._tempFileManager = params.tempFileManager;
     this._formManager = params.formManager;
         
-    // Excel column names for enrollments
-    this.colEnrollment_Student = 'Student';
-    this.colEnrollment_Section = 'Section';
-    this.colEnrollment_Email = 'StudentEmail';
-    this.colEnrollment_StartDate = 'StartDate';
-    this.colEnrollment_EndDate = 'EndDate';
-    this.colEnrollment_Affiliation = 'Affiliation';
-    this.colEnrollment_Term = 'LMSTerm';
-    this._requiredColumns_Enrollment = new Set([
-      this.colEnrollment_Student,
-      this.colEnrollment_Section,
-      this.colEnrollment_Email,
-      this.colEnrollment_StartDate,
-      this.colEnrollment_EndDate,
-      this.colEnrollment_Affiliation,
-      this.colEnrollment_Term
+    // Excel column names for walkthrough data (partial - these are the first few fixed columns)
+    this.colWalkthrough_Course_Section = 'Course/ Section Title';
+    this.colWalkthrough_CreatedBy = 'Created By';
+    this.colWalkthrough_InstructorName = 'Instructor Name';
+    this._requiredColumns_Walkthrough = new Set([
+      this.colWalkthrough_Course_Section,
+      this.colWalkthrough_CreatedBy,
+      this.colWalkthrough_InstructorName
     ]);    
+
   }
   
 //---------------------------------------------------------------
@@ -79,6 +72,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
 // other public methods
 //---------------------------------------------------------------  
   processUploadedFile(req, res, uploadType, userInfo) {
+    console.log('WalkthroughAnalyzer.processUploadedFile');
     var validTypes = new Set(['walkthrough']);
 
     if (validTypes.has(uploadType)) {
@@ -134,18 +128,8 @@ module.exports = internal.WalkthroughAnalyzer = class {
 // private methods - file processing
 //--------------------------------------------------------------- 
   async _processExcelFile(req, res, uploadType, userInfo) {
-    console.log('WalkthroughAnalyzer._processExcelFile', uploadType);
+    console.log('WalkthroughAnalyzer._processExcelFile');
     var thisObj = this;
-
-    thisObj._sendFail(res, 'testing...');
-    return;
-    
-    var dbResult = await thisObj._getRosterInfo(null, null, userInfo);
-    if (!dbResult.success) {
-      thisObj._sendFail(res, dbResult.details);
-      return;
-    }
-    var currentRosterData = dbResult.data;
 
     var form = new this._formManager.IncomingForm();
     form.parse(req, async function(err, fields, files) {
@@ -168,16 +152,11 @@ module.exports = internal.WalkthroughAnalyzer = class {
       var worksheet = workbook.getWorksheet(1);
        
       var processRoutingMap = {
-        "enrollment": thisObj._processEnrollmentFile,
-        "mentor": thisObj._processMentorFile,
-        "studentflags": thisObj._processStudentFlagsFile,
-        "iep": thisObj._processIEPFile,
-        "504": thisObj._process504File,
-        "homeschooled": thisObj._processHomeSchooledFile
+        "walkthrough": thisObj._processWalkthroughFile
       }
       
       if (processRoutingMap.hasOwnProperty(uploadType)) {
-        processRoutingMap[uploadType](res, thisObj, worksheet, currentRosterData, userInfo);
+        processRoutingMap[uploadType](res, thisObj, worksheet, userInfo);
 
       } else {
         thisObj._sendFail(res, 'unrecognized upload type: ' + uploadType);
@@ -188,219 +167,62 @@ module.exports = internal.WalkthroughAnalyzer = class {
   //----------------------------------------------------------------------
   // process specific Excel file
   //----------------------------------------------------------------------
-  async _processEnrollmentFile(res, thisObj, worksheet, currentRosterData, userInfo) {    
-    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Enrollment);
+  async _processWalkthroughFile(res, thisObj, worksheet, userInfo) {
+    console.log('_processWalkthroughFile');
+    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Walkthrough);
     if (!validate.success) {
+      console.log('missing columns', validate);
       thisObj._sendFail(res, 'missing one or more required columns');
       return;
     }
     
-    var result = thisObj._packageUploadedEnrollmentValues(thisObj, worksheet, validate.columnInfo);
+    var result = await thisObj._getWalkthroughCriteria();
+    if (!result.success) {
+      console.log('failed to retrieve walkthrough criteria');
+      thisObj._sendFail(res, 'failed to retrieve walkthrough criteria');
+    }
+    var criteriaSet = result.data.criteriaSet;
+    
+    result = thisObj._packageUploadedWalkthroughValues(thisObj, worksheet, criteriaSet);
     if (!result.success) {
       thisObj._sendFail(res, '**failed to package values');
     }
-    var uploadedData = result.data.enrollments;
-    var currentData = currentRosterData.raw_enrollment_data;
-
-    var differences = thisObj._findDifferences(thisObj, currentData, uploadedData, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
-    );
     
-    var result = await thisObj._postExcelData(thisObj, 'enrollment', uploadedData, userInfo);
+    console.log('uploaded walkthrough data', result.data);
+    
+    /*
+    var result = await thisObj._postExcelData(thisObj, 'walkthrough', uploadedData, userInfo);
     if (!result.success) {
-      thisObj._sendFail(res, '** failed to post enrollment values');
+      thisObj._sendFail(res, '** failed to post walkthrough values');
       return;
     }
-    
+    */
     result.success = true;
-    result.data = {"differences": {"enrollment": differences}};
+    result.data = {"dummy": "dummy walkthrough results"};
     thisObj._sendSuccess(res, 'upload succeeded', result.data);
   }
   
-  async _processMentorFile(res, thisObj, worksheet, currentRosterData, userInfo) {    
-    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Mentor);
-    if (!validate.success) {
-      thisObj._sendFail(res, 'missing one or more required columns');
-      return;
-    }
-    
-    var result = thisObj._packageUploadedMentorValues(thisObj, worksheet, validate.columnInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '**failed to package values');
-      return;
-    }
-    var uploadedMentorData = result.data.mentors;
-    var uploadedGuardianData = result.data.guardians
-    var currentMentorData = currentRosterData.raw_mentor_data;
-    var currentGuardianData = currentRosterData.raw_guardian_data;
-    
-    var mentorDifferences = thisObj._findDifferences(thisObj, currentMentorData, uploadedMentorData, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section + '\t' + item.name}
-    );
-    var guardianDifferences = thisObj._findDifferences(thisObj, currentGuardianData, uploadedGuardianData, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section + '\t' + item.name}
-    );
-    
-    var result = await thisObj._postExcelData(thisObj, 'mentor', uploadedMentorData, userInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '** failed to post mentor values');
-      return;
-    }
-    
-    var result = await thisObj._postExcelData(thisObj, 'guardian', uploadedGuardianData, userInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '** failed to post guardian values');
-      return;
-    }
-    
-    result.success = true;
-    result.data = {"differences": {"mentor": mentorDifferences, "guardian": guardianDifferences}};
-    thisObj._sendSuccess(res, 'upload succeeded', result.data);
-  }
-  
-  async _processStudentFlagsFile(res, thisObj, worksheet, currentRosterData, userInfo) {    
-    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_StudentFlags);
-    if (!validate.success) {
-      thisObj._sendFail(res, 'missing one or more required columns');
-      return;
-    }
-
-    var result = thisObj._packageUploadedStudentFlagValues(thisObj, worksheet, validate.columnInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '**failed to package values');
-      return;
-    }
-
-    var uploadedData = result.data
-    var differencesIEP = thisObj._findDifferences(thisObj, currentRosterData.raw_iep_data, uploadedData.dataIEP, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
-    );
-    var differences504 = thisObj._findDifferences(thisObj, currentRosterData.raw_504_data, uploadedData.data504, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
-    );
-    var differencesHomeschooled = thisObj._findDifferences(thisObj, currentRosterData.raw_homeschooled_data, uploadedData.dataHomeschool, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
-    );
-    
-    var result = await thisObj._postExcelData(thisObj, 'iep', uploadedData.dataIEP, userInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '** failed to post iep values');
-      return;
-    }
-    var result = await thisObj._postExcelData(thisObj, 'student504', uploadedData.data504, userInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '** failed to post 504 values');
-      return;
-    }
-    var result = await thisObj._postExcelData(thisObj, 'homeschooled', uploadedData.dataHomeschool, userInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '** failed to post homeschooled values');
-      return;
-    }
-
-    result.success = true;
-    result.data = {"differences": {"iep": differencesIEP, "504": differences504, "homeschooled": differencesHomeschooled}};
-    thisObj._sendSuccess(res, 'upload succeeded', result.data);
-  }
-
-  async _processIEPFile(res, thisObj, worksheet, currentRosterData, userInfo) {    
-    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_IEP);
-    if (!validate.success) {
-      thisObj._sendFail(res, 'missing one or more required columns');
-      return;
-    }
-    
-    var result = thisObj._packageUploadedIEPValues(thisObj, worksheet, validate.columnInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '**failed to package values');
-      return;
-    }
-    var uploadedData = result.data.iep;
-    var currentData = currentRosterData.raw_iep_data;
-    
-    var differences = thisObj._findDifferences(thisObj, currentData, uploadedData, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
-    );
-    
-    var result = await thisObj._postExcelData(thisObj, 'iep', uploadedData, userInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '** failed to post IEP values');
-      return;
-    }
-    
-    result.success = true;
-    result.data = {"differences": {"iep": differences}};
-    thisObj._sendSuccess(res, 'upload succeeded', result.data);
-  }
-
-  async _process504File(res, thisObj, worksheet, currentRosterData, userInfo) {
-    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_504);
-    if (!validate.success) {
-      thisObj._sendFail(res, 'missing one or more required columns');
-      return;
-    }
-
-    var result = thisObj._packageUploaded504Values(thisObj, worksheet, validate.columnInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '**failed to package values');
-      return;
-    }
-    var uploadedData = result.data.student504;
-    var currentData = currentRosterData.raw_504_data;
-    
-    var differences = thisObj._findDifferences(thisObj, currentData, uploadedData, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
-    );
-    
-    var result = await thisObj._postExcelData(thisObj, 'student504', uploadedData, userInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '** failed to post 504 values');
-      return;
-    }
-    
-    result.success = true;
-    result.data = {"differences": {"student504": differences}};
-    thisObj._sendSuccess(res, 'upload succeeded', result.data);
-  }
-
-  async _processHomeSchooledFile(res, thisObj, worksheet, currentRosterData, userInfo) {
-    var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_HomeSchooled);
-    if (!validate.success) {
-      thisObj._sendFail(res, 'missing one or more required columns');
-      return;
-    }
-
-    var result = thisObj._packageUploadedHomeSchooledValues(thisObj, worksheet, validate.columnInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '**failed to package values');
-      return;
-    }
-    var uploadedData = result.data.homeschooled;
-    var currentData = currentRosterData.raw_homeschooled_data;
-    
-    var differences = thisObj._findDifferences(thisObj, currentData, uploadedData, 
-      (item) => {return item.student + '\t' + item.term + '\t' + item.section}
-    );
-    
-    var result = await thisObj._postExcelData(thisObj, 'homeschooled', uploadedData, userInfo);
-    if (!result.success) {
-      thisObj._sendFail(res, '** failed to post homeschooled values');
-      return;
-    }
-    
-    result.success = true;
-    result.data = {"differences": {"homeschooled": differences}};
-    thisObj._sendSuccess(res, 'upload succeeded', result.data);
-  }
-
   //-----------------------------------------------------------------
   // package data from specific uploaded file
   //-----------------------------------------------------------------
-  _packageUploadedEnrollmentValues(thisObj, worksheet, columnInfo) {
+  _packageUploadedWalkthroughValues(thisObj, worksheet, criteriaSet) {
+    console.log('WalkthroughAnalyzer._packageUploadedWalkthroughValues');
+    console.log(criteriaSet);
     var result = {success: false, data: null};
     
-    var enrollments = [];
+    var walkthroughInfo = [];
     worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
+      if (rowNumber == 1) {
+        for (var i = 0; i < row._cells.length; i++) {
+          var colTitle = row.getCell(i + 1).value;
+          if (criteriaSet.has(colTitle)) {
+            console.log(colTitle);
+          }
+        }
+      }
+        
+      //console.log(rowNumber, row.getCell(1).value);
+      /*
       var student = row.getCell(columnInfo[thisObj.colEnrollment_Student]).value;
       student = thisObj._formatEnrollmentStudentName(student);
       
@@ -418,272 +240,18 @@ module.exports = internal.WalkthroughAnalyzer = class {
           "affiliation": row.getCell(columnInfo[thisObj.colEnrollment_Affiliation]).value
         });
       }
+      */
     });
     
     result.success = true;
     result.data = {
-      "enrollments": enrollments
+      "walkthrough": walkthroughInfo
     };
     
+    console.log('result', result);
     return result;
   }
   
-  _formatEnrollmentStudentName(origName) {
-    var formatted = origName;
-    var splitName = origName.split(',');
-    if (splitName.length > 1) {
-      formatted = splitName[0].trim() + ', ' + splitName[1].trim();
-    }
-    
-    return formatted;      
-  }
-  
-  _packageUploadedMentorValues(thisObj, worksheet, columnInfo) {
-    var result = {success: false, data: null};
-    
-    var entries = [];
-    
-    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
-      var student = row.getCell(columnInfo[thisObj.colMentor_Student]).value;
-      var studentFirst = row.getCell(columnInfo[thisObj.colMentor_StudentFirst]).value;
-      var studentLast = row.getCell(columnInfo[thisObj.colMentor_StudentLast]).value;
-      
-      var mentorFirst = row.getCell(columnInfo[thisObj.colMentor_FirstName]).value;
-      var mentorLast = row.getCell(columnInfo[thisObj.colMentor_LastName]).value;
-
-      var term = row.getCell(columnInfo[thisObj.colMentor_Term]).value;    
-      var section = row.getCell(columnInfo[thisObj.colMentor_Section]).value;
-
-      if (student != thisObj.colMentor_Student) {
-        entries.push({
-          "student": thisObj._formatNameFromMentorReport(student, 'student', studentFirst, studentLast),
-          "term": term,
-          "section": section,
-          "role": row.getCell(columnInfo[thisObj.colMentor_Role]).value,
-          "name": thisObj._formatNameFromMentorReport(row.getCell(columnInfo[thisObj.colMentor_Name]).value, 'mentor', mentorFirst, mentorLast),
-          "email": thisObj._formatMentorEmail(row.getCell(columnInfo[thisObj.colMentor_Email]).value),
-          "affiliation": row.getCell(columnInfo[thisObj.colMentor_Affiliation]).value,
-          "phone": row.getCell(columnInfo[thisObj.colMentor_Phone]).value,
-          "affiliationphone": row.getCell(columnInfo[thisObj.colMentor_AffiliationPhone]).value
-        });
-      }
-    });
-    
-    var mentors = entries.filter(function(item) { return item.role == 'MENTOR' } );
-    mentors = thisObj._removeDuplicates(mentors, function(item) { return item.student + '\t' + item.name + '\t' + item.term + '\t' + item.section; });
-    for (var i = 0; i < mentors.length; i++) {
-      delete mentors[i].role;
-    }
-    
-    var guardians = entries.filter(function(item) { return item.role == 'GUARDIAN' } );
-    guardians = thisObj._removeDuplicates(guardians, function(item) { return item.student + '\t' + item.name + '\t' + item.term + '\t' + item.section; });
-    for (var i = 0; i < guardians.length; i++) {
-      delete guardians[i].role;
-    }
-    
-    result.success = true;
-    result.data = {
-      "mentors": mentors,
-      "guardians": guardians
-    }
-    
-    return result;
-  }  
-  
-  _packageUploadedStudentFlagValues(thisObj, worksheet, columnInfo) {
-    var result = {success: false, data: null};
-    
-    var flagInfo = [];
-    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
-      var student = row.getCell(columnInfo[thisObj.colFlags_Student]).value;
-      var term = row.getCell(columnInfo[thisObj.colFlags_Term]).value;
-      var section = row.getCell(columnInfo[thisObj.colFlags_Section]).value;
-
-      if (student != thisObj.colFlags_Student) {
-        flagInfo.push({
-          "student": student,
-          "term": term,
-          "section": section,
-          "iep": row.getCell(columnInfo[thisObj.colFlags_IEP]).value == 'Yes',
-          "504": row.getCell(columnInfo[thisObj.colFlags_504]).value == 'Yes',
-          "homeschool": row.getCell(columnInfo[thisObj.colFlags_Homeschooled]).value == 'Yes'
-        });
-      }
-    });
-    
-    var dataIEP = [];
-    var data504 = [];
-    var dataHomeschool = [];
-    for (var i = 0; i < flagInfo.length; i++) {
-      var entry = flagInfo[i];
-      if (entry["iep"]) {
-        dataIEP.push({"student": entry.student, "term": entry.term, "section": entry.section});
-      }
-      if (entry["504"]) {
-        data504.push({"student": entry.student, "term": entry.term, "section": entry.section});
-      }
-      if (entry["homeschool"]) {
-        dataHomeschool.push({"student": entry.student, "term": entry.term, "section": entry.section});
-      }
-    }
-    
-    result.success = true;
-    result.data = {
-      "dataIEP": dataIEP,
-      "data504": data504,
-      "dataHomeschool": dataHomeschool
-    };
-    
-    return result;
-  }
-
-  _packageUploadedIEPValues(thisObj, worksheet, columnInfo) {
-    console.log('unexpected call of _packageUploadedIEPValues');
-    var result = {success: false, data: null};
-    
-    var iepInfo = [];
-    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
-      var student = row.getCell(columnInfo[thisObj.colIEP_Student]).value;
-      var term = row.getCell(columnInfo[thisObj.colIEP_Term]).value;
-      var section = row.getCell(columnInfo[thisObj.colIEP_Section]).value;
-
-      if (student != thisObj.colIEP_Student) {
-        iepInfo.push({
-          "student": thisObj._formatNameFromMentorReport(student, 'student'),
-          "term": term,
-          "section": section
-        });
-      }
-    });
-    
-    result.success = true;
-    result.data = {
-      "iep": iepInfo
-    };
-
-    return result;
-  }
-    
-  _packageUploaded504Values(thisObj, worksheet, columnInfo) {
-    console.log('unexpected call of _packageUploaded504Values');
-    var result = {success: false, data: null};
-    
-    var student504Info = [];
-    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
-      var student = row.getCell(columnInfo[thisObj.col504_Student]).value;
-      var term = row.getCell(columnInfo[thisObj.col504_Term]).value;
-      var section = row.getCell(columnInfo[thisObj.col504_Section]).value;
-
-      if (student != thisObj.col504_Student) {
-        student504Info.push({
-          "student": thisObj._formatNameFromMentorReport(student, 'student'),
-          "term": term,
-          "section": section
-        });
-      }
-    });
-    
-    result.success = true;
-    result.data = {
-      "student504": student504Info
-    };
-
-    return result;
-  }
-    
-  _packageUploadedHomeSchooledValues(thisObj, worksheet, columnInfo) {
-    console.log('unexpected call of _packageUploadedHomeSchooledValues');
-    var result = {success: false, data: null};
-    
-    
-    var studentHomeSchooledInfo = [];
-    worksheet.eachRow({includeEmpty: true}, function(row, rowNumber) {
-      var student = row.getCell(columnInfo[thisObj.colHomeSchooled_Student]).value;
-      var term = row.getCell(columnInfo[thisObj.colHomeSchooled_Term]).value;
-      var section = row.getCell(columnInfo[thisObj.colHomeSchooled_Section]).value;
-
-      if (student != thisObj.colHomeSchooled_Student) {
-        studentHomeSchooledInfo.push({
-          "student": student,
-          "term": term,
-          "section": section
-        });
-      }
-    });
-    
-    result.success = true;
-    result.data = {
-      "homeschooled": studentHomeSchooledInfo
-    };
-
-    return result;
-  }
-  
-  //------------------------------------------------------------
-  // find differences between new and current data sets
-  //------------------------------------------------------------
-  _findDifferences(thisObj, originalData, newData, funcMakeKey) {
-    var differences = [];
-    
-    
-    for (var i = 0; i < originalData.length; i++) {
-      var item = originalData[i];
-
-      var searchResult = thisObj._findObjInList(thisObj, item, funcMakeKey(item), newData, funcMakeKey)
-      if (searchResult.found) {
-        if (!searchResult.exactMatch) {
-          differences.push({"key": funcMakeKey(item), "item": item, "reason": 'changed'});
-        } 
-      } else {
-        differences.push({"key": funcMakeKey(item), "item": item, "reason": 'removed'});
-      }
-    }
-
-    for (var i = 0; i < newData.length; i++) {
-      var item = newData[i];
-      var searchResult = thisObj._findObjInList(thisObj, item, funcMakeKey(item), originalData, funcMakeKey)
-      if (!searchResult.found) {
-        differences.push({"key": funcMakeKey(item), "item": item, "reason": 'added'});
-      }
-    }
-
-    return differences;
-  }
-  
-  _findObjInList(thisObj, obj, objKey, list, funcMakeKey) {
-    var searchResult = {"found": false};
-    
-    for (var i = 0; i < list.length && !searchResult.found; i++) {
-      var listItem = list[i];
-      var listItemKey = funcMakeKey(listItem);
-      if (objKey == listItemKey) {
-        searchResult.found = true;
-        searchResult.exactMatch = thisObj._shallowEqual(obj, listItem);
-      }
-    }
-    
-    return searchResult;
-  }  
-  
-  _shallowEqual(object1, object2) {
-delete object1.welcomelettersent;
-delete object2.welcomelettersent;
-    const keys1 = Object.keys(object1);
-    const keys2 = Object.keys(object2);
-
-    if (keys1.length !== keys2.length) {
-      return false;
-    }
-
-    for (let key of keys1) {
-      if (object1[key] != object2[key]) {
-        return false;
-      }
-    }
-
-    return true;
-  }    
-
   //------------------------------------------------------------
   // post uploaded Excel data to DB
   //------------------------------------------------------------
@@ -1005,6 +573,37 @@ delete object2.welcomelettersent;
     result.success = true;
     result.details = 'query succeeded';
     result.data = queryResuls.data;  
+
+    return result;
+  }
+  
+  async _getWalkthroughCriteria(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "criteria":
+        'select a.criterionid, a.criteriontext, b.domainid, b.domainnumber, b.domaindescription  ' +
+        'from criterion as a, domaininfo as b ' +
+        'where a.domainid = b.domainid '
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    var criteriaSet = new Set();
+    for (var i = 0; i < queryResults.data.criteria.length; i++) {
+      criteriaSet.add(queryResults.data.criteria[i].criteriontext);
+    }
+
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {}
+    result.data.criteria = queryResults.data.criteria;  
+    result.data.criteriaSet = criteriaSet;
 
     return result;
   }

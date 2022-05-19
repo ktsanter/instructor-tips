@@ -234,6 +234,8 @@ const app = function () {
     settings.currentInfo = result.data;
     
     _setExportUIEnable(settings.currentInfo != null);
+    
+    console.log('_getCurrentInfo', result);
 
     return true;
   }
@@ -268,15 +270,10 @@ const app = function () {
 
     elemResult.innerHTML = result.details;
     
-    console.log('stubbed to here');
-    return;
+    console.log('file upload result', result);
 
-//    var result = await settings.dataIntegrator.applyReportData(uploadType, result.data);
-    
-    if (result.success) {
-      _displayConfigureStatus(result.data, elemChanges);
-      await _getCurrentInfo();
-    }
+    _displayConfigureStatus(result.data, elemStatus);
+    await _getCurrentInfo();
 
     page.notice.setNotice('');
   }
