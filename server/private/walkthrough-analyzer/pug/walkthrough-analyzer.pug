@@ -4,6 +4,7 @@ include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/profile-mixins.pug
 
+include ./mixins/mixins-analyze.pug
 include ./mixins/mixins-configure.pug
 include ./mixins/mixins-admin.pug
 
@@ -17,7 +18,7 @@ html(lang="en")
     +fontawesome()
     +bootstrapstyle()
     
-    script(src="/scripts/commonmark_min.js")
+    script(src="https://cdn.jsdelivr.net/npm/chart.js@3.8.0/dist/chart.min.js")
     
     style
       include ../../common/styles/classProfile.css
@@ -31,6 +32,7 @@ html(lang="en")
     +makeNavbar("Walkthrough analyzer", 
       {
         items: [
+          {id: "navAnalyze", type: "link", label: "analyze"},
           {id: "navConfigure", type: "link", label: "configure"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
@@ -52,6 +54,9 @@ html(lang="en")
     
     .contents
       .error-container
+        
+      .container-fluid(class="contents-container contents-navAnalyze hide-me disable-container")
+        +analyzeContainer()     
         
       .container-fluid(class="contents-container contents-navConfigure hide-me disable-container")
         +configureContainer()     

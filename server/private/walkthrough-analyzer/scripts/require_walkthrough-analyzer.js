@@ -11,6 +11,7 @@ define(function (require) {
   const libsodiumWrappers = require('libsodium-wrappers');
    
   require('classReportPoster');
+  require('classWalkthroughItem');
   require('walkthrough-analyzer');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

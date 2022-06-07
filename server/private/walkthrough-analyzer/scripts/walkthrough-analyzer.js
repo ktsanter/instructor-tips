@@ -39,11 +39,11 @@ const app = function () {
     await _initializeProfile(sodium);
     
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
+    _initializeReportManagement();
+
     _attachNavbarHandlers();
     _renderContents();
     
-    _initializeReportManagement();
-
     _setUploadFileInfo();
     
     settings.currentInfo = null;
@@ -103,8 +103,19 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
+    _renderAnalyze();
     _renderConfigure();
     _renderAdmin();
+  }
+  
+  function _renderAnalyze() {
+    page.navAnalyze = page.contents.getElementsByClassName('contents-navAnalyze')[0];
+    
+    let btnRestrict = page.navAnalyze.getElementsByClassName('walkthrough-restrict')[0];;
+    let btnPercent = page.navAnalyze.getElementsByClassName('walkthrough-percent')[0];
+    
+    btnRestrict.addEventListener('click', (e) => { _handleRestrictButton(e); });
+    btnPercent.addEventListener('click', (e) => { _handlePercentButton(e); });
   }
   
   function _renderConfigure() {
@@ -136,17 +147,34 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navConfigure') _showConfigure();
-    if (contentsId == 'navAdmin') _showAdmin();
-    if (contentsId == 'navProfile') await settings.profile.reload();
+    if (contentsId == 'navAnalyze') _showAnalyze();
+    else if (contentsId == 'navConfigure') _showConfigure();
+    else if (contentsId == 'navAdmin') _showAdmin();
+    else if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
   }
   
+  function _showAnalyze() {
+    let container = page.navAnalyze.getElementsByClassName('walkthrough-item-containers')[0];
+    UtilityKTS.removeChildren(container);
+    
+    let item = new WalkthroughItem({
+      "title": "sample chart",
+      "data": [10, 20, 40],
+      "labels": ["yes", "no", "not a focus"],
+      "restrictValues": true,
+      "usePercentages": true
+    });
+    elemChart = item.drawChart();
+    elemChart.walkthroughitem = item;
+    
+    container.appendChild(elemChart);
+  }
+  
   function _showConfigure() {}
   
-  function _showAdmin() {
-  }
+  function _showAdmin() {}
     
   function _setNavOptions() {
     var opt = settings.currentNavOption;
@@ -194,6 +222,7 @@ const app = function () {
     var containers = page.contents.getElementsByClassName('contents-container');
     for (var i = 0; i < containers.length; i++) {
       if (
+        containers[i].classList.contains('contents-navAnalyze') ||
         containers[i].classList.contains('contents-navConfigure') ||
         containers[i].classList.contains('contents-navAdmin')
       ) {
@@ -235,8 +264,6 @@ const app = function () {
     
     _setExportUIEnable(settings.currentInfo != null);
     
-    console.log('_getCurrentInfo', result);
-
     return true;
   }
   
@@ -298,6 +325,7 @@ const app = function () {
     _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
+      "navAnalyze": function() { _showContents('navAnalyze');},   
       "navConfigure": function() { _showContents('navConfigure');},   
       "navAdmin": function() { _showContents('navAdmin'); },
       "navExport": function() { _exportToExcel(); },
@@ -358,6 +386,42 @@ const app = function () {
     e.target.value = null;
     
     _setConfigureEnable(true);
+  }
+  
+  function _handleRestrictButton(e) {
+    let btn = e.target;
+    let elemChart = page.navAnalyze.getElementsByClassName('walkthrough-item-container')[0];
+    let walkthroughItem = elemChart.walkthroughitem;
+    
+    let newRestrict = !(btn.getAttribute('walkthrough-setting') == 'true');
+    if (newRestrict) {
+      btn.innerHTML = "don't restrict";
+      btn.title = "don't restrict";
+    } else {
+      btn.innerHTML = 'restrict';
+      btn.title = 'restrict to yes/no';
+    }
+    btn.setAttribute('walkthrough-setting', newRestrict);
+    
+    walkthroughItem.chartRestrictedValues(newRestrict);
+  }
+
+  function _handlePercentButton(e) {
+    let btn = e.target;
+    let elemChart = page.navAnalyze.getElementsByClassName('walkthrough-item-container')[0];
+    let walkthroughItem = elemChart.walkthroughitem;
+    
+    let newUsePercentages = !(btn.getAttribute('walkthrough-setting') == 'true');
+    if (newUsePercentages) {
+      btn.innerHTML = "raw numbers";
+      btn.title = "show raw numbers";
+    } else {
+      btn.innerHTML = 'percentages';
+      btn.title = 'show percentages';
+    }
+    btn.setAttribute('walkthrough-setting', newUsePercentages);
+    
+    walkthroughItem.chartPercentages(newUsePercentages);
   }
 
   //----------------------------------------
