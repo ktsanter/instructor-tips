@@ -18,6 +18,73 @@ const app = function () {
 
     adminDisable: false
   };
+  
+    
+  const dummyData = [
+    { 
+      "title": "Learning focus evident to the students in Additional Resources", 
+      "domain": 1,
+      "count": [10, 20, 40] 
+    },
+    { 
+      "title": "Exceptional Student Report (ESR) is updated", 
+      "domain": 1,
+      "count": [40, 20, 60] 
+    },
+    
+    { 
+      "title": "Weekly Announcements Posted (Teacher Feed)", 
+      "domain": 2,
+      "count": [8, 2, 20] 
+    },
+    { 
+      "title": "Respectful Correction (Feedback Tone)", 
+      "domain": 2,
+      "count": [18, 12, 20] 
+    },
+    { 
+      "title": "Hard Work Expected (Indicated in Context of Feedback and Announcements)", 
+      "domain": 2,
+      "count": [28, 22, 20] 
+    },
+    { 
+      "title": "Student pride in Work (Evidence in Student Submission)", 
+      "domain": 2,
+      "count": [38, 32, 20] 
+    },
+    { 
+      "title": "Motivational Encouragement (Announcements", 
+      "domain": 2,
+      "count": [48, 42, 20] 
+    },
+    { 
+      "title": "Clearly Outlined Expectations in Welcome Letter", 
+      "domain": 2,
+      "count": [58, 52, 20] 
+    },
+    { 
+      "title": "Daily Logins by Instructor", 
+      "domain": 2,
+      "count": [68, 62] 
+    },
+    { 
+      "title": "Active Student Participation", 
+      "domain": 2,
+      "count": [78, 82, 20] 
+    },
+    
+    { 
+      "title": "Students Asked to Justify Their Thinking (Discussion Boards)",
+      "domain": 3,
+      "count": [60, 90, 50] 
+    },
+    
+    { 
+      "title": "Contact Lead about Course Concerns",
+      "domain": 4,
+      "count": [90, 60, 50] 
+    }
+  ];
     
 	//---------------------------------------
 	// get things going
@@ -103,19 +170,18 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
-    _renderAnalyze();
+    _renderSummary();
+    _renderItems();
     _renderConfigure();
     _renderAdmin();
   }
   
-  function _renderAnalyze() {
-    page.navAnalyze = page.contents.getElementsByClassName('contents-navAnalyze')[0];
-    
-    let btnRestrict = page.navAnalyze.getElementsByClassName('walkthrough-restrict')[0];;
-    let btnPercent = page.navAnalyze.getElementsByClassName('walkthrough-percent')[0];
-    
-    btnRestrict.addEventListener('click', (e) => { _handleRestrictButton(e); });
-    btnPercent.addEventListener('click', (e) => { _handlePercentButton(e); });
+  function _renderSummary() {
+    page.navSummary = page.contents.getElementsByClassName('contents-navSummary')[0];
+  }
+  
+  function _renderItems() {
+    page.navItems = page.contents.getElementsByClassName('contents-navItems')[0];
   }
   
   function _renderConfigure() {
@@ -147,7 +213,8 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navAnalyze') _showAnalyze();
+    if (contentsId == 'navSummary') _showSummary();
+    else if (contentsId == 'navItems') _showItems();
     else if (contentsId == 'navConfigure') _showConfigure();
     else if (contentsId == 'navAdmin') _showAdmin();
     else if (contentsId == 'navProfile') await settings.profile.reload();
@@ -155,21 +222,22 @@ const app = function () {
     _setNavOptions();
   }
   
-  function _showAnalyze() {
-    let container = page.navAnalyze.getElementsByClassName('walkthrough-item-containers')[0];
-    UtilityKTS.removeChildren(container);
-    
-    let item = new WalkthroughItem({
-      "title": "sample chart",
-      "data": [10, 20, 40],
-      "labels": ["yes", "no", "not a focus"],
-      "restrictValues": true,
-      "usePercentages": true
+  function _showSummary() {
+    let summary = new WalkthroughSummary({      
+      "container": page.navSummary,
+      "data": dummyData
     });
-    elemChart = item.drawChart();
-    elemChart.walkthroughitem = item;
     
-    container.appendChild(elemChart);
+    summary.show();
+  }
+  
+  function _showItems() {
+    let itemTable = new WalkthroughItemTable({
+      "container": page.navItems,
+      "data": dummyData
+    });
+    
+    itemTable.show();
   }
   
   function _showConfigure() {}
@@ -222,7 +290,8 @@ const app = function () {
     var containers = page.contents.getElementsByClassName('contents-container');
     for (var i = 0; i < containers.length; i++) {
       if (
-        containers[i].classList.contains('contents-navAnalyze') ||
+        containers[i].classList.contains('contents-navSummary') ||
+        containers[i].classList.contains('contents-navItems') ||
         containers[i].classList.contains('contents-navConfigure') ||
         containers[i].classList.contains('contents-navAdmin')
       ) {
@@ -325,7 +394,8 @@ const app = function () {
     _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
-      "navAnalyze": function() { _showContents('navAnalyze');},   
+      "navSummary": function() { _showContents('navSummary');},   
+      "navItems": function() { _showContents('navItems');},   
       "navConfigure": function() { _showContents('navConfigure');},   
       "navAdmin": function() { _showContents('navAdmin'); },
       "navExport": function() { _exportToExcel(); },
@@ -340,7 +410,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navConfigure', 'navAdmin']);
+    var mainOptions = new Set(['navSummary', 'navItems', 'navConfigure', 'navAdmin']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);
@@ -388,42 +458,6 @@ const app = function () {
     _setConfigureEnable(true);
   }
   
-  function _handleRestrictButton(e) {
-    let btn = e.target;
-    let elemChart = page.navAnalyze.getElementsByClassName('walkthrough-item-container')[0];
-    let walkthroughItem = elemChart.walkthroughitem;
-    
-    let newRestrict = !(btn.getAttribute('walkthrough-setting') == 'true');
-    if (newRestrict) {
-      btn.innerHTML = "don't restrict";
-      btn.title = "don't restrict";
-    } else {
-      btn.innerHTML = 'restrict';
-      btn.title = 'restrict to yes/no';
-    }
-    btn.setAttribute('walkthrough-setting', newRestrict);
-    
-    walkthroughItem.chartRestrictedValues(newRestrict);
-  }
-
-  function _handlePercentButton(e) {
-    let btn = e.target;
-    let elemChart = page.navAnalyze.getElementsByClassName('walkthrough-item-container')[0];
-    let walkthroughItem = elemChart.walkthroughitem;
-    
-    let newUsePercentages = !(btn.getAttribute('walkthrough-setting') == 'true');
-    if (newUsePercentages) {
-      btn.innerHTML = "raw numbers";
-      btn.title = "show raw numbers";
-    } else {
-      btn.innerHTML = 'percentages';
-      btn.title = 'show percentages';
-    }
-    btn.setAttribute('walkthrough-setting', newUsePercentages);
-    
-    walkthroughItem.chartPercentages(newUsePercentages);
-  }
-
   //----------------------------------------
   // callbacks
   //----------------------------------------

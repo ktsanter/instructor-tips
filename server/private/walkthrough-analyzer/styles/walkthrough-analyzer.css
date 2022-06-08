@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
- * Roster manager
+ * Walkthrough Analyzer
  *------------------------------------------------------------------------------*/
 .colorscheme {
   --bgPrimary: rgba(66, 98, 150, 1.0);
@@ -95,12 +95,44 @@ body {
 }
 
 /*------------------------------------------------------------------------------
- * contents - navAnalyze
+ * contents - navSummary
  *------------------------------------------------------------------------------*/
-.contents .contents-navAnalyze {}
+.contents .contents-navSummary {}
 
-.contents .contents-navAnalyze .walkthrough-item-container {
-  width: 25%;
+.contents .contents-navSummary .walkthrough-zoomitem-container {
+  width: 60%;
+}
+
+.contents .contents-navSummary .icon-close {
+  font-size: 2.0em;
+  color: #aaa;
+  cursor: pointer;
+}
+/*------------------------------------------------------------------------------
+ * contents - navItems
+ *------------------------------------------------------------------------------*/
+.contents .contents-navItems {}
+
+.contents .contents-navItems .header-itemname { width: 40%; }
+.contents .contents-navItems .header-domain { width: 10%; }
+.contents .contents-navItems .header-percentYes { width: 10%; }
+
+.contents .contents-navItems .walkthrough-item-container {
+  width: 5%;
+}
+
+.contents .contents-navItems .walkthrough-item-container:hover {
+  cursor: pointer;
+}
+
+.contents .contents-navItems .walkthrough-zoomitem-container {
+  width: 60%;
+}
+
+.contents .contents-navItems .icon-close {
+  font-size: 2.0em;
+  color: #aaa;
+  cursor: pointer;
 }
 
 /*------------------------------------------------------------------------------

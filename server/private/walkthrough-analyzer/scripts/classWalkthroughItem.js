@@ -8,20 +8,19 @@ class WalkthroughItem {
     this.config = config;
     this.config.cvs = null;
     this.chart = null;
+    this.tooltipLabel = null;
     
-    if (!this.config.hasOwnProperty('restrictValues')) {
-      this.config.restrictValues = false;
-    }
-    if (!this.config.hasOwnProperty('usePercentages')) {
-      this.config.usePercentages = false;
-    }
+    if (!this.config.hasOwnProperty('restrictValues')) this.config.restrictValues = false;
+    if (!this.config.hasOwnProperty('suppressTitle')) this.config.suppressTitle = false;
+    if (!this.config.hasOwnProperty('suppressLegend')) this.config.suppressLegend = false;
+    if (!this.config.hasOwnProperty('suppressTooltips')) this.config.suppressTooltips = false;
   }
   
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
   drawChart(params) {
-    const container = CreateElement.createDiv(null, 'walkthrough-item-container');
+    const container = CreateElement.createDiv(null, this.config.className);
 
     this.config.cvs = CreateElement._createElement('canvas', null, 'walkthrough-item-canvas');
     container.appendChild(this.config.cvs);
@@ -36,14 +35,10 @@ class WalkthroughItem {
     this._renderItemChart();
   }
   
-  chartPercentages(usePercentages) {
-    this.config.usePercentages = usePercentages;
-    this._renderItemChart();
-  }
-  
   getDataAsPercentages() {
     let chartData = [...this.config.data];
-    if (this.config.restrictValues) chartData = chartData.slice(0, -1);
+    if (this.config.restrictValues && chartData.length > 2) chartData = chartData.slice(0, -1);
+    let rawData = [...chartData];
     
     let sum = 0;
     
@@ -55,17 +50,21 @@ class WalkthroughItem {
       chartData[i] = Number((pct).toFixed(1));;
     }
     
-    return chartData;
+    return {
+      "rawData": rawData,
+      "percentageData": chartData,
+      "sum": sum
+    };
   }
   
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------
   _renderItemChart() {
-    let chartData = this.config.data;
-    if (this.config.restrictValues) chartData = chartData.slice(0, -1);
-    if (this.config.usePercentages) {
-      chartData = this.getDataAsPercentages();
+    let chartData = this.getDataAsPercentages();
+    this.tooltipLabel = [];
+    for (let i = 0; i < chartData.rawData.length; i++) {
+      this.tooltipLabel.push( chartData.percentageData[i] + '% ' + chartData.rawData[i] + '/' + chartData.sum  );
     }
 
     this._makeDoughnutChart(
@@ -73,13 +72,13 @@ class WalkthroughItem {
       {
         "title": this.config.title,
         "isThreeValue": true,
-        "data": chartData,
+        "data": chartData.percentageData,
         "labels": this.config.labels,
-        "suppressTitle": false,
-        "suppressLegend": true
+        "suppressTitle": this.config.suppressTitle,
+        "suppressLegend": this.config.suppressLegend,
+        "suppressTooltips": this.config.suppressTooltips
       }
     );
-    
   }
   
   _makeDoughnutChart(cvs, params) {
@@ -96,17 +95,31 @@ class WalkthroughItem {
       "segmentBorderColor": segmentStyling.borderColor,
       "segmentBorderWidth": segmentStyling.borderWidth,
       "suppressTitle": params.suppressTitle,
-      "suppressLegend": params.suppressLegend
+      "suppressLegend": params.suppressLegend,
+      "suppressTooltips": params.suppressTooltips
     }
     
     this._makeChart(cvs, chartParams);
   }
   
   _makeChart(cvs, params) {
+    cvs.addEventListener('click', (e) => { this._handleClick(e); });
     const ctx = cvs.getContext('2d');
     const me = this;
     
+    let tooltipOptions =  {
+      callbacks: {
+        label: function (context) {
+          return context.label + ' ' + me.tooltipLabel[context.dataIndex];
+        }
+      }
+    };
+    if (params.suppressTooltips) {
+      tooltipOptions = { enabled: false };
+    }
+        
     let chartOptions = {
+      animation: false,
       plugins: {
         legend: true,
         
@@ -114,16 +127,8 @@ class WalkthroughItem {
           display: true,
           text: params.title
         },
-        
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              let value = context.formattedValue;
-              if (me.config.usePercentages) value += '%';
-              return context.label + ' ' + value;
-            }
-          }
-        }
+
+        tooltip: tooltipOptions
       }
     }
     
@@ -199,6 +204,11 @@ class WalkthroughItem {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
+  _handleClick(e) {
+    if (this.config.clickCallback != null) {
+      this.config.clickCallback(this);
+    }
+  }
   
   //--------------------------------------------------------------
   // utility

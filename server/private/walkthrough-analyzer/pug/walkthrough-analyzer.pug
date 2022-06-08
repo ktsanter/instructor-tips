@@ -4,7 +4,8 @@ include ../../common/pug/navbar-mixins.pug
 include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/profile-mixins.pug
 
-include ./mixins/mixins-analyze.pug
+include ./mixins/mixins-summary.pug
+include ./mixins/mixins-items.pug
 include ./mixins/mixins-configure.pug
 include ./mixins/mixins-admin.pug
 
@@ -32,7 +33,8 @@ html(lang="en")
     +makeNavbar("Walkthrough analyzer", 
       {
         items: [
-          {id: "navAnalyze", type: "link", label: "analyze"},
+          {id: "navSummary", type: "link", label: "summary"},
+          {id: "navItems", type: "link", label: "items"},
           {id: "navConfigure", type: "link", label: "configure"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
@@ -55,8 +57,11 @@ html(lang="en")
     .contents
       .error-container
         
-      .container-fluid(class="contents-container contents-navAnalyze hide-me disable-container")
-        +analyzeContainer()     
+      .container-fluid(class="contents-container contents-navSummary hide-me disable-container")
+        +summaryContainer()     
+        
+      .container-fluid(class="contents-container contents-navItems hide-me disable-container")
+        +itemsContainer()     
         
       .container-fluid(class="contents-container contents-navConfigure hide-me disable-container")
         +configureContainer()     

@@ -1,0 +1,37 @@
+mixin itemsContainer()
+  .row(class="full-table-container")
+    .col-sm(class="item-table-container")
+
+      div(class="masker")
+      
+      table(class="table table-striped table-hover table-sm")
+        thead(class="item-table-head table-primary")
+          tr
+            th(class="header header-itemname" field-name="item")
+              span(class="item-table-headerlabel") item
+
+            th(class="header header-domain" field-name="domain")
+              span(class="item-table-headerlabel") domain
+
+            th(class="header header-percentYes" field-name="percentYes")
+              span(class="item-table-headerlabel") % yes
+
+            th(class="header header-chart" field-name="chart")
+              span(class="item-table-headerlabel") 
+
+        tbody(class="item-table-body")
+
+      table(class="hide-me dummy-table")
+        thead
+        tbody
+          tr(class="row-template")
+            td(class="item-name")
+            td(class="item-domain")
+            td(class="item-percent-yes")
+            td(class="item-chart")
+            
+  .row(class="zoomItem-container hide-me")
+    .col-sm(class="single-item-container")
+          
+    .col-sm
+      i(class="icon icon-close far fa-window-close")
