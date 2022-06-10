@@ -74,7 +74,6 @@ module.exports = internal.WalkthroughAnalyzer = class {
 // other public methods
 //---------------------------------------------------------------  
   processUploadedFile(req, res, uploadType, userInfo) {
-    console.log('WalkthroughAnalyzer.processUploadedFile');
     var validTypes = new Set(['walkthrough']);
 
     if (validTypes.has(uploadType)) {
@@ -130,7 +129,6 @@ module.exports = internal.WalkthroughAnalyzer = class {
 // private methods - file processing
 //--------------------------------------------------------------- 
   async _processExcelFile(req, res, uploadType, userInfo) {
-    console.log('\n**WalkthroughAnalyzer._processExcelFile');
     var thisObj = this;
 
     var form = new this._formManager.IncomingForm();
@@ -170,7 +168,6 @@ module.exports = internal.WalkthroughAnalyzer = class {
   // process specific Excel file
   //----------------------------------------------------------------------
   async _processWalkthroughFile(res, thisObj, worksheet, userInfo) {
-    console.log('\n**_processWalkthroughFile');
     var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Walkthrough);
     if (!validate.success) {
       console.log('missing columns', validate);
@@ -207,7 +204,6 @@ module.exports = internal.WalkthroughAnalyzer = class {
   // package data from specific uploaded file
   //-----------------------------------------------------------------
   _packageUploadedWalkthroughValues(thisObj, worksheet, foundColumnInfo, criteriaMasterList) {
-    console.log('\n**WalkthroughAnalyzer._packageUploadedWalkthroughValues');
     var result = {success: false, data: null};
     
     let criteriaFoundList = thisObj._findCriteriaList(criteriaMasterList, worksheet.getRow(1));;
@@ -288,7 +284,6 @@ module.exports = internal.WalkthroughAnalyzer = class {
   // post uploaded Excel data to DB
   //------------------------------------------------------------
   async _postWalkthroughItems(thisObj, data, userInfo) {
-    console.log('_postWalkthroughItems');
     var result = thisObj._dbManager.queryFailureResult(); 
     var queryList, queryResults;
     
@@ -347,29 +342,96 @@ module.exports = internal.WalkthroughAnalyzer = class {
   async _getWalkthroughData(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;
-    
-    result.success =true;
-    result.details = 'testing';
-    result.data = {"dummy": 'test walkthrough data'};
-    return result;
-    
-    
-    queryList = {
-      "preferredname":
-        'select p.studentname, p.preferredname ' +
-        'from preferredname as p ' +
-        'where p.userid = ' + userInfo.userId
-    }
 
+    queryList = {
+      criteria:
+        'select distinct ' +
+          'a.criterionid, ' +
+          'b.indexwithindomain, ' +
+          'b.criteriontext, ' +
+          'c.domainnumber, ' +
+          'c.domaindescription ' +
+        'from  ' +
+          'walkthroughitem as a, ' +
+          'criterion as b, ' +
+          'domaininfo as c ' +
+        'where ' +
+          'a.criterionid = b.criterionid ' +
+          'and b.domainid = c.domainid ' +
+          'and a.userid = ' + userInfo.userId
+    };
+    
+    
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    let criteriaForUser = queryResults.data.criteria;
+    queryList = {}
+    let walkthroughSummary = {};
+    
+    for (let i = 0; i < criteriaForUser.length; i++) {
+      const criterion = criteriaForUser[i];
+
+      queryList['yesCount' + criterion.criterionid] = 
+        'select ' +
+          'count(itemvalue) as "yescount"' +
+        'from ' +
+          'walkthroughitem ' +
+        'where ' +
+          'userid = ' + userInfo.userId + ' ' +
+          'and criterionid = ' + criterion.criterionid  + ' ' +
+          'and itemvalue = "yes" '
+
+      queryList['noCount' + criterion.criterionid] = 
+        'select ' +
+          'count(itemvalue) as "nocount"' +
+        'from ' +
+          'walkthroughitem ' +
+        'where ' +
+          'userid = ' + userInfo.userId + ' ' +
+          'and criterionid = ' + criterion.criterionid  + ' ' +
+          'and itemvalue = "no" '
+
+      queryList['otherCount' + criterion.criterionid] = 
+        'select ' +
+          'count(itemvalue) as "othercount"' +
+        'from ' +
+          'walkthroughitem ' +
+        'where ' +
+          'userid = ' + userInfo.userId + ' ' +
+          'and criterionid = ' + criterion.criterionid  + ' ' +
+          'and itemvalue not in ("yes", "no") '
+          
+      walkthroughSummary[criterion.criterionid] = {
+        "criterionid": criterion.criterionid,
+        "criteriontext": criterion.criteriontext,
+        "domainnumber": criterion.domainnumber,
+        "domaindescription": criterion.domaindescription,
+        "indexwithindomain": criterion.indexwithindomain,
+        "label": ["yes", "no", "other"],
+        "count": [0, 0, 0]
+      }
+    }
+    
     queryResults = await this._dbManager.dbQueries(queryList); 
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
     }
+    
+    for (var id in walkthroughSummary) {
+      walkthroughSummary[id].count[0] = queryResults.data['yesCount' + id][0].yescount;
+      walkthroughSummary[id].count[1] = queryResults.data['noCount' + id][0].nocount;
+      walkthroughSummary[id].count[2] = queryResults.data['otherCount' + id][0].othercount;
+    }
 
     result.success = true;
     result.details = 'query succeeded';
-    result.data = queryResuls.data;  
+    result.data = walkthroughSummary;  
 
     return result;
   }

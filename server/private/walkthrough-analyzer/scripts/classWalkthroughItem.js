@@ -46,8 +46,13 @@ class WalkthroughItem {
       sum += chartData[i];
     }
     for (let i = 0; i < chartData.length; i++) {
-      let pct = ((chartData[i] * 1.0) / sum) * 100;
-      chartData[i] = Number((pct).toFixed(1));;
+      if (sum == 0) {
+        chartData[i] = 'n/a';
+        
+      } else {
+        let pct = ((chartData[i] * 1.0) / sum) * 100;
+        chartData[i] = Number((pct).toFixed(1));
+      }
     }
     
     return {

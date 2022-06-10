@@ -26,15 +26,15 @@ class WalkthroughSummary {
     
     let summaryLabels = [];
     let summaryPercentages = [];
-    for (let i = 0; i < this.config.data.length; i++) {
-      let itemConfig = this.config.data[i];
+    for (let id in this.config.data) {
+      let itemConfig = this.config.data[id];
       let item = new WalkthroughItem({
         "data": itemConfig.count,
         "restrictValues": true
       });
       
       let percentageYes = item.getDataAsPercentages().percentageData[0];
-      summaryLabels.push(itemConfig.title);
+      summaryLabels.push(itemConfig.criteriontext);
       summaryPercentages.push(percentageYes);
     }
     
@@ -107,16 +107,16 @@ class WalkthroughSummary {
     let item = this._getChartDataForLabel(label);
     if (item == null) return;
     
-    item.labels =  ['yes', 'no', 'not a focus'];
+    item.labels =  ['yes', 'no', 'other'];
     
     let container = this.config.container.getElementsByClassName('single-item-container')[0];
     UtilityKTS.removeChildren(container);
 
     let zoomItem = new WalkthroughItem({
       "className": 'walkthrough-zoomitem-container',
-      "title": item.title,
+      "title": item.criteriontext,
       "data": item.count,
-      "labels": item.labels,
+      "labels": item.label,
       "restrictValues": true,
       "suppressTitle": false,
       "suppressLegend": true,
@@ -135,7 +135,8 @@ class WalkthroughSummary {
       let statMsg = item.labels[i] + ': ';
       
       if (i < 2) {
-        statMsg += ' ' + chartStats.percentageData[i] + '%';
+        statMsg += ' ' + chartStats.percentageData[i];
+        if (chartStats.percentageData[i] != 'n/a') statMsg += '%';
         statMsg += ' (' + chartStats.rawData[i] + '/' + chartStats.sum + ')';
       } else {
         statMsg += ' ' + item.count[i];
@@ -150,9 +151,12 @@ class WalkthroughSummary {
   _getChartDataForLabel(label) {
     let chartDataItem = null;
     
-    for (let i = 0; i < this.config.data.length && chartDataItem == null; i++) {
-      let itemConfig = this.config.data[i];
-      if (itemConfig.title == label) chartDataItem = itemConfig;
+    for (let id in this.config.data) {
+      let itemConfig = this.config.data[id];
+      if (itemConfig.criteriontext == label) {
+        chartDataItem = itemConfig;
+        break;
+      }      
     }
     
     return chartDataItem;
@@ -174,13 +178,24 @@ class WalkthroughSummary {
   //--------------------------------------------------------------   
   _handleSummaryClick(e) {
     let chart = this.config.chart;
-    
     const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
+    let label = '';
+    
     if (points.length) {
       const firstPoint = points[0];
-      const label = chart.data.labels[firstPoint.index];
+      label = chart.data.labels[firstPoint.index];
+      
+    } else {
+      let xIndex = Math.round(chart.scales.x.getValueForPixel(e.x));
+      let yIndex = Math.round(chart.scales.y.getValueForPixel(e.y));
+      if (xIndex >= 0 && xIndex < chart.data.labels.length && yIndex >= -16 && yIndex <= -13) {
+        label = chart.data.labels[xIndex];
+      }
+    }      
+          
+    if (label != '') {
       this._showSingleItem(label);
-    }    
+    }
   }
   
   _handleCloseZoomItem(e) {

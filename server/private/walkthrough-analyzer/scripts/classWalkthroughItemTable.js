@@ -11,6 +11,8 @@ class WalkthroughItemTable {
     
     let btnCloseZoomItem = this.config.container.getElementsByClassName('icon-close')[0];
     btnCloseZoomItem.addEventListener('click', (e) => { this._handleCloseZoomItem(e); });
+    
+    console.log('WalkthroughItemTable', this.config);
   }
   
   //--------------------------------------------------------------
@@ -22,12 +24,14 @@ class WalkthroughItemTable {
 
     UtilityKTS.removeChildren(itemTableBody);
     
-    for (let i = 0; i < this.config.data.length; i++) {
+    for (let id in this.config.data) {
+      let itemData = this.config.data[id];
+      
       let item = new WalkthroughItem({
         "className": 'walkthrough-item-container',
-        "title": this.config.data[i].title,
-        "data": this.config.data[i].count,
-        "labels": ["yes", "no", "not a focus"],
+        "title": itemData.criteriontext,
+        "data": itemData.count,
+        "labels": itemData.label,
         "restrictValues": true,
         "suppressTitle": true,
         "suppressLegend": true,
@@ -45,8 +49,8 @@ class WalkthroughItemTable {
       itemTableBody.appendChild(elemRow);
 
       let percentYes = item.getDataAsPercentages().percentageData[0];
-      elemRow.getElementsByClassName('item-name')[0].innerHTML = this.config.data[i].title;
-      elemRow.getElementsByClassName('item-domain')[0].innerHTML = this.config.data[i].domain;
+      elemRow.getElementsByClassName('item-name')[0].innerHTML = itemData.criteriontext;
+      elemRow.getElementsByClassName('item-domain')[0].innerHTML = itemData.domainnumber;
       elemRow.getElementsByClassName('item-percent-yes')[0].innerHTML = percentYes;
       elemRow.getElementsByClassName('item-chart')[0].appendChild(elemChart);
     }

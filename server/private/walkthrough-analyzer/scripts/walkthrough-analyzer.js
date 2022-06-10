@@ -18,73 +18,6 @@ const app = function () {
 
     adminDisable: false
   };
-  
-    
-  const dummyData = [
-    { 
-      "title": "Learning focus evident to the students in Additional Resources", 
-      "domain": 1,
-      "count": [10, 20, 40] 
-    },
-    { 
-      "title": "Exceptional Student Report (ESR) is updated", 
-      "domain": 1,
-      "count": [40, 20, 60] 
-    },
-    
-    { 
-      "title": "Weekly Announcements Posted (Teacher Feed)", 
-      "domain": 2,
-      "count": [8, 2, 20] 
-    },
-    { 
-      "title": "Respectful Correction (Feedback Tone)", 
-      "domain": 2,
-      "count": [18, 12, 20] 
-    },
-    { 
-      "title": "Hard Work Expected (Indicated in Context of Feedback and Announcements)", 
-      "domain": 2,
-      "count": [28, 22, 20] 
-    },
-    { 
-      "title": "Student pride in Work (Evidence in Student Submission)", 
-      "domain": 2,
-      "count": [38, 32, 20] 
-    },
-    { 
-      "title": "Motivational Encouragement (Announcements", 
-      "domain": 2,
-      "count": [48, 42, 20] 
-    },
-    { 
-      "title": "Clearly Outlined Expectations in Welcome Letter", 
-      "domain": 2,
-      "count": [58, 52, 20] 
-    },
-    { 
-      "title": "Daily Logins by Instructor", 
-      "domain": 2,
-      "count": [68, 62] 
-    },
-    { 
-      "title": "Active Student Participation", 
-      "domain": 2,
-      "count": [78, 82, 20] 
-    },
-    
-    { 
-      "title": "Students Asked to Justify Their Thinking (Discussion Boards)",
-      "domain": 3,
-      "count": [60, 90, 50] 
-    },
-    
-    { 
-      "title": "Contact Lead about Course Concerns",
-      "domain": 4,
-      "count": [90, 60, 50] 
-    }
-  ];
     
 	//---------------------------------------
 	// get things going
@@ -225,7 +158,7 @@ const app = function () {
   function _showSummary() {
     let summary = new WalkthroughSummary({      
       "container": page.navSummary,
-      "data": dummyData
+      "data": settings.currentInfo
     });
     
     summary.show();
@@ -234,7 +167,7 @@ const app = function () {
   function _showItems() {
     let itemTable = new WalkthroughItemTable({
       "container": page.navItems,
-      "data": dummyData
+      "data": settings.currentInfo
     });
     
     itemTable.show();
