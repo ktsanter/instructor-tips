@@ -99,8 +99,12 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navSummary {}
 
+.contents .contents-navSummary .summary-contents {
+  width: 70%;
+}
+
 .contents .contents-navSummary .walkthrough-zoomitem-container {
-  width: 60%;
+  width: 40%;
 }
 
 .contents .contents-navSummary .icon-close {
@@ -126,7 +130,7 @@ body {
 }
 
 .contents .contents-navItems .walkthrough-zoomitem-container {
-  width: 60%;
+  width: 40%;
 }
 
 .contents .contents-navItems .icon-close {
