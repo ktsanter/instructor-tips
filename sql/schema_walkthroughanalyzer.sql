@@ -18,7 +18,8 @@ create table domaininfo
   domainnumber        int unsigned not null,
   domaindescription   varchar(100) not null,
   
-  primary key (domainid)
+  primary key (domainid),
+  constraint unique(domainnumber)
 );
 
 create table criterion
@@ -32,16 +33,39 @@ create table criterion
   constraint foreign key (domainid) references domaininfo (domainid) on delete cascade
 );
 
+create table walkthroughset
+(
+  walkthroughsetid    int unsigned not null AUTO_INCREMENT,
+  userid              int unsigned not null,
+  walkthroughsetname  varchar(400),
+  
+  primary key (walkthroughsetid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(walkthroughsetname)
+);
+
+create table walkthroughsetselection
+(
+  walkthroughsetselectionid    int unsigned not null AUTO_INCREMENT,
+  userid                       int unsigned not null,
+  walkthroughsetid             int unsigned not null,
+  
+  primary key (walkthroughsetselectionid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint foreign key (walkthroughsetid) references walkthroughset (walkthroughsetid) on delete cascade,
+  constraint unique(userid, walkthroughsetid)
+);
+
 create table walkthroughitem
 (
   walkthroughitemid   int unsigned not null AUTO_INCREMENT,
-  userid              int unsigned not null,
+  walkthroughsetid    int unsigned not null,
   criterionid         int unsigned not null,
   itemvalue           varchar(20) not null,
   itemdate            varchar(20) not null,
   
   primary key (walkthroughitemid),
-  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint foreign key (walkthroughsetid) references walkthroughset (walkthroughsetid) on delete cascade,
   constraint foreign key (criterionid) references criterion (criterionid) on delete cascade
 );
 
@@ -60,7 +84,23 @@ select "creating views" as comment;
 #-- stored procedures
 #--------------------------------------------------------------------------
 select "creating stored procedures" as comment;
-    
+
+DELIMITER //
+create procedure add_walkthroughset(in user_Id int, in dataset_Name varchar(200))
+begin
+  insert into walkthroughset(
+    userid, 
+    walkthroughsetname
+  ) values (
+    user_Id,
+    dataset_Name
+  );
+  
+  select LAST_INSERT_ID() as walkthroughsetid;
+end;
+//
+DELIMITER ;
+
 #--------------------------------------------------------------------------
 #-- initial data
 #--------------------------------------------------------------------------

@@ -14,6 +14,7 @@ define(function (require) {
   require('classWalkthroughSummary');
   require('classWalkthroughItemTable');
   require('classWalkthroughItem');
+  require('classWalkthroughConfigure');
   require('walkthrough-analyzer');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

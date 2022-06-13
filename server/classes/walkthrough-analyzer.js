@@ -36,6 +36,12 @@ module.exports = internal.WalkthroughAnalyzer = class {
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
       
+    } else if (params.queryName == 'walkthrough-datasets') {
+      dbResult = await this._getWalkthroughDatasets(params, postData, userInfo);
+            
+    } else if (params.queryName == 'walkthrough-datasetselections') {
+      dbResult = await this._getWalkthroughDatasetSelections(params, postData, userInfo);
+            
     } else if (params.queryName == 'walkthrough-data') {
       dbResult = await this._getWalkthroughData(params, postData, userInfo);
             
@@ -57,7 +63,15 @@ module.exports = internal.WalkthroughAnalyzer = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    if (params.queryName == 'walkthrough-dataset') {
+      dbResult = await this._updateWalkthroughDataset(params, postData, userInfo);
+      
+    } else if (params.queryName == 'walkthrough-dataset-selection') {
+      dbResult = await this._updateWalkthroughSetSelection(params, postData, userInfo);
+      
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    }
     
     return dbResult;
   }  
@@ -65,7 +79,12 @@ module.exports = internal.WalkthroughAnalyzer = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    if (params.queryName == 'walkthrough-dataset') {
+      dbResult = await this._deleteWalkthroughDataset(params, postData, userInfo);
+      
+    } else {
+      dbResult.details = 'unrecognized parameter: ' + params.queryName;
+    }
     
     return dbResult;
   }
@@ -138,6 +157,8 @@ module.exports = internal.WalkthroughAnalyzer = class {
         return;
       }
       
+      let datasetName = fields.datasetname;
+      
       var origFileName = files.file.name;
       var filePath = files.file.path;
       const exceljs = require('exceljs');
@@ -156,7 +177,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
       }
       
       if (processRoutingMap.hasOwnProperty(uploadType)) {
-        processRoutingMap[uploadType](res, thisObj, worksheet, userInfo);
+        processRoutingMap[uploadType](res, thisObj, worksheet, userInfo, datasetName);
 
       } else {
         thisObj._sendFail(res, 'unrecognized upload type: ' + uploadType);
@@ -167,7 +188,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
   //----------------------------------------------------------------------
   // process specific Excel file
   //----------------------------------------------------------------------
-  async _processWalkthroughFile(res, thisObj, worksheet, userInfo) {
+  async _processWalkthroughFile(res, thisObj, worksheet, userInfo, datasetName) {
     var validate = thisObj._verifyHeaderRow(worksheet.getRow(1), thisObj._requiredColumns_Walkthrough);
     if (!validate.success) {
       console.log('missing columns', validate);
@@ -189,9 +210,9 @@ module.exports = internal.WalkthroughAnalyzer = class {
     }
     let walkthroughItems = result.data.walkthroughItems;
 
-    var result = await thisObj._postWalkthroughItems(thisObj, walkthroughItems, userInfo);
+    var result = await thisObj._postWalkthroughItems(thisObj, walkthroughItems, userInfo, datasetName);
     if (!result.success) {
-      thisObj._sendFail(res, '** failed to post walkthrough items');
+      thisObj._sendFail(res, result.details);
       return;
     }
 
@@ -283,22 +304,28 @@ module.exports = internal.WalkthroughAnalyzer = class {
   //------------------------------------------------------------
   // post uploaded Excel data to DB
   //------------------------------------------------------------
-  async _postWalkthroughItems(thisObj, data, userInfo) {
+  async _postWalkthroughItems(thisObj, data, userInfo, datasetName) {
     var result = thisObj._dbManager.queryFailureResult(); 
     var queryList, queryResults;
     
-    queryList = {};
-    queryList.remove = 'delete from walkthroughitem where userid = ' + userInfo.userId;
+    queryList = {
+      addset:
+        'call add_walkthroughset (' +
+          userInfo.userId + ', ' +
+          '"' + datasetName + '" ' + 
+        ')'
+    }
 
     queryResults = await this._dbManager.dbQueries(queryList); 
-
     if (!queryResults.success) {
-      result.details = 'failed to delete old walkthrough items for user';
+      result.details = queryResults.details;
       return result;
     }
     
+    let walkthroughSetId = queryResults.data.addset[0][0].walkthroughsetid;
+    
     queryList = {};
-    queryList.add = 'insert into walkthroughitem (userid, criterionid, itemvalue, itemdate) values ';
+    queryList.add = 'insert into walkthroughitem (walkthroughsetid, criterionid, itemvalue, itemdate) values ';
       
     for (var i = 0; i < data.length; i++) {
       var item = data[i];
@@ -306,7 +333,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
       if (i > 0) queryList.add += ', ';
       queryList.add +=  
         '(' +
-            userInfo.userId + ', ' +
+            walkthroughSetId + ', ' +
             item.criterionId + ', ' +
             '"' + item.criterionValue + '", ' +
             '"' + item.criterionDate + '" ' +
@@ -339,10 +366,83 @@ module.exports = internal.WalkthroughAnalyzer = class {
     return result;
   }  
   
-  async _getWalkthroughData(params, postData, userInfo) {
+  async _getWalkthroughDatasets(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;
 
+    queryList = {
+      walkthroughset:
+        'select ' +
+          'a.walkthroughsetid, ' +
+          'a.walkthroughsetname ' +
+        'from  ' +
+          'walkthroughset as a ' +
+        'where ' +
+          'a.userid = ' + userInfo.userId
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = queryResults.data.walkthroughset;  
+
+    return result;
+  }
+  
+  async _getWalkthroughDatasetSelections(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+
+    queryList = {
+      selections:
+        'select ' +
+          'a.walkthroughsetid ' +
+        'from  ' +
+          'walkthroughsetselection as a ' +
+        'where ' +
+          'a.userid = ' + userInfo.userId
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = queryResults.data.selections;  
+
+    return result;
+  }
+  
+  async _getWalkthroughData(params, postData, userInfo) {
+    console.log('_getWalkthroughData');
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+
+    console.log('params', params);
+    console.log('postData', postData);
+    if (postData.selectedsets.length == 0) {
+      result.success = true;
+      result.details = 'query succeeded (no data)';
+      result.data = {};
+      return result;
+    }
+    
+    let selectedSetString = '';
+    for (let i = 0; i < postData.selectedsets.length; i++) {
+      if (i > 1) selectedSetString += ', ';
+      selectedSetString += postData.selectedsets[i];
+    }
+    
     queryList = {
       criteria:
         'select distinct ' +
@@ -358,11 +458,12 @@ module.exports = internal.WalkthroughAnalyzer = class {
         'where ' +
           'a.criterionid = b.criterionid ' +
           'and b.domainid = c.domainid ' +
-          'and a.userid = ' + userInfo.userId
+          'and a.walkthroughsetid in (' + selectedSetString + ')'
     };
     
-    
+    console.log('queryList', queryList);
     queryResults = await this._dbManager.dbQueries(queryList); 
+    console.log(queryResults);
     
     if (!queryResults.success) {
       result.details = queryResults.details;
@@ -466,6 +567,94 @@ module.exports = internal.WalkthroughAnalyzer = class {
 
     return result;
   }
+  
+  async _updateWalkthroughDataset(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "walkthroughset":
+        'update walkthroughset ' +
+        'set walkthroughsetname = "' + postData.walkthroughsetname + '" ' +
+        'where walkthroughsetid = ' + postData.walkthroughsetid
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {}
+
+    return result;
+  }  
+  
+  async _deleteWalkthroughDataset(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "walkthroughset":
+        'delete ' +
+        'from walkthroughset ' +
+        'where walkthroughsetid = ' + postData.walkthroughsetid
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {}
+
+    return result;
+  }  
+  
+  async _updateWalkthroughSetSelection(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    if (postData.selected) {
+      queryList = {
+        "replace":
+          'replace into walkthroughsetselection (' +
+            'userid, walkthroughsetid' +
+          ') values (' +
+            userInfo.userId + ', ' +
+            postData.walkthroughsetid +
+          ') '
+      }
+
+    } else {
+      queryList = {
+        "delete":
+          'delete from walkthroughsetselection ' +
+          'where userid = ' + userInfo.userId + ' ' +
+            'and walkthroughsetid = ' + postData.walkthroughsetid
+      }
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {}
+
+    return result;
+  }  
   
 //----------------------------------------------------------------------
 // utility

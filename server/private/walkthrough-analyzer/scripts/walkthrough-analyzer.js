@@ -44,8 +44,6 @@ const app = function () {
     _attachNavbarHandlers();
     _renderContents();
     
-    _setUploadFileInfo();
-    
     settings.currentInfo = null;
     var gotInfo = await _getCurrentInfo();
     if (!gotInfo) return;
@@ -119,11 +117,13 @@ const app = function () {
   
   function _renderConfigure() {
     page.navConfigure = page.contents.getElementsByClassName('contents-navConfigure')[0];
-    
-    var fileUploads = page.navConfigure.getElementsByClassName('uploadfile');
-    for (var i = 0; i < fileUploads.length; i++) {
-      fileUploads[i].addEventListener('change', (e) => { _handleFileUpload(e); });
-    }
+    settings.objConfigure = new WalkthroughConfigure({      
+      "container": page.navConfigure,
+      "hideClass": settings.hideClass,
+      "notice": page.notice,
+      "poster": settings.reportPoster,
+      "callbackUpdate": _callbackForConfigureUpdate
+    });
   }
   
   function _renderAdmin() {
@@ -158,7 +158,7 @@ const app = function () {
   function _showSummary() {
     let summary = new WalkthroughSummary({      
       "container": page.navSummary,
-      "data": settings.currentInfo
+      "data": settings.currentInfo.dataitems
     });
     
     summary.show();
@@ -167,13 +167,15 @@ const app = function () {
   function _showItems() {
     let itemTable = new WalkthroughItemTable({
       "container": page.navItems,
-      "data": settings.currentInfo
+      "data": settings.currentInfo.dataitems
     });
     
     itemTable.show();
   }
   
-  function _showConfigure() {}
+  function _showConfigure() {
+    settings.objConfigure.show(settings.currentInfo);
+  }
   
   function _showAdmin() {}
     
@@ -194,6 +196,7 @@ const app = function () {
     console.log('_exportToExcel (stubbed)');
     return;
     
+    /*
     var mentorExportData = _packageMentorExportData();
     
     var exportData = {
@@ -204,6 +207,7 @@ const app = function () {
     var exportForm = page.body.getElementsByClassName('export-form')[0];
     exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(exportData);
     exportForm.submit();
+    */
   }
   
   function _doHelp() {
@@ -247,69 +251,39 @@ const app = function () {
     UtilityKTS.setClass(elem, 'disabled', !enable);
   }
   
-  function _setConfigureEnable(enable) {
-    UtilityKTS.setClass(page.navConfigure, 'disable-container', !enable);
-  }
-  
   async function _getCurrentInfo() {
-    settings.currentInfo = null;
+    settings.currentInfo = {
+      datasets: null,
+      datasetselections: null,
+      dataitems: null
+    };
     
     _setExportUIEnable(false);
     
-    var result = await _getWalkthroughData();
+    let result = await _getWalkthroughDatasets();
+    if (!result.success) {
+      console.log('failed to get walkthrough data sets');
+      return false;
+    }   
+    settings.currentInfo.datasets = result.data;
+    
+    result = await _getWalkthroughDatasetSelections();
+    if (!result.success) {
+      console.log('failed to get walkthrough data set selections');
+      return false;
+    }
+    settings.currentInfo.datasetselections = result.data;
+    
+    result = await _getWalkthroughData(settings.currentInfo.datasetselections);
     if (!result.success) {
       console.log('failed to get walkthrough data');
       return false;
     }
-    
-    settings.currentInfo = result.data;
+    settings.currentInfo.dataitems = result.data;
     
     _setExportUIEnable(settings.currentInfo != null);
     
     return true;
-  }
-  
-  function _setUploadFileInfo() {
-    var elemResultWalkthrough = page.navConfigure.getElementsByClassName('upload-result walkthrough')[0];
-    var elemStatus = page.navConfigure.getElementsByClassName('configure-status')[0];
-    
-    elemResultWalkthrough.innerHTML = '';
-
-    UtilityKTS.removeChildren(elemStatus);
-  }
-    
-  async function _doFileUpload(uploadType, file) {
-    page.notice.setNotice('loading...', true);
-
-    var elemResult = page.navConfigure.getElementsByClassName('upload-result ' + uploadType)[0];
-    var elemStatus = page.navConfigure.getElementsByClassName('configure-status')[0];
-    UtilityKTS.removeChildren(elemStatus);
-    
-    var url = '/usermanagement/routeToApp/walkthrough-analyzer/upload/' + uploadType;    
-    var result = await settings.reportPoster.post(url, file);
-    
-    var resultElem = page.navConfigure.getElementsByClassName('upload-result')[0];
-    resultElem.innerHTML = '';
-    
-    if (!result.success) {
-      elemResult.innerHTML = result.details;
-      page.notice.setNotice('');
-      return;
-    }
-
-    elemResult.innerHTML = result.details;
-    
-    console.log('file upload result', result);
-
-    _displayConfigureStatus(result.data, elemStatus);
-    await _getCurrentInfo();
-
-    page.notice.setNotice('');
-  }
-  
-  function _displayConfigureStatus(changes, container) {
-    console.log('_displayConfigureStatus (stubbed)');
-    UtilityKTS.removeChildren(container);
   }
   
   //--------------------------------------------------------------------------
@@ -371,29 +345,13 @@ const app = function () {
     _setDirtyBit(false);
   }
     
-  async function _handleFileUpload(e) {
-    if (e.target.files.length == 0) return;
-    
-    _setConfigureEnable(false);
-    
-    var classToParamMap = {
-      'uploadfile-enrollment': 'enrollment',
-      'uploadfile-mentor': 'mentor',
-      'uploadfile-flags': 'studentflags',
-      'uploadfile-iep': 'iep',
-      'uploadfile-504': '504',     
-      'uploadfile-homeschooled': 'homeschooled'      
-    };
-
-    await _doFileUpload('walkthrough', e.target.files[0]);
-    e.target.value = null;
-    
-    _setConfigureEnable(true);
-  }
-  
   //----------------------------------------
   // callbacks
   //----------------------------------------
+  async function _callbackForConfigureUpdate() {
+    await _getCurrentInfo();
+    _showConfigure(settings.currentInfo);
+  }  
 
   //---------------------------------------
   // DB interface
@@ -406,9 +364,30 @@ const app = function () {
     return adminAllowed;
   }
 
-  async function _getWalkthroughData() {
-    dbResult = await SQLDBInterface.doGetQuery('walkthrough-analyzer/query', 'walkthrough-data', page.notice);
+  async function _getWalkthroughDatasets() {
+    dbResult = await SQLDBInterface.doGetQuery('walkthrough-analyzer/query', 'walkthrough-datasets', page.notice);
 
+    return dbResult;
+  }
+
+  async function _getWalkthroughDatasetSelections() {
+    dbResult = await SQLDBInterface.doGetQuery('walkthrough-analyzer/query', 'walkthrough-datasetselections', page.notice);
+
+    return dbResult;
+  }
+
+  async function _getWalkthroughData(selectedDatasets) {
+    let selectedSetList = [];
+    for (let i = 0; i < selectedDatasets.length; i++) {
+      selectedSetList.push(selectedDatasets[i].walkthroughsetid);
+    }
+    
+    let params = {
+      "selectedsets": selectedSetList
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('walkthrough-analyzer/query', 'walkthrough-data', params, page.notice);
+    console.log(dbResult);
     return dbResult;
   }
 

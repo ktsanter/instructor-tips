@@ -11,12 +11,13 @@ class ReportPoster {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
-  async post(url, file) {
+  async post(url, file, datasetName) {
     const METHOD_TITLE = 'ReportPoster.post';
     
     var result = {success: false, details: 'unspecified error in ' + METHOD_TITLE};
     var data = new FormData();
     data.append('file', file)
+    data.append('datasetname', datasetName);
 
     try {
       const resp = await fetch(
