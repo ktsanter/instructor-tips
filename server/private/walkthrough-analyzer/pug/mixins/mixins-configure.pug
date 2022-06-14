@@ -31,7 +31,18 @@ mixin configureContainer()
         
         .container-fluid
           .row
-            .col-sm
+            .col-sm(class="mb-2")
               .form-check
                 input(class="form-check-input filter-emptyitems" type="checkbox" id="checkFilterEmpty")
                 label(class="form-check-label" for="checkFilterEmpty") hide empty items
+
+          .row
+            .col-sm(class="domain-filter-container")
+
+          .form-check(class="filter-domain-template hide-me")
+            input(class="form-check-input" type="checkbox" id="checkFilterDomainX")
+            label(class="form-check-label" for="checkFilterDomainX") xxx
+
+          .form-check(class="filter-criterion-template hide-me")
+            input(class="form-check-input" type="checkbox" id="checkFilterCriterionX")
+            label(class="form-check-label" for="checkFilterCriterionX") xxx

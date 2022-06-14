@@ -69,8 +69,14 @@ module.exports = internal.WalkthroughAnalyzer = class {
     if (params.queryName == 'walkthrough-dataset') {
       dbResult = await this._updateWalkthroughDataset(params, postData, userInfo);
       
-    } else if (params.queryName = 'filter-hideempty') {
+    } else if (params.queryName == 'filter-hideempty') {
       dbResult = await this._updateFilterEmpty(params, postData, userInfo);
+      
+    } else if (params.queryName == 'filter-criterion') {
+      dbResult = await this._updateFilterCriterion(params, postData, userInfo);
+      
+    } else if (params.queryName == 'filter-criterionlist') {
+      dbResult = await this._updateFilterCriterionList(params, postData, userInfo);
       
     } else if (params.queryName == 'walkthrough-dataset-selection') {
       dbResult = await this._updateWalkthroughSetSelection(params, postData, userInfo);
@@ -442,7 +448,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
     
     let selectedSetString = '';
     for (let i = 0; i < postData.selectedsets.length; i++) {
-      if (i > 1) selectedSetString += ', ';
+      if (i > 0) selectedSetString += ', ';
       selectedSetString += postData.selectedsets[i];
     }
     
@@ -586,10 +592,19 @@ module.exports = internal.WalkthroughAnalyzer = class {
       result.details = 'failed to get filter criteria results';
       return result;
     }
-    let criteriaResults = queryResults.data
+    let criteriaResults = queryResults.data;
+    
+    queryResults = await this._getFullCriteriaList();
+    if (!queryResults.success) {
+      result.details = 'failed to get full criteria list';
+      return result;
+    }
+    let fullCriteriaList = queryResults.data;
     
     let filterSettings = {
-      "hideemptyitems": emptyResults
+      "filterEmpty": emptyResults,
+      "filterCriteria": criteriaResults,
+      "fullCriteria": fullCriteriaList
     }
     
     result.success = true;
@@ -636,16 +651,49 @@ module.exports = internal.WalkthroughAnalyzer = class {
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;
     
-    result.success = true;
-    result.data = [];
-    return result;
-    
     queryList = {
       filter:
         'select ' +
-          'a.hideemptyitems ' +
+          'a.filtercriterionid, ' +
+          'a.criterionid, ' +
+          'a.include ' +
         'from  ' +
-          'walkthroughfilter as a '
+          'filtercriterion as a ' +
+        'where ' +
+          'a.userid = ' + userInfo.userId
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+        
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = queryResults.data.filter;  
+
+    return result;
+  }
+
+  async _getFullCriteriaList() {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      criteria:
+        'select distinct ' +
+          'b.criterionid, ' +
+          'b.indexwithindomain, ' +
+          'b.criteriontext, ' +
+          'c.domainnumber, ' +
+          'c.domaindescription ' +
+        'from  ' +
+          'criterion as b, ' +
+          'domaininfo as c ' +
+        'where ' +
+          'b.domainid = c.domainid '  
     };
 
     queryResults = await this._dbManager.dbQueries(queryList); 
@@ -655,16 +703,9 @@ module.exports = internal.WalkthroughAnalyzer = class {
       return result;
     }
     
-    let filterSettings = {
-      "hideemptyitems": false
-    }
-    if (queryResults.data.filter.length > 0) {
-      filterSettings.hideemptyvalues = (queryResults.data.filter[0] == 1);
-    } 
-    
     result.success = true;
     result.details = 'query succeeded';
-    result.data = filterSettings;  
+    result.data = queryResults.data.criteria;  
 
     return result;
   }
@@ -683,6 +724,93 @@ module.exports = internal.WalkthroughAnalyzer = class {
         ') '
     };
 
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = null;  
+
+    return result;
+  }
+
+  async _updateFilterCriterionList(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {};
+    
+    if (postData.excluded.length > 0) {
+      queryList.excluded = 
+        'replace into filtercriterion (' +
+          'userid, criterionid, include' +
+        ') values ';
+        
+      for (let i = 0; i < postData.excluded.length; i++) {
+        if (i > 0) queryList.excluded += ', ';
+        queryList.excluded += '(' +
+          userInfo.userId + ', ' +
+          postData.excluded[i] + ', ' +
+          '0' +
+        ')';
+      }
+    }
+
+    if (postData.included.length > 0) {
+      queryList.included = 
+        'replace into filtercriterion (' +
+          'userid, criterionid, include' +
+        ') values ';
+        
+      for (let i = 0; i < postData.included.length; i++) {
+        if (i > 0) queryList.included += ', ';
+        queryList.included += '(' +
+          userInfo.userId + ', ' +
+          postData.included[i] + ', ' +
+          '1' +
+        ')';
+      }
+    }
+    
+    if (Object.keys(queryList).length == 0) {
+      result.success = true;
+      result.details = 'no included or excluded => no change';
+      return result;
+    }
+    
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = null;  
+
+    return result;
+  }
+
+  async _updateFilterCriterion(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      filter:
+        'replace into filtercriterion (' +
+          'userid, criterionid, include' +
+        ') values (' +
+          userInfo.userId + ', ' +
+          postData.criterionid + ', ' +
+          postData.include +
+        ')'
+    }
+    
     queryResults = await this._dbManager.dbQueries(queryList); 
     
     if (!queryResults.success) {

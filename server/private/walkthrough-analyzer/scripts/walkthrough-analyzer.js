@@ -283,7 +283,7 @@ const app = function () {
     settings.currentInfo.dataitems = result.data;
     
     _setExportUIEnable(settings.currentInfo != null);
-    
+
     return true;
   }
   

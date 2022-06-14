@@ -5,6 +5,7 @@
 //-------------------------------------------------------------------
 class WalkthroughConfigure {
   constructor(config) {
+    console.log('add mandatory flag to relevant criteria');
     this.config = config;
     this.config.data = null;
     
@@ -74,6 +75,79 @@ class WalkthroughConfigure {
   
   _renderFilterSettings() {
     this.config.elemHideEmpty.checked = this.config.filter.getHideEmpty();
+    
+    let fullCriteria = this.config.filter.getFullCriteria();
+
+    let domainList = [];
+    for (let id in fullCriteria) {
+      domainList.push(fullCriteria[id]);
+    }
+    domainList.sort(function(a, b) {
+      return (a.domainnumber - b.domainnumber);
+    });
+    
+    let elemDomainFilterContainer = this.config.container.getElementsByClassName('domain-filter-container')[0];
+    UtilityKTS.removeChildren(elemDomainFilterContainer);
+    
+    for (let i = 0; i < domainList.length; i++) {
+      let domain = domainList[i];
+      elemDomainFilterContainer.appendChild(this._renderDomainFilter(domain));
+    }    
+  }
+  
+  _renderDomainFilter(domain) {
+    let elemDomainTemplate = this.config.container.getElementsByClassName('filter-domain-template')[0];
+    let elemDomain = elemDomainTemplate.cloneNode(true);
+    
+    elemDomain.setAttribute('domaininfo', JSON.stringify(domain));
+    
+    UtilityKTS.setClass(elemDomain, 'filter-domain-template', false);
+    UtilityKTS.setClass(elemDomain, 'filter-domain', true);
+    UtilityKTS.setClass(elemDomain, this.config.hideClass, false);
+    
+    let elemInput = elemDomain.getElementsByClassName('form-check-input')[0];
+    let elemLabel = elemDomain.getElementsByClassName('form-check-label')[0];
+    
+    elemInput.setAttribute('id','checkFilterDomain' + domain.domainnumber);
+    elemInput.addEventListener('click', (e) => { this._handleDomainFilter(e); });
+    
+    elemLabel.setAttribute('for', 'checkFilterDomain' + domain.domainnumber);
+    elemLabel.innerHTML = domain.domainnumber + '. ' + domain.domaindescription;
+    
+    let excludedCriteriaCount = 0;
+    for (let i = 0; i < domain.criteria.length; i++) {
+      let criterion = domain.criteria[i];
+      elemDomain.appendChild(this._renderCriterionFilter(criterion));
+      if (this.config.filter.criterionIsExcluded(criterion)) excludedCriteriaCount++;
+    }
+    
+    elemInput.indeterminate = !(excludedCriteriaCount == 0 || excludedCriteriaCount == domain.criteria.length);
+    elemInput.checked = (excludedCriteriaCount == 0);
+      
+    return elemDomain;
+  }
+  
+  _renderCriterionFilter(criterion) {
+    let elemCriterionTemplate = this.config.container.getElementsByClassName('filter-criterion-template')[0];
+    let elemCriterion = elemCriterionTemplate.cloneNode(true);
+    
+    elemCriterion.setAttribute('criterioninfo', JSON.stringify(criterion));
+
+    UtilityKTS.setClass(elemCriterion, 'filter-criterion-template', false);
+    UtilityKTS.setClass(elemCriterion, 'filter-criterion', true);
+    UtilityKTS.setClass(elemCriterion, this.config.hideClass, false);
+
+    let elemInput = elemCriterion.getElementsByClassName('form-check-input')[0];
+    let elemLabel = elemCriterion.getElementsByClassName('form-check-label')[0];
+    
+    elemInput.setAttribute('id','checkFilterCriterion' + criterion.criterionid);
+    elemInput.checked = !this.config.filter.criterionIsExcluded(criterion);
+    elemInput.addEventListener('click', (e) => { this._handleCriterionFilter(e); });
+    
+    elemLabel.setAttribute('for', 'checkFilterCriterion' + criterion.criterionid);
+    elemLabel.innerHTML = criterion.criteriontext;
+
+    return elemCriterion;
   }
   
   async _doFileUpload(uploadType, file) {
@@ -113,11 +187,15 @@ class WalkthroughConfigure {
     UtilityKTS.setClass(this.config.container, 'disable-container', !enable);
   }  
   
-  _findDatasetContainer(elem) {
+  _findControlContainer(elem, controlType) {
+    let className = 'dataset';
+    if (controlType == 'domainfilter') className = 'filter-domain';
+    if (controlType == 'criterionfilter') className = 'filter-criterion';
+    
     let container = null;
     let node = elem;
     for (let i = 0; i < 5 && !container; i++) {
-      if (node.classList.contains('dataset')) {
+      if (node.classList.contains(className)) {
         container = node;
       } else {
         node = node.parentNode;
@@ -160,7 +238,36 @@ class WalkthroughConfigure {
 
     if (dbResult.success) await this.config.callbackUpdate();
   }
+  
+  async _saveDomainFilters(domainInfo, checked) {
+    let criterionIdList = [];
+    for (let i = 0; i < domainInfo.criteria.length; i++) {
+      criterionIdList.push(domainInfo.criteria[i].criterionid);
+    }
+    let params = { "excluded": criterionIdList, "included": [] };
+    if (checked) params = { "excluded": [], "included": criterionIdList };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('walkthrough-analyzer/update', 'filter-criterionlist', params, this.config.notice);
 
+    if (dbResult.success) {
+      await this.config.filter.refreshFilterSettings()
+      await this.config.callbackUpdate();
+    }
+  }
+  
+  async _saveCriterionFilter(criterionInfo, checked) {
+    let params = { 
+      "criterionid": criterionInfo.criterionid, 
+      "include": checked
+    }
+    
+    let dbResult = await SQLDBInterface.doPostQuery('walkthrough-analyzer/update', 'filter-criterion', params, this.config.notice);
+
+    if (dbResult.success) {
+      await this.config.filter.refreshFilterSettings()
+      await this.config.callbackUpdate();
+    }
+  }
   
   //--------------------------------------------------------------
   // callbacks
@@ -172,7 +279,7 @@ class WalkthroughConfigure {
   async _handleDatasetSelection(e) {
     this._setContainerEnable(false);
 
-    let datasetContainer = this._findDatasetContainer(e.target);
+    let datasetContainer = this._findControlContainer(e.target, 'dataset');
     let datasetSelected = e.target.checked
     if (datasetContainer) await this._saveDatasetSelection(JSON.parse(datasetContainer.getAttribute('dataset-info')), datasetSelected);
 
@@ -182,7 +289,7 @@ class WalkthroughConfigure {
   async _handleEditDataset(e) {
     this._setContainerEnable(false);
 
-    let datasetContainer = this._findDatasetContainer(e.target);
+    let datasetContainer = this._findControlContainer(e.target, 'dataset');
     if (datasetContainer) await this._editDataset(JSON.parse(datasetContainer.getAttribute('dataset-info')));
 
     this._setContainerEnable(true);
@@ -191,7 +298,7 @@ class WalkthroughConfigure {
   async _handleDeleteDataset(e) {
     this._setContainerEnable(false);
 
-    let datasetContainer = this._findDatasetContainer(e.target);
+    let datasetContainer = this._findControlContainer(e.target, 'dataset');
     if (datasetContainer) await this._deleteDataset(JSON.parse(datasetContainer.getAttribute('dataset-info')));
 
     this._setContainerEnable(true);
@@ -211,6 +318,16 @@ class WalkthroughConfigure {
   async _handleHideEmpty(e) {
     let success = await this.config.filter.setHideEmpty(e.target.checked);
     if (success) await this.config.callbackUpdate();
+  }
+  
+  async _handleDomainFilter(e) {
+    let container = this._findControlContainer(e.target, 'domainfilter');
+    if (container) await this._saveDomainFilters(JSON.parse(container.getAttribute('domaininfo')), e.target.checked);
+  }
+  
+  async _handleCriterionFilter(e) {
+    let container = this._findControlContainer(e.target, 'criterionfilter');
+    if (container) await this._saveCriterionFilter(JSON.parse(container.getAttribute('criterioninfo')), e.target.checked);
   }
   
   //--------------------------------------------------------------
