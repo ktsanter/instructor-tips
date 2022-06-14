@@ -101,6 +101,8 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
+    settings.objFilter = new WalkthroughFilter({});
+    
     _renderSummary();
     _renderItems();
     _renderConfigure();
@@ -109,10 +111,18 @@ const app = function () {
   
   function _renderSummary() {
     page.navSummary = page.contents.getElementsByClassName('contents-navSummary')[0];
+    settings.objSummary = new WalkthroughSummary({      
+      "container": page.navSummary,
+      "filter": settings.objFilter
+    });
   }
   
   function _renderItems() {
     page.navItems = page.contents.getElementsByClassName('contents-navItems')[0];
+    settings.objItemTable = new WalkthroughItemTable({
+      "container": page.navItems,
+      "filter": settings.objFilter
+    });
   }
   
   function _renderConfigure() {
@@ -122,6 +132,7 @@ const app = function () {
       "hideClass": settings.hideClass,
       "notice": page.notice,
       "poster": settings.reportPoster,
+      "filter": settings.objFilter,
       "callbackUpdate": _callbackForConfigureUpdate
     });
   }
@@ -156,21 +167,11 @@ const app = function () {
   }
   
   function _showSummary() {
-    let summary = new WalkthroughSummary({      
-      "container": page.navSummary,
-      "data": settings.currentInfo.dataitems
-    });
-    
-    summary.show();
+    settings.objSummary.show(settings.currentInfo.dataitems);
   }
   
   function _showItems() {
-    let itemTable = new WalkthroughItemTable({
-      "container": page.navItems,
-      "data": settings.currentInfo.dataitems
-    });
-    
-    itemTable.show();
+    settings.objItemTable.show(settings.currentInfo.dataitems);
   }
   
   function _showConfigure() {
@@ -387,7 +388,7 @@ const app = function () {
     };
     
     let dbResult = await SQLDBInterface.doPostQuery('walkthrough-analyzer/query', 'walkthrough-data', params, page.notice);
-    console.log(dbResult);
+
     return dbResult;
   }
 

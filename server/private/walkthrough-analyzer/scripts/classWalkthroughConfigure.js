@@ -12,15 +12,18 @@ class WalkthroughConfigure {
     this.config.elemDatasetTemplate = this.config.container.getElementsByClassName('dataset-template')[0];
     this.config.elemNoDatasets = this.config.container.getElementsByClassName('no-datasets')[0];
     
+    this.config.elemHideEmpty = this.config.container.getElementsByClassName('filter-emptyitems')[0];
+    this.config.elemHideEmpty.addEventListener('click', (e) => { this._handleHideEmpty(e); });
+    
     this._initializeUploadFileInfo();
   }
-  
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
   show(data) {
     this.config.data = data;
     this._renderDatasetList();
+    this._renderFilterSettings();
   }
   
   //--------------------------------------------------------------
@@ -28,11 +31,6 @@ class WalkthroughConfigure {
   //--------------------------------------------------------------
   _initializeUploadFileInfo() {
     var elemResultWalkthrough = this.config.container.getElementsByClassName('upload-result walkthrough')[0];
-    var elemStatus = this.config.container.getElementsByClassName('configure-status')[0];
-    
-    elemResultWalkthrough.innerHTML = '';
-
-    UtilityKTS.removeChildren(elemStatus);
 
     var fileUploads = this.config.container.getElementsByClassName('uploadfile');
     for (var i = 0; i < fileUploads.length; i++) {
@@ -74,12 +72,14 @@ class WalkthroughConfigure {
     }
   }
   
+  _renderFilterSettings() {
+    this.config.elemHideEmpty.checked = this.config.filter.getHideEmpty();
+  }
+  
   async _doFileUpload(uploadType, file) {
     this.config.notice.setNotice('loading...', true);
 
     var elemResult = this.config.container.getElementsByClassName('upload-result ' + uploadType)[0];
-    var elemStatus = this.config.container.getElementsByClassName('configure-status')[0];
-    UtilityKTS.removeChildren(elemStatus);
     
     let datasetName = prompt("Name for the new data set?");
     if (datasetName == null) {
@@ -160,6 +160,7 @@ class WalkthroughConfigure {
 
     if (dbResult.success) await this.config.callbackUpdate();
   }
+
   
   //--------------------------------------------------------------
   // callbacks
@@ -169,19 +170,31 @@ class WalkthroughConfigure {
   // handlers
   //--------------------------------------------------------------   
   async _handleDatasetSelection(e) {
+    this._setContainerEnable(false);
+
     let datasetContainer = this._findDatasetContainer(e.target);
     let datasetSelected = e.target.checked
     if (datasetContainer) await this._saveDatasetSelection(JSON.parse(datasetContainer.getAttribute('dataset-info')), datasetSelected);
+
+    this._setContainerEnable(true);
   }
   
   async _handleEditDataset(e) {
+    this._setContainerEnable(false);
+
     let datasetContainer = this._findDatasetContainer(e.target);
     if (datasetContainer) await this._editDataset(JSON.parse(datasetContainer.getAttribute('dataset-info')));
+
+    this._setContainerEnable(true);
   }
   
   async _handleDeleteDataset(e) {
+    this._setContainerEnable(false);
+
     let datasetContainer = this._findDatasetContainer(e.target);
     if (datasetContainer) await this._deleteDataset(JSON.parse(datasetContainer.getAttribute('dataset-info')));
+
+    this._setContainerEnable(true);
   }
   
   async _handleFileUpload(e) {
@@ -195,6 +208,10 @@ class WalkthroughConfigure {
     this._setContainerEnable(true);
   }
   
+  async _handleHideEmpty(e) {
+    let success = await this.config.filter.setHideEmpty(e.target.checked);
+    if (success) await this.config.callbackUpdate();
+  }
   
   //--------------------------------------------------------------
   // utility

@@ -10,11 +10,12 @@ define(function (require) {
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
-  require('classReportPoster');
+  require('classWalkthroughFilter');
   require('classWalkthroughSummary');
   require('classWalkthroughItemTable');
   require('classWalkthroughItem');
   require('classWalkthroughConfigure');
+  require('classReportPoster');
   require('walkthrough-analyzer');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

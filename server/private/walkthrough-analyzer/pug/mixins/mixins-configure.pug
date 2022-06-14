@@ -1,24 +1,37 @@
 mixin configureContainer()
   .row
     .col-sm
-      .config-label available data sets
-      .dataset-list
-        |ds list
+      fieldset(class="border configure-fieldset available-data-sets pb-2")
+        legend(class="w-auto") available data sets      
         
-      .dataset-template(class="hide-me")
-        input(type="checkbox" class="dataset-checkbox form-check-input" title="include this data set")
-        .dataset-name(class="mx-2") dataset name
-        i(class="dataset-icon edit-dataset far fa-edit me-1")
-        i(class="dataset-icon delete-dataset fas fa-trash-alt")
+        .container-fluid
+          .row
+            .col-sm
+              .dataset-list
+                |ds list
+                
+              .dataset-template(class="hide-me")
+                input(type="checkbox" class="dataset-checkbox form-check-input" title="include this data set")
+                .dataset-name(class="mx-2") dataset name
+                i(class="dataset-icon edit-dataset far fa-edit me-1")
+                i(class="dataset-icon delete-dataset fas fa-trash-alt")
 
-      .no-datasets
-        em you have no available data sets to select
+              .no-datasets
+                em you have no available data sets to select
 
     .col-sm
-      label(for="file-upload-walkthrough" class="uploadfile-label uploadfile-label-walkthrough btn btn-secondary" title="upload walkthrough data spreadsheet") upload data set
+      label(for="file-upload-walkthrough" class="uploadfile-label uploadfile-label-walkthrough btn btn-secondary mt-3" title="upload walkthrough data spreadsheet") upload data set
       input(type="file" class="uploadfile uploadfile-walkthrough" id="file-upload-walkthrough" accept=".xlsx")
       span(class="upload-result walkthrough ms-3")
               
   .row(class="py-2")
     .col-sm
-      .configure-status
+      fieldset(class="border configure-fieldset filtering pb-2")
+        legend(class="w-auto") filtering
+        
+        .container-fluid
+          .row
+            .col-sm
+              .form-check
+                input(class="form-check-input filter-emptyitems" type="checkbox" id="checkFilterEmpty")
+                label(class="form-check-label" for="checkFilterEmpty") hide empty items

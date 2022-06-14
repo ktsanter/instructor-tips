@@ -6,26 +6,27 @@
 class WalkthroughItemTable {
   constructor(config) {
     this.config = config;
+    this.filteredData = null;
     
     this.config.itemContainers = this.config.container.getElementsByClassName('walkthrough-item-containers')[0];
     
     let btnCloseZoomItem = this.config.container.getElementsByClassName('icon-close')[0];
     btnCloseZoomItem.addEventListener('click', (e) => { this._handleCloseZoomItem(e); });
-    
-    console.log('WalkthroughItemTable', this.config);
   }
   
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
-  show() {
+  show(dataItems) {
+    this.filteredData = this.config.filter.applyFilter(dataItems);
+    
     let rowTemplate = this.config.container.getElementsByClassName('row-template')[0];
     let itemTableBody = this.config.container.getElementsByClassName('item-table-body')[0];
 
     UtilityKTS.removeChildren(itemTableBody);
     
-    for (let id in this.config.data) {
-      let itemData = this.config.data[id];
+    for (let id in this.filteredData) {
+      let itemData = this.filteredData[id];
       
       let item = new WalkthroughItem({
         "className": 'walkthrough-item-container',

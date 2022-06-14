@@ -69,6 +69,29 @@ create table walkthroughitem
   constraint foreign key (criterionid) references criterion (criterionid) on delete cascade
 );
 
+create table filtercriterion
+(
+  filtercriterionid   int unsigned not null AUTO_INCREMENT,
+  userid                int unsigned not null,
+  criterionid           int unsigned not null,         
+  include               int unsigned not null,
+  
+  primary key (filtercriterionid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint foreign key (criterionid) references criterion (criterionid) on delete cascade,
+  constraint unique(userid, criterionid)
+);
+
+create table filterempty
+(
+  filteremptyid  int unsigned not null AUTO_INCREMENT,
+  userid         int unsigned not null,
+  hideempty      int unsigned not null,         
+  
+  primary key (filteremptyid),
+  constraint foreign key (userid) references instructortips.user (userid) on delete cascade,
+  constraint unique(userid)
+);
 
 #--------------------------------------------------------------------------
 #-- triggers

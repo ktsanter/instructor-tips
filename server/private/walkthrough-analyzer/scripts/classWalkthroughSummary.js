@@ -8,15 +8,18 @@ class WalkthroughSummary {
     this.config = config;
     this.config.cvs = null;
     this.config.chart = null;
+    this.filteredData = null;
     
     let btnCloseZoomItem = this.config.container.getElementsByClassName('icon-close')[0];
-    btnCloseZoomItem.addEventListener('click', (e) => { this._handleCloseZoomItem(e); });    
+    btnCloseZoomItem.addEventListener('click', (e) => { this._handleCloseZoomItem(e); });
   }
   
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
-  show() {
+  show(dataItems) {
+    this.filteredData = this.config.filter.applyFilter(dataItems);
+    
     let container = this.config.container.getElementsByClassName('summary-contents')[0];
     UtilityKTS.removeChildren(container);
     
@@ -26,8 +29,9 @@ class WalkthroughSummary {
     
     let summaryLabels = [];
     let summaryPercentages = [];
-    for (let id in this.config.data) {
-      let itemConfig = this.config.data[id];
+    for (let id in this.filteredData) {
+      let itemConfig = this.filteredData[id];
+
       let item = new WalkthroughItem({
         "data": itemConfig.count,
         "restrictValues": true
@@ -148,11 +152,11 @@ class WalkthroughSummary {
     this._showZoomComtainer(true);    
   }
   
-  _getChartDataForLabel(label) {
+  _getChartDataForLabel(label, data) {
     let chartDataItem = null;
     
-    for (let id in this.config.data) {
-      let itemConfig = this.config.data[id];
+    for (let id in this.filteredData) {
+      let itemConfig = this.filteredData[id];
       if (itemConfig.criteriontext == label) {
         chartDataItem = itemConfig;
         break;

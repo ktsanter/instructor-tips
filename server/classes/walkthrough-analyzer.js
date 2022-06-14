@@ -45,6 +45,9 @@ module.exports = internal.WalkthroughAnalyzer = class {
     } else if (params.queryName == 'walkthrough-data') {
       dbResult = await this._getWalkthroughData(params, postData, userInfo);
             
+    } else if (params.queryName == 'walkthrough-filter') {
+      dbResult = await this._getFilter(params, postData, userInfo);
+            
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     } 
@@ -65,6 +68,9 @@ module.exports = internal.WalkthroughAnalyzer = class {
     
     if (params.queryName == 'walkthrough-dataset') {
       dbResult = await this._updateWalkthroughDataset(params, postData, userInfo);
+      
+    } else if (params.queryName = 'filter-hideempty') {
+      dbResult = await this._updateFilterEmpty(params, postData, userInfo);
       
     } else if (params.queryName == 'walkthrough-dataset-selection') {
       dbResult = await this._updateWalkthroughSetSelection(params, postData, userInfo);
@@ -410,7 +416,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
     };
 
     queryResults = await this._dbManager.dbQueries(queryList); 
-    
+
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -424,12 +430,9 @@ module.exports = internal.WalkthroughAnalyzer = class {
   }
   
   async _getWalkthroughData(params, postData, userInfo) {
-    console.log('_getWalkthroughData');
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;
 
-    console.log('params', params);
-    console.log('postData', postData);
     if (postData.selectedsets.length == 0) {
       result.success = true;
       result.details = 'query succeeded (no data)';
@@ -461,9 +464,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
           'and a.walkthroughsetid in (' + selectedSetString + ')'
     };
     
-    console.log('queryList', queryList);
     queryResults = await this._dbManager.dbQueries(queryList); 
-    console.log(queryResults);
     
     if (!queryResults.success) {
       result.details = queryResults.details;
@@ -479,31 +480,31 @@ module.exports = internal.WalkthroughAnalyzer = class {
 
       queryList['yesCount' + criterion.criterionid] = 
         'select ' +
-          'count(itemvalue) as "yescount"' +
+          'count(itemvalue) as "yescount" ' +
         'from ' +
           'walkthroughitem ' +
         'where ' +
-          'userid = ' + userInfo.userId + ' ' +
+          'walkthroughsetid in (' + selectedSetString + ') ' +
           'and criterionid = ' + criterion.criterionid  + ' ' +
           'and itemvalue = "yes" '
 
       queryList['noCount' + criterion.criterionid] = 
         'select ' +
-          'count(itemvalue) as "nocount"' +
+          'count(itemvalue) as "nocount" ' +
         'from ' +
           'walkthroughitem ' +
         'where ' +
-          'userid = ' + userInfo.userId + ' ' +
+          'walkthroughsetid in (' + selectedSetString + ') ' +
           'and criterionid = ' + criterion.criterionid  + ' ' +
           'and itemvalue = "no" '
 
       queryList['otherCount' + criterion.criterionid] = 
         'select ' +
-          'count(itemvalue) as "othercount"' +
+          'count(itemvalue) as "othercount" ' +
         'from ' +
           'walkthroughitem ' +
         'where ' +
-          'userid = ' + userInfo.userId + ' ' +
+          'walkthroughsetid in (' + selectedSetString + ') ' +
           'and criterionid = ' + criterion.criterionid  + ' ' +
           'and itemvalue not in ("yes", "no") '
           
@@ -519,6 +520,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
     }
     
     queryResults = await this._dbManager.dbQueries(queryList); 
+
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
@@ -568,6 +570,133 @@ module.exports = internal.WalkthroughAnalyzer = class {
     return result;
   }
   
+  async _getFilter(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryResults = await this._getFilterEmpty(userInfo);
+    if (!queryResults.success) {
+      result.details = 'failed to get filter empty results';
+      return result;
+    }
+    let emptyResults = queryResults.data;
+    
+    queryResults = await this._getFilterCriteria(userInfo);
+    if (!queryResults.success) {
+      result.details = 'failed to get filter criteria results';
+      return result;
+    }
+    let criteriaResults = queryResults.data
+    
+    let filterSettings = {
+      "hideemptyitems": emptyResults
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = filterSettings;  
+
+    return result;
+  }
+  
+  async _getFilterEmpty(userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      filter:
+        'select ' +
+          'a.hideempty ' +
+        'from  ' +
+          'filterempty as a ' +
+        'where ' +
+          'userid = ' + userInfo.userId
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    let hideEmpty = false;
+    if (queryResults.data.filter.length > 0) {
+      hideEmpty = (queryResults.data.filter[0].hideempty == 1);
+    } 
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = hideEmpty;  
+
+    return result;
+  }
+  
+  async _getFilterCriteria(userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    result.success = true;
+    result.data = [];
+    return result;
+    
+    queryList = {
+      filter:
+        'select ' +
+          'a.hideemptyitems ' +
+        'from  ' +
+          'walkthroughfilter as a '
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    let filterSettings = {
+      "hideemptyitems": false
+    }
+    if (queryResults.data.filter.length > 0) {
+      filterSettings.hideemptyvalues = (queryResults.data.filter[0] == 1);
+    } 
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = filterSettings;  
+
+    return result;
+  }
+
+  async _updateFilterEmpty(params, postData, userInfo) {
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      filter: 
+        'replace into filterempty (' +
+          'userid, hideempty' +
+        ') values (' +
+          userInfo.userId + ', ' +
+          postData.hideempty +
+        ') '
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = null;  
+
+    return result;
+  }
+
   async _updateWalkthroughDataset(params, postData, userInfo) {
     var result = this._dbManager.queryFailureResult(); 
     var queryList, queryResults;

@@ -144,6 +144,13 @@ body {
  *------------------------------------------------------------------------------*/
 .contents .contents-navConfigure {}
 
+.contents .contents-navConfigure .configure-fieldset legend {
+  font-size: 1.0em;
+  font-weight: 500;
+  float: none; 
+  padding: inherit; 
+}
+
 .contents .contents-navConfigure .googlefile-notselected {
   display: inline-block;
   font-style: italic;
@@ -174,10 +181,6 @@ body {
 .contents .contents-navConfigure .upload-result {
   display: inline-block;
   font-style: italic;
-}
-
-.contents .contents-navConfigure .config-label {
-  font-weight: bold;
 }
 
 .contents .contents-navConfigure .dataset {
