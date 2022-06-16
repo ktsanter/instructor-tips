@@ -1,4 +1,12 @@
 mixin summaryContainer()
+  .row(class="mb-2")
+    .col-sm
+      input(class="form-check-input sort-natural" type="radio" id="radioSortNatural" name="sort-order")
+      label(class="form-check-label ms-1 me-2" for="radioSortNatural") sort in "natural" order
+                
+      input(class="form-check-input sort-highlow" type="radio" id="radioSortHighLow" name="sort-order")
+      label(class="form-check-label ms-1 me-2" for="radioSortHighLow") sort high to low
+
   .row(class="summary-outer-container")
     .col-sm
       .summary-contents

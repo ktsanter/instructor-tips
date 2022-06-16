@@ -8,7 +8,21 @@ class WalkthroughSummary {
     this.config = config;
     this.config.cvs = null;
     this.config.chart = null;
+    this.originalData = null;
     this.filteredData = null;
+    
+    this.sorting = {
+      "type": 'itemname',
+      "direction": 'natural'
+    }
+    this.objSorting = new WalkthroughSorting({});
+    
+    let elemSortNatural = this.config.container.getElementsByClassName('sort-natural')[0];
+    elemSortNatural.checked = true; 
+    elemSortNatural.addEventListener('click', (e) => { this._handleSortClick(e, 'natural'); });    
+
+    let elemHighLow = this.config.container.getElementsByClassName('sort-highlow')[0];
+    elemHighLow.addEventListener('click', (e) => { this._handleSortClick(e, 'percent'); });    
     
     let btnCloseZoomItem = this.config.container.getElementsByClassName('icon-close')[0];
     btnCloseZoomItem.addEventListener('click', (e) => { this._handleCloseZoomItem(e); });
@@ -18,7 +32,9 @@ class WalkthroughSummary {
   // public methods
   //--------------------------------------------------------------   
   show(dataItems) {
+    this.originalData = dataItems;
     this.filteredData = this.config.filter.applyFilter(dataItems);
+    let sortedData = this.objSorting.applySorting(this.filteredData, this.sorting);
     
     let container = this.config.container.getElementsByClassName('summary-contents')[0];
     UtilityKTS.removeChildren(container);
@@ -26,11 +42,11 @@ class WalkthroughSummary {
     this.config.cvs = CreateElement._createElement('canvas', null, 'walkthrough-summary-canvas');
     container.appendChild(this.config.cvs);
     this.config.cvs.addEventListener('click', (e) => { this._handleSummaryClick(e); });
-    
+      
     let summaryLabels = [];
     let summaryPercentages = [];
-    for (let id in this.filteredData) {
-      let itemConfig = this.filteredData[id];
+    for (let i = 0; i < sortedData.length; i++) {
+      let itemConfig = sortedData[i];
 
       let item = new WalkthroughItem({
         "data": itemConfig.count,
@@ -54,6 +70,7 @@ class WalkthroughSummary {
       
       scales: {
         x: {
+          grid: { display: false },
           ticks: {
             callback: function(val, index, ticks) {
               let label = this.getLabelForValue(val);
@@ -152,7 +169,7 @@ class WalkthroughSummary {
     this._showZoomComtainer(true);    
   }
   
-  _getChartDataForLabel(label, data) {
+  _getChartDataForLabel(label) {
     let chartDataItem = null;
     
     for (let id in this.filteredData) {
@@ -180,6 +197,18 @@ class WalkthroughSummary {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
+  _handleSortClick(e, type) {
+    this.sorting.type = type;
+
+    if (this.sorting.type == 'itemname') {
+      this.sorting.direction = 'natural';
+    } else {
+      this.sorting.direction = -1;
+    }
+
+    this.show(this.originalData);    
+  }
+  
   _handleSummaryClick(e) {
     let chart = this.config.chart;
     const points = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
@@ -190,13 +219,19 @@ class WalkthroughSummary {
       label = chart.data.labels[firstPoint.index];
       
     } else {
+      /*
       let xIndex = Math.round(chart.scales.x.getValueForPixel(e.x));
       let yIndex = Math.round(chart.scales.y.getValueForPixel(e.y));
-      if (xIndex >= 0 && xIndex < chart.data.labels.length && yIndex >= -16 && yIndex <= -13) {
+      
+      let yMin = Math.round(chart.scales.y.getPixelForValue(0, 0));
+      let yMax = Math.round(chart.scales.y.getPixelForValue(100, 0));
+      
+      if (xIndex >= 0 && xIndex < chart.data.labels.length) // && yIndex >= -16 && yIndex <= -13) {
         label = chart.data.labels[xIndex];
       }
+      */
     }      
-          
+
     if (label != '') {
       this._showSingleItem(label);
     }

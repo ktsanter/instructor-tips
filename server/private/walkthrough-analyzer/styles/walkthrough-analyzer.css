@@ -133,6 +133,11 @@ body {
   width: 40%;
 }
 
+.contents .contents-navItems .header-itemname:hover, .contents .contents-navItems .header-percentYes:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .contents .contents-navItems .icon-close {
   font-size: 2.0em;
   color: #aaa;
@@ -216,6 +221,12 @@ body {
   font-style: italic;
   color: red;
   padding-left: 0.2em;
+}
+
+.contents .contents-navConfigure .domain-icon {
+  color: var(--bgPrimary);
+  font-size: 150%;
+  vertical-align: bottom;
 }
 
 /*------------------------------------------------------------------------------

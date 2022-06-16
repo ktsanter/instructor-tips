@@ -6,27 +6,40 @@
 class WalkthroughItemTable {
   constructor(config) {
     this.config = config;
-    this.filteredData = null;
     
     this.config.itemContainers = this.config.container.getElementsByClassName('walkthrough-item-containers')[0];
+
+    this.config.elemHeaderItemName = this.config.container.getElementsByClassName('header-itemname')[0];    
+    this.config.elemHeaderItemName.addEventListener('click', (e) => { this._handleItemNameClick(e); });
+
+    this.config.elemHeaderPercent = this.config.container.getElementsByClassName('header-percentYes')[0];
+    this.config.elemHeaderPercent.addEventListener('click', (e) => { this._handlePercentClick(e); });
     
     let btnCloseZoomItem = this.config.container.getElementsByClassName('icon-close')[0];
     btnCloseZoomItem.addEventListener('click', (e) => { this._handleCloseZoomItem(e); });
+    
+    this.sortingParams = {
+      "type": 'itemname',
+      "direction": 'natural'
+    };
+    this.objSorting = new WalkthroughSorting({});    
   }
   
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
   show(dataItems) {
-    this.filteredData = this.config.filter.applyFilter(dataItems);
+    this.originalData = dataItems;
+    let filteredData = this.config.filter.applyFilter(dataItems);
+    let sortedData = this.objSorting.applySorting(filteredData, this.sortingParams);
     
     let rowTemplate = this.config.container.getElementsByClassName('row-template')[0];
     let itemTableBody = this.config.container.getElementsByClassName('item-table-body')[0];
 
     UtilityKTS.removeChildren(itemTableBody);
     
-    for (let id in this.filteredData) {
-      let itemData = this.filteredData[id];
+    for (let i = 0; i < sortedData.length; i++) {
+      let itemData = sortedData[i];
       
       let item = new WalkthroughItem({
         "className": 'walkthrough-item-container',
@@ -59,7 +72,7 @@ class WalkthroughItemTable {
     
   //--------------------------------------------------------------
   // private methods
-  //--------------------------------------------------------------
+  //--------------------------------------------------------------  
   _showSingleItem(item) {    
     let container = this.config.container.getElementsByClassName('single-item-container')[0];
     UtilityKTS.removeChildren(container);
@@ -115,7 +128,37 @@ class WalkthroughItemTable {
   
   //--------------------------------------------------------------
   // handlers
-  //--------------------------------------------------------------     
+  //--------------------------------------------------------------   
+  _handleItemNameClick(e) {
+    if (this.sortingParams.type == 'itemname') {
+      if (this.sortingParams.direction == 'natural') {
+        this.sortingParams.direction = 1;
+      } else if (this.sortingParams.direction == 1) {
+        this.sortingParams.direction = -1;
+      } else {
+        this.sortingParams.direction = 'natural';
+      }
+      
+    } else {
+      this.sortingParams.type = 'itemname';
+      this.sortingParams.direction = 'natural';
+    }
+    
+    this.show(this.originalData);
+  }
+  
+  _handlePercentClick(e) {
+    if (this.sortingParams.type == 'percent') {
+      this.sortingParams.direction *= -1;
+      
+    } else {
+      this.sortingParams.type = 'percent';
+      this.sortingParams.direction = 1;
+    }
+    
+    this.show(this.originalData);
+  }
+  
   _handleCloseZoomItem(e) {
     this._showZoomComtainer(false);
   }

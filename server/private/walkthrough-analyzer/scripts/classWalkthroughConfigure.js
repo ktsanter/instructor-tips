@@ -20,6 +20,8 @@ class WalkthroughConfigure {
     this.config.elemFilterMandatory.addEventListener('click', (e) => { this._handleFilterMandatory(e); });
     this.config.elemFilterEmpty.addEventListener('click', (e) => { this._handleFilterEmpty(e); });
     
+    this.config.expandedDomainFilters = new Set();
+    
     this._initializeUploadFileInfo();
   }
   //--------------------------------------------------------------
@@ -126,19 +128,28 @@ class WalkthroughConfigure {
     elemLabel.setAttribute('for', 'checkFilterDomain' + domain.domainnumber);
     elemLabel.innerHTML = domain.domainnumber + '. ' + domain.domaindescription;
     
+    let expanded = this.config.expandedDomainFilters.has(domain.domainnumber);
     for (let i = 0; i < domain.criteria.length; i++) {
       let criterion = domain.criteria[i];
-      elemDomain.appendChild(this._renderCriterionFilter(criterion));
+      elemDomain.appendChild(this._renderCriterionFilter(criterion, expanded));
     }
     
     let domainFilterState = this.config.filter.getDomainFilterState(domain);
     elemInput.indeterminate = domainFilterState.indeterminate;
     elemInput.checked = domainFilterState.allIncluded;
+    
+    let elemCollapse = elemDomain.getElementsByClassName('collapse-domain')[0];
+    let elemExpand = elemDomain.getElementsByClassName('expand-domain')[0];
+    UtilityKTS.setClass(elemCollapse, this.config.hideClass, !expanded);
+    UtilityKTS.setClass(elemExpand, this.config.hideClass, expanded);
+
+    elemCollapse.addEventListener('click', (e) => { this._handleDomainCollapse(e, true); });
+    elemExpand.addEventListener('click', (e) => { this._handleDomainCollapse(e, false); });
       
     return elemDomain;
   }
   
-  _renderCriterionFilter(criterion) {
+  _renderCriterionFilter(criterion, showFilter) {
     let elemCriterionTemplate = this.config.container.getElementsByClassName('filter-criterion-template')[0];
     let elemCriterion = elemCriterionTemplate.cloneNode(true);
     
@@ -146,7 +157,7 @@ class WalkthroughConfigure {
 
     UtilityKTS.setClass(elemCriterion, 'filter-criterion-template', false);
     UtilityKTS.setClass(elemCriterion, 'filter-criterion', true);
-    UtilityKTS.setClass(elemCriterion, this.config.hideClass, false);
+    UtilityKTS.setClass(elemCriterion, this.config.hideClass, !showFilter);
 
     let elemInput = elemCriterion.getElementsByClassName('form-check-input')[0];
     let elemLabel = elemCriterion.getElementsByClassName('form-check-label')[0];
@@ -317,6 +328,26 @@ class WalkthroughConfigure {
     }
   }
   
+  _collapseDomainFilters(domainContainer, collapse) {
+    let criterionFilters = domainContainer.getElementsByClassName('filter-criterion');
+    for (let i = 0; i < criterionFilters.length; i++) {
+      let filterContainer = criterionFilters[i];
+      UtilityKTS.setClass(filterContainer, this.config.hideClass, collapse);
+    }
+    
+    let elemCollapseIcon = domainContainer.getElementsByClassName('collapse-domain')[0];
+    let elemExpandIcon = domainContainer.getElementsByClassName('expand-domain')[0];
+    UtilityKTS.setClass(elemCollapseIcon, this.config.hideClass, collapse);
+    UtilityKTS.setClass(elemExpandIcon, this.config.hideClass, !collapse);
+    
+    let domainInfo = JSON.parse(domainContainer.getAttribute('domaininfo'));  
+    if (collapse) {
+      this.config.expandedDomainFilters.delete(domainInfo.domainnumber);
+    } else {
+      this.config.expandedDomainFilters.add(domainInfo.domainnumber);
+    }
+  }
+
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
@@ -384,6 +415,11 @@ class WalkthroughConfigure {
   async _handleCriterionFilter(e) {
     let container = this._findControlContainer(e.target, 'criterionfilter');
     if (container) await this._saveCriterionFilter(JSON.parse(container.getAttribute('criterioninfo')), e.target.checked);
+  }
+  
+  async _handleDomainCollapse(e, collapse) {
+    let container = this._findControlContainer(e.target, 'domainfilter');
+    if (container) this._collapseDomainFilters(container, collapse);
   }
   
   //--------------------------------------------------------------

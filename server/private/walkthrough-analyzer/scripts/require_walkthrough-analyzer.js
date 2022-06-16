@@ -11,6 +11,7 @@ define(function (require) {
   const libsodiumWrappers = require('libsodium-wrappers');
    
   require('classWalkthroughFilter');
+  require('classWalkthroughSorting');
   require('classWalkthroughSummary');
   require('classWalkthroughItemTable');
   require('classWalkthroughItem');
