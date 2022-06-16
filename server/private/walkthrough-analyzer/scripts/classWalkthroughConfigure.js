@@ -5,7 +5,6 @@
 //-------------------------------------------------------------------
 class WalkthroughConfigure {
   constructor(config) {
-    console.log('add mandatory flag to relevant criteria');
     this.config = config;
     this.config.data = null;
     
@@ -13,8 +12,13 @@ class WalkthroughConfigure {
     this.config.elemDatasetTemplate = this.config.container.getElementsByClassName('dataset-template')[0];
     this.config.elemNoDatasets = this.config.container.getElementsByClassName('no-datasets')[0];
     
-    this.config.elemHideEmpty = this.config.container.getElementsByClassName('filter-emptyitems')[0];
-    this.config.elemHideEmpty.addEventListener('click', (e) => { this._handleHideEmpty(e); });
+    this.config.elemFilterAll = this.config.container.getElementsByClassName('filter-allitems')[0];
+    this.config.elemFilterMandatory = this.config.container.getElementsByClassName('filter-mandatoryitems')[0];
+    this.config.elemFilterEmpty = this.config.container.getElementsByClassName('filter-emptyitems')[0];
+
+    this.config.elemFilterAll.addEventListener('click', (e) => { this._handleFilterAll(e); });
+    this.config.elemFilterMandatory.addEventListener('click', (e) => { this._handleFilterMandatory(e); });
+    this.config.elemFilterEmpty.addEventListener('click', (e) => { this._handleFilterEmpty(e); });
     
     this._initializeUploadFileInfo();
   }
@@ -74,10 +78,18 @@ class WalkthroughConfigure {
   }
   
   _renderFilterSettings() {
-    this.config.elemHideEmpty.checked = this.config.filter.getHideEmpty();
+    this.config.elemFilterEmpty.checked = this.config.filter.getFilterEmpty();
     
-    let fullCriteria = this.config.filter.getFullCriteria();
+    let fullCriteria = this.config.filter.filterSettings.fullCriteria;
 
+    let allFilterState = this.config.filter.getFilterState();
+    this.config.elemFilterAll.indeterminate = allFilterState.indeterminate;
+    this.config.elemFilterAll.checked = allFilterState.allIncluded;
+    
+    let mandatoryFilterState = this.config.filter.getMandatoryFilterState();
+    this.config.elemFilterMandatory.indeterminate = mandatoryFilterState.indeterminate;
+    this.config.elemFilterMandatory.checked = mandatoryFilterState.allIncluded;
+    
     let domainList = [];
     for (let id in fullCriteria) {
       domainList.push(fullCriteria[id]);
@@ -114,15 +126,14 @@ class WalkthroughConfigure {
     elemLabel.setAttribute('for', 'checkFilterDomain' + domain.domainnumber);
     elemLabel.innerHTML = domain.domainnumber + '. ' + domain.domaindescription;
     
-    let excludedCriteriaCount = 0;
     for (let i = 0; i < domain.criteria.length; i++) {
       let criterion = domain.criteria[i];
       elemDomain.appendChild(this._renderCriterionFilter(criterion));
-      if (this.config.filter.criterionIsExcluded(criterion)) excludedCriteriaCount++;
     }
     
-    elemInput.indeterminate = !(excludedCriteriaCount == 0 || excludedCriteriaCount == domain.criteria.length);
-    elemInput.checked = (excludedCriteriaCount == 0);
+    let domainFilterState = this.config.filter.getDomainFilterState(domain);
+    elemInput.indeterminate = domainFilterState.indeterminate;
+    elemInput.checked = domainFilterState.allIncluded;
       
     return elemDomain;
   }
@@ -146,6 +157,7 @@ class WalkthroughConfigure {
     
     elemLabel.setAttribute('for', 'checkFilterCriterion' + criterion.criterionid);
     elemLabel.innerHTML = criterion.criteriontext;
+    if (criterion.mandatory) elemLabel.appendChild(CreateElement.createSpan(null, 'mandatory-criterion', 'mandatory'));
 
     return elemCriterion;
   }
@@ -239,11 +251,47 @@ class WalkthroughConfigure {
     if (dbResult.success) await this.config.callbackUpdate();
   }
   
+  async _saveAllCriteriaFilters(checked) {
+    let criterionIdList = [];
+    let fullCriteria = this.config.filter.filterSettings.fullCriteria;
+    for (let key in fullCriteria) {
+      let domainCriteria = fullCriteria[key].criteria;
+      for (let i = 0; i < domainCriteria.length; i++) {
+        criterionIdList.push(domainCriteria[i].criterionid);
+      }
+    }
+
+    let params = { "excluded": criterionIdList, "included": [] };
+    if (checked) params = { "excluded": [], "included": criterionIdList };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('walkthrough-analyzer/update', 'filter-criterionlist', params, this.config.notice);
+
+    if (dbResult.success) {
+      await this.config.filter.refreshFilterSettings()
+      await this.config.callbackUpdate();
+    }
+  }
+  
+  async _saveAllMandatoryFilters(checked) {
+    let mandatoryCriteria = this.config.filter.filterSettings.mandatoryCriteria;
+
+    let params = { "excluded": mandatoryCriteria, "included":  []};
+    if (checked) params = { "excluded": [], "included": mandatoryCriteria };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('walkthrough-analyzer/update', 'filter-criterionlist', params, this.config.notice);
+
+    if (dbResult.success) {
+      await this.config.filter.refreshFilterSettings()
+      await this.config.callbackUpdate();
+    }
+  }
+  
   async _saveDomainFilters(domainInfo, checked) {
     let criterionIdList = [];
     for (let i = 0; i < domainInfo.criteria.length; i++) {
       criterionIdList.push(domainInfo.criteria[i].criterionid);
     }
+    
     let params = { "excluded": criterionIdList, "included": [] };
     if (checked) params = { "excluded": [], "included": criterionIdList };
     
@@ -315,9 +363,17 @@ class WalkthroughConfigure {
     this._setContainerEnable(true);
   }
   
-  async _handleHideEmpty(e) {
-    let success = await this.config.filter.setHideEmpty(e.target.checked);
+  async _handleFilterEmpty(e) {
+    let success = await this.config.filter.setFilterEmpty(e.target.checked);
     if (success) await this.config.callbackUpdate();
+  }
+  
+  async _handleFilterAll(e) {
+    await this._saveAllCriteriaFilters(e.target.checked);
+  }
+  
+  async _handleFilterMandatory(e) {
+    await this._saveAllMandatoryFilters(e.target.checked);
   }
   
   async _handleDomainFilter(e) {

@@ -458,6 +458,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
           'a.criterionid, ' +
           'b.indexwithindomain, ' +
           'b.criteriontext, ' +
+          'b.mandatory, ' +
           'c.domainnumber, ' +
           'c.domaindescription ' +
         'from  ' +
@@ -517,6 +518,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
       walkthroughSummary[criterion.criterionid] = {
         "criterionid": criterion.criterionid,
         "criteriontext": criterion.criteriontext,
+        "mandatory": criterion.mandatory,
         "domainnumber": criterion.domainnumber,
         "domaindescription": criterion.domaindescription,
         "indexwithindomain": criterion.indexwithindomain,
@@ -687,6 +689,7 @@ module.exports = internal.WalkthroughAnalyzer = class {
           'b.criterionid, ' +
           'b.indexwithindomain, ' +
           'b.criteriontext, ' +
+          'b.mandatory, ' +
           'c.domainnumber, ' +
           'c.domaindescription ' +
         'from  ' +

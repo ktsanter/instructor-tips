@@ -35,7 +35,7 @@ class WalkthroughFilter {
     return filteredData;
   }
   
-  async setHideEmpty(hideEmpty) {
+  async setFilterEmpty(hideEmpty) {
     let params = {
       "hideempty": hideEmpty
     };
@@ -48,16 +48,47 @@ class WalkthroughFilter {
     return dbResult.success;
   }  
   
-  getHideEmpty() {
+  getFilterEmpty() {
     return this.filterSettings.filterEmpty;
   }
   
   criterionIsExcluded(criterion) {
     return this.filterSettings.excludedCriteria.has(criterion.criterionid);
   }
+
+  getFilterState() {
+    let criteriaCount = 0;
+    let excludedCount = 0;
+    
+    for (let key in this.filterSettings.fullCriteria) {
+      let domainState = this.getDomainFilterState(this.filterSettings.fullCriteria[key]);
+      criteriaCount += domainState.criteriaCount;
+      excludedCount += domainState.excludedCount;
+    }
+    
+    return this._packageFilterState(criteriaCount, excludedCount);
+  }
   
-  getFullCriteria() {
-    return this.filterSettings.fullCriteria;
+  getDomainFilterState(domainInfo) {
+    let criteriaCount = domainInfo.criteria.length;
+    let excludedCount = 0;
+    for (let i = 0; i < domainInfo.criteria.length; i++) {
+      let criterionId = domainInfo.criteria[i].criterionid;
+      if (this.filterSettings.excludedCriteria.has(criterionId)) excludedCount++;
+    }
+     
+    return this._packageFilterState(criteriaCount, excludedCount);
+  }
+    
+  getMandatoryFilterState() {
+    let mandatoryCriteria = this.filterSettings.mandatoryCriteria
+    let criteriaCount = mandatoryCriteria.length;
+    let excludedCount = 0;
+    for (let i = 0; i < mandatoryCriteria.length; i++) {
+      if (this.filterSettings.excludedCriteria.has(mandatoryCriteria[i])) excludedCount++;
+    }
+    
+    return this._packageFilterState(criteriaCount, excludedCount);
   }
   
   //--------------------------------------------------------------
@@ -76,7 +107,8 @@ class WalkthroughFilter {
     this.filterSettings = {
       "filterEmpty": dbResult.data.filterEmpty,
       "excludedCriteria": this._excludedCriteriaIdSet(dbResult.data.filterCriteria),
-      "fullCriteria": this._collateCriteria(dbResult.data.fullCriteria)
+      "fullCriteria": this._collateDomainCriteria(dbResult.data.fullCriteria),
+      "mandatoryCriteria": this._collateMandatoryCriteria(dbResult.data.fullCriteria)
     };
   }
   
@@ -95,7 +127,7 @@ class WalkthroughFilter {
     return idSet;
   }
   
-  _collateCriteria(criteria) {
+  _collateDomainCriteria(criteria) {
     let collated = {};
     
     for (let i = 0; i < criteria.length; i++) {
@@ -120,6 +152,30 @@ class WalkthroughFilter {
     return collated;
   }
   
+  _collateMandatoryCriteria(criteria) {
+    let collated = [];
+    
+    for (let i = 0; i < criteria.length; i++) {
+      let criterion = criteria[i];
+      if (criterion.mandatory == 1) collated.push(criterion.criterionid);
+    }
+    
+    return collated;
+  }
+  
+  _packageFilterState(criteriaCount, excludedCount) {
+    let allIncluded = (excludedCount == 0);
+    let noneIncluded = (excludedCount == criteriaCount);
+
+    return {
+      "criteriaCount": criteriaCount,
+      "excludedCount": excludedCount,
+      "allIncluded": allIncluded,
+      "noneIncluded": noneIncluded,
+      "indeterminate": !(allIncluded || noneIncluded)
+    };
+  }
+
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   

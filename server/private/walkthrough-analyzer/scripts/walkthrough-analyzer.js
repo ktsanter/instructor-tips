@@ -101,7 +101,9 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
-    settings.objFilter = new WalkthroughFilter({});
+    settings.objFilter = new WalkthroughFilter({
+      "notice": page.notice,
+    });
     
     _renderSummary();
     _renderItems();
