@@ -327,15 +327,27 @@ const app = function () {
   }
   
   async function _removeOrphanedOverrides(eventList, overrideList) {
-    console.log('*** warning: _removeOrphanedOverrides: disabled');
-    return;
-    
     var orphanedList = [];
+    const orphanCutoffDays = 7;
     
+    let dateCutoff = new Date();
+    dateCutoff.setDate(dateCutoff.getDate() - orphanCutoffDays);
+
     for (var i = 0; i < overrideList.length; i++) {
       var override = overrideList[i];
-      if (!_findMatchInList(override, eventList)) orphanedList.push(override);
+      if (!_findMatchInList(override, eventList)) {
+        const y = parseInt(override.enddate.slice(0, 4));
+        const m = parseInt(override.enddate.slice(5, 7));
+        const d = parseInt(override.enddate.slice(8));
+        const dateOverride = new Date(y, m, d);
+
+        if (dateCutoff.getTime() > dateOverride.getTime()) {
+          orphanedList.push(override);
+        }
+      }
     }
+
+    console.log('orphanedList', orphanedList);
     
     if (orphanedList.length > 0) {
       var dbResult = await SQLDBInterface.doPostQuery('enddate-manager/update', 'orphaned-overrides', {"orphans": orphanedList});  
