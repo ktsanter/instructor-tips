@@ -7,7 +7,7 @@ mixin deptmeeting(label, meeting, slides, recording, resourcelist)
         a(href=meeting.url, target="_blank")= meeting.label
         
     td
-      if (label == "Byte-sized PD")
+      if (label == "Byte-sized PD"  && slides != "")
         a(href=slides, target="_blank") full schedule
       else if (slides != "")
         a(href=slides, target="_blank") slides
@@ -34,48 +34,44 @@ table(class="table table-hover table-condensed")
   tbody
     +deptmeeting("Byte-sized PD", 
       {label: "", url: ""},
-      "https://docs.google.com/document/d/1RYnVDmHR-aUjdAb0Mdg8Ku0hbddO1atBQ-RUuZGr-iw/edit?usp=sharing",
+      "",
+      "",
+      [
+        {label: "[draft] full schedule", url: "https://docs.google.com/document/d/1MamzNGtmWIy8SOi_vnoGjZhRKi1wKvD8ToSYZiv-PWQ/edit?usp=sharing"}
+      ]
+    )
+
+    +deptmeeting("September", 
+      {label: " (Thu Sep 8, 7:00pm)", url: "https://michiganvirtual.zoom.us/j/93693624237?pwd=ZnNzOE83TGkydHhwY2I1SytSTlNSQT09"},
+      "https://bit.ly/cte-dept-2022-09",
       "",
       []
     )
 
-    +deptmeeting("September", 
-      {label: " (Tue Sep 14, 7:00pm)", url: "https://michiganvirtual.zoom.us/j/98095850885?pwd=UkVGMno3ZU5PRnJucFV3a2IyS0svUT09"},
-      "https://bit.ly/CTE-dept-2021-09",
-      {link: "https://michiganvirtual.zoom.us/rec/share/hQEj4MKxusxjD4buqZN3q0Y2LLRNd9C89SyYz8iS5FP_yVJwe1WmHnTgROc4tjyC.BKU12FLH4d1RFQqd", passcode: "$&1gKU%3"},
-      [
-        {label: "shared resources folder", url: "https://drive.google.com/drive/folders/0B6M3FAhABpk3V181NnFNTW9zdmc?resourcekey=0-DTJHZKLxPHu9dPyiFExMLw&usp=sharing"},
-        {label: "I want to collaborate!", url: "https://docs.google.com/document/d/10uQ0PfhB4zgQsJaRZoXX8EhV8PaTH2mgqccaDnzUVOo/edit?usp=sharing"}
-      ]
-    )
-
     +deptmeeting("November", 
-      {label: " (Thu Nov 11, 4:30pm)", url: "https://michiganvirtual.zoom.us/j/97996643388?pwd=TEJrU1I3azFpa1NpVmhOZ2doM3VWUT09"},
-      "https://bit.ly/CTE-dept-2021-11",
-      {link: "https://michiganvirtual.zoom.us/rec/share/pW8yE4NIA0DEWpe0jpgBU11I0raLRkrl4FSg4G5BptM-pMQmSZ1imF4OeT7205AI.L7TFqVXv9eobRuPq", passcode: "@6m=27PH"},
+      {label: " (Tue Nov 8, 7:00pm)", url: "https://michiganvirtual.zoom.us/j/97882683924?pwd=QU1SYlM2VnRuMkE3TGhYZHkwTjI1UT09"},
+      "https://bit.ly/cte-dept-2022-11",
+      "",
       []
     )
 
     +deptmeeting("January", 
-      {label: " (Thu Jan 13, 7:00pm)", url: "https://michiganvirtual.zoom.us/j/99832394575?pwd=YmltaC9STC80K1g2Uk41UGFtWms0dz09"},
-      "https://bit.ly/CTE-dept-2022-01",
-      {link: "https://michiganvirtual.zoom.us/rec/share/tEt6WGooVtFG-4hkcgfN2f1HeQT6cPWQDCaLcrF_cdj9W5977JuXgjbkcqXOys8l.fVNIzyDX3MhRFBMf", passcode: "!eW7X8$T"},
-      [
-        {label: "Teacher Feed copy/paste workarounds", url: "https://drive.google.com/file/d/1unI0pJ4RqG3bK0pH6ZuwRDPrQe-rKviF/view?usp=sharing"},
-        {label: "Teacher Feed plan template", url: "https://docs.google.com/document/d/1ZzLZ3eQebk5ykzTZTbuwad_nQ6Wlh9JWbx1ZR_WJuGI/edit?usp=sharing"}
-      ]
+      {label: " (Thu Jan 12, 4:00pm)", url: "https://michiganvirtual.zoom.us/j/99930218955?pwd=RzQreXYzcG1MQVY4eDNsS0VVS2NRZz09"},
+      "https://bit.ly/cte-dept-2023-01",
+      "",
+      []
     )
 
     +deptmeeting("March", 
-      {label: " (Tue Mar 15, 4:30pm)", url: "https://michiganvirtual.zoom.us/j/93676717518?pwd=TkRTRzRBOUpYM1pTdXRKczRGSzE0UT09"},
-      "https://bit.ly/CTE-dept-2022-03",
-      {link: "https://michiganvirtual.zoom.us/rec/share/Aqbbe3HDjDM3maHHA2Njal7BvYROzHMHF_LTHVAsxaZx5DE1_RUsFG2OUi1LaFMO.c3MkJK8surrTgHyw", passcode: "+aBk2vz%"},
+      {label: " (Tue Mar 7, 7:00pm)", url: "https://michiganvirtual.zoom.us/j/91743025952?pwd=NW9xZk5rWjIxenEvSmJNOUV2NVJ3dz09"},
+      "https://bit.ly/cte-dept-2023-03",
+      "",
       []
     )
 
     +deptmeeting("May", 
-      {label: " (Wed May 4, 7:00pm)", url: "https://michiganvirtual.zoom.us/j/99043287616?pwd=ckcyZ0hOTGdaTHNWZU94aWg5ckZnUT09"},
-      "https://bit.ly/CTE-dept-2022-05",
-      {link: "https://michiganvirtual.zoom.us/rec/share/UkADgUD66P434WilE4v1Se5pDUi8PgGtOs0UjQTSddnP93ey-F6nG6rokhrB1OG5.gaT4ATiSjb0ikfH2?startTime=1651705223000", passcode: "rfe@k1Ey"},
+      {label: " (Thu May 11, 4:00pm)", url: "https://michiganvirtual.zoom.us/j/96531046002?pwd=V2tmaXBjbnd1RVJJaE8vVEZuM2UwZz09"},
+      "https://bit.ly/cte-dept-2023-05",
+      "",
       []
     )
