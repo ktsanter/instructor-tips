@@ -548,10 +548,12 @@ class MentorViewer {
   }  
   
   _handleMentorSelect(e) {
+    UtilityKTS.setClass(this.matchCountMessage, this.settings.hideClass, true);
     this._selectMentor(e.target.innerHTML);
   }
   
   _handleSingleMentorClose(e) {
+    UtilityKTS.setClass(this.matchCountMessage, this.settings.hideClass, false);
     this.settings.selectedMentorInfo = null;
     this._updateUI();
   }  

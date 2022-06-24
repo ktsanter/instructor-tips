@@ -866,6 +866,7 @@ class RosterViewer {
   }  
   
   _handleRosterSelect(e) {
+    UtilityKTS.setClass(this.matchCountMessage, this.settings.hideClass, true);
     ProgressCheck.closeDialogs();
     this._selectStudent(e.target.innerHTML);
   }
@@ -875,6 +876,8 @@ class RosterViewer {
     UtilityKTS.setClass(this.studentSelect, this.settings.hideClass, false);
     UtilityKTS.setClass(this.rosterContent, this.settings.hideClass, false);
     UtilityKTS.setClass(this.clearFilterContainer, this.settings.hideClass, false);
+    UtilityKTS.setClass(this.matchCountMessage, this.settings.hideClass, false);
+
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
   }
 
