@@ -23,9 +23,9 @@ define(function (require) {
   
   require('classShopping');
 
+  require('classWebcam');
   require('classOCR');
   require('classImageOCR');
-  require('classImageCompressor');
   
   require('recipes');
 

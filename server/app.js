@@ -1006,7 +1006,7 @@ app.get('/usermanagement/refreshuser', async function (req, res) {
 })  
 
 //------------------------------------------------------
-// common scripts and CSS
+// common scripts, CSS and audio
 //------------------------------------------------------
 app.get('/styles/:stylesheet', function (req, res) {
   res.sendFile(path.join('common/styles/' + req.params.stylesheet), sendFileDefaultOptions);
@@ -1015,6 +1015,10 @@ app.get('/styles/:stylesheet', function (req, res) {
 app.get('/scripts/:scriptfile', function (req, res) {
   if (req.params.scriptfile.slice(-3) != '.js') req.params.scriptfile += '.js';
   res.sendFile(path.join('common/scripts/' + req.params.scriptfile), sendFileDefaultOptions);
+})
+
+app.get('/audio/:audiofile', function (req, res) {
+  res.sendFile(path.join('common/audio/' + req.params.audiofile), sendFileDefaultOptions);
 })
 
 //------------------------------------------------------

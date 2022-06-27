@@ -94,6 +94,27 @@ body {
  *------------------------------------------------------------------------------*/
 .contents {}
 
+.contents .btn.btn-secondary { /* override Bootstrap */
+  color: white;
+  background-color: var(--bgPrimary);
+  border-color: var(--bgPrimary);
+}
+
+.contents .btn.btn-secondary:disabled { /* override Bootstrap */
+  color: rgba(0, 0, 0, 0.5);;
+  background-color: white;
+  border-color: rgba(0, 0, 0, 0.5);
+}
+
+.contents .form-check-input:checked { /* override Bootstrap */
+  color: #fff;
+  background-color: rgba(66, 98, 150, 1.0);
+  border-color: rgba(66, 98, 150, 1.0);
+  outline: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+}
+
 /*------------------------------------------------------------------------------
  * contents - navRecipes
  *------------------------------------------------------------------------------*/
@@ -446,6 +467,18 @@ body {
  * contents - navOCR
  *------------------------------------------------------------------------------*/
 .contents .contents-navOCR {}
+
+.contents .contents-navOCR .webcam-video {
+  background-color: black;
+}
+
+.contents .contents-navOCR .webcam-control:not(disabled), .contents .contents-navOCR .webcam-control:not(disabled) + label {
+  cursor: pointer;
+}
+
+.contents .contents-navOCR .webcam-control.webcam-startstop.busy-cursor, .contents .contents-navOCR .webcam-control.webcam-startstop.busy-cursor + label {
+  cursor: progress;
+}
 
 .contents .contents-navOCR .ocr-message {
   color: blue;

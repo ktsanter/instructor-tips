@@ -1,16 +1,32 @@
-mixin ocrContainer()   
+mixin ocrContainer()
   .row
     .col-sm
-      form(class="ocr-form")
-        input(class="ocr-inputfile" type="file" value="File" data-maxwidth="500" data-maxheight="500"  accept=".jpg,.jpeg" multiple)
-
+      .form-check(class="form-switch")
+        input(class="form-check-input webcam-control webcam-startstop" type="checkbox" id="checkVideo")
+        label(class="form-check-label" for="checkVideo") video
+    
+  .row(class="video-container")
     .col-sm
-      .ocr-message
-
-  .row
-    .col-sm
-      .ocr-preview
+      video(class="webcam-video" autoplay playsinline width="640" height="480")
+      audio(class="webcam-snap-audio" src="/audio/camera-shutter-click-01.wav" preload = "auto")
       
-    .col-sm
-      .ocr-result
+    .col-sm        
+      .form-check
+        input(class="form-check-input webcam-control webcam-mirror" type="checkbox" id="checkMirror")
+        label(class="form-check-label" for="checkMirror") mirror
+        
+      button(class="btn btn-secondary webcam-control webcam-snap") snapshot  
+      
+  .row(class="snapshot-container")
+    .col-sm  
+      canvas(class="webcam-canvas")
 
+    .col-sm
+      div(class="my-2")
+        button(class="btn btn-secondary webcam-control webcam-ocronsnap") OCR  
+      
+      div
+        button(class="btn btn-secondary webcam-control webcam-downloadsnap") download  
+
+      .ocr-message
+      .ocr-result
