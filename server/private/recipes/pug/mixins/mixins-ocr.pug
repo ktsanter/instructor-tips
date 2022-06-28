@@ -1,32 +1,34 @@
 mixin ocrContainer()
-  .row
-    .col-sm
-      .form-check(class="form-switch")
+  .row(class="mb-2")
+    .col-sm-4
+      .form-check(class="form-switch form-inline")
         input(class="form-check-input webcam-control webcam-startstop" type="checkbox" id="checkVideo")
         label(class="form-check-label" for="checkVideo") video
-    
-  .row(class="video-container")
+
+      .form-inline(class="ms-4")
+        select(class="video-view webcam-control webcam-devicelist")
+          option(value=-1) no video input devices found
+        
+      .form-check(class="form-inline ms-4 video-view")
+        input(class="form-check-input webcam-control webcam-mirror" type="checkbox" id="checkMirror")
+        label(class="form-check-label" for="checkMirror") mirror
+        
+    .col-sm
+        button(class="btn btn-secondary btn-sm video-view webcam-control webcam-snap") snapshot  
+        button(class="btn btn-secondary btn-sm me-2 snapshot-view webcam-control webcam-ocronsnap") OCR  
+        button(class="btn btn-secondary btn-sm snapshot-view webcam-control webcam-downloadsnap") download  
+
+  .row(class="video-container video-view")
     .col-sm
       video(class="webcam-video" autoplay playsinline width="640" height="480")
       audio(class="webcam-snap-audio" src="/audio/camera-shutter-click-01.wav" preload = "auto")
       
     .col-sm        
-      .form-check
-        input(class="form-check-input webcam-control webcam-mirror" type="checkbox" id="checkMirror")
-        label(class="form-check-label" for="checkMirror") mirror
-        
-      button(class="btn btn-secondary webcam-control webcam-snap") snapshot  
       
-  .row(class="snapshot-container")
+  .row(class="snapshot-container snapshot-view")
     .col-sm  
       canvas(class="webcam-canvas")
 
     .col-sm
-      div(class="my-2")
-        button(class="btn btn-secondary webcam-control webcam-ocronsnap") OCR  
-      
-      div
-        button(class="btn btn-secondary webcam-control webcam-downloadsnap") download  
-
       .ocr-message
       .ocr-result

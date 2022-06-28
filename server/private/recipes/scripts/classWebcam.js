@@ -1,9 +1,9 @@
 class Webcam {
-    constructor(webcamElement, facingMode = 'user', canvasElement = null, snapSoundElement = null) {
+    constructor(webcamElement, /*facingMode = 'user',*/ canvasElement = null, snapSoundElement = null) {
       this._webcamElement = webcamElement;
       this._webcamElement.width = this._webcamElement.width || 640;
       this._webcamElement.height = this._webcamElement.height || video.width * (3 / 4);
-      this._facingMode = facingMode;
+      this._facingMode = 'user'; //facingMode;
       this._webcamList = [];
       this._streamList = [];
       this._selectedDeviceId = '';
@@ -14,14 +14,6 @@ class Webcam {
     //---------------------------------------------
     // getters and setters
     //---------------------------------------------
-    get facingMode(){
-      return this._facingMode;
-    }
-
-    set facingMode(value){
-      this._facingMode = value;
-    }
-
     get webcamList(){
       return this._webcamList;
     }
@@ -32,6 +24,10 @@ class Webcam {
 
     get selectedDeviceId(){
       return this._selectedDeviceId;
+    }
+    
+    set selectedDeviceId(value) {
+      this._selectedDeviceId = value;
     }
 
     //---------------------------------------------
@@ -44,9 +40,11 @@ class Webcam {
           this._webcamList.push(mediaDevice);
         }
       });
+      
       if(this._webcamList.length == 1){
         this._facingMode = 'user';
       }    
+      
       return this._webcamList;
     }
 
@@ -54,17 +52,19 @@ class Webcam {
     /* Get media constraints */
     //---------------------------------------------
     getMediaConstraints() {
-        var videoConstraints = {};
-        if (this._selectedDeviceId == '') {
-            videoConstraints.facingMode =  this._facingMode;
-        } else {
-            videoConstraints.deviceId = { exact: this._selectedDeviceId};
-        }
-        var constraints = {
-            video: videoConstraints,
-            audio: false
-        };
-        return constraints;
+      let videoConstraints = {};
+      if (this._selectedDeviceId == '') {
+          videoConstraints.facingMode =  this._facingMode;
+      } else {
+          videoConstraints.deviceId = { exact: this._selectedDeviceId};
+      }
+      
+      const constraints = {
+          video: videoConstraints,
+          audio: false
+      };
+      
+      return constraints;
     }
 
     //---------------------------------------------
@@ -73,9 +73,7 @@ class Webcam {
     selectCamera(){
       for(let webcam of this._webcamList){
         if(   (this._facingMode=='user' && webcam.label.toLowerCase().includes('front'))
-          ||  (this._facingMode=='enviroment' && webcam.label.toLowerCase().includes('back'))
-        )
-        {
+          ||  (this._facingMode=='enviroment' && webcam.label.toLowerCase().includes('back')) ) {
           this._selectedDeviceId = webcam.deviceId;
           break;
         }
@@ -125,7 +123,7 @@ class Webcam {
                         .catch(error => {
                             reject(error);
                         });
-                }else{
+                } else {
                     resolve(this._selectedDeviceId);
                 }
               }) 

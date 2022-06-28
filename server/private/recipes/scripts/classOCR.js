@@ -11,17 +11,14 @@ class OCR {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------   
-  async render() {    
-    this.videoContainer = this.config.container.getElementsByClassName('video-container')[0];
-    this.snapshotContainer = this.config.container.getElementsByClassName('snapshot-container')[0];
-    UtilityKTS.setClass(this.videoContainer, this.config.hideClass, false);
-    UtilityKTS.setClass(this.snapshotContainer, this.config.hideClass, true);
-    
+  async render() {        
     this.resultContainer = this.config.container.getElementsByClassName('ocr-result')[0];
     
     await this._imageOCRInit();
     
     await this._webcamInit();
+    
+    this._setView('video-view');
   }
   
   update() { }
@@ -35,8 +32,7 @@ class OCR {
     this.canvasElement = this.config.container.getElementsByClassName('webcam-canvas')[0];
     this.snapSoundElement = this.config.container.getElementsByClassName('webcam-snap-audio')[0];
 
-    this.webcam = new Webcam(this.webcamElement, 'user', this.canvasElement, this.snapSoundElement); 
-    const info = await this.webcam.info();    
+    this.webcam = new Webcam(this.webcamElement, /* 'user', */ this.canvasElement, this.snapSoundElement); 
     
     this.webcamStartStopControl = this.config.container.getElementsByClassName('webcam-control webcam-startstop')[0];
     this.webcamStartStopControl.addEventListener('click', (e) => { this._handleWebcamStartStop(e); });
@@ -54,11 +50,31 @@ class OCR {
     
     this.webcamSnapDownloadControl = this.config.container.getElementsByClassName('webcam-control webcam-downloadsnap')[0];
     this.webcamSnapDownloadControl.addEventListener('click', (e) => { this._handleWebcamSnapDownload(e); });
+
+    this.webcamDeviceList = this.config.container.getElementsByClassName('webcam-control webcam-devicelist')[0];
+    this.webcamDeviceList.addEventListener('change', (e) => { this._handleDeviceChange(e); });
+    await this._webcamLoadDeviceList();
+  }
+  
+  async _webcamLoadDeviceList() {
+    const info = await this.webcam.info();
+    if (info.length == 0) {
+      this.webcamStartStopControl.disabled = true;
+      return;
+    }
+    
+    UtilityKTS.removeChildren(this.webcamDeviceList);
+
+    for (let i = 0; i < info.length; i++) { 
+      let device = info[i];
+      this.webcamDeviceList.appendChild(CreateElement.createOption(null, null, device.deviceId, device.label));
+    }
   }
   
   _webcamStart() {
-    UtilityKTS.setClass(this.videoContainer, this.config.hideClass, false);
-    UtilityKTS.setClass(this.snapshotContainer, this.config.hideClass, true);
+    const deviceId = this.webcamDeviceList.value;
+    this.webcam.selectedDeviceId = deviceId;
+    this._setView('video-view');
     this.webcamMirrorControl.disabled = true;
     this.webcamSnapControl.disabled = true;
     UtilityKTS.setClass(this.webcamStartStopControl, 'busy-cursor', true);
@@ -84,8 +100,7 @@ class OCR {
   _webcamTakeSnap() {
     this.webcam.snap();
     this.webcamStartStopControl.click();
-    UtilityKTS.setClass(this.videoContainer, this.config.hideClass, true);
-    UtilityKTS.setClass(this.snapshotContainer, this.config.hideClass, false);
+    this._setView('snapshot-view');
   }
   
   async _webcamOCROnSnap() {
@@ -129,6 +144,19 @@ class OCR {
     await this.imageOCR.initialize();
   }
   
+  _setView(viewname) {
+    const videoViewElements = this.config.container.getElementsByClassName('video-view');
+    const snapshotViewElements = this.config.container.getElementsByClassName('snapshot-view');
+    
+    for (let i = 0; i < videoViewElements.length; i++) {
+      UtilityKTS.setClass(videoViewElements[i], this.config.hideClass, viewname != 'video-view');
+    }
+
+    for (let i = 0; i < snapshotViewElements.length; i++) {
+      UtilityKTS.setClass(snapshotViewElements[i], this.config.hideClass, viewname != 'snapshot-view');
+    }
+  }
+  
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
@@ -138,6 +166,13 @@ class OCR {
     if (camIsStarted) {
       this._webcamStop();
     } else {
+      this._webcamStart();
+    }
+  }
+  
+  _handleDeviceChange(e) {
+    if (this._webcamIsRunning) {
+      this._webcamStop();
       this._webcamStart();
     }
   }
@@ -171,7 +206,6 @@ class OCR {
   //--------------------------------------------------------------
   _setNotice(msg, useSpinner) {
     var container = this.config.container.getElementsByClassName('ocr-message')[0];
-    console.log('container', container);
     UtilityKTS.removeChildren(container);
     
     if (!msg || msg.trim().length == 0) msg = ' '

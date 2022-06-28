@@ -472,6 +472,10 @@ body {
   background-color: black;
 }
 
+.contents .contents-navOCR .form-inline {
+  display: inline-block;
+}
+
 .contents .contents-navOCR .webcam-control:not(disabled), .contents .contents-navOCR .webcam-control:not(disabled) + label {
   cursor: pointer;
 }
