@@ -184,6 +184,10 @@ body {
   text-align: center;
 }
 
+.contents .contents-navStudent .icon.student-notes-icon {
+  font-size: 90%;
+}
+
 .contents .icon-rosterfilter {
   cursor: pointer;
   color: var(--bgPrimary);

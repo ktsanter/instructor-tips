@@ -489,6 +489,10 @@ body {
   font-style: italic;
 }
 
+.contents .contents-navOCR .ocr-result {
+  border: 1px solid gray;
+}
+
 /*----------------------------------------
  * 5 star rating container
  *----------------------------------------*/

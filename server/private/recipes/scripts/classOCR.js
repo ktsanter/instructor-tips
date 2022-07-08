@@ -12,10 +12,7 @@ class OCR {
   // public methods
   //--------------------------------------------------------------   
   async render() {        
-    this.resultContainer = this.config.container.getElementsByClassName('ocr-result')[0];
-    
-    await this._imageOCRInit();
-    
+    await this._imageOCRInit();    
     await this._webcamInit();
     
     this._setView('video-view');
@@ -119,12 +116,13 @@ class OCR {
       
     var parsedText = result.data.ParsedResults[0].ParsedText;
     
-    var elem = CreateElement.createDiv(null, null, parsedText.replace(/\r\n/g, '<br>'));
+    var elem = CreateElement.createDiv(null, 'ocr-result mt-1 p-1', parsedText.replace(/\r\n/g, '<br>'));
     this.resultContainer.appendChild(elem);
 
     this.webcamStartStopControl.disabled = false;
     this.webcamSnapOCRControl.disabled = false;
     this.webcamSnapDownloadControl.disabled = false;
+    this.clearOCRResultControl.disabled = false;
   }
   
   _webcamDownloadSnap() {
@@ -137,11 +135,22 @@ class OCR {
   }
   
   async _imageOCRInit() {
+    this.resultContainer = this.config.container.getElementsByClassName('ocr-result-container')[0];
+
+    this.clearOCRResultControl = this.config.container.getElementsByClassName('clear-ocr-results')[0];    
+    this.clearOCRResultControl.addEventListener('click', (e) => { this._handleClearOCRResults(e); } );
+    this.clearOCRResultControl.disabled = true;
+
     this.imageOCR = new ImageOCR({
       "db": this.config.db
     });
 
     await this.imageOCR.initialize();
+  }
+  
+  _clearOCRResults() {
+    UtilityKTS.removeChildren(this.resultContainer);
+    this.clearOCRResultControl.disabled = true;
   }
   
   _setView(viewname) {
@@ -171,7 +180,7 @@ class OCR {
   }
   
   _handleDeviceChange(e) {
-    if (this._webcamIsRunning) {
+    if (this._webcamIsRunning()) {
       this._webcamStop();
       this._webcamStart();
     }
@@ -195,6 +204,10 @@ class OCR {
   
   _handleWebcamSnapDownload(e) {
     this._webcamDownloadSnap();
+  }
+  
+  _handleClearOCRResults(e) {
+    this._clearOCRResults();
   }
   
   //--------------------------------------------------------------

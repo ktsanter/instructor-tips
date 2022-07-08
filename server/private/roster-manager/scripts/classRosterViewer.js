@@ -172,6 +172,7 @@ class RosterViewer {
     for (var i = 0; i < rosterInfo.length; i++) {
       var rosterItem = rosterInfo[i];
       var studentName = rosterItem.student;
+
       var row = CreateElement._createElement('tr');
       tbody.appendChild(row);
       
@@ -181,7 +182,11 @@ class RosterViewer {
       cell.title = studentName;
       cell.setAttribute('filter-value', studentName);
       cell.addEventListener('click', (e) => { this._handleRosterSelect(e); });
-
+      if (rosterItem.notes.length > 0) { 
+        let icon = CreateElement.createIcon(null, 'icon student-notes-icon far fa-sticky-note ms-1', 'student has notes');
+        cell.appendChild(icon);
+      }
+      
       cell = CreateElement._createElement('td', null, null);
       row.appendChild(cell);
       cell.innerHTML = rosterItem.section;
@@ -502,7 +507,7 @@ class RosterViewer {
   }
   
   _selectStudent(studentName) {
-    var info = this.settings.currentInfo.students[studentName];//xxxxxxxx
+    var info = this.settings.currentInfo.students[studentName];
     this.settings.selectedStudentInfo = {...{"student": studentName, ...info}};
 
     UtilityKTS.removeChildren(this.studentContent);
@@ -868,7 +873,11 @@ class RosterViewer {
   _handleRosterSelect(e) {
     UtilityKTS.setClass(this.matchCountMessage, this.settings.hideClass, true);
     ProgressCheck.closeDialogs();
-    this._selectStudent(e.target.innerHTML);
+    let targetStudent = e.target.getAttribute('filter-value');
+    if (e.target.classList.contains('student-notes-icon')) {
+      targetStudent = e.target.parentNode.getAttribute('filter-value');
+    }
+    this._selectStudent(targetStudent);
   }
   
   _handleStudentViewClose(e) {
@@ -879,6 +888,7 @@ class RosterViewer {
     UtilityKTS.setClass(this.matchCountMessage, this.settings.hideClass, false);
 
     UtilityKTS.setClass(this.studentContent, this.settings.hideClass, true);
+    this._updateUI();
   }
 
   async _handlePropertyEdit(label, property, targetElement) {
