@@ -180,6 +180,7 @@ class RosterViewer {
       row.appendChild(cell);
       cell.innerHTML = studentName;
       cell.title = studentName;
+      if (rosterItem.preferredname != '') cell.title = studentName + ' (' + rosterItem.preferredname + ')';
       cell.setAttribute('filter-value', studentName);
       cell.addEventListener('click', (e) => { this._handleRosterSelect(e); });
       if (rosterItem.notes.length > 0) { 
@@ -646,7 +647,7 @@ class RosterViewer {
         if (property == '[edit-delete-icons]') value = property;
         if (property == 'progresscheck') {
           var pc = new ProgressCheck(item);
-          value = pc.getLatestDate();
+          value = pc.formatDateList('<br>');//pc.getLatestDate();
         }
         rowContents.push(value);
       }

@@ -64,8 +64,16 @@ body {
   width: 26.0em;
 }
 
+.helpsection .helpsection-imagecontainer.bigger2 img {
+  width: 26.0em;
+}
+
 .helpsection .helpsection-imagecontainer.bigger img {
   width: 50.0em;
+}
+
+.helpsection .helpsection-imagecontainer.bigger2 img {
+  width: 72.0em;
 }
 
 .helpsection .helpsection-content .helpsection-subcontent {
