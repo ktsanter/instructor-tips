@@ -1,0 +1,22 @@
+mixin lookupContainer()
+  .row
+    .col-sm
+      div(class="accordion assignments-accordion" id="assignmentsAccordion")
+              
+  .item-template(class="hide-me accordion-item")
+    h2(class="accordion-header" id="headingXXXX")
+      button(class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseXXXX" aria-expanded="true" aria-controls="collapseXXXX")
+        |Accordion Item #XXXX
+
+    div(id="collapseXXXX" class="accordion-collapse collapse" aria-labelledby="headingXXXX" data-bs-parent="#assignmentsAccordion")
+      div(class="accordion-body")
+        table(class="table table-striped table-hover table-sm")
+          thead(class="table-primary")
+            tr
+              th instructor
+              th(class="center") sem 1
+              th(class="center") sem 2
+              th(class="center") tri 1
+              th(class="center") tri 2
+              th(class="center") tri 3
+          tbody

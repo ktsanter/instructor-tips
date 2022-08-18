@@ -1,0 +1,63 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+
+include ./mixins-help/mixins-overvew.pug
+include ./mixins-help/mixins-students.pug
+include ./mixins-help/mixins-mentors.pug
+include ./mixins-help/mixins-configure.pug
+include ./mixins-help/mixins-other.pug
+
+doctype html
+html(lang="en")
+  head
+    title roster manager help
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+
+    +fontawesome()
+    +bootstrapstyle()
+    
+    style
+      include ../../common/styles/navbar-overrides.css    
+      include ../styles/help.css
+
+  body(class="colorscheme")
+    +makeNavbar("Roster Manager help", 
+      {
+        items: [
+          {id: "navOverview", type: "link", label: "overview"},
+          {id: "navStudents", type: "link", label: "students"},
+          {id: "navMentors", type: "link", label: "mentors"},
+          {id: "navConfigure", type: "link", label: "configure"},
+          {id: "navOther", type: "link", label: "other"}
+        ],
+        
+        buttons: [],        
+        profile: false
+      }
+    )    
+
+    .container-fluid
+      .row: .col-sm 
+        .helpsection(id="anchorOverview")
+           +helpcontent_Overview
+        
+      .row: .col-sm 
+        .helpsection(id="anchorStudents") 
+           +helpcontent_Students
+                    
+      .row: .col-sm 
+        .helpsection(id="anchorMentors") 
+           +helpcontent_Mentors
+        
+      .row: .col-sm 
+        .helpsection(id="anchorConfigure") 
+           +helpcontent_Configure
+
+      .row: .col-sm 
+        .helpsection(id="anchorOther") 
+           +helpcontent_Other
+
+    script
+      include ../scripts/help.js

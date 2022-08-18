@@ -1,0 +1,66 @@
+include ../../common/pug/fontawesome-mixins.pug
+include ../../common/pug/bootstrap-mixins.pug
+include ../../common/pug/navbar-mixins.pug
+include ../../common/pug/jquery-mixins.pug
+include ../../common/pug/profile-mixins.pug
+
+include ./mixins/mixins-lookup.pug
+include ./mixins/mixins-admin.pug
+
+doctype html
+html(lang="en")
+  head
+    title Who Teaches What (CTE)
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +fontawesome()
+    +bootstrapstyle()
+    
+    script(src="/scripts/commonmark_min.js")
+    script(src="https://apis.google.com/js/api.js")
+    
+    style
+      include ../../common/styles/classProfile.css
+      include ../../common/styles/navbar-overrides.css
+      include ../styles/whoteacheswhat.css
+    
+    +addJQuery()
+    script(data-main="/scripts/whoteacheswhat/require_whoteacheswhat", src="/scripts/require.js")      \
+    
+  body(class="colorscheme")
+    +makeNavbar("Who Teaches What", 
+      {
+        items: [
+          {id: "navLookup", type: "link", label: "lookup"},
+          {id: "navAdmin", type: "link", label: "admin"},
+          {type: "dropdown", label: "other", items: [
+            {id: "navHelp", type: "link", label: "help"},
+            {id: "navSignout", type: "link", label: "sign out"},
+          ]}
+        ],
+        
+        buttons: [
+          {id: 'navSave', label: 'save'},
+          {id: 'navReload', label: 'reload'}        
+        ],
+        
+        profile: true
+      }
+    )
+    
+    .contents
+      .error-container
+      
+      .container-fluid(class="contents-container contents-navLookup hide-me disable-container")
+        +lookupContainer
+                
+      .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
+        +adminContainer()     
+        
+      +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")
+      
+      .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
+       .row(class="hide-me")
+        form(id="formExport" class="export-form hide-me" action="roster-manager/export" enctype="multipart/form-data" method="post")
+          textarea(id="exportData" class="export-data" name="export-data")     

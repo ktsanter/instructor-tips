@@ -1,0 +1,26 @@
+mixin adminContainer()   
+  .row(class="py-2")
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") upload
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              label(for="file-upload-assignment" class="uploadfile-label uploadfile-label-assignment btn btn-secondary" title="upload instructor assignment spreadsheet") assignments
+              input(type="file" class="uploadfile uploadfile-assignment" id="file-upload-assignment" accept=".xlsx")
+              span(class="upload-result assignment ms-3")
+              
+            .col-sm
+              .changed-data data changes display here              
+
+  .row(class="py-2")
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") cosmetic
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              button(class="btnToggleAdmin btn btn-secondary" title="toggle admin menu option") toggle admin
+

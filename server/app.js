@@ -18,6 +18,7 @@ const MARIA_DBNAME_WALKTHROUGH = getEnv('MARIA_DBNAME_WALKTHROUGH', true);
 const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
 const MARIA_DBNAME_ENDDATEMANAGER = getEnv('MARIA_DBNAME_ENDDATEMANAGER', true);
 const MARIA_DBNAME_ROSTERMANAGER = getEnv('MARIA_DBNAME_ROSTERMANAGER', true);
+const MARIA_DBNAME_WHOTEACHESWHAT = 'rostermanager'; // getEnv('MARIA_DBNAME_WHOTEACHESWHAT', true);  temp name while we get the app skeleton working
 const MARIA_DBNAME_WALKTHROUGHANALYZER = getEnv('MARIA_DBNAME_WALKTHROUGHANALYZER', true);
 const MARIA_DBNAME_ITIPS = getEnv('MARIA_DBNAME_ITIPS', true);
 const MARIA_DBNAME_RECIPES = getEnv('MARIA_DBNAME_RECIPES', true);
@@ -118,7 +119,7 @@ const mariadbParams_TreasureHunt = {
     host: MARIA_HOST,
     user: MARIA_USER,
     password: MARIA_PASSWORD,
-    dbName: MARIA_DBNAME_TREASUREHUNT /*, 
+    dbName: null, MARIA_DBNAME_TREASUREHUNT /*, 
     connectionLimit: 5 */
 };
     
@@ -203,6 +204,15 @@ const mariadbParams_RosterManager = {
     connectionLimit: 5 */
 };
 
+const mariadbParams_WhoTeachesWhat = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_WHOTEACHESWHAT /*, 
+    connectionLimit: 5 */
+};
+
 const mariadbParams_WalkthroughAnalyzer = {
     reqd: mariadb,
     host: MARIA_HOST,
@@ -232,7 +242,7 @@ const mariadbParams_Recipes = {
 
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
-const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
+//const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
 const mariaDBManager_WelcomeLetter = new mariaDBManagerClass(mariadbParams_WelcomeLetter);
 const mariaDBManager_WelcomeLetterV2 = new mariaDBManagerClass(mariadbParams_WelcomeLetterV2);
 const mariaDBManager_ImageFlipper = new mariaDBManagerClass(mariadbParams_ImageFlipper);
@@ -242,10 +252,11 @@ const mariaDBManager_CommentBuddy = new mariaDBManagerClass(mariadbParams_Commen
 const mariaDBManager_EndDateManager = new mariaDBManagerClass(mariadbParams_EndDateManager);
 const mariaDBManager_ASAdmin = new mariaDBManagerClass(mariadbParams_ASAdmin);
 const mariaDBManager_RosterManager = new mariaDBManagerClass(mariadbParams_RosterManager);
+const mariaDBManager_WhoTeachesWhat = new mariaDBManagerClass(mariadbParams_WhoTeachesWhat);
 const mariaDBManager_WalkthroughAnalyzer = new mariaDBManagerClass(mariadbParams_WalkthroughAnalyzer);
 const mariaDBManager_ITips = new mariaDBManagerClass(mariadbParams_ITips);
 const mariaDBManager_Recipes = new mariaDBManagerClass(mariadbParams_Recipes);
-    
+
 //------------------------------------------
 // session management
 //------------------------------------------
@@ -383,6 +394,17 @@ const rosterManager = new rosterManagerClass({
 });
 
 //------------------------------------------
+// WhoTeachesWhat
+//------------------------------------------
+const whoTeachesWhatClass = require('./classes/whoteacheswhat')
+const whoTeachesWhat = new whoTeachesWhatClass({
+  "dbManager": mariaDBManager_WhoTeachesWhat,
+  "userManagement": userManagement,  
+  "tempFileManager": tmp, 
+  "formManager": formidable
+});
+
+//------------------------------------------
 // WalkthroughAnalyzer
 //------------------------------------------
 const walkthroughAnalyzerClass = require('./classes/walkthrough-analyzer')
@@ -435,11 +457,11 @@ const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager_Instru
 // TreasureHunt general query objects
 //------------------------------------------
 const dbTreasureHuntClass = require('./classes/treasurehunt')
-const dbTreasureHunt = new dbTreasureHuntClass(userManagement, mariaDBManager_TreasureHunt);
+//const dbTreasureHunt = new dbTreasureHuntClass(userManagement, mariaDBManager_TreasureHunt);
 
 const dbTreasureHuntLandingClass = require('./classes/treasurehunt_landing');
 const dbTreasureHuntLanding = new dbTreasureHuntLandingClass({
-  "dbManager": mariaDBManager_TreasureHunt,
+  "dbManager": null, //mariaDBManager_TreasureHunt,
   "userManagement": userManagement,
   "commonmark": commonmark, 
   "pug": pug,
@@ -545,7 +567,7 @@ var dbManagerLookup = {
   "instructortips": dbTipManager,
   "usermanagement": dbTipManager,
   "tipmanager": dbTipManager,
-  "treasurehunt": dbTreasureHunt,
+  //"treasurehunt": dbTreasureHunt,
   "welcome": dbWelcomeLetter,
   "welcomeV2": dbWelcomeLetterV2,
   "imageflipper": dbImageFlipper,
@@ -554,6 +576,7 @@ var dbManagerLookup = {
   "commentbuddy": dbCommentBuddy,
   "enddate-manager": endDateManager,
   "roster-manager": rosterManager,
+  "whoteacheswhat": whoTeachesWhat,
   "walkthrough-analyzer": walkthroughAnalyzer,
   "itips": iTips,
   "recipes": recipes
@@ -638,6 +661,13 @@ var appLookup = {
     loginReRoute: 'roster-manager/manage'
   }, 
 
+  "whoteacheswhat" : {
+    appDescriptor: 'whoteacheswhat',
+    appName: 'Who Teaches What',
+    routePug: 'whoteacheswhat/pug/whoteacheswhat.pug',
+    loginReRoute: 'whoteacheswhat/manage'
+  }, 
+
   "walkthrough-analyzer" : {
     appDescriptor: 'walkthrough-analyzer',
     appName: 'Walkthrough Analyzer',
@@ -671,15 +701,21 @@ var appLookup = {
 // app specific routing and queries
 //------------------------------------------------------
 function routeIfLoggedIn(req, res, appDescriptor) {
+  console.log('routeIfLoggedIn', appDescriptor);
   var loggedin = userManagement.isLoggedIn(req.session);
   var appInfo = appLookup[appDescriptor];
+  
+  console.log('loggedin', loggedin);
+  console.log('appInfo', appInfo);
   
   userManagement.setAppInfoForSession(req.session, appInfo);
 
   if (loggedin) {
+    console.log('redirecting to ' + '/usermanagement/routeToApp/' + appInfo.appDescriptor);
     res.redirect('/usermanagement/routeToApp/' + appInfo.appDescriptor);
     
   } else {
+    console.log('redirecting to /login');
     res.redirect('/login');
   }
 }
@@ -696,6 +732,7 @@ app.get('/default', function (req, res) { routeIfLoggedIn(req, res, 'as-default'
 
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
 
+/*
 app.get('/treasurehunt/configuration', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
 app.get('/treasurehunt/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'treasurehunt/pug/help.pug');
@@ -713,6 +750,7 @@ app.get('/treasurehunt/landing/:projectid', async function (req, res) {
 app.post('/treasurehunt/landing/check-answer', async function (req, res) {   
     res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
 })
+*/
 
 app.get('/faq-composer/compose', function (req, res) { routeIfLoggedIn(req, res, 'faq-composer'); })
 app.get('/faq-composer/help', function (req, res) {
@@ -1250,6 +1288,15 @@ app.get('/roster-manager', function (req, res) {
 
 app.get('/roster-manager/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/whoteacheswhat', function (req, res) {
+  routeIfLoggedIn(req, res, 'whoteacheswhat');
+})
+
+app.get('/whoteacheswhat/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'whoteacheswhat/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
