@@ -701,12 +701,8 @@ var appLookup = {
 // app specific routing and queries
 //------------------------------------------------------
 function routeIfLoggedIn(req, res, appDescriptor) {
-  console.log('routeIfLoggedIn', appDescriptor);
   var loggedin = userManagement.isLoggedIn(req.session);
   var appInfo = appLookup[appDescriptor];
-  
-  console.log('loggedin', loggedin);
-  console.log('appInfo', appInfo);
   
   userManagement.setAppInfoForSession(req.session, appInfo);
 
@@ -1291,15 +1287,6 @@ app.get('/roster-manager/help', function (req, res) {
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 
-app.get('/whoteacheswhat', function (req, res) {
-  routeIfLoggedIn(req, res, 'whoteacheswhat');
-})
-
-app.get('/whoteacheswhat/help', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'whoteacheswhat/pug/help.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
-})
-
 app.get('/rostermanager/extension-help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'roster-manager/pug/extension-help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
@@ -1330,6 +1317,20 @@ async function processRosterManagerExportResult(req, res, result) {
     renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {description: result.description}});
   }
 }
+
+app.get('/whoteacheswhat', function (req, res) {
+  routeIfLoggedIn(req, res, 'whoteacheswhat');
+})
+
+app.post('/usermanagement/routeToApp/whoteacheswhat/upload/:uploadType/:semester', function (req, res) {
+  var userInfo = userManagement.getUserInfo(req.session);  
+  whoTeachesWhat.processUploadedFile(req, res, req.params.uploadType, req.params.semester, userInfo); 
+})
+
+app.get('/whoteacheswhat/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'whoteacheswhat/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
 
 app.get('/walkthrough-analyzer', function (req, res) {
   routeIfLoggedIn(req, res, 'walkthrough-analyzer');

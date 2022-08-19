@@ -39,6 +39,8 @@ const app = function () {
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     _renderContents();
+    
+    _initializeReportManagement();
     _initializeAssignmentViewer();
 
     _setUploadFileInfo();
@@ -81,10 +83,6 @@ const app = function () {
   function _initializeReportManagement() {
     settings.reportPoster = new ReportPoster({
       // no params
-    });
-    
-    settings.dataIntegrator = new DataIntegrator({
-      "notice": page.notice
     });
   }
 
@@ -300,82 +298,26 @@ const app = function () {
     UtilityKTS.removeChildren(elemChanges);
   }
     
-  async function _doFileUpload(uploadType, file) {
-    console.log('_doFileUpload', uploadType);
-    
+  async function _doFileUpload(uploadType, file, semester) {
     page.notice.setNotice('loading...', true);
 
     var elemResult = page.navAdmin.getElementsByClassName('upload-result ' + uploadType)[0];
     var elemChanges = page.navAdmin.getElementsByClassName('changed-data')[0];
     UtilityKTS.removeChildren(elemChanges);
     
-    /*
-    var url = '/usermanagement/routeToApp/roster-manager/upload/' + uploadType;    
+    var url = '/usermanagement/routeToApp/whoteacheswhat/upload/' + uploadType;
+    if (semester) url += '/' + semester;    
     var result = await settings.reportPoster.post(url, file);
-    */
     
-    /* temp */ let result = {success: true, details: 'debugging...', data: '** changes list **'};
-    
+    elemResult.innerHTML = result.details;
+    page.notice.setNotice('');
     if (!result.success) {
-      elemResult.innerHTML = result.details;
-      page.notice.setNotice('');
       return;
     }
 
-/*
-    var result = await settings.dataIntegrator.applyReportData(uploadType, result.data);
-*/
-    
-    elemResult.innerHTML = result.details;
-    if (result.success) {
-      _displayChanges(result.data, elemChanges);
-      await _getCurrentInfo();
-    }
-
-    page.notice.setNotice('');
+    await _getCurrentInfo();
   }
-  
-  function _displayChanges(changes, container) {
-    console.log('_displayChanges, stubbed', changes);
-    return;
     
-    UtilityKTS.removeChildren(container);
-
-    var numChanges = 0;
-    for (key in changes) {
-      numChanges += changes[key].differences.length;
-    }
-
-    if (numChanges == 0) {
-      container.appendChild(CreateElement.createDiv(null, null, 'no changes'));
-      
-    } else {
-      for (var changeKey in changes) {
-        var differences = changes[changeKey].differences;
-        var headers = ['reason'].concat(changes[changeKey].headers);
-        
-        if (differences.length > 0) {
-          container.appendChild(CreateElement.createDiv(null, null, 'changes in ' + changeKey));
-
-          var cellList = [];
-          for (var i = 0; i < differences.length; i++) {
-            var splitKey = differences[i].key.split('\t');
-            var rowData = [differences[i].reason];
-
-            for (var j = 0; j < splitKey.length; j++) {
-              rowData.push(splitKey[j]);
-            }
-            cellList.push(rowData);
-          }
-
-          var table = CreateElement.createTable(null, 'table table-striped table-hover table-sm mb-4', headers, cellList);
-          container.appendChild(table);
-          table.getElementsByTagName('thead')[0].classList.add('table-primary');
-        }
-      }
-    }
-  }
-  
   //--------------------------------------------------------------------------
   // handlers
 	//--------------------------------------------------------------------------
@@ -446,7 +388,7 @@ const app = function () {
       if (e.target.classList.contains(key)) param = classToParamMap[key];
     }
     
-    await _doFileUpload(param, e.target.files[0]);
+    await _doFileUpload(param, e.target.files[0], 'S1');
     e.target.value = null;
     
     _setAdminEnable(true);

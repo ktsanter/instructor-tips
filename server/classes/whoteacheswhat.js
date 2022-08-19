@@ -75,11 +75,281 @@ module.exports = internal.WhoTeachesWhat = class {
 //---------------------------------------------------------------
 // other public methods
 //---------------------------------------------------------------  
+  processUploadedFile(req, res, uploadType, semester, userInfo) {
+    var validTypes = new Set(['assignment']);
+
+    if (validTypes.has(uploadType)) {
+      this._processExcelFile(req, res, uploadType, semester, userInfo);
       
+    } else {
+      this._sendFail(res, 'unrecognized upload type: ' + uploadType);
+    }
+  }
+  
 //---------------------------------------------------------------
 // private methods - file processing
 //--------------------------------------------------------------- 
+  async _processExcelFile(req, res, uploadType, semester, userInfo) {
+    var thisObj = this;
+
+    var dbResult = await thisObj._getAssignmentInfo(null, null, userInfo);
+    if (!dbResult.success) {
+      thisObj._sendFail(res, dbResult.details);
+      return;
+    }
+    var currentAssignmentData = dbResult.data;
+
+    var form = new this._formManager.IncomingForm();
+    form.parse(req, async function(err, fields, files) {
+      if (err) {
+        thisObj._sendFail(res, 'error in form.parse: ' + JSON.stringify(err));
+        return;
+      }
+      
+      var origFileName = files.file.name;
+      var filePath = files.file.path;
+      const exceljs = require('exceljs');
+      var workbook = new exceljs.Workbook();
+      await workbook.xlsx.readFile(filePath);
+       
+      var processRoutingMap = {
+        "assignment": thisObj._processAssignmentFile
+      }
+      
+      if (processRoutingMap.hasOwnProperty(uploadType)) {
+        processRoutingMap[uploadType](res, thisObj, workbook, currentAssignmentData, semester, userInfo);
+
+      } else {
+        thisObj._sendFail(res, 'unrecognized upload type: ' + uploadType);
+      }
+    });
+  }
+  
+//----------------------------------------------------------------------
+// process specific Excel file
+//----------------------------------------------------------------------
+  async _processAssignmentFile(res, thisObj, workbook, currentAssignmentData, semester, userInfo) {
+    console.log('_processAssignmentFile');
+    let uploadedData = {
+      "cte_semester": null,
+      "cte_trimester": null,
+      "ap": null,
+      "middleschool": null
+    };
     
+    let result = await thisObj._processCTEAssignments_semester(thisObj, workbook.getWorksheet('C & T'), semester);
+    if (!result.success) {
+      thisObj._sendFail(res, result.details);
+      return;
+    }
+    uploadedData.cte_semester = result.data;
+
+    result = await thisObj._processCTEAssignments_trimester(thisObj, workbook.getWorksheet('C & T'));
+    if (!result.success) {
+      thisObj._sendFail(res, result.details);
+      return;
+    }
+    uploadedData.cte_trimester = result.data;
+
+    result = await thisObj._processAPAssignments(thisObj, workbook.getWorksheet('AP'), semester);
+    if (!result.success) {
+      thisObj._sendFail(res, result.details);
+      return;
+    }
+    uploadedData.ap = result.data;
+    
+    result = await thisObj._processMiddleSchoolAssignments(thisObj, workbook.getWorksheet('Middle School'), semester);
+    if (!result.success) {
+      thisObj._sendFail(res, result.details);
+      return;
+    }
+    uploadedData.middleschool = result.data;
+    
+    let consolidatedData = thisObj._consolidateAssignmentData(uploadedData);
+
+    result = await thisObj._postAssignmentData(consolidatedData);
+    if (!result.success) {
+      thisObj._sendFail(res, result.details);
+      return;
+    }
+
+    thisObj._sendSuccess(res, 'so far, so good', consolidatedData);
+  }    
+  
+  async _processCTEAssignments_semester(thisObj, worksheet, semester) {
+    console.log('_processCTEAssignments_semester');
+    const firstCourseRow = 3;
+    const firstSemCol = 2;
+    const lastSemCol = 11;
+    
+    let result = {success: false, details: 'failed to read CTE assignments', data: null};
+
+    if (!worksheet) return result;
+    
+    let assignments = {};
+    
+    worksheet.eachRow({includeEmpty: false}, function (row, rowNumber) {
+      const course = row.getCell(1).value;
+      if (rowNumber >= firstCourseRow) {
+        assignments[course] = [];
+        let instructorSet = new Set();
+        
+        for (let i = firstSemCol; i <= lastSemCol; i++) {
+          const instructor = row.getCell(i).value;
+          if (instructor) {
+            if (!instructorSet.has(instructor)) {
+              instructorSet.add(instructor);
+              assignments[course].push({"name": instructor, "term": semester});
+            }
+          }
+        }
+      }
+    });
+    
+    result.success = true;
+    result.details = 'processed CTE assignments';
+    result.data = assignments;
+    
+    return result;
+  }
+  
+  async _processCTEAssignments_trimester(thisObj, worksheet) {
+    console.log('_processCTEAssignments_trimester');
+    const firstCourseRow = 3;
+    const trimesterColumns = {"T1": 13, "T2": 14, "T3": 15};
+    
+    let result = {success: false, details: 'failed to read CTE assignments', data: null};
+
+    if (!worksheet) return result;
+    
+    let assignments = {};
+
+    for (const triName in trimesterColumns) {
+      worksheet.eachRow({includeEmpty: false}, function(row, rowNumber) {
+        if (rowNumber >= firstCourseRow) {
+          const course = row.getCell(1).value;
+          const instructor = row.getCell(trimesterColumns[triName]).value;
+          if (instructor) {
+            if (!assignments.hasOwnProperty(course)) assignments[course] = [];
+            assignments[course].push({"name": instructor, "term": triName});
+          }
+        }
+      });
+    }
+    
+    result.success = true;
+    result.details = 'processed CTE assignments';
+    result.data = assignments;
+    
+    return result;
+  }
+  
+  async _processAPAssignments(thisObj, worksheet, semester) {
+    const firstCol = 2;
+    const lastCol = 12;
+    let result = {success: false, details: 'failed to read AP assignments', data: null};
+
+    if (!worksheet) return result;
+    
+    result = await thisObj._getAPCourses();
+    if (!result.success) {
+      result.details = 'failed to look up AP courses';
+      return result;
+    }
+    
+    let courseList = result.data;
+    let assignments = {};
+    for (let i = 0; i < courseList.length; i++) {
+      assignments[courseList[i]] = null;
+    }
+    
+    worksheet.eachRow({includeEmpty: false}, function (row, rowNumber) {
+      const course = row.getCell(1).value;
+      if (courseList.includes(course)) {
+        assignments[course] = [];
+        let instructorSet = new Set();
+
+        for (let i = firstCol; i <= lastCol; i++) {
+          const instructor = row.getCell(i).value;
+          if (instructor) {
+            if (!instructorSet.has(instructor)) {
+              instructorSet.add(instructor);
+              assignments[course].push({"name": instructor, "term": semester});
+            }
+          }
+        }
+      }
+    });
+    
+    result.success = true;
+    result.details = 'processed AP assignments';
+    result.data = assignments;
+    
+    return result;
+  }
+  
+  async _processMiddleSchoolAssignments(thisObj, worksheet, semester) {
+    const firstCol = 2;
+    const lastCol = 18;
+    
+    let result = {success: false, details: 'failed to read middle school assignments', data: null};
+
+    if (!worksheet) return result;
+    
+    result = await thisObj._getMiddleSchoolCourses();
+    if (!result.success) {
+      result.details = 'failed to look up middle school courses';
+      return result;
+    }
+    
+    let courseList = result.data;
+    let assignments = {};
+    for (let i = 0; i < courseList.length; i++) {
+      assignments[courseList[i]] = null;
+    }
+    
+    worksheet.eachRow({includeEmpty: false}, function (row, rowNumber) {
+      const course = row.getCell(1).value;
+      if (courseList.includes(course)) {
+        assignments[course] = []
+        let instructorSet = new Set();
+        
+        for (let i = firstCol; i <= lastCol; i++) {
+          const instructor = row.getCell(i).value;
+          if (instructor) {
+            if (!instructorSet.has(instructor)) {
+              instructorSet.add(instructor);
+              assignments[course].push({"name": instructor, "term": semester});
+            }
+          }
+        }
+      }
+    });   
+    
+    result.success = true;
+    result.details = 'processed middle school assignments';
+    result.data = assignments;
+    
+    return result;
+  }
+  
+  _consolidateAssignmentData(uploadedData) {
+    console.log('_consolidateAssignmentData');
+    let consolidatedData = [];
+    
+    for (const segment in uploadedData) {
+      for (const course in uploadedData[segment]) {
+        if (!consolidatedData.hasOwnProperty(course)) consolidatedData[course] = [];
+        let assignments = uploadedData[segment][course];
+        for (let i = 0; i < assignments.length; i++) {
+          consolidatedData[course].push(assignments[i]);
+        }
+      }
+    }
+    
+    return consolidatedData;
+  }
+  
 //---------------------------------------------------------------
 // specific query methods
 //---------------------------------------------------------------    
@@ -91,7 +361,118 @@ module.exports = internal.WhoTeachesWhat = class {
     result.data = {adminallowed: funcCheckPrivilege(userInfo, 'admin')};
 
     return result;
-  }  
+  }
+  
+  async _getAssignmentInfo(params, postData, userInfo) {
+    return {success: true, details: 'dummy assignment info', data: 'dummy'};
+    
+    /*
+    var result = this._dbManager.queryFailureResult(); 
+    var queryList, queryResults;
+    
+    queryList = {
+      "raw_enrollment_data":
+        'select e.student, e.term, e.section, e.startdate, e.enddate, e.email, e.affiliation ' +
+        'from enrollment as e ' +
+        'where e.userid = ' + userInfo.userId,
+        
+      "raw_studentwelcome_data":
+        'select a.student, a.term, a.section, a.datestamp ' +
+        'from studentwelcome as a ' +
+        'where a.userid = ' + userInfo.userId,
+        
+      "raw_mentor_data":
+        'select m.student, m.term, m.section, m.name, m.email, m.phone, m.affiliation, m.affiliationphone ' +
+        'from mentor as m ' +
+        'where m.userid = ' + userInfo.userId,
+        
+      "raw_guardian_data":
+        'select g.student, g.term, g.section, g.name, g.email, g.phone, g.affiliation, g.affiliationphone ' +
+        'from guardian as g ' +
+        'where g.userid = ' + userInfo.userId,
+        
+      "raw_iep_data":
+        'select a.student, a.term, a.section ' +
+        'from iep as a ' +
+        'where a.userid = ' + userInfo.userId,
+        
+      "raw_504_data":
+        'select a.student, a.term, a.section ' +
+        'from student504 as a ' +
+        'where a.userid = ' + userInfo.userId,
+        
+      "raw_homeschooled_data":
+        'select a.student, a.term, a.section ' +
+        'from homeschooled as a ' +
+        'where a.userid = ' + userInfo.userId,
+        
+      "raw_progresscheck_data":
+        'select a.student, a.term, a.section, a.progresscheckdate ' +
+        'from progresscheck as a ' +
+        'where a.userid = ' + userInfo.userId
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    // merge student welcome letter data with enrollments
+    for (var i = 0; i < queryResults.data.raw_enrollment_data.length; i++) {
+      var enrollment = queryResults.data.raw_enrollment_data[i];
+      enrollment.welcomelettersent = false;
+      for (var j = 0; j < queryResults.data.raw_studentwelcome_data.length; j++) {
+        var welcome = queryResults.data.raw_studentwelcome_data[j];
+        if (enrollment.term == welcome.term && enrollment.section == welcome.section && enrollment.student == welcome.student) {
+          enrollment.welcomelettersent = true;
+        }
+      }
+    }
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = queryResults.data;
+
+    return result;
+    */
+  }
+
+  async _getAPCourses() {
+    // change to DB query
+    let courseList = [
+      'AP Computer Prinicpals (MV Fall 2018)',
+      'AP Computer Science A&B (FLVS)'
+    ];
+    
+    return {success: true, details: 'looked up AP courses', data: courseList};
+  }
+
+  async _getMiddleSchoolCourses() {
+    // change to DB query
+    let courseList = [
+      'Computer Basics - Google'
+    ];
+    
+    return {success: true, details: 'looked up middle school courses', data: courseList};
+  }
+  
+  async _postAssignmentData(assignmentData) {
+    // change to DB query
+    let result = {success: false, details: 'failed to post assignment data', data: null};
+    
+    console.log('assignmentData', assignmentData);
+    for (let course in assignmentData) {
+      let assignmentList = assignmentData[course];
+      for (let i = 0; i < assignmentList.length; i++) {
+        let assignment = assignmentList[i];
+        console.log(course, assignment.name, assignment.term);
+      }
+    }
+    
+    return result;
+  }
     
 //----------------------------------------------------------------------
 // utility
@@ -117,32 +498,4 @@ module.exports = internal.WhoTeachesWhat = class {
     
     res.send(result);
   }  
-  
-  _verifyHeaderRow(headerRow, requiredColumns) {
-    var result = {
-      success: false,
-      columnInfo: {}
-    };
-    
-    var foundColumns = new Set();
-    var columnMapping = {};
-    
-    for (var i = 0; i < headerRow.values.length; i++) {
-      var columnName = headerRow.getCell(i + 1).value;
-      if (columnName) {
-        foundColumns.add(headerRow.getCell(i+1).value);
-        columnMapping[columnName] = i + 1;
-      }
-    }
-    
-    const difference = new Set(
-      [...requiredColumns].filter(x => !foundColumns.has(x)));
-
-    if (difference.size == 0) {
-      result.success = true;
-      result.columnInfo = columnMapping;
-    }
-    
-    return result;
-  }
 }
