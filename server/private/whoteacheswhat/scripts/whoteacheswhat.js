@@ -208,86 +208,13 @@ const app = function () {
   
   async function _getCurrentInfo() {
     settings.currentInfo = null;
-    console.log('_getCurrentInfo, dummied');
     
-    settings.currentInfo = {
-      "Accounting 1A": [
-        {"name": "J. Mullins", "terms": ["S1"]}, 
-        {"name": "D. Lynch", "terms": ["S1", "T1"]}, 
-        {"name": "D. Harrington", "terms": ["S1"]}, 
-        {"name": "D. Plaxton", "terms": ["S1"]}
-      ],
-      "Hospitality and Tourism (FLVS)": [
-        {"name": "B. Aldrink", "terms": ["S1"]}, 
-        {"name": "K. Stalk", "terms": ["S1"]}
-      ],
-      "Study Skills": [
-        {"name": "J. Spencer", "terms": ["S1"]}, 
-        {"name": "B. Tarnas", "terms": ["S1", "T1"]}, 
-        {"name": "B. Lange", "terms": ["S1"]}, 
-        {"name": "A. Brilhart", "terms": ["S1", "T1"]}, 
-        {"name": "A. MacKenzie", "terms": ["S1"]}
-      ],
-      "Career Planning": [
-        {"name": "C. Siewert", "terms": ["S1"]}, 
-        {"name": "L. Dailey", "terms": ["S1", "T1"]}, 
-        {"name": "A. Fanning", "terms": ["S1"]}, 
-        {"name": "K. Stalk", "terms": ["S1", "S2", "T2"]}, 
-        {"name": "K. Cryderman", "terms": ["S1", "T3"]}
-      ],
-      "Health (MMC)": [
-        {"name": "C. Begick", "terms": ["S1"]}, 
-        {"name": "C. DeGroote", "terms": ["S1"]}, 
-        {"name": "J. Malkasian", "terms": ["T1"]}, 
-        {"name": "J. Swanson", "terms": ["S1"]}, 
-        {"name": "D. Collette", "terms": ["S1"]}
-      ]    
-    }
+    let result = await _getAssignmentData();
+    if (!result) return;
+
+    settings.currentInfo = result;
     
     if (settings.currentNavOption == 'navLookup') _showLookup();
-    
-    return;
-/*
-    _setExportUIEnable({"student": false, "mentor": false});
-    
-    var result = await settings.dataIntegrator.readRosterInfo();
-    if (!result.success) {
-      console.log('failed to get roster info');
-      return;
-    }
-    var rosterInfo = result.data;
-
-    result = await _getStudentPropertiesFromDB();
-    if (!result.success) {
-      console.log('failed to get extra student info');
-      return;
-    }
-    var extraStudentInfo = result.data;
-
-    result = await _getMentorPropertiesFromDB();
-    if (!result.success) {
-      console.log('failed to get extra mentor info');
-      return;
-    }
-    var extraMentorInfo = result.data.mentorextra;
-
-    settings.currentInfo = _packageStudentInfo(rosterInfo, extraStudentInfo);
-
-    settings.currentMentorInfo = _packageMentorInfo(rosterInfo, extraStudentInfo, extraMentorInfo);
-    settings.currentRawInfo = {
-      "rosterInfo": rosterInfo,
-      "extraStudentInfo": extraStudentInfo,
-      "extraMentorInfo": extraMentorInfo
-    };
-        
-    _setExportUIEnable({
-      "student": settings.currentInfo.studentList.length > 0, 
-      "mentor": settings.currentMentorInfo.mentorList.length > 0
-    });
-    
-    if (settings.currentNavOption == 'navStudent') _showStudent();
-    if (settings.currentNavOption == 'navMentor') _showMentor();
-    */
   }
    
   function _setUploadFileInfo() {
@@ -412,6 +339,17 @@ const app = function () {
     
     var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
     return adminAllowed;
+  }  
+ 
+  async function _getAssignmentData() {
+    let assignmentData = null;
+    
+    let dbResult = await SQLDBInterface.doGetQuery('whoteacheswhat/query', 'assignments', page.notice);
+    if (dbResult.success) {
+      assignmentData = dbResult.data;
+    }
+    
+    return assignmentData;
   }  
  
   //---------------------------------------

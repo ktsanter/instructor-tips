@@ -23,8 +23,8 @@ module.exports = internal.WhoTeachesWhat = class {
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
       
-    } else if (params.queryName == 'dummy') {
-      //dbResult = await this._getRosterInfo(params, postData, userInfo);
+    } else if (params.queryName == 'assignments') {
+      dbResult = await this._getAssignmentInfo(params, postData, userInfo);
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -92,13 +92,6 @@ module.exports = internal.WhoTeachesWhat = class {
   async _processExcelFile(req, res, uploadType, semester, userInfo) {
     var thisObj = this;
 
-    var dbResult = await thisObj._getAssignmentInfo(null, null, userInfo);
-    if (!dbResult.success) {
-      thisObj._sendFail(res, dbResult.details);
-      return;
-    }
-    var currentAssignmentData = dbResult.data;
-
     var form = new this._formManager.IncomingForm();
     form.parse(req, async function(err, fields, files) {
       if (err) {
@@ -117,7 +110,7 @@ module.exports = internal.WhoTeachesWhat = class {
       }
       
       if (processRoutingMap.hasOwnProperty(uploadType)) {
-        processRoutingMap[uploadType](res, thisObj, workbook, currentAssignmentData, semester, userInfo);
+        processRoutingMap[uploadType](res, thisObj, workbook, semester, userInfo);
 
       } else {
         thisObj._sendFail(res, 'unrecognized upload type: ' + uploadType);
@@ -128,8 +121,7 @@ module.exports = internal.WhoTeachesWhat = class {
 //----------------------------------------------------------------------
 // process specific Excel file
 //----------------------------------------------------------------------
-  async _processAssignmentFile(res, thisObj, workbook, currentAssignmentData, semester, userInfo) {
-    console.log('_processAssignmentFile');
+  async _processAssignmentFile(res, thisObj, workbook, semester, userInfo) {
     let uploadedData = {
       "cte_semester": null,
       "cte_trimester": null,
@@ -173,11 +165,10 @@ module.exports = internal.WhoTeachesWhat = class {
       return;
     }
 
-    thisObj._sendSuccess(res, 'so far, so good', consolidatedData);
+    thisObj._sendSuccess(res, 'assignment data posted', consolidatedData);
   }    
   
   async _processCTEAssignments_semester(thisObj, worksheet, semester) {
-    console.log('_processCTEAssignments_semester');
     const firstCourseRow = 3;
     const firstSemCol = 2;
     const lastSemCol = 11;
@@ -214,7 +205,6 @@ module.exports = internal.WhoTeachesWhat = class {
   }
   
   async _processCTEAssignments_trimester(thisObj, worksheet) {
-    console.log('_processCTEAssignments_trimester');
     const firstCourseRow = 3;
     const trimesterColumns = {"T1": 13, "T2": 14, "T3": 15};
     
@@ -251,7 +241,7 @@ module.exports = internal.WhoTeachesWhat = class {
 
     if (!worksheet) return result;
     
-    result = await thisObj._getAPCourses();
+    result = await thisObj._getExtraCourses('AP');
     if (!result.success) {
       result.details = 'failed to look up AP courses';
       return result;
@@ -296,7 +286,7 @@ module.exports = internal.WhoTeachesWhat = class {
 
     if (!worksheet) return result;
     
-    result = await thisObj._getMiddleSchoolCourses();
+    result = await thisObj._getExtraCourses('MS');
     if (!result.success) {
       result.details = 'failed to look up middle school courses';
       return result;
@@ -334,7 +324,6 @@ module.exports = internal.WhoTeachesWhat = class {
   }
   
   _consolidateAssignmentData(uploadedData) {
-    console.log('_consolidateAssignmentData');
     let consolidatedData = [];
     
     for (const segment in uploadedData) {
@@ -364,112 +353,111 @@ module.exports = internal.WhoTeachesWhat = class {
   }
   
   async _getAssignmentInfo(params, postData, userInfo) {
-    return {success: true, details: 'dummy assignment info', data: 'dummy'};
+    let result = this._dbManager.queryFailureResult(); 
+    let query, queryResults;
     
-    /*
-    var result = this._dbManager.queryFailureResult(); 
-    var queryList, queryResults;
+    query = 
+      'select course, instructor, term ' +
+      'from assignment';
     
-    queryList = {
-      "raw_enrollment_data":
-        'select e.student, e.term, e.section, e.startdate, e.enddate, e.email, e.affiliation ' +
-        'from enrollment as e ' +
-        'where e.userid = ' + userInfo.userId,
-        
-      "raw_studentwelcome_data":
-        'select a.student, a.term, a.section, a.datestamp ' +
-        'from studentwelcome as a ' +
-        'where a.userid = ' + userInfo.userId,
-        
-      "raw_mentor_data":
-        'select m.student, m.term, m.section, m.name, m.email, m.phone, m.affiliation, m.affiliationphone ' +
-        'from mentor as m ' +
-        'where m.userid = ' + userInfo.userId,
-        
-      "raw_guardian_data":
-        'select g.student, g.term, g.section, g.name, g.email, g.phone, g.affiliation, g.affiliationphone ' +
-        'from guardian as g ' +
-        'where g.userid = ' + userInfo.userId,
-        
-      "raw_iep_data":
-        'select a.student, a.term, a.section ' +
-        'from iep as a ' +
-        'where a.userid = ' + userInfo.userId,
-        
-      "raw_504_data":
-        'select a.student, a.term, a.section ' +
-        'from student504 as a ' +
-        'where a.userid = ' + userInfo.userId,
-        
-      "raw_homeschooled_data":
-        'select a.student, a.term, a.section ' +
-        'from homeschooled as a ' +
-        'where a.userid = ' + userInfo.userId,
-        
-      "raw_progresscheck_data":
-        'select a.student, a.term, a.section, a.progresscheckdate ' +
-        'from progresscheck as a ' +
-        'where a.userid = ' + userInfo.userId
-    };
-    
-    queryResults = await this._dbManager.dbQueries(queryList); 
+    queryResults = await this._dbManager.dbQuery(query); 
     
     if (!queryResults.success) {
       result.details = queryResults.details;
       return result;
     }
     
-    // merge student welcome letter data with enrollments
-    for (var i = 0; i < queryResults.data.raw_enrollment_data.length; i++) {
-      var enrollment = queryResults.data.raw_enrollment_data[i];
-      enrollment.welcomelettersent = false;
-      for (var j = 0; j < queryResults.data.raw_studentwelcome_data.length; j++) {
-        var welcome = queryResults.data.raw_studentwelcome_data[j];
-        if (enrollment.term == welcome.term && enrollment.section == welcome.section && enrollment.student == welcome.student) {
-          enrollment.welcomelettersent = true;
-        }
+    let assignmentInfo = {};
+    for (let i = 0; i < queryResults.data.length; i++) {
+      let assignment = queryResults.data[i];
+      let course = assignment.course;
+      let instructor = assignment.instructor;
+      let term = assignment.term;
+      
+      if (!assignmentInfo.hasOwnProperty(course)) assignmentInfo[course] = [];
+      
+      if (!assignmentInfo[course].hasOwnProperty(instructor)) assignmentInfo[course][instructor] = [];
+      if (!assignmentInfo[course][instructor].includes(term)) assignmentInfo[course][instructor].push(term);
+    }
+    
+    let collatedInfo = {}
+    for (let course in assignmentInfo) {
+      if (!collatedInfo.hasOwnProperty(course)) collatedInfo[course] = [];
+      let courseInfo = assignmentInfo[course];
+      for (let instructor in courseInfo) {
+        let termInfo = courseInfo[instructor];
+        collatedInfo[course].push({"name": instructor, "terms": termInfo});
       }
     }
     
     result.success = true;
-    result.details = 'query succeeded';
-    result.data = queryResults.data;
-
+    result.details = 'retrieved assignment info';
+    result.data = collatedInfo;
+    
     return result;
-    */
   }
 
-  async _getAPCourses() {
-    // change to DB query
-    let courseList = [
-      'AP Computer Prinicpals (MV Fall 2018)',
-      'AP Computer Science A&B (FLVS)'
-    ];
+  async _getExtraCourses(courseType) {
+    let result = this._dbManager.queryFailureResult(); 
+    let query, queryResults;
     
-    return {success: true, details: 'looked up AP courses', data: courseList};
+    query = 
+      'select course ' +
+      'from extracourse ' +
+      'where coursetype = "' + courseType + '"';
+
+    queryResults = await this._dbManager.dbQuery(query); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }
+    
+    let courseList = [];
+    for (let i = 0; i < queryResults.data.length; i++) {
+      courseList.push(queryResults.data[i].course);
+    }
+    
+    return {success: true, details: 'looked up AP courses', data: courseList};   
   }
 
-  async _getMiddleSchoolCourses() {
-    // change to DB query
-    let courseList = [
-      'Computer Basics - Google'
-    ];
-    
-    return {success: true, details: 'looked up middle school courses', data: courseList};
-  }
-  
   async _postAssignmentData(assignmentData) {
-    // change to DB query
     let result = {success: false, details: 'failed to post assignment data', data: null};
+    let query, queryResults;
     
-    console.log('assignmentData', assignmentData);
+    query = 'delete from assignment';
+    queryResults = await this._dbManager.dbQuery(query);
+    if (!queryResults.success) {
+      result.details = 'failed to delete assignments';
+      return result;
+    }
+    
+    query = 'insert into assignment (course, instructor, term) values ';
+    
+    let n = 0;
     for (let course in assignmentData) {
       let assignmentList = assignmentData[course];
       for (let i = 0; i < assignmentList.length; i++) {
         let assignment = assignmentList[i];
-        console.log(course, assignment.name, assignment.term);
+        if (n > 0) query += ', ';
+        query += 
+          '(' +
+            '"' + course + '", ' +
+            '"' + assignment.name + '", ' +
+            '"' + assignment.term + '" ' +
+          ')';
+          n++;
       }
     }
+    
+    queryResults = await this._dbManager.dbQuery(query);
+    if (!queryResults.success) {
+      result.details = 'failed to insert assignments';
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'posted assignments to DB';
     
     return result;
   }

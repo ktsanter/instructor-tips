@@ -31,6 +31,12 @@ class AssignmentViewer {
 
   _updateUI() {
     UtilityKTS.removeChildren(this.config.assignmentAccordion);
+    
+    if (!this.settings.currentInfo) {
+      this.config.assignmentAccordion.appendChild(CreateElement.createDiv(null, null, 'no assignment info available'));
+      return;
+    }
+    
     let accordionItem = this.config.container.getElementsByClassName('item-template')[0];
     
     for (var i = 0; i < this.settings.currentInfo.length; i++) {
@@ -62,6 +68,8 @@ class AssignmentViewer {
   }
   
   _orderAssignmentInfo(info) {
+    if (!info) return info;
+    
     var courses = Object.keys(info).sort();
     var orderedInfo = [];
     for (var i = 0; i < courses.length; i++) {
