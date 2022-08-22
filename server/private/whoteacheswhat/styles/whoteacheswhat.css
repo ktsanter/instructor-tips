@@ -92,12 +92,16 @@ body {
   background-color: var(--bgPrimary);
   border: 1px solid var(--bgPrimary);
   cursor: pointer;
+  min-width: 8.0em;
 }
 
 .contents .contents-navAdmin .upload-result {
   display: inline-block;
   font-style: italic;
 }
+
+.contents .contents-navAdmin button.btn-secondary {
+  min-width: 8.0em;
 
 /*------------------------------------------------------------------
  * standard error and notice

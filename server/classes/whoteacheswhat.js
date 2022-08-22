@@ -2,7 +2,8 @@
 //---------------------------------------------------------------
 // server-side for Who Teaches What
 //---------------------------------------------------------------
-// TODO: 
+// TODO: check for duplicates on assignment insert, flag appropriately
+// TODO: remove deletion from assignment insert, add separate query interface
 //---------------------------------------------------------------
 const internal = {};
 

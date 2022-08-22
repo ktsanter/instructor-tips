@@ -118,8 +118,13 @@ const app = function () {
   function _renderAdmin() {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
     
-    let elemUpload = page.navAdmin.getElementsByClassName('uploadfile')[0];
-    elemUpload.addEventListener('change', (e) => { _handleFileUpload(e); });
+    let elemUpload = page.navAdmin.getElementsByClassName('uploadfile');
+    for (let i = 0; i < elemUpload.length; i++) {
+      elemUpload[i].addEventListener('change', (e) => { _handleFileUpload(e); });
+    }
+
+    let elemDelete = page.navAdmin.getElementsByClassName('delete-assignments')[0];
+    elemDelete.addEventListener('click', (e) => { _handleDeleteAssignments(e); });
     
     page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });    
   }
@@ -219,18 +224,14 @@ const app = function () {
    
   function _setUploadFileInfo() {
     var elemResultAssignment = page.navAdmin.getElementsByClassName('upload-result assignment')[0];
-    var elemChanges = page.navAdmin.getElementsByClassName('changed-data')[0];
     
     elemResultAssignment.innerHTML = '';
-    UtilityKTS.removeChildren(elemChanges);
   }
     
   async function _doFileUpload(uploadType, file, semester) {
     page.notice.setNotice('loading...', true);
 
     var elemResult = page.navAdmin.getElementsByClassName('upload-result ' + uploadType)[0];
-    var elemChanges = page.navAdmin.getElementsByClassName('changed-data')[0];
-    UtilityKTS.removeChildren(elemChanges);
     
     var url = '/usermanagement/routeToApp/whoteacheswhat/upload/' + uploadType;
     if (semester) url += '/' + semester;    
@@ -304,6 +305,11 @@ const app = function () {
   async function _handleFileUpload(e) {
     if (e.target.files.length == 0) return;
     
+    let term = null;
+    if (e.target.id.indexOf('S1') > 0) term = 'S1';
+    if (e.target.id.indexOf('S2') > 0) term = 'S2';
+    if (!term) return;
+    
     _setAdminEnable(false);
     
     var classToParamMap = {
@@ -315,10 +321,14 @@ const app = function () {
       if (e.target.classList.contains(key)) param = classToParamMap[key];
     }
     
-    await _doFileUpload(param, e.target.files[0], 'S1');
+    await _doFileUpload(param, e.target.files[0], term);
     e.target.value = null;
     
     _setAdminEnable(true);
+  }
+  
+  async function _handleDeleteAssignments(e) {
+    console.log('_handleDeleteAssignments');
   }
 
   function _handleToggleAdmin() {
