@@ -42,6 +42,7 @@ class AssignmentViewer {
     for (var i = 0; i < this.settings.currentInfo.length; i++) {
       let courseAssignment = this.settings.currentInfo[i];
       let course = courseAssignment[0];
+      
       let instructors = courseAssignment[1];
       
       let item = accordionItem.cloneNode(true);
@@ -52,7 +53,7 @@ class AssignmentViewer {
       let headerButton = item.getElementsByClassName('accordion-button')[0];
       headerButton.setAttribute('data-bs-target', '#collapse' + paddedIndex);
       headerButton.setAttribute('aria-controls', 'collapse' + paddedIndex);
-      headerButton.innerHTML = course;
+      headerButton.innerHTML = this._massageCourseName(course);
       
       let bodyDiv = item.getElementsByClassName('accordion-collapse')[0];
       bodyDiv.id = 'collapse' + paddedIndex;
@@ -123,6 +124,22 @@ class AssignmentViewer {
     } else {
       return uncheckedHTML;
     }
+  }
+  
+  _massageCourseName(origCourseName) {
+    let massaged = origCourseName;
+
+    massaged = massaged.replace('Prinicpals', 'Science Principles');
+    massaged = massaged.replace('Computer Science A&B', 'Computer Science A');
+    massaged = massaged.replace('(MV Fall 2018)', '');
+    massaged = massaged.replace('(FLVS)', '');
+    massaged = massaged.replace('&CSS', '& CSS');
+    massaged = massaged.replace('(New 16)', '');
+    massaged = massaged.replace(' - MVS (1 Sem)', '');
+    massaged = massaged.replace('(MMC)', '');
+    
+    return massaged;
+
   }
   
   //--------------------------------------------------------------
