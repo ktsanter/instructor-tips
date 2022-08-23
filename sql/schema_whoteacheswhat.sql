@@ -18,9 +18,10 @@ create table assignment
   course           varchar(200) not null,
   instructor       varchar(50) not null,
   term             varchar(20) not null,
+  source           varchar(20) not null,
   
   primary key (assignmentid),
-  constraint unique(course, instructor, term)  
+  constraint unique(course, instructor, term, source)  
 );
 
 create table extracourse

@@ -32,7 +32,7 @@ class AssignmentViewer {
   _updateUI() {
     UtilityKTS.removeChildren(this.config.assignmentAccordion);
     
-    if (!this.settings.currentInfo) {
+    if (!this.settings.currentInfo || this.settings.currentInfo.length == 0) {
       this.config.assignmentAccordion.appendChild(CreateElement.createDiv(null, null, 'no assignment info available'));
       return;
     }

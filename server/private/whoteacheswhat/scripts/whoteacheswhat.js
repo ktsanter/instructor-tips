@@ -43,8 +43,6 @@ const app = function () {
     _initializeReportManagement();
     _initializeAssignmentViewer();
 
-    _setUploadFileInfo();
-
     settings.currentInfo = null;
     await _getCurrentInfo();
 
@@ -222,28 +220,33 @@ const app = function () {
     if (settings.currentNavOption == 'navLookup') _showLookup();
   }
    
-  function _setUploadFileInfo() {
-    var elemResultAssignment = page.navAdmin.getElementsByClassName('upload-result assignment')[0];
-    
-    elemResultAssignment.innerHTML = '';
-  }
-    
   async function _doFileUpload(uploadType, file, semester) {
     page.notice.setNotice('loading...', true);
-
-    var elemResult = page.navAdmin.getElementsByClassName('upload-result ' + uploadType)[0];
+    _clearAdminResults();
     
     var url = '/usermanagement/routeToApp/whoteacheswhat/upload/' + uploadType;
     if (semester) url += '/' + semester;    
     var result = await settings.reportPoster.post(url, file);
     
-    elemResult.innerHTML = result.details;
+    _renderAdminResults('upload-result' + semester, result.details);
+    
     page.notice.setNotice('');
     if (!result.success) {
       return;
     }
 
     await _getCurrentInfo();
+  }
+  
+  function _clearAdminResults() {
+    _renderAdminResults('upload-resultS1', '');
+    _renderAdminResults('upload-resultS2', '');
+    _renderAdminResults('delete-result', '');
+  }
+    
+  function _renderAdminResults(resultClass, txt) {
+    let elemResult = page.navAdmin.getElementsByClassName(resultClass)[0];
+    elemResult.innerHTML = txt;
   }
     
   //--------------------------------------------------------------------------
@@ -328,7 +331,18 @@ const app = function () {
   }
   
   async function _handleDeleteAssignments(e) {
-    console.log('_handleDeleteAssignments');
+    _clearAdminResults();
+    
+    let msg = 'All assignment data will be removed from the database.  Are you sure?';
+    msg += '\n\nPress OK to continue with deletion.';
+    if (!confirm(msg)) return;
+    
+    let success = await _deleteAssignmentData();
+    if (success) {
+      _renderAdminResults('delete-result', 'assignment info deleted');
+    } else {
+      _renderAdminResults('delete-result', 'failed to delete assignment info');
+    }
   }
 
   function _handleToggleAdmin() {
@@ -360,6 +374,12 @@ const app = function () {
     }
     
     return assignmentData;
+  }  
+ 
+  async function _deleteAssignmentData() {
+    let params = {};
+    let dbResult = await SQLDBInterface.doPostQuery('whoteacheswhat/delete', 'assignments', params, page.notice);
+    return dbResult.success;
   }  
  
   //---------------------------------------

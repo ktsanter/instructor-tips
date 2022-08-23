@@ -63,8 +63,8 @@ module.exports = internal.WhoTeachesWhat = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      //dbResult = await this._deleteStudentNote(params, postData, userInfo);
+    if (params.queryName == 'assignments') {
+      dbResult = await this._deleteAssignmentInfo(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -160,7 +160,7 @@ module.exports = internal.WhoTeachesWhat = class {
     
     let consolidatedData = thisObj._consolidateAssignmentData(uploadedData);
 
-    result = await thisObj._postAssignmentData(consolidatedData);
+    result = await thisObj._postAssignmentData(consolidatedData, semester);
     if (!result.success) {
       thisObj._sendFail(res, result.details);
       return;
@@ -358,7 +358,7 @@ module.exports = internal.WhoTeachesWhat = class {
     let query, queryResults;
     
     query = 
-      'select course, instructor, term ' +
+      'select distinct course, instructor, term ' +
       'from assignment';
     
     queryResults = await this._dbManager.dbQuery(query); 
@@ -422,18 +422,21 @@ module.exports = internal.WhoTeachesWhat = class {
     return {success: true, details: 'looked up AP courses', data: courseList};   
   }
 
-  async _postAssignmentData(assignmentData) {
+  async _postAssignmentData(assignmentData, source) {
     let result = {success: false, details: 'failed to post assignment data', data: null};
     let query, queryResults;
     
-    query = 'delete from assignment';
+    query = 
+      'delete from assignment ' +
+      'where source = "' + source + '"';
+
     queryResults = await this._dbManager.dbQuery(query);
     if (!queryResults.success) {
-      result.details = 'failed to delete assignments';
+      result.details = queryResults.details;
       return result;
     }
     
-    query = 'insert into assignment (course, instructor, term) values ';
+    query = 'insert into assignment (course, instructor, term, source) values ';
     
     let n = 0;
     for (let course in assignmentData) {
@@ -445,7 +448,8 @@ module.exports = internal.WhoTeachesWhat = class {
           '(' +
             '"' + course + '", ' +
             '"' + assignment.name + '", ' +
-            '"' + assignment.term + '" ' +
+            '"' + assignment.term + '", ' +
+            '"' + source + '" ' +
           ')';
           n++;
       }
@@ -453,13 +457,35 @@ module.exports = internal.WhoTeachesWhat = class {
     
     queryResults = await this._dbManager.dbQuery(query);
     if (!queryResults.success) {
-      result.details = 'failed to insert assignments';
+      result.details = queryResults.details;
+      if (queryResults.details.text.includes('Duplicate entry')) {
+        result.details = queryResults.details.text;
+      } 
+
       return result;
     }
     
     result.success = true;
     result.details = 'posted assignments to DB';
     
+    return result;
+  }
+
+  async _deleteAssignmentInfo(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    let query, queryResults;
+    
+    query = 'delete from assignment';
+    queryResults = await this._dbManager.dbQuery(query);
+    
+    if (!queryResults.success) {
+      result.details = 'failed to delete assignments';
+      return result;
+    }
+    
+    result.success = true;
+    result.details = 'deleted assignments';
+
     return result;
   }
     
