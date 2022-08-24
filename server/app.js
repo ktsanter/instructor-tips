@@ -9,8 +9,6 @@ const MARIA_HOST = getEnv('MARIA_HOST', true);
 const MARIA_USER = getEnv('MARIA_USER', true);
 const MARIA_PASSWORD = getEnv('MARIA_PASSWORD', true);
 const MARIA_DBNAME_INSTRUCTORTIPS = getEnv('MARIA_DBNAME_INSTRUCTORTIPS', true);
-const MARIA_DBNAME_TREASUREHUNT = getEnv('MARIA_DBNAME_TREASUREHUNT', true);
-const MARIA_DBNAME_WELCOME = getEnv('MARIA_DBNAME_WELCOME', true);
 const MARIA_DBNAME_WELCOMEV2 = getEnv('MARIA_DBNAME_WELCOMEV2', true);
 const MARIA_DBNAME_IMAGEFLIPPER = getEnv('MARIA_DBNAME_IMAGEFLIPPER', true);
 const MARIA_DBNAME_FAQCOMPOSER = getEnv('MARIA_DBNAME_FAQCOMPOSER', true);
@@ -19,6 +17,7 @@ const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
 const MARIA_DBNAME_ENDDATEMANAGER = getEnv('MARIA_DBNAME_ENDDATEMANAGER', true);
 const MARIA_DBNAME_ROSTERMANAGER = getEnv('MARIA_DBNAME_ROSTERMANAGER', true);
 const MARIA_DBNAME_WHOTEACHESWHAT = getEnv('MARIA_DBNAME_WHOTEACHESWHAT', true);  
+const MARIA_DBNAME_COURSEPOLICIES = /* temporary */ getEnv('MARIA_DBNAME_WHOTEACHESWHAT', true) /* */;  
 const MARIA_DBNAME_WALKTHROUGHANALYZER = getEnv('MARIA_DBNAME_WALKTHROUGHANALYZER', true);
 const MARIA_DBNAME_ITIPS = getEnv('MARIA_DBNAME_ITIPS', true);
 const MARIA_DBNAME_RECIPES = getEnv('MARIA_DBNAME_RECIPES', true);
@@ -114,24 +113,6 @@ const mariadbParams_InstructorTips = {
     connectionLimit: 5 */
 };
     
-const mariadbParams_TreasureHunt = {
-    reqd: mariadb,
-    host: MARIA_HOST,
-    user: MARIA_USER,
-    password: MARIA_PASSWORD,
-    dbName: null, MARIA_DBNAME_TREASUREHUNT /*, 
-    connectionLimit: 5 */
-};
-    
-const mariadbParams_WelcomeLetter = {
-    reqd: mariadb,
-    host: MARIA_HOST,
-    user: MARIA_USER,
-    password: MARIA_PASSWORD,
-    dbName: MARIA_DBNAME_WELCOME /*, 
-    connectionLimit: 5 */
-};
-    
 const mariadbParams_WelcomeLetterV2 = {
     reqd: mariadb,
     host: MARIA_HOST,
@@ -213,6 +194,15 @@ const mariadbParams_WhoTeachesWhat = {
     connectionLimit: 5 */
 };
 
+const mariadbParams_CoursePolicies = {
+    reqd: mariadb,
+    host: MARIA_HOST,
+    user: MARIA_USER,
+    password: MARIA_PASSWORD,
+    dbName: MARIA_DBNAME_COURSEPOLICIES /*, 
+    connectionLimit: 5 */
+};
+
 const mariadbParams_WalkthroughAnalyzer = {
     reqd: mariadb,
     host: MARIA_HOST,
@@ -242,8 +232,6 @@ const mariadbParams_Recipes = {
 
 const mariaDBManagerClass = require('./classes/mariadb_management')
 const mariaDBManager_InstructorTips = new mariaDBManagerClass(mariadbParams_InstructorTips);
-//const mariaDBManager_TreasureHunt = new mariaDBManagerClass(mariadbParams_TreasureHunt);
-const mariaDBManager_WelcomeLetter = new mariaDBManagerClass(mariadbParams_WelcomeLetter);
 const mariaDBManager_WelcomeLetterV2 = new mariaDBManagerClass(mariadbParams_WelcomeLetterV2);
 const mariaDBManager_ImageFlipper = new mariaDBManagerClass(mariadbParams_ImageFlipper);
 const mariaDBManager_FAQComposer = new mariaDBManagerClass(mariadbParams_FAQComposer);
@@ -252,6 +240,7 @@ const mariaDBManager_CommentBuddy = new mariaDBManagerClass(mariadbParams_Commen
 const mariaDBManager_EndDateManager = new mariaDBManagerClass(mariadbParams_EndDateManager);
 const mariaDBManager_ASAdmin = new mariaDBManagerClass(mariadbParams_ASAdmin);
 const mariaDBManager_RosterManager = new mariaDBManagerClass(mariadbParams_RosterManager);
+const mariaDBManager_CoursePolicies = new mariaDBManagerClass(mariadbParams_CoursePolicies);
 const mariaDBManager_WhoTeachesWhat = new mariaDBManagerClass(mariadbParams_WhoTeachesWhat);
 const mariaDBManager_WalkthroughAnalyzer = new mariaDBManagerClass(mariadbParams_WalkthroughAnalyzer);
 const mariaDBManager_ITips = new mariaDBManagerClass(mariadbParams_ITips);
@@ -405,6 +394,15 @@ const whoTeachesWhat = new whoTeachesWhatClass({
 });
 
 //------------------------------------------
+// CoursePolicies
+//------------------------------------------
+const coursePoliciesClass = require('./classes/coursepolicies')
+const coursePolicies = new coursePoliciesClass({
+  "dbManager": mariaDBManager_CoursePolicies,
+  "userManagement": userManagement
+});
+
+//------------------------------------------
 // WalkthroughAnalyzer
 //------------------------------------------
 const walkthroughAnalyzerClass = require('./classes/walkthrough-analyzer')
@@ -452,33 +450,6 @@ const equationEditor = new equationEditorClass({
 //------------------------------------------
 const dbTipManagerClass = require('./classes/tipmanager')
 const dbTipManager = new dbTipManagerClass(userManagement, mariaDBManager_InstructorTips, messageManagement);
-
-//------------------------------------------
-// TreasureHunt general query objects
-//------------------------------------------
-const dbTreasureHuntClass = require('./classes/treasurehunt')
-//const dbTreasureHunt = new dbTreasureHuntClass(userManagement, mariaDBManager_TreasureHunt);
-
-const dbTreasureHuntLandingClass = require('./classes/treasurehunt_landing');
-const dbTreasureHuntLanding = new dbTreasureHuntLandingClass({
-  "dbManager": null, //mariaDBManager_TreasureHunt,
-  "userManagement": userManagement,
-  "commonmark": commonmark, 
-  "pug": pug,
-  "fileServices": fileservices
-});
-
-//------------------------------------------
-// Welcome letter general query objects
-//------------------------------------------
-const dbWelcomeLetterClass = require('./classes/welcomeletter')
-const dbWelcomeLetter = new dbWelcomeLetterClass({
-  "dbManager": mariaDBManager_WelcomeLetter,
-  "userManagement": userManagement,
-  "pug": pug,
-  "fileServices": fileservices,
-  "pugPath": path.join(__dirname + '/private/welcomeletter/pug')
-});
 
 const dbWelcomeLetterClassV2 = require('./classes/welcomeletterv2')
 const dbWelcomeLetterV2 = new dbWelcomeLetterClassV2({
@@ -567,8 +538,6 @@ var dbManagerLookup = {
   "instructortips": dbTipManager,
   "usermanagement": dbTipManager,
   "tipmanager": dbTipManager,
-  //"treasurehunt": dbTreasureHunt,
-  "welcome": dbWelcomeLetter,
   "welcomeV2": dbWelcomeLetterV2,
   "imageflipper": dbImageFlipper,
   "faqcomposer": dbFAQComposer,
@@ -577,6 +546,7 @@ var dbManagerLookup = {
   "enddate-manager": endDateManager,
   "roster-manager": rosterManager,
   "whoteacheswhat": whoTeachesWhat,
+  "coursepolicies": coursePolicies,
   "walkthrough-analyzer": walkthroughAnalyzer,
   "itips": iTips,
   "recipes": recipes
@@ -595,13 +565,6 @@ var appLookup = {
     appName: 'InstructorTips',
     routeRedirect: '/instructortips-app',
     loginReRoute: 'instructortips'
-  },
-  
-  "treasurehunt" : {
-    appDescriptor: 'treasurehunt',
-    appName: 'Treasure Hunt configuration',
-    routePug: 'treasurehunt/pug/configuration.pug',
-    loginReRoute: 'treasurehunt/options'
   },
   
   "welcomeV2" : {
@@ -659,6 +622,13 @@ var appLookup = {
     appName: 'Roster Manager',
     routePug: 'roster-manager/pug/roster-manager.pug',
     loginReRoute: 'roster-manager/manage'
+  }, 
+
+  "coursepolicies" : {
+    appDescriptor: 'coursepolicies',
+    appName: 'Course Policies',
+    routePug: 'coursepolicies/pug/coursepolicies.pug',
+    loginReRoute: 'coursepolicies/manage'
   }, 
 
   "whoteacheswhat" : {
@@ -727,26 +697,6 @@ app.get('/marco', function (req, res) {
 app.get('/default', function (req, res) { routeIfLoggedIn(req, res, 'as-default'); })
 
 app.get('/instructortips', function (req, res) { routeIfLoggedIn(req, res, 'instructortips'); })
-
-/*
-app.get('/treasurehunt/configuration', function (req, res) { routeIfLoggedIn(req, res, 'treasurehunt'); })
-app.get('/treasurehunt/help', function (req, res) {
-  var pugFileName = path.join(__dirname, 'private', 'treasurehunt/pug/help.pug');
-  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
-})
-app.get('/treasurehunt/landing/:projectid', async function (req, res) {
-  var fileName = path.join(__dirname, 'private', 'treasurehunt/pug/landing.pug');
-  var result = await dbTreasureHuntLanding.renderLandingPage(req.params, fileName, userManagement.getUserInfo(req.session));
-  if (result.success) {
-    res.send(result.data);    
-  } else {
-    sendFailedAccess(res, fileName);
-  }
-})
-app.post('/treasurehunt/landing/check-answer', async function (req, res) {   
-    res.send(await dbTreasureHuntLanding.checkAnswer(req.body));
-})
-*/
 
 app.get('/faq-composer/compose', function (req, res) { routeIfLoggedIn(req, res, 'faq-composer'); })
 app.get('/faq-composer/help', function (req, res) {
@@ -1329,6 +1279,15 @@ app.post('/usermanagement/routeToApp/whoteacheswhat/upload/:uploadType/:semester
 
 app.get('/whoteacheswhat/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'whoteacheswhat/pug/help.pug');
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.get('/coursepolicies', function (req, res) {
+  routeIfLoggedIn(req, res, 'coursepolicies');
+})
+
+app.get('/coursepolicies/help', function (req, res) {
+  var pugFileName = path.join(__dirname, 'private', 'coursepolicies/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
 })
 

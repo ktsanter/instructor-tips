@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------
-// Who Teaches What
+// Course Policies
 //-----------------------------------------------------------------------
 // TODO: 
 //-----------------------------------------------------------------------
@@ -9,8 +9,8 @@ const app = function () {
     hideClass: 'hide-me',
     navItemClass: 'use-handler',
 
-    helpURL: '/whoteacheswhat/help',
-    logoutURL: '/usermanagement/logout/whoteacheswhat',
+    helpURL: '/coursepolicies/help',
+    logoutURL: '/usermanagement/logout/coursepolicies',
     
     dirtyBit: {},
 
@@ -38,11 +38,9 @@ const app = function () {
 
     UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
+    
     _renderContents();
     
-    _initializeReportManagement();
-    _initializeAssignmentViewer();
-
     settings.currentInfo = null;
     await _getCurrentInfo();
 
@@ -105,12 +103,23 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
-    _renderLookup();
+    _renderGeneral();
+    _renderCourse();
+    _renderMentor();
+
     _renderAdmin();
   }
   
-  function _renderLookup() {
-    page.navLookup = page.contents.getElementsByClassName('contents-navLookup')[0];
+  function _renderGeneral() {
+    page.navGeneral = page.contents.getElementsByClassName('contents-navGeneral')[0];
+  }
+    
+  function _renderCourse() {
+    page.navCourse = page.contents.getElementsByClassName('contents-navCourse')[0];
+  }
+    
+  function _renderMentor() {
+    page.navMentor = page.contents.getElementsByClassName('contents-navMentor')[0];
   }
     
   function _renderAdmin() {
@@ -139,21 +148,39 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navLookup') _showLookup();
+    if (contentsId == 'navGeneral') _showGeneral();
+    if (contentsId == 'navCourse') _showCourse();
+    if (contentsId == 'navMentor') _showMentor();
     if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
   }
   
-  function _showLookup() {
-    UtilityKTS.setClass(page.navLookup, 'disable-container', true);
+  function _showGeneral() {
+    UtilityKTS.setClass(page.navGeneral, 'disable-container', true);
     
-    settings.assignmentViewer.update(settings.currentInfo);
+    console.log('_showGeneral');
     
-    UtilityKTS.setClass(page.navLookup, 'disable-container', false);
+    UtilityKTS.setClass(page.navGeneral, 'disable-container', false);
   }
   
+  function _showCourse() {
+    UtilityKTS.setClass(page.navCourse, 'disable-container', true);
+    
+    console.log('_showCourse');
+    
+    UtilityKTS.setClass(page.navCourse, 'disable-container', false);
+  }
+
+  function _showMentor() {
+    UtilityKTS.setClass(page.navMentor, 'disable-container', true);
+    
+    console.log('_showMentor');
+    
+    UtilityKTS.setClass(page.navMentor, 'disable-container', false);
+  }
+
   function _showAdmin() {}
   
   function _setNavOptions() {
@@ -198,7 +225,7 @@ const app = function () {
   }
       
   function _setMainNavbarEnable(enable) {
-    var menuIds = ['navLookup', 'navAdmin'];
+    var menuIds = ['navGeneral', 'navCourse', 'navMentor', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
       UtilityKTS.setClass(elem, 'disabled', !enable);
@@ -210,6 +237,10 @@ const app = function () {
   }
   
   async function _getCurrentInfo() {
+    console.log('_getCurrentInfo, stubbed');
+    settings.currentInfo = null;
+    return;
+    
     settings.currentInfo = null;
     
     let result = await _getAssignmentData();
@@ -258,13 +289,14 @@ const app = function () {
     
     if (dispatchTarget == 'navProfilePic') dispatchTarget = 'navProfile';    
     if (dispatchTarget == settings.currentNavOption) return;
-    if (settings.currentNavOption == 'navStudent') settings.rosterViewer.closeDialogs();
     
     _emphasizeMenuOption(settings.currentNavOption, false);
     _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
-      "navLookup": function() { _showContents('navLookup');},
+      "navGeneral": function() { _showContents('navGeneral');},
+      "navCourse": function() { _showContents('navCourse');},
+      "navMentor": function() { _showContents('navMentor');},
       "navAdmin": function() { _showContents('navAdmin'); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },

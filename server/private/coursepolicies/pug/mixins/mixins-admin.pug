@@ -1,0 +1,33 @@
+mixin adminContainer()   
+  .row(class="py-2")
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") assignment data
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              div
+                label(for="file-upload-assignmentS1" class="uploadfile-label uploadfile-label-assignment btn btn-secondary" title="upload S1 instructor assignment spreadsheet") upload S1
+                input(type="file" class="uploadfile uploadfile-assignment" id="file-upload-assignmentS1" accept=".xlsx")
+                span(class="upload-resultS1 assignment ms-3")
+              
+              div(class="mt-2")
+                label(for="file-upload-assignmentS2" class="uploadfile-label uploadfile-label-assignment btn btn-secondary" title="upload S2 instructor assignment spreadsheet") upload S2
+                input(type="file" class="uploadfile uploadfile-assignment" id="file-upload-assignmentS2" accept=".xlsx")
+                span(class="upload-resultS2 assignment ms-3")
+
+            .col-sm
+              button(class="btn btn-secondary delete-assignments" title="remove all assignment info from DB") delete
+              span(class="delete-result assignment ms-3")
+
+  .row(class="py-2")
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") cosmetic
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              button(class="btnToggleAdmin btn btn-secondary" title="toggle admin menu option") toggle admin
+
