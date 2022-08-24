@@ -102,6 +102,11 @@ body {
 
 .contents .contents-navAdmin button.btn-secondary {
   min-width: 8.0em;
+}
+
+.accordion-button.collapsed {
+  background-color: rgba(0,0,0, 0.05);
+}
 
 /*------------------------------------------------------------------
  * standard error and notice
