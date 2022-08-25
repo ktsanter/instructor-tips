@@ -13,6 +13,9 @@ const app = function () {
     logoutURL: '/usermanagement/logout/coursepolicies',
     
     dirtyBit: {},
+    
+    generalInfo: null,
+    courseInfo: null,
 
     adminDisable: false
   };
@@ -41,13 +44,16 @@ const app = function () {
     
     _renderContents();
     
-    settings.currentInfo = null;
-    await _getCurrentInfo();
+    await _initializeGeneralPolicies();
+    await _initializeCoursePolicies();
+    
+    let success = await _getCurrentInfo();
+    if (!success) return;
 
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
 
     page.notice.setNotice('');
   }
@@ -76,18 +82,24 @@ const app = function () {
     await settings.profile.init();
   }
   
-  function _initializeReportManagement() {
-    settings.reportPoster = new ReportPoster({
-      // no params
+  async function _initializeGeneralPolicies() {
+    let adminAllowed = await _checkAdminAllowed();
+    
+    settings.generalPolicies = new GeneralPolicies({
+      "container": page.navGeneral,
+      "adminAllowed": adminAllowed
     });
   }
 
-  function _initializeAssignmentViewer() {
-    settings.assignmentViewer = new AssignmentViewer({
-      "container": page.navLookup,
+  async function _initializeCoursePolicies() {
+    let adminAllowed = await _checkAdminAllowed();
+    
+    settings.coursePolicies = new CoursePolicies({
+      "container": page.navCourse,
+      "adminAllowed": adminAllowed
     });
   }
-  
+
   //-----------------------------------------------------------------------------
 	// navbar
 	//-----------------------------------------------------------------------------
@@ -159,8 +171,8 @@ const app = function () {
   
   function _showGeneral() {
     UtilityKTS.setClass(page.navGeneral, 'disable-container', true);
-    
-    console.log('_showGeneral');
+
+    settings.generalPolicies.update(settings.generalInfo);    
     
     UtilityKTS.setClass(page.navGeneral, 'disable-container', false);
   }
@@ -168,7 +180,7 @@ const app = function () {
   function _showCourse() {
     UtilityKTS.setClass(page.navCourse, 'disable-container', true);
     
-    console.log('_showCourse');
+    settings.coursePolicies.update(settings.courseInfo);    
     
     UtilityKTS.setClass(page.navCourse, 'disable-container', false);
   }
@@ -237,18 +249,21 @@ const app = function () {
   }
   
   async function _getCurrentInfo() {
-    console.log('_getCurrentInfo, stubbed');
-    settings.currentInfo = null;
-    return;
+    settings.generalInfo = null;
+    settings.courseInfo = null;
     
-    settings.currentInfo = null;
+    let result = await _getGeneralInfoFromDB();
+    if (!result) return false;
+    settings.generalInfo = result;
     
-    let result = await _getAssignmentData();
-    if (!result) return;
-
-    settings.currentInfo = result;
+    result = await _getCourseInfoFromDB();
+    if (!result) return false;
+    settings.courseInfo = result;
     
-    if (settings.currentNavOption == 'navLookup') _showLookup();
+    if (settings.currentNavOption == 'navGeneral') _showGeneral();
+    if (settings.currentNavOption == 'navCourse') _showCourse();
+    
+    return true;
   }
    
   async function _doFileUpload(uploadType, file, semester) {
@@ -390,30 +405,123 @@ const app = function () {
   // DB interface
   //----------------------------------------  
   async function _checkAdminAllowed() {
-    dbResult = await SQLDBInterface.doGetQuery('whoteacheswhat/query', 'admin-allowed', page.notice);
+    dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'admin-allowed', page.notice);
     if (!dbResult.success) return false;
     
     var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
     return adminAllowed;
   }  
  
-  async function _getAssignmentData() {
-    let assignmentData = null;
+  async function _getGeneralInfoFromDB() {
+    console.log('_getGeneralInfoFromDB, dummied');
+    let generalInfo = {
+      "expectedOfStudent": [
+        {
+          "text": "log in every weekday. Come to your online course at least as often as you come to your face-to-face classes.", 
+          "context": "any"
+        },
+        {
+          "text": "be familiar with Michigan Virtual's <a href='https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy/', target='_blank'>AP Course Policy</a>, especially concerning due dates and late penalties.", 
+          "context": "AP"
+        },
+        {
+          "text": "effectively manage your time. While the course is self-paced, I strongly suggest you follow the pacing guide very closely.", 
+          "context": "any"
+        },
+        {
+          "text": "complete your own work and to contribute to the class discussions.", 
+          "context": "any"
+        },
+        {
+          "text": "be familiar with Michigan Virtual’s policies on <a href='https://michiganvirtual.org/policies/academic-integrity-policy/' target='_blank'>academic integrity</a> and follow them.", 
+          "context": "any"
+        },
+        {
+          "text": "check your SLP messages every day.", 
+          "context": "any"
+        },
+        {
+          "text": "read the Teacher Feed posts every day.", 
+          "context": "any"
+        },
+        {
+          "text": "be respectful and considerate when communicating and working with classmates.",
+          "context": "any"
+        }
+      ],
+      
+      "expectedOfInstructor": [
+        {
+          "text": "always treat you with respect and friendliness and do my best to encourage your learning and growth.", 
+          "context": "any"
+        },
+        {
+          "text": "respond to any communication from a student, mentor or parent within 24 hours.", 
+          "context": "any"
+        },
+        {
+          "text": "grade all assignments, providing solid feedback, within 72 hours (not counting weekends and holidays).", 
+          "context": "any"
+        },
+        {
+          "text": "communicate with your school and parents regarding your progress in class.", 
+          "context": "any"
+        },
+        {
+          "text": "help explain difficult concepts and provide additional material where appropriate.", 
+          "context": "any"
+        },
+        {
+          "text": "make weekly announcements in the Teacher Feed, highlighting upcoming assignments and providing suggestions.", 
+          "context": "any"
+        },
+        {
+          "text": "be an active member of the class discussions.",
+          "context": "any"
+        }
+      ]
+    };
     
-    let dbResult = await SQLDBInterface.doGetQuery('whoteacheswhat/query', 'assignments', page.notice);
+    return generalInfo;
+    /*
+    let generalInfo = null;
+    
+    let dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'general-info', page.notice);
+    console.log(dbResult);
     if (dbResult.success) {
-      assignmentData = dbResult.data;
+      generalInfo = dbResult.data;
     }
     
-    return assignmentData;
+    return generalInfo;
+    */
   }  
  
-  async function _deleteAssignmentData() {
-    let params = {};
-    let dbResult = await SQLDBInterface.doPostQuery('whoteacheswhat/delete', 'assignments', params, page.notice);
-    return dbResult.success;
+  async function _getCourseInfoFromDB() {
+    console.log('_getCourseIfnoFromDB, dummied');
+    
+    let courseInfo = {
+      "AP Computer Science Principles": {},
+      "AP Computer Science A": {},
+      "Accounting 1A": {},
+      "Accounting 1B": {},
+      "Basic Web Design: HTML & CSS": {}
+    };
+    
+    return courseInfo;
+    
+    /*
+    let courseInfo = null;
+    
+    let dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'course-info', page.notice);
+    console.log(dbResult);
+    if (dbResult.success) {
+      courseInfo = dbResult.data;
+    }
+    
+    return courseInfo;
+    */
   }  
- 
+
   //---------------------------------------
   // clipboard functions
   //----------------------------------------

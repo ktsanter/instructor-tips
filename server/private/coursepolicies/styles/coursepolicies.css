@@ -58,28 +58,50 @@ body {
   border-color: var(--bgPrimary);
 }
 
-/*------------------------------------------------------------------------------
- * contents - navLookup
- *------------------------------------------------------------------------------*/
-.contents .contents-navLookup {}
+.contents .configure-fieldset {}
 
-.contents .contents-navLookup .center {
-  text-align: center;
-}
-
-/*------------------------------------------------------------------------------
- * contents - navAdmin
- *------------------------------------------------------------------------------*/
-.contents .contents-navAdmin {}
-
-.contents .contents-navAdmin .configure-fieldset {}
-
-.contents .contents-navAdmin .configure-fieldset legend {
+.contents .configure-fieldset legend {
   font-size: 1.0em;
   font-weight: 500;
   float: none; 
   padding: inherit; 
 }
+
+.contents .admin-icon {
+  color: var(--bgPrimary);
+  cursor: pointer;
+}
+
+.contents .admin-icon.disabled {
+  color: var(--bgShaded);
+  cursor: default;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navGeneral
+ *------------------------------------------------------------------------------*/
+.contents .contents-navGeneral {}
+
+.contents .contents-navGeneral .expectation-info {
+  color: var(--bgPrimary);
+}
+
+.contents .contents-navGeneral .admin-icon {
+  float: right;
+}
+
+/*------------------------------------------------------------------------------
+ * contents - navCourse
+ *------------------------------------------------------------------------------*/
+.contents .contents-navCourse .admin-icon {
+  font-size: 150%;
+}
+
+
+/*------------------------------------------------------------------------------
+ * contents - navAdmin
+ *------------------------------------------------------------------------------*/
+.contents .contents-navAdmin {}
 
 .contents .contents-navAdmin .uploadfile {
   opacity: 0;

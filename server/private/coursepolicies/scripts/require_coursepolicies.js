@@ -10,6 +10,8 @@ define(function (require) {
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
+   require('classGeneralPolicies');
+   require('classCoursePolicies');
   require('coursepolicies');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));
