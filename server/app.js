@@ -100,6 +100,11 @@ const sendFileDefaultOptions = {
 const {google} = require('googleapis');
 
 //------------------------------------------
+// HTML to Docx converter
+//------------------------------------------
+const htmlToDocx = require('html-docx-js');
+
+//------------------------------------------
 // mariadb management
 //------------------------------------------
 const mariadb = require('mariadb')
@@ -399,7 +404,15 @@ const whoTeachesWhat = new whoTeachesWhatClass({
 const coursePoliciesClass = require('./classes/coursepolicies')
 const coursePolicies = new coursePoliciesClass({
   "dbManager": mariaDBManager_CoursePolicies,
-  "userManagement": userManagement
+  "userManagement": userManagement,
+  "formManager": formidable,
+  "htmlToDocx": htmlToDocx,
+  "tempFileManager": tmp,  
+  "tempDir": __dirname + '/private/temp',
+  "fileservices": fileservices,
+  "path": path,
+  "pug": pug,
+  "pugFileName": path.join(__dirname, '/private/coursepolicies/pug/welcome/welcome.pug')
 });
 
 //------------------------------------------
@@ -1289,6 +1302,11 @@ app.get('/coursepolicies', function (req, res) {
 app.get('/coursepolicies/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'coursepolicies/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.post('/usermanagement/routeToApp/coursepolicies/welcomeletter', function (req, res) {
+  let userInfo = userManagement.getUserInfo(req.session);  
+  coursePolicies.exportMentorWelcomeTemplate(req, res, userInfo); 
 })
 
 app.get('/walkthrough-analyzer', function (req, res) {

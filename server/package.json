@@ -23,6 +23,7 @@
     "express-session": "^1.17.2",
     "formidable": "^1.2.6",
     "googleapis": "^76.0.0",
+    "html-docx-js": "^0.3.1",
     "install": "^0.13.0",
     "mariadb": "^2.5.5",
     "markdown-it": "^12.3.2",

@@ -103,6 +103,17 @@ class CoursePolicies {
     console.log('delete course', this.settings.selectedCourse.name);
   }
   
+  _downloadMentorWelcomeLetter(courseInfo) {
+    console.log('CoursePolicies._downloadMentorWelcomeLetter', courseInfo);
+    let params = {
+      "courseInfo": courseInfo
+    }
+    
+    let exportForm = document.getElementsByClassName('export-form')[0];
+    exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(params);
+    exportForm.submit();
+  }
+  
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
@@ -128,7 +139,7 @@ class CoursePolicies {
   }
   
   _handleMentorWelcome(e) {
-    console.log('handle mentor welcome letter');
+    this._downloadMentorWelcomeLetter(this.settings.selectedCourse);
   }
   
   //--------------------------------------------------------------

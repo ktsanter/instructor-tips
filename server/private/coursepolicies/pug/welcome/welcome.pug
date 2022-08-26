@@ -1,0 +1,42 @@
+- let strParams = JSON.stringify(params);
+- let courseName = params.courseName;
+
+include ../../../common/pug/bootstrap-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title welcome letter
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    
+    +bootstrapstyle()
+        
+  body
+    div=strParams
+
+    h3 Mentor Welcome Letter template
+    
+    div=courseName
+    
+    ul
+      li stuff
+      li more stuff
+      li yet more stuff
+      
+    table
+      thead
+        tr
+          th header1
+          th header2
+      tbody
+        tr
+          td r1c1
+          td r1c2
+        tr
+          td r2c1
+          td r2c2
+          
+    div try image here
+      
+    

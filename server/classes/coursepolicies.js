@@ -9,7 +9,15 @@ const internal = {};
 module.exports = internal.CoursePolicies = class {
   constructor(params) {
     this._dbManager = params.dbManager;
-    this._userManagement = params.userManagement;    
+    this._userManagement = params.userManagement;  
+    this._formManager = params.formManager;    
+    this._htmlToDocx = params.htmlToDocx;
+    this._tempFileManager = params.tempFileManager;
+    this._tempDir = params.tempDir;
+    this._fileservices = params.fileservices;
+    this._path = params.path;
+    this._pug = params.pug;
+    this._pugFileName = params.pugFileName;
   }
   
 //---------------------------------------------------------------
@@ -73,6 +81,70 @@ module.exports = internal.CoursePolicies = class {
 //---------------------------------------------------------------
 // other public methods
 //---------------------------------------------------------------  
+  async exportMentorWelcomeTemplate(req, res, userInfo) {
+    let thisObj = this;
+    let result = {
+      "success": false,
+      "description": "download failed",
+      "targetfilename": null
+    }
+    
+    let form = new this._formManager.IncomingForm();
+    form.parse(req, async function(err, fields, files) {
+      if (err) {
+        result.description = 'error in form.parse: ' + JSON.stringify(err);
+        res.send(result);
+        return;
+      }
+
+      if (!fields.hasOwnProperty('export-data')) {
+        result.description = 'missing export data field';
+        res.send(result);
+        return;
+      }
+      
+      let exportData = JSON.parse(fields['export-data']);
+      let welcomeTemplateHTML = thisObj._makeMentorWelcomeHTML(exportData.courseInfo);
+      if (!welcomeTemplateHTML) {
+        result.description = 'failed to make welcome template HTML';
+        res.send(result);
+      }
+
+      //res.send(welcomeTemplateHTML);  // shortcut here for testing directly
+      //return;
+      
+      await thisObj._downloadMentorWelcomeLetter(thisObj, res, welcomeTemplateHTML, exportData.courseInfo.name);
+    });
+  }
+  
+  _makeMentorWelcomeHTML(courseInfo) {
+    let params = {
+      "courseName": courseInfo.name
+    }
+    let html = this._pug.renderFile(this._pugFileName, {"params": params});
+      
+    return html;
+  }
+  
+  async _downloadMentorWelcomeLetter(thisObj, res, html, courseName) {
+    let docx = thisObj._htmlToDocx.asBlob(html);
+
+    let fileName = thisObj._tempFileManager.tmpNameSync({tmpdir: thisObj._tempDir});
+    
+    try {
+      await thisObj._fileservices.writeFileSync(fileName, docx);
+      
+      let downloadFileName = courseName + ' [mentor welcome template].docx';
+      
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader("Content-Disposition", "attachment; filename=" + downloadFileName);
+      res.sendFile(fileName); 
+      
+    } catch(err) {
+      console.log(err);
+      res.send(JSON.stringify(err));
+    }       
+  }
   
 //---------------------------------------------------------------
 // specific query methods
