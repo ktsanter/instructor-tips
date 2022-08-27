@@ -11,13 +11,17 @@ module.exports = internal.CoursePolicies = class {
     this._dbManager = params.dbManager;
     this._userManagement = params.userManagement;  
     this._formManager = params.formManager;    
-    this._htmlToDocx = params.htmlToDocx;
+    this._easyTemplate = params.easyTemplate
+    //this._htmlToDocx = params.htmlToDocx;
     this._tempFileManager = params.tempFileManager;
     this._tempDir = params.tempDir;
     this._fileservices = params.fileservices;
     this._path = params.path;
-    this._pug = params.pug;
-    this._pugFileName = params.pugFileName;
+    this._mentorWelcomeTemplate = params.mentorWelcomeTemplate;
+    //this._pug = params.pug;
+    //this._pugFileName = params.pugFileName;
+
+    this._tempPrefix = 'mwelcome-';
   }
   
 //---------------------------------------------------------------
@@ -82,68 +86,115 @@ module.exports = internal.CoursePolicies = class {
 // other public methods
 //---------------------------------------------------------------  
   async exportMentorWelcomeTemplate(req, res, userInfo) {
+    console.log('CoursePolicies.exportMentorWelcomeTemplate, stubbed');
+
     let thisObj = this;
-    let result = {
-      "success": false,
-      "description": "download failed",
-      "targetfilename": null
-    }
     
     let form = new this._formManager.IncomingForm();
     form.parse(req, async function(err, fields, files) {
       if (err) {
-        result.description = 'error in form.parse: ' + JSON.stringify(err);
-        res.send(result);
+        res.send('error in form.parse: ' + JSON.stringify(err));
         return;
       }
 
       if (!fields.hasOwnProperty('export-data')) {
-        result.description = 'missing export data field';
-        res.send(result);
+        res.send('missing export data field');
         return;
       }
       
       let exportData = JSON.parse(fields['export-data']);
-      let welcomeTemplateHTML = thisObj._makeMentorWelcomeHTML(exportData.courseInfo);
-      if (!welcomeTemplateHTML) {
-        result.description = 'failed to make welcome template HTML';
-        res.send(result);
-      }
-
-      //res.send(welcomeTemplateHTML);  // shortcut here for testing directly
-      //return;
       
-      await thisObj._downloadMentorWelcomeLetter(thisObj, res, welcomeTemplateHTML, exportData.courseInfo.name);
+      let outputDoc = await thisObj._makeOutputDoc(thisObj, exportData);
+      if (!outputDoc) {
+        res.send('failed to make welcome template output doc');
+        return;
+      }
+      
+      await thisObj._downloadOutputDoc(thisObj, res, outputDoc, exportData.courseInfo.name);
     });
   }
   
-  _makeMentorWelcomeHTML(courseInfo) {
-    let params = {
-      "courseName": courseInfo.name
+  async _makeOutputDoc(thisObj, exportData) {
+    let result = null;
+    
+    if (!this._fileservices.existsSync(this._mentorWelcomeTemplate)) {
+      const msg = 'CoursePolicies.exportMentorWelcomeTemplate, cannot read template file: ' + this._mentorWelcomeTemplate;
+      console.log(msg);
+      return result;
     }
-    let html = this._pug.renderFile(this._pugFileName, {"params": params});
+    
+    const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);
+    
+    const data = {
+      "mentor welcome template": '',
+      "coursename": exportData.courseInfo.name,
+      "keypoints": [
+        {"point": "There is a password-protected final exam. The password will be distributed to mentors early in the semester"},
+        {"point": "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams"}
+      ],
+
+      "mentor_support_full": "Katie Hansen",
+      "mentor_support_first": "Katie",
+      "mentor_support_phone": "(517) 664-5470",
+      "mentor_support_email": "khansen2@michiganvirtual.org",
+
+      "special_pop_full": "Tom Ballew",
+      "special_pop_first": "Tom",
+      "special_pop_phone": "(517) xxx-xxxx",
+      "special_pop_email": "tballew@michiganvirtual.org"
       
-    return html;
+    };
+    
+    const handler = new this._easyTemplate.TemplateHandler(templateFile, data);
+    result = await handler.process(templateFile, data);
+    
+    return result;
   }
   
-  async _downloadMentorWelcomeLetter(thisObj, res, html, courseName) {
-    let docx = thisObj._htmlToDocx.asBlob(html);
-
-    let fileName = thisObj._tempFileManager.tmpNameSync({tmpdir: thisObj._tempDir});
+  async _downloadOutputDoc(thisObj, res, outputDoc, courseName) {
+    let outputFileName = thisObj._tempFileManager.tmpNameSync({tmpdir: thisObj._tempDir, prefix: thisObj._tempPrefix});
+    await thisObj._fileservices.writeFileSync(outputFileName, outputDoc);
     
-    try {
-      await thisObj._fileservices.writeFileSync(fileName, docx);
-      
-      let downloadFileName = courseName + ' [mentor welcome template].docx';
-      
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader("Content-Disposition", "attachment; filename=" + downloadFileName);
-      res.sendFile(fileName); 
-      
-    } catch(err) {
-      console.log(err);
-      res.send(JSON.stringify(err));
-    }       
+    let downloadFileName = courseName + ' [mentor welcome template].docx';
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader("Content-Disposition", "attachment; filename=" + downloadFileName);
+    res.sendFile(outputFileName); 
+  }
+  
+  clearTempWelcomeLetters() {
+    console.log(this._getDateStamp() + ': CoursePolicies.clearTempWelcomeLetters');
+    let ageLimitMS = 3 * 60 * 60 * 1000;
+    let directory = this._tempDir;
+    
+    this._fileservices.readdir(directory, (err, files) => {
+      if (err) {
+        console.log(err);
+
+      } else {
+        for (let file of files) {
+          if (file.indexOf(this._tempPrefix) >= 0) {
+            let fullFileName = this._path.join(directory, file);
+
+            this._fileservices.stat(fullFileName, (err, stats) => {
+              if (err) { 
+                console.log(err);
+
+              } else {
+                let dateCTime = new Date(stats.ctime);
+                let fileAge = Date.now() - dateCTime.getTime();
+
+                if (fileAge > ageLimitMS) {
+                  this._fileservices.unlink(fullFileName, err => {
+                    if (err) console.log(err);
+                  });
+                }
+              }
+            });
+          }
+        }
+      }
+    });
   }
   
 //---------------------------------------------------------------
@@ -183,4 +234,23 @@ module.exports = internal.CoursePolicies = class {
     
     res.send(result);
   }  
+  
+  _getDateStamp() {
+    var now = new Date();
+    return this._formatDateStamp(now);
+  }
+  
+  _formatDateStamp(d) {
+    var yr = d.getFullYear();
+    var mo = ('00' + (d.getMonth() + 1)).slice(-2);
+    var da = ('00' + d.getDate()).slice(-2);
+    var hr = ('00' + d.getHours()).slice(-2);
+    var mi = ('00' + d.getMinutes()).slice(-2);
+    var se = ('00' + d.getSeconds()).slice(-2);
+    var ms = ('000' + d.getMilliseconds()).slice(-3);
+    
+    var dateStamp = yr + '-' + mo + '-' + da + ' ' + hr + ':' + mi + ':' + se + '.' + ms;
+    
+    return dateStamp;
+  }    
 }

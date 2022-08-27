@@ -8,35 +8,80 @@ html(lang="en")
   head
     title welcome letter
     meta(charset="utf-8")
-    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    //meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
     
-    +bootstrapstyle()
+    style
+      include ../../styles/welcome.css    
         
-  body
-    div=strParams
-
-    h3 Mentor Welcome Letter template
+  body(class="colorscheme")
+    //div=strParams
     
-    div=courseName
-    
-    ul
-      li stuff
-      li more stuff
-      li yet more stuff
-      
-    table
-      thead
-        tr
-          th header1
-          th header2
-      tbody
-        tr
-          td r1c1
-          td r1c2
-        tr
-          td r2c1
-          td r2c2
+    .section(class="section-instructor-info")
+      .logo-mv
+        img(src="https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/MVlogo_small2.png")
+        
+      .instructor-info-container
+        .instructor-info-image 
+          span(class="placeholder") [instructor image]
           
-    div try image here
+        .instructor-info-data
+          table
+            thead
+            tbody
+              tr
+                td(colspan="2")
+                  strong: span(class="placeholder") [instructor name]
+              tr
+                td phone
+                td 
+                  span(class="placeholder") [phone]
+              tr
+                td email
+                td 
+                  span(class="placeholder") [email]
+              tr
+                td Zoom
+                td
+                  span(class="placeholder") [zoom]
+      
+    .section(class="section-section1 tbd") section #1
+    .section(class="section-expectations tbd") expectations
+    .section(class="section-section2 tbd") section #2
+    .section(class="section-passwords tbd") passwords
+    .section(class="section-close tbd") close
+
+//-
+    .grid-container
+      .grid-item(class="instructor-info-section") 
+        .grid-container
+          .grid-item(class="logo-mv")
+            image(class="logo-mv-image" src="https://res.cloudinary.com/ktsanter/image/upload/v1613234395/welcome%20letter/MVlogo_small2.png")
+            
+          .grid-item(class="instructor-image") 
+            span(class="placeholder") [instructor image]
+          
+          .grid-item(class="instructor-name") 
+            strong: span(class="placeholder") [instructor name]
+
+          .grid-item(class="phone-label") phone
+          .grid-item(class="phone") 
+            span(class="placeholder") [phone]
+
+          .grid-item(class="email-label") email
+          .grid-item(class="email") 
+            a(href="https://slp.michiganvirtual.org/PublicWelcome.aspx") SLP
+            |&nbsp; or &nbsp;
+            span(class="placeholder") [email]
+
+          .grid-item(class="zoom-label") Zoom
+          .grid-item(class="zoom") 
+            span(class="placeholder") [zoom protocol]
+      
+      .grid-item(class="standard-section1 tbd") standard section 1
+      .grid-item(class="expectations-section tbd") expectations
+      .grid-item(class="standard-section2 tbd") standard section 2
+      .grid-item(class="close-section tbd") close
+
+
       
     
