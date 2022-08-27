@@ -26,6 +26,7 @@ module.exports = internal.CronScheduler = class {
     this._cron = params.cron;
     this._messageManagement = params.messageManagement;
     this._userManagement = params.userManagement;
+    this._coursePolicies = params.coursePolicies;
     
     this._jobList = {};
     this._createInitialJobs();
@@ -78,11 +79,38 @@ module.exports = internal.CronScheduler = class {
       start: false,
       timeZone: 'America/Detroit'
     });
+      
+    //---------------------------------------
+    // clear temp mentor welcome letters
+    //---------------------------------------
+    this.createJob({
+      jobName: 'cleartempwelcomeletters',
+      fireTime: '0 20 */6 * * *',  // every 6 hours at 20 past the hour
+
+      funcOnTick: (function(me) {
+        return async function() { 
+          var result = await me._coursePolicies.clearTempWelcomeLetters(); 
+          if (me.DEBUG) {
+            console.log('CronScheduler: debug mode on => stopping "cleartempwelcomeletters" after one run');
+            me.stopJob('cleartempwelcomeletters');
+            return;
+          }
+        }
+      })(this),
+
+      funcOnComplete: null,
+      start: false,
+      timeZone: 'America/Detroit'
+    });
   }
       
+    //---------------------------------------
+    // kick off jobs
+    //---------------------------------------
   _startInitialJobs() {
     this.startJob('schedulepush');
     this.startJob('clearexpiredrequests');
+    this.startJob('cleartempwelcomeletters');
   }
 
 //---------------------------------------------------------------

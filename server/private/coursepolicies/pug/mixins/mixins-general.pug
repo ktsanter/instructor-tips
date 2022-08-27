@@ -1,4 +1,26 @@
 mixin generalContainer()
-  .row
+  .row(class="py-2")
     .col-sm
-      |[general tab]
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") expected of student
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              span(class="expected-header") I expect you to...
+              i(class="hide-me admin-only admin-icon edit-student-expectations fas fa-edit" title="edit student expectations")
+                  
+              .expected-of-student
+
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") expected of instructor
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              span(class="expected-header") I will...
+              i(class="hide-me admin-only admin-icon edit-instructor-expectations fas fa-edit" title="edit instructor expectations")
+
+              .expected-of-instructor
+              

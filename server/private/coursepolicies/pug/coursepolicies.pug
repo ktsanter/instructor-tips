@@ -69,3 +69,8 @@ html(lang="en")
         +adminContainer()     
         
       +ASProfile("myProfile", "contents-container contents-navProfile", "hide-me")
+      
+      .container-fluid(class="hide-me")
+       .row
+        form(id="formExport" class="export-form" action="coursepolicies/welcomeletter" enctype="multipart/form-data" method="post")
+          textarea(id="exportData" class="export-data" name="export-data")       

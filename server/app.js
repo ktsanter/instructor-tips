@@ -17,7 +17,7 @@ const MARIA_DBNAME_COMMENTBUDDY = getEnv('MARIA_DBNAME_COMMENTBUDDY', true);
 const MARIA_DBNAME_ENDDATEMANAGER = getEnv('MARIA_DBNAME_ENDDATEMANAGER', true);
 const MARIA_DBNAME_ROSTERMANAGER = getEnv('MARIA_DBNAME_ROSTERMANAGER', true);
 const MARIA_DBNAME_WHOTEACHESWHAT = getEnv('MARIA_DBNAME_WHOTEACHESWHAT', true);  
-const MARIA_DBNAME_COURSEPOLICIES = /* temporary */ getEnv('MARIA_DBNAME_WHOTEACHESWHAT', true) /* */;  
+const MARIA_DBNAME_COURSEPOLICIES = getEnv('MARIA_DBNAME_COURSEPOLICIES', true);  
 const MARIA_DBNAME_WALKTHROUGHANALYZER = getEnv('MARIA_DBNAME_WALKTHROUGHANALYZER', true);
 const MARIA_DBNAME_ITIPS = getEnv('MARIA_DBNAME_ITIPS', true);
 const MARIA_DBNAME_RECIPES = getEnv('MARIA_DBNAME_RECIPES', true);
@@ -98,6 +98,16 @@ const sendFileDefaultOptions = {
 // Google APIs
 //------------------------------------------
 const {google} = require('googleapis');
+
+//------------------------------------------
+// HTML to Docx converter
+//------------------------------------------
+//const htmlToDocx = require('html-docx-js');
+
+//------------------------------------------
+// easy-template-x
+//------------------------------------------
+const easyTemplate = require('easy-template-x');
 
 //------------------------------------------
 // mariadb management
@@ -357,6 +367,27 @@ const userManagementClass = require('./classes/usermanagement')
 const userManagement = new userManagementClass({dbManager: mariaDBManager_InstructorTips, tempFileManager: tmp, messageManager: messageManagement});
 
 //------------------------------------------
+// CoursePolicies
+//------------------------------------------
+const formidable = require('formidable');
+
+const coursePoliciesClass = require('./classes/coursepolicies')
+const coursePolicies = new coursePoliciesClass({
+  "dbManager": mariaDBManager_CoursePolicies,
+  "userManagement": userManagement,
+  "formManager": formidable,
+  "easyTemplate": easyTemplate,
+  //"htmlToDocx": htmlToDocx,
+  "tempFileManager": tmp,  
+  "tempDir": __dirname + '/private/temp',
+  "fileservices": fileservices,
+  "path": path,
+  "mentorWelcomeTemplate": path.join(__dirname, '/private/coursepolicies/docs/mentor-welcome-template.docx')
+  //"pug": pug,
+  //"pugFileName": path.join(__dirname, '/private/coursepolicies/pug/welcome/welcome.pug')
+});
+
+//------------------------------------------
 // cron management
 //------------------------------------------
 var cron = require('cron');
@@ -364,13 +395,13 @@ const cronSchedulerClass = require('./classes/cronscheduler')
 const cronScheduler = new cronSchedulerClass({
   "cron": cron, 
   "messageManagement": messageManagement,
-  "userManagement": userManagement
+  "userManagement": userManagement,
+  "coursePolicies": coursePolicies
 });
 
 //------------------------------------------
 // RosterManager
 //------------------------------------------
-const formidable = require('formidable');
 const exceljs = require('exceljs');
 
 const rosterManagerClass = require('./classes/roster-manager')
@@ -391,15 +422,6 @@ const whoTeachesWhat = new whoTeachesWhatClass({
   "userManagement": userManagement,  
   "tempFileManager": tmp, 
   "formManager": formidable
-});
-
-//------------------------------------------
-// CoursePolicies
-//------------------------------------------
-const coursePoliciesClass = require('./classes/coursepolicies')
-const coursePolicies = new coursePoliciesClass({
-  "dbManager": mariaDBManager_CoursePolicies,
-  "userManagement": userManagement
 });
 
 //------------------------------------------
@@ -677,11 +699,9 @@ function routeIfLoggedIn(req, res, appDescriptor) {
   userManagement.setAppInfoForSession(req.session, appInfo);
 
   if (loggedin) {
-    console.log('redirecting to ' + '/usermanagement/routeToApp/' + appInfo.appDescriptor);
     res.redirect('/usermanagement/routeToApp/' + appInfo.appDescriptor);
     
   } else {
-    console.log('redirecting to /login');
     res.redirect('/login');
   }
 }
@@ -1289,6 +1309,11 @@ app.get('/coursepolicies', function (req, res) {
 app.get('/coursepolicies/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'coursepolicies/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
+})
+
+app.post('/usermanagement/routeToApp/coursepolicies/welcomeletter', function (req, res) {
+  let userInfo = userManagement.getUserInfo(req.session);  
+  coursePolicies.exportMentorWelcomeTemplate(req, res, userInfo); 
 })
 
 app.get('/walkthrough-analyzer', function (req, res) {
