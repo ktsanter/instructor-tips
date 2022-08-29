@@ -12,14 +12,11 @@ module.exports = internal.CoursePolicies = class {
     this._userManagement = params.userManagement;  
     this._formManager = params.formManager;    
     this._easyTemplate = params.easyTemplate
-    //this._htmlToDocx = params.htmlToDocx;
     this._tempFileManager = params.tempFileManager;
     this._tempDir = params.tempDir;
     this._fileservices = params.fileservices;
     this._path = params.path;
     this._mentorWelcomeTemplate = params.mentorWelcomeTemplate;
-    //this._pug = params.pug;
-    //this._pugFileName = params.pugFileName;
 
     this._tempPrefix = 'mwelcome-';
   }
@@ -86,8 +83,6 @@ module.exports = internal.CoursePolicies = class {
 // other public methods
 //---------------------------------------------------------------  
   async exportMentorWelcomeTemplate(req, res, userInfo) {
-    console.log('CoursePolicies.exportMentorWelcomeTemplate, stubbed');
-
     let thisObj = this;
     
     let form = new this._formManager.IncomingForm();
@@ -123,34 +118,116 @@ module.exports = internal.CoursePolicies = class {
       return result;
     }
     
-    const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);
+    const isAPCourse = exportData.courseInfo.ap;
     
+    const customerCareLink = this._makeLink('Customer Care Center', 'https://michiganvirtual.org/about/support/');
+    const mentorPageLink = this._makeLink('Mentor Page', 'https://michiganvirtual.org/professionals/mentors/');
+    const academicIntegrityPolicyLink = this._makeLink('Academic Integrity Policy', 'https://michiganvirtual.org/policies/academic-integrity-policy/');
+    const apPolicyLink = this._makeLink('Advanced Placement Policy', 'https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy');
+    
+    const customerCarePlaceholder = this._makeLinkPlaceholder("placeholder: customer care");
+    const mentorPagePlaceholder = this._makeLinkPlaceholder("placeholder: mentor page");
+    const academicIntegrityPlaceholder = this._makeLinkPlaceholder("placeholder: academic integrity policy");
+    const apPolicyPlaceholder = this._makeLinkPlaceholder("placeholder: ap policy");
+        
     const data = {
-      "mentor welcome template": '',
+      "mentor welcome template": '',  // remove marker in header
+
+      "customer care": customerCarePlaceholder,
+      "mentor page": mentorPagePlaceholder,
+      "academic integrity policy": academicIntegrityPlaceholder,
+      "ap policy": isAPCourse ? apPolicyPlaceholder : '',
+
+      "mentor support": [{
+        "first": "Katie",
+        "last": "Hansen",
+        "phone": "(517) 664-5470",
+      }],
+      "mentor support email": {
+        _type: 'link',
+        text: 'khansen2@michiganvirtual.org',
+        target: 'mailto: khansen2@michiganvirtual.org'
+      },
+      
+      "special populations": [{
+        "first": "Tom",
+        "last": "Ballew",
+        "phone": "(517) 999-9999"
+      }],
+      "special populations email": {
+        _type: 'link',
+        text: 'tballew@michiganvirtual.org',
+        target: 'mailto: tballew@michiganvirtual.org'
+      },
+
       "coursename": exportData.courseInfo.name,
+      
       "keypoints": [
         {"point": "There is a password-protected final exam. The password will be distributed to mentors early in the semester"},
-        {"point": "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams"}
+        {"point": "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams"},
+        {"point": "etc."}
       ],
-
-      "mentor_support_full": "Katie Hansen",
-      "mentor_support_first": "Katie",
-      "mentor_support_phone": "(517) 664-5470",
-      "mentor_support_email": "khansen2@michiganvirtual.org",
-
-      "special_pop_full": "Tom Ballew",
-      "special_pop_first": "Tom",
-      "special_pop_phone": "(517) xxx-xxxx",
-      "special_pop_email": "tballew@michiganvirtual.org"
       
+      "expected of student": [
+        {"expectation": "Log in at least every school day."},
+        {"expectation": "Be familiar with Michigan Virtual's AP Course Policy, especially concerning due dates and late penalties."},
+        {"expectation": "Effectively manage time, using the pacing guide."},
+        {"expectation": "Be familiar with our Academic Integrity Policy."},
+        {"expectation": "Check SLP messages and the Teacher Feed every day."},
+        {"expectation": "Be respectful and considerate when communicating and working with classmates."}
+      ],
+      
+      "expected of instructor": [
+        {"expectation": "Always treat students with respect and friendliness, doing my best to encourage their learning and growth."},
+        {"expectation": "Respond to any communication 24 hours (not counting weekends and holidays)."},
+        {"expectation": "Grade all assignments, providing solid feedback, within 72 hours (not counting weekends and holidays)."},
+        {"expectation": "Provide progress reports at least monthly."},
+        {"expectation": "Help explain difficult concepts and provide additional support material."},
+        {"expectation": "Make weekly posts in the Teacher Feed, with tips, resources, and support."},
+        {"expectation": "Be an active member of the class discussions."}
+      ]
     };
     
+    let data2 = {
+      "placeholder: customer care": customerCareLink,
+      "placeholder: mentor page": mentorPageLink,
+      "placeholder: academic integrity policy": academicIntegrityPolicyLink,
+      "placeholder: ap policy": apPolicyLink
+    };
+
+    const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);    
     const handler = new this._easyTemplate.TemplateHandler(templateFile, data);
     result = await handler.process(templateFile, data);
-    
+
+    let intermediateFileName = thisObj._tempFileManager.tmpNameSync({tmpdir: thisObj._tempDir, prefix: thisObj._tempPrefix});
+    await thisObj._fileservices.writeFileSync(intermediateFileName, result);
+
+    const intermediateFile = this._fileservices.readFileSync(intermediateFileName);
+    const handler2 = new this._easyTemplate.TemplateHandler(intermediateFile, data2);
+    result = await handler.process(intermediateFile, data2);
+
     return result;
   }
   
+  _makeLinkPlaceholder(placeholderText) {
+    const xmlPre = '<w:r><w:rPr> <w:color w:val="1B70C6"/><w:u w:val="single"/></w:rPr><w:t>';
+    const xmlPost = '</w:t></w:r>';
+    
+    return {
+      _type: 'rawXml',
+      xml: xmlPre + '{' + placeholderText + '}' + xmlPost,
+      replaceParagraph: false
+    }    
+  }
+  
+  _makeLink(linkText, linkTarget) {
+    return {
+      _type: 'link',
+      text: linkText,
+      target: linkTarget
+    };
+  }
+
   async _downloadOutputDoc(thisObj, res, outputDoc, courseName) {
     let outputFileName = thisObj._tempFileManager.tmpNameSync({tmpdir: thisObj._tempDir, prefix: thisObj._tempPrefix});
     await thisObj._fileservices.writeFileSync(outputFileName, outputDoc);

@@ -105,8 +105,12 @@ class CoursePolicies {
   
   _downloadMentorWelcomeLetter(courseInfo) {
     console.log('CoursePolicies._downloadMentorWelcomeLetter', courseInfo);
+    console.log('courseInfo.ap is dummied');
+    
+    courseInfo.ap = (courseInfo.name == 'AP Computer Science A' || courseInfo.name == 'AP Computer Science Principles');
+    
     let params = {
-      "courseInfo": courseInfo
+      "courseInfo": courseInfo,
     }
     
     let exportForm = document.getElementsByClassName('export-form')[0];

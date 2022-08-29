@@ -100,11 +100,6 @@ const sendFileDefaultOptions = {
 const {google} = require('googleapis');
 
 //------------------------------------------
-// HTML to Docx converter
-//------------------------------------------
-//const htmlToDocx = require('html-docx-js');
-
-//------------------------------------------
 // easy-template-x
 //------------------------------------------
 const easyTemplate = require('easy-template-x');
@@ -377,14 +372,11 @@ const coursePolicies = new coursePoliciesClass({
   "userManagement": userManagement,
   "formManager": formidable,
   "easyTemplate": easyTemplate,
-  //"htmlToDocx": htmlToDocx,
   "tempFileManager": tmp,  
   "tempDir": __dirname + '/private/temp',
   "fileservices": fileservices,
   "path": path,
   "mentorWelcomeTemplate": path.join(__dirname, '/private/coursepolicies/docs/mentor-welcome-template.docx')
-  //"pug": pug,
-  //"pugFileName": path.join(__dirname, '/private/coursepolicies/pug/welcome/welcome.pug')
 });
 
 //------------------------------------------
