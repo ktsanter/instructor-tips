@@ -85,6 +85,13 @@ module.exports = internal.CoursePolicies = class {
   async exportMentorWelcomeTemplate(req, res, userInfo) {
     let thisObj = this;
     
+    let generalInfo = await this._getGeneralInfo();
+    if (!generalInfo) {
+      res.send('failed to get general info');
+      return;
+    }
+    generalInfo = generalInfo.data;
+        
     let form = new this._formManager.IncomingForm();
     form.parse(req, async function(err, fields, files) {
       if (err) {
@@ -97,19 +104,19 @@ module.exports = internal.CoursePolicies = class {
         return;
       }
       
-      let exportData = JSON.parse(fields['export-data']);
+      let courseInfo = JSON.parse(fields['export-data']).courseInfo;
       
-      let outputDoc = await thisObj._makeOutputDoc(thisObj, exportData);
+      let outputDoc = await thisObj._makeOutputDoc(thisObj, generalInfo, courseInfo);
       if (!outputDoc) {
         res.send('failed to make welcome template output doc');
         return;
       }
       
-      await thisObj._downloadOutputDoc(thisObj, res, outputDoc, exportData.courseInfo.name);
+      await thisObj._downloadOutputDoc(thisObj, res, outputDoc, courseInfo.name);
     });
   }
-  
-  async _makeOutputDoc(thisObj, exportData) {
+    
+  async _makeOutputDoc(thisObj, generalData, courseData) {
     let result = null;
     
     if (!this._fileservices.existsSync(this._mentorWelcomeTemplate)) {
@@ -118,50 +125,18 @@ module.exports = internal.CoursePolicies = class {
       return result;
     }
     
-    const isAPCourse = exportData.courseInfo.ap;
-    
-    const customerCareLink = this._makeLink('Customer Care Center', 'https://michiganvirtual.org/about/support/');
-    const mentorPageLink = this._makeLink('Mentor Page', 'https://michiganvirtual.org/professionals/mentors/');
-    const academicIntegrityPolicyLink = this._makeLink('Academic Integrity Policy', 'https://michiganvirtual.org/policies/academic-integrity-policy/');
-    const apPolicyLink = this._makeLink('Advanced Placement Policy', 'https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy');
-    
-    const customerCarePlaceholder = this._makeLinkPlaceholder("placeholder: customer care");
-    const mentorPagePlaceholder = this._makeLinkPlaceholder("placeholder: mentor page");
-    const academicIntegrityPlaceholder = this._makeLinkPlaceholder("placeholder: academic integrity policy");
-    const apPolicyPlaceholder = this._makeLinkPlaceholder("placeholder: ap policy");
-        
+    const isAPCourse = courseData.ap;
+    const contactList = thisObj._makeContactList(generalData.contact);
+    const resourceLinkList = thisObj._makeResourceLinkList(generalData.resourcelink);
+
     const data = {
       "mentor welcome template": '',  // remove marker in header
-
-      "customer care": customerCarePlaceholder,
-      "mentor page": mentorPagePlaceholder,
-      "academic integrity policy": academicIntegrityPlaceholder,
-      "ap policy": isAPCourse ? apPolicyPlaceholder : '',
-
-      "mentor support": [{
-        "first": "Katie",
-        "last": "Hansen",
-        "phone": "(517) 664-5470",
-      }],
-      "mentor support email": {
-        _type: 'link',
-        text: 'khansen2@michiganvirtual.org',
-        target: 'mailto: khansen2@michiganvirtual.org'
-      },
       
-      "special populations": [{
-        "first": "Tom",
-        "last": "Ballew",
-        "phone": "(517) 999-9999"
-      }],
-      "special populations email": {
-        _type: 'link',
-        text: 'tballew@michiganvirtual.org',
-        target: 'mailto: tballew@michiganvirtual.org'
-      },
-
-      "coursename": exportData.courseInfo.name,
+      "coursename": courseData.name,
       
+      /*----------------------------------------------------------*/
+      /* note: these are dummied and will ultimately be db-driven */
+      /*----------------------------------------------------------*/
       "keypoints": [
         {"point": "There is a password-protected final exam. The password will be distributed to mentors early in the semester"},
         {"point": "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams"},
@@ -185,15 +160,34 @@ module.exports = internal.CoursePolicies = class {
         {"expectation": "Help explain difficult concepts and provide additional support material."},
         {"expectation": "Make weekly posts in the Teacher Feed, with tips, resources, and support."},
         {"expectation": "Be an active member of the class discussions."}
+      ],
+      
+      "assessment list": [
+        {"assessment": "midterm"},
+        {"assessment": "final"}
       ]
+      /*---------------- end of dummied data -------------------------*/
     };
     
-    let data2 = {
-      "placeholder: customer care": customerCareLink,
-      "placeholder: mentor page": mentorPageLink,
-      "placeholder: academic integrity policy": academicIntegrityPolicyLink,
-      "placeholder: ap policy": apPolicyLink
-    };
+    let data2 = {};
+
+    for (let key in contactList) {
+      const item = contactList[key];
+
+      data[item.templatebase] = [{
+        "first": item.templateFirst,
+        "last": item.templateLast,
+        "phone": item.templatePhone
+      }];
+      data[item.templatebase + ' email'] = item.templateEmailLink;
+    }
+    
+    for (let key in resourceLinkList) {
+      const item = resourceLinkList[key];
+
+      data[key] = resourceLinkList[key].placeholder;
+      data2[item.placeholderText] = item.replacementLink;
+    }
 
     const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);    
     const handler = new this._easyTemplate.TemplateHandler(templateFile, data);
@@ -209,23 +203,72 @@ module.exports = internal.CoursePolicies = class {
     return result;
   }
   
-  _makeLinkPlaceholder(placeholderText) {
-    const xmlPre = '<w:r><w:rPr> <w:color w:val="1B70C6"/><w:u w:val="single"/></w:rPr><w:t>';
-    const xmlPost = '</w:t></w:r>';
+  _makeContactList(dbContactData) {
+    const contactMap = {
+      "mentor coordinator": "mentorSupport",
+      "special populations coordinator": "specialPopulationsSupport"
+    };
     
-    return {
-      _type: 'rawXml',
-      xml: xmlPre + '{' + placeholderText + '}' + xmlPost,
-      replaceParagraph: false
-    }    
+    let contactList = {};
+    for (let i = 0; i < dbContactData.length; i++) {
+      const contactItem = dbContactData[i];
+
+      if (contactMap.hasOwnProperty(contactItem.contentdescriptor)) {
+        contactList[contactMap[contactItem.contentdescriptor]] = {
+          "descriptor": contactItem.contentdescriptor,
+          "first": contactItem.firstname,
+          "last": contactItem.lastname,
+          "phone": contactItem.phone,
+          "email": contactItem.email,
+          
+          "templatebase": contactItem.templatebase,
+          "templateFirst": contactItem.firstname,
+          "templateLast": contactItem.lastname,
+          "templatePhone": contactItem.phone,
+          "templateEmailLink": {
+            _type: 'link',
+            text: contactItem.email,
+            target: 'mailto:' + contactItem.email
+          }
+        }
+      }
+    }
+    
+    return contactList;
   }
   
-  _makeLink(linkText, linkTarget) {
-    return {
-      _type: 'link',
-      text: linkText,
-      target: linkTarget
-    };
+  _makeResourceLinkList(dbResourceLinkData) {
+    const xmlPre = '<w:r><w:rPr> <w:color w:val="1B70C6"/><w:u w:val="single"/></w:rPr><w:t>';
+    const xmlPost = '</w:t></w:r>';
+
+    let resourceLinkList = {};
+    
+    for (let i = 0; i < dbResourceLinkData.length; i++) {
+      const resourceItem = dbResourceLinkData[i];
+      const placeholderText = 'placeholder: ' + resourceItem.templateitem;
+      
+      resourceLinkList[resourceItem.templateitem] = {
+        "templateItem": resourceItem.templateitem,
+        "linkText": resourceItem.linktext,
+        "linkUrl": resourceItem.linkurl,
+        
+        "placeholderText": placeholderText,
+
+        "placeholder": {
+          _type: 'rawXml',
+          xml: xmlPre + '{' + placeholderText + '}' + xmlPost,
+          replaceParagraph: false
+        },
+
+        "replacementLink": {
+          _type: 'link',
+          text: resourceItem.linktext,
+          target: resourceItem.linkurl
+        }
+      }
+    }
+    
+    return resourceLinkList;
   }
 
   async _downloadOutputDoc(thisObj, res, outputDoc, courseName) {
@@ -287,6 +330,34 @@ module.exports = internal.CoursePolicies = class {
     return result;
   }  
     
+  async _getGeneralInfo() {
+    let result = this._dbManager.queryFailureResult(); 
+    let queryList, queryResults;
+    
+    queryList = {
+      "contact":      
+        'select contentdescriptor, firstname, lastname, phone, email, templatebase ' +
+        'from contact',
+        
+      "resourcelink": 
+        'select templateitem, linktext, linkurl ' +
+        'from resourcelink'
+    };
+    
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'retrieved general info';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
 //----------------------------------------------------------------------
 // utility
 //----------------------------------------------------------------------  

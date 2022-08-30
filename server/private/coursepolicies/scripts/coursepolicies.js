@@ -180,7 +180,7 @@ const app = function () {
   function _showCourse() {
     UtilityKTS.setClass(page.navCourse, 'disable-container', true);
     
-    settings.coursePolicies.update(settings.courseInfo);    
+    settings.coursePolicies.update(settings.courseInfo, settings.generalInfo);    
     
     UtilityKTS.setClass(page.navCourse, 'disable-container', false);
   }
@@ -417,31 +417,27 @@ const app = function () {
     let generalInfo = {
       "expectedOfStudent": [
         {
-          "text": "log in every weekday. Come to your online course at least as often as you come to your face-to-face classes.", 
+          "text": "log in at least every weekday", 
           "context": "any"
         },
         {
-          "text": "be familiar with Michigan Virtual's <a href='https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy/', target='_blank'>AP Course Policy</a>, especially concerning due dates and late penalties.", 
+          "text": "be familiar with Michigan Virtual's AP Course Policy, especially concerning due dates and late penalties", 
           "context": "AP"
         },
         {
           "text": "effectively manage your time. While the course is self-paced, I strongly suggest you follow the pacing guide very closely.", 
+          "context": "non-AP"
+        },
+        {
+          "text": "effectively manage your time - there are firm due dates for assignments and late work will be penalized", 
+          "context": "AP"
+        },
+        {
+          "text": "be familiar with and follow our Academic Integrity Policy", 
           "context": "any"
         },
         {
-          "text": "complete your own work and to contribute to the class discussions.", 
-          "context": "any"
-        },
-        {
-          "text": "be familiar with Michigan Virtual’s policies on <a href='https://michiganvirtual.org/policies/academic-integrity-policy/' target='_blank'>academic integrity</a> and follow them.", 
-          "context": "any"
-        },
-        {
-          "text": "check your SLP messages every day.", 
-          "context": "any"
-        },
-        {
-          "text": "read the Teacher Feed posts every day.", 
+          "text": "check your SLP messages and Teacher Feed", 
           "context": "any"
         },
         {
@@ -452,31 +448,31 @@ const app = function () {
       
       "expectedOfInstructor": [
         {
-          "text": "always treat you with respect and friendliness and do my best to encourage your learning and growth.", 
+          "text": "always treat students with respect and friendliness, doing my best to encourage their learning and growth", 
           "context": "any"
         },
         {
-          "text": "respond to any communication from a student, mentor or parent within 24 hours.", 
+          "text": "respond to any communication within 24 hours (not counting weekends and holidays)", 
           "context": "any"
         },
         {
-          "text": "grade all assignments, providing solid feedback, within 72 hours (not counting weekends and holidays).", 
+          "text": "grade all assignments, providing solid feedback, within 72 hours (not counting weekends and holidays)", 
           "context": "any"
         },
         {
-          "text": "communicate with your school and parents regarding your progress in class.", 
+          "text": "provide progress reports at least monthly", 
           "context": "any"
         },
         {
-          "text": "help explain difficult concepts and provide additional material where appropriate.", 
+          "text": "help explain difficult concepts and provide additional support material", 
           "context": "any"
         },
         {
-          "text": "make weekly announcements in the Teacher Feed, highlighting upcoming assignments and providing suggestions.", 
+          "text": "make weekly posts in the Teacher Feed with tips, resources, and motivational support", 
           "context": "any"
         },
         {
-          "text": "be an active member of the class discussions.",
+          "text": "be an active member of the class discussions",
           "context": "any"
         }
       ]
@@ -500,11 +496,11 @@ const app = function () {
     console.log('_getCourseIfnoFromDB, dummied');
     
     let courseInfo = {
-      "AP Computer Science Principles": {},
-      "AP Computer Science A": {},
-      "Accounting 1A": {},
-      "Accounting 1B": {},
-      "Basic Web Design: HTML & CSS": {}
+      "AP Computer Science Principles": {"ap": true},
+      "AP Computer Science A": {"ap": true},
+      "Accounting 1A": {"ap": false},
+      "Accounting 1B": {"ap": false},
+      "Basic Web Design: HTML & CSS": {"ap": false}
     };
     
     return courseInfo;

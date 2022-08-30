@@ -10,6 +10,8 @@ class CoursePolicies {
       hideClass: 'hide-me',
       
       currentInfo: null,
+      generalInfo: null,
+
       selectedCourse: null
     }
     
@@ -19,8 +21,12 @@ class CoursePolicies {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------  
-  update(updatedInfo) {
-    this.settings.currentInfo = updatedInfo;
+  update(updatedCourseInfo, updatedGeneralInfo) {
+    console.log('CoursePolicies.update', updatedCourseInfo, updatedGeneralInfo);
+    
+    this.settings.currentInfo = updatedCourseInfo;
+    this.settings.generalInfo = updatedGeneralInfo;
+    
     this._updateUI();
   }
   
@@ -66,7 +72,9 @@ class CoursePolicies {
       let elemItem = CreateElement.createOption(null, 'select-course-option', i, courseName);
       this.settings.elemCourseList.appendChild(elemItem);
       
-      elemItem.setAttribute("courseInfo", JSON.stringify({"name": courseName}));
+      let singleCourseInfo = {"name": courseName, ...this.settings.currentInfo[courseName]};
+      
+      elemItem.setAttribute("courseInfo", JSON.stringify(singleCourseInfo));
       if (this.settings.selectedCourse && courseName == this.settings.selectedCourse.name) {
         indexToSelect = i;
       }
@@ -105,9 +113,6 @@ class CoursePolicies {
   
   _downloadMentorWelcomeLetter(courseInfo) {
     console.log('CoursePolicies._downloadMentorWelcomeLetter', courseInfo);
-    console.log('courseInfo.ap is dummied');
-    
-    courseInfo.ap = (courseInfo.name == 'AP Computer Science A' || courseInfo.name == 'AP Computer Science Principles');
     
     let params = {
       "courseInfo": courseInfo,

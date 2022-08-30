@@ -56,6 +56,8 @@ class GeneralPolicies {
       
       if (expectations[i].context == 'AP') {
         elemItem.appendChild(CreateElement.createIcon(null, 'fas fa-info-circle expectation-info me-1', 'AP only'))
+      } else if (expectations[i].context == 'non-AP') {
+        elemItem.appendChild(CreateElement.createIcon(null, 'fas fa-info-circle expectation-info me-1', 'non-AP only'))
       }
 
       elemItem.appendChild(CreateElement.createSpan(null, 'expectation-text', expectations[i].text));
