@@ -6,7 +6,6 @@ include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-general.pug
 include ./mixins/mixins-course.pug
-include ./mixins/mixins-mentor.pug
 include ./mixins/mixins-admin.pug
 
 doctype html
@@ -36,7 +35,6 @@ html(lang="en")
         items: [
           {id: "navGeneral", type: "link", label: "general"},
           {id: "navCourse", type: "link", label: "course"},
-          {id: "navMentor", type: "link", label: "mentor"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
             {id: "navHelp", type: "link", label: "help"},
@@ -61,9 +59,6 @@ html(lang="en")
                 
       .container-fluid(class="contents-container contents-navCourse hide-me disable-container")
         +courseContainer
-                
-      .container-fluid(class="contents-container contents-navMentor hide-me disable-container")
-        +mentorContainer
                 
       .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
         +adminContainer()     

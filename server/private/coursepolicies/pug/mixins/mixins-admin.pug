@@ -1,26 +1,27 @@
-mixin adminContainer()   
+mixin adminContainer()
   .row(class="py-2")
     .col-sm
       fieldset(class="border configure-fieldset required pb-2")
-        legend(class="w-auto") assignment data
-        
+        legend(class="w-auto") editing
         .container-fluid
-          .row(class="mb-1")
-            .col-sm
-              div
-                label(for="file-upload-assignmentS1" class="uploadfile-label uploadfile-label-assignment btn btn-secondary" title="upload S1 instructor assignment spreadsheet") upload S1
-                input(type="file" class="uploadfile uploadfile-assignment" id="file-upload-assignmentS1" accept=".xlsx")
-                span(class="upload-resultS1 assignment ms-3")
-              
-              div(class="mt-2")
-                label(for="file-upload-assignmentS2" class="uploadfile-label uploadfile-label-assignment btn btn-secondary" title="upload S2 instructor assignment spreadsheet") upload S2
-                input(type="file" class="uploadfile uploadfile-assignment" id="file-upload-assignmentS2" accept=".xlsx")
-                span(class="upload-resultS2 assignment ms-3")
+        .row
+          .col-sm-2
+            ul(class="nav nav-pills flex-column")
+              li(class="nav-item")
+                a(id="navEdit0" class="nav-link btn-secondary" aria-current="page" href="#") Active
+              li(class="nav-item")
+                a(id="navEdit1" class="nav-link btn-secondary" href="#") first link
+              li(class="nav-item")
+                a(id="navEdit2" class="nav-link btn-secondary" href="#") second link
+              li(class="nav-item")
+                a(id="navEdit3" class="nav-link btn-secondary disabled" href="#" tabindex="-1" aria-disabled="true") disabled
 
-            .col-sm
-              button(class="btn btn-secondary delete-assignments" title="remove all assignment info from DB") delete
-              span(class="delete-result assignment ms-3")
-
+          .col-sm(class="admin-outer-container")
+            .editcontent0(class="admin-container navEdit0 hide-me") edit container 0
+            .editcontent1(class="admin-container navEdit1 hide-me") edit container 1
+            .editcontent2(class="admin-container navEdit2 hide-me") edit container 2
+            .editcontent3(class="admin-container navEdit3 hide-me") edit container 3
+      
   .row(class="py-2")
     .col-sm
       fieldset(class="border configure-fieldset required pb-2")

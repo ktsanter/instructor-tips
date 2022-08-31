@@ -127,39 +127,27 @@ module.exports = internal.CoursePolicies = class {
     
     const isAPCourse = courseData.ap;
     const contactList = thisObj._makeContactList(generalData.contact);
-    const resourceLinkList = thisObj._makeResourceLinkList(generalData.resourcelink);
+    const resourceLinkList = thisObj._makeResourceLinkList(generalData.resourcelink, isAPCourse);
+    const expectationList = thisObj._makeExpectationList(generalData.expectationsStudent, generalData.expectationsInstructor, isAPCourse);
 
     const data = {
       "mentor welcome template": '',  // remove marker in header
       
       "coursename": courseData.name,
       
+      "expected of student": [],
+      "expected of instructor": [],
+      
       /*----------------------------------------------------------*/
       /* note: these are dummied and will ultimately be db-driven */
       /*----------------------------------------------------------*/
       "keypoints": [
-        {"point": "There is a password-protected final exam. The password will be distributed to mentors early in the semester"},
-        {"point": "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams"},
-        {"point": "etc."}
-      ],
-      
-      "expected of student": [
-        {"expectation": "Log in at least every school day."},
-        {"expectation": "Be familiar with Michigan Virtual's AP Course Policy, especially concerning due dates and late penalties."},
-        {"expectation": "Effectively manage time, using the pacing guide."},
-        {"expectation": "Be familiar with our Academic Integrity Policy."},
-        {"expectation": "Check SLP messages and the Teacher Feed every day."},
-        {"expectation": "Be respectful and considerate when communicating and working with classmates."}
-      ],
-      
-      "expected of instructor": [
-        {"expectation": "Always treat students with respect and friendliness, doing my best to encourage their learning and growth."},
-        {"expectation": "Respond to any communication 24 hours (not counting weekends and holidays)."},
-        {"expectation": "Grade all assignments, providing solid feedback, within 72 hours (not counting weekends and holidays)."},
-        {"expectation": "Provide progress reports at least monthly."},
-        {"expectation": "Help explain difficult concepts and provide additional support material."},
-        {"expectation": "Make weekly posts in the Teacher Feed, with tips, resources, and support."},
-        {"expectation": "Be an active member of the class discussions."}
+        {"point": "There is a password-protected final exam. The password will be distributed to mentors early in the semester" },
+        {"point": "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams" },
+        {"point": "There are no retakes for assessments except in the case of technical difficulties (at the instructor's discretion) - refer to the AP course policies" },
+        {"point": "All programming assignments can be resubmitted. Instructors may apply a limit and/or resubmission requirements at their discretion - refer to the AP course policies." },
+        {"point": "Details for policies can be found in the Advanced Placement Course Policy document." },
+        {"point": "There are weekly due dates for assignments, with penalties for late assignments." }
       ],
       
       "assessment list": [
@@ -187,6 +175,14 @@ module.exports = internal.CoursePolicies = class {
 
       data[key] = resourceLinkList[key].placeholder;
       data2[item.placeholderText] = item.replacementLink;
+    }
+    
+    for (let i = 0; i < expectationList.student.length; i++) {
+      data["expected of student"].push({"expectation": expectationList.student[i]}); 
+    }
+
+    for (let i = 0; i < expectationList.instructor.length; i++) {
+      data["expected of instructor"].push({"expectation": expectationList.instructor[i]}); 
     }
 
     const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);    
@@ -237,7 +233,7 @@ module.exports = internal.CoursePolicies = class {
     return contactList;
   }
   
-  _makeResourceLinkList(dbResourceLinkData) {
+  _makeResourceLinkList(dbResourceLinkData, isAPCourse) {
     const xmlPre = '<w:r><w:rPr> <w:color w:val="1B70C6"/><w:u w:val="single"/></w:rPr><w:t>';
     const xmlPost = '</w:t></w:r>';
 
@@ -246,29 +242,67 @@ module.exports = internal.CoursePolicies = class {
     for (let i = 0; i < dbResourceLinkData.length; i++) {
       const resourceItem = dbResourceLinkData[i];
       const placeholderText = 'placeholder: ' + resourceItem.templateitem;
+      const include = (
+        resourceItem.restriction == 'none' ||
+        (resourceItem.restriction == 'ap' && isAPCourse) ||
+        (resourceItem.restriction == 'non-ap' && !isAPCourse)
+      );
       
-      resourceLinkList[resourceItem.templateitem] = {
-        "templateItem": resourceItem.templateitem,
-        "linkText": resourceItem.linktext,
-        "linkUrl": resourceItem.linkurl,
-        
-        "placeholderText": placeholderText,
+      if (include) {
+        resourceLinkList[resourceItem.templateitem] = {
+          "templateItem": resourceItem.templateitem,
+          "linkText": resourceItem.linktext,
+          "linkUrl": resourceItem.linkurl,
+          
+          "placeholderText": placeholderText,
 
-        "placeholder": {
-          _type: 'rawXml',
-          xml: xmlPre + '{' + placeholderText + '}' + xmlPost,
-          replaceParagraph: false
-        },
+          "placeholder": {
+            _type: 'rawXml',
+            xml: xmlPre + '{' + placeholderText + '}' + xmlPost,
+            replaceParagraph: false
+          },
 
-        "replacementLink": {
-          _type: 'link',
-          text: resourceItem.linktext,
-          target: resourceItem.linkurl
+          "replacementLink": {
+            _type: 'link',
+            text: resourceItem.linktext,
+            target: resourceItem.linkurl
+          }
         }
       }
     }
     
     return resourceLinkList;
+  }
+  
+  _makeExpectationList(expectationsStudent, expectationsInstructor, isAPCourse) {
+    let expectationList = {
+      "student": [],
+      "instructor": []
+    };
+    
+    for (let i = 0; i < expectationsStudent.length; i++) {
+      const item = expectationsStudent[i];
+      let include = (
+        (item.restriction == 'none') ||
+        (item.restriction == 'ap' && isAPCourse) ||
+        (item.restriction == 'non-ap' && !isAPCourse)
+      );
+
+      if (include) expectationList.student.push(item.expectationtext);
+    }
+    
+    for (let i = 0; i < expectationsInstructor.length; i++) {
+      const item = expectationsInstructor[i];
+      let include = (
+        (item.restriction == 'none') ||
+        (item.restriction == 'ap' && isAPCourse) ||
+        (item.restriction == 'non-ap' && !isAPCourse)
+      );
+
+      if (include) expectationList.instructor.push(item.expectationtext);
+    }
+    
+    return expectationList;
   }
 
   async _downloadOutputDoc(thisObj, res, outputDoc, courseName) {
@@ -340,8 +374,18 @@ module.exports = internal.CoursePolicies = class {
         'from contact',
         
       "resourcelink": 
-        'select templateitem, linktext, linkurl ' +
-        'from resourcelink'
+        'select templateitem, restriction, linktext, linkurl ' +
+        'from resourcelink',
+        
+      "expectationsStudent":
+        'select expectationtext, restriction ' +
+        'from expectation ' +
+        'where target = "student" ',
+        
+      "expectationsInstructor":
+        'select expectationtext, restriction ' +
+        'from expectation ' +
+        'where target = "instructor" ',        
     };
     
     queryResults = await this._dbManager.dbQueries(queryList); 

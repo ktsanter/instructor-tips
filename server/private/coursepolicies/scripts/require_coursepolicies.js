@@ -12,6 +12,7 @@ define(function (require) {
    
    require('classGeneralPolicies');
    require('classCoursePolicies');
+   require('classAdmin');
   require('coursepolicies');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

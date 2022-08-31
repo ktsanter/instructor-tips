@@ -46,6 +46,7 @@ const app = function () {
     
     await _initializeGeneralPolicies();
     await _initializeCoursePolicies();
+    await _initializeAdmin();
     
     let success = await _getCurrentInfo();
     if (!success) return;
@@ -53,7 +54,7 @@ const app = function () {
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
-    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[2].click();
 
     page.notice.setNotice('');
   }
@@ -99,6 +100,16 @@ const app = function () {
       "adminAllowed": adminAllowed
     });
   }
+  
+  async function _initializeAdmin() {
+    let adminAllowed = await _checkAdminAllowed();
+    if (!adminAllowed) return;
+
+    settings.admin = new Admin({
+      "container": page.navAdmin,
+      "toggleCallback": _toggleAdmin
+    });
+  }
 
   //-----------------------------------------------------------------------------
 	// navbar
@@ -117,8 +128,6 @@ const app = function () {
   function _renderContents() {
     _renderGeneral();
     _renderCourse();
-    _renderMentor();
-
     _renderAdmin();
   }
   
@@ -130,22 +139,8 @@ const app = function () {
     page.navCourse = page.contents.getElementsByClassName('contents-navCourse')[0];
   }
     
-  function _renderMentor() {
-    page.navMentor = page.contents.getElementsByClassName('contents-navMentor')[0];
-  }
-    
   function _renderAdmin() {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
-    
-    let elemUpload = page.navAdmin.getElementsByClassName('uploadfile');
-    for (let i = 0; i < elemUpload.length; i++) {
-      elemUpload[i].addEventListener('change', (e) => { _handleFileUpload(e); });
-    }
-
-    let elemDelete = page.navAdmin.getElementsByClassName('delete-assignments')[0];
-    elemDelete.addEventListener('click', (e) => { _handleDeleteAssignments(e); });
-    
-    page.navAdmin.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { _handleToggleAdmin(e); });    
   }
     
   //-----------------------------------------------------------------------------
@@ -162,7 +157,6 @@ const app = function () {
     
     if (contentsId == 'navGeneral') _showGeneral();
     if (contentsId == 'navCourse') _showCourse();
-    if (contentsId == 'navMentor') _showMentor();
     if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
@@ -185,15 +179,14 @@ const app = function () {
     UtilityKTS.setClass(page.navCourse, 'disable-container', false);
   }
 
-  function _showMentor() {
-    UtilityKTS.setClass(page.navMentor, 'disable-container', true);
+  function _showAdmin() {
+    UtilityKTS.setClass(page.navAdmin, 'disable-container', true);
     
-    console.log('_showMentor');
+    settings.admin.update();    
     
-    UtilityKTS.setClass(page.navMentor, 'disable-container', false);
+    UtilityKTS.setClass(page.navAdmin, 'disable-container', false);
+    
   }
-
-  function _showAdmin() {}
   
   function _setNavOptions() {
     var opt = settings.currentNavOption;
@@ -226,7 +219,6 @@ const app = function () {
     for (var i = 0; i < containers.length; i++) {
       if (
         containers[i].classList.contains('contents-navStudent') ||
-        containers[i].classList.contains('contents-navMentor') ||
         containers[i].classList.contains('contents-navConfigure') ||
         containers[i].classList.contains('contents-navAdmin')
       ) {
@@ -237,7 +229,7 @@ const app = function () {
   }
       
   function _setMainNavbarEnable(enable) {
-    var menuIds = ['navGeneral', 'navCourse', 'navMentor', 'navAdmin'];
+    var menuIds = ['navGeneral', 'navCourse', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
       UtilityKTS.setClass(elem, 'disabled', !enable);
@@ -311,7 +303,6 @@ const app = function () {
     var dispatchMap = {
       "navGeneral": function() { _showContents('navGeneral');},
       "navCourse": function() { _showContents('navCourse');},
-      "navMentor": function() { _showContents('navMentor');},
       "navAdmin": function() { _showContents('navAdmin'); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
@@ -392,14 +383,14 @@ const app = function () {
     }
   }
 
-  function _handleToggleAdmin() {
+  //----------------------------------------
+  // callbacks
+  //----------------------------------------
+  function _toggleAdmin() {
     settings.adminDisable = !settings.adminDisable;
     _setAdminMenu();
   }
   
-  //----------------------------------------
-  // callbacks
-  //----------------------------------------
 
   //---------------------------------------
   // DB interface
