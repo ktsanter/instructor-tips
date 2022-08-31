@@ -31,8 +31,6 @@ class Admin {
   // private methods
   //--------------------------------------------------------------   
   _initUI() {
-    console.log('Admin._initUI');
-
     this.config.container.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { this.config.toggleCallback(e); });
     this.config.contentContainers = this.config.container.getElementsByClassName('admin-container');
     this._setNavbarHandlers();
@@ -80,10 +78,10 @@ class Admin {
 
     me._showEditContainer()
     var dispatchMap = {
-      "navEdit0": function() { me._showEdit0()},
-      "navEdit1": function() { me._showEdit1()},
-      "navEdit2": function() { me._showEdit2()},
-      "navEdit3": function() { me._showEdit3()},
+      "navEditExpectations": function() { me._showEditExpectations()},
+      "navEditCourses": function() { me._showEditCourses()},
+      "navEditContacts": function() { me._showEditContacts()},
+      "navEditOther": function() { me._showEditOther()},
     }
     dispatchMap[dispatchTargetId]();    
   }
@@ -105,17 +103,17 @@ class Admin {
     }
   }
   
-  _showEdit0() {
-    console.log('_showEdit0');
+  _showEditExpectations() {
+    console.log('_showEditExpectations');
   }
-  _showEdit1() {
-    console.log('_showEdit1');
+  _showEditCourses() {
+    console.log('_showEditCourses');
   }
-  _showEdit2() {
-    console.log('_showEdit2');
+  _showEditContacts() {
+    console.log('_showEditContacts');
   }
-  _showEdit3() {
-    console.log('_showEdit3');
+  _showEditOther() {
+    console.log('_showEditOther');
   }
 
   //--------------------------------------------------------------

@@ -40,8 +40,8 @@ class GeneralPolicies {
   }
 
   _updateUI() {
-    this._renderExpectations(this.config.expectedOfStudent, this.settings.currentInfo.expectedOfStudent);
-    this._renderExpectations(this.config.expectedOfInstructor, this.settings.currentInfo.expectedOfInstructor);
+    this._renderExpectations(this.config.expectedOfStudent, this.settings.currentInfo.expectationsStudent);
+    this._renderExpectations(this.config.expectedOfInstructor, this.settings.currentInfo.expectationsInstructor);
   }
   
   _renderExpectations(container, expectations) {
@@ -54,13 +54,13 @@ class GeneralPolicies {
       let elemItem = CreateElement._createElement('li', null, 'expectation-list-item');
       elemList.appendChild(elemItem);
       
-      if (expectations[i].context == 'AP') {
+      if (expectations[i].restriction == 'ap') {
         elemItem.appendChild(CreateElement.createIcon(null, 'fas fa-info-circle expectation-info me-1', 'AP only'))
-      } else if (expectations[i].context == 'non-AP') {
+      } else if (expectations[i].restriction == 'non-ap') {
         elemItem.appendChild(CreateElement.createIcon(null, 'fas fa-info-circle expectation-info me-1', 'non-AP only'))
       }
 
-      elemItem.appendChild(CreateElement.createSpan(null, 'expectation-text', expectations[i].text));
+      elemItem.appendChild(CreateElement.createSpan(null, 'expectation-text', expectations[i].expectationtext));
     }
   }
     

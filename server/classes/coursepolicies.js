@@ -30,8 +30,11 @@ module.exports = internal.CoursePolicies = class {
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
       
-    } else if (params.queryName == 'dummy') {
-      //dbResult = await this._getAssignmentInfo(params, postData, userInfo);
+    } else if (params.queryName == 'general-info') {
+      dbResult = await this._getGeneralInfo();
+            
+    } else if (params.queryName == 'course-info') {
+      dbResult = await this._getCourseInfo();
             
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -116,6 +119,9 @@ module.exports = internal.CoursePolicies = class {
     });
   }
     
+//---------------------------------------------------------------
+// private methods
+//---------------------------------------------------------------  
   async _makeOutputDoc(thisObj, generalData, courseData) {
     let result = null;
     
@@ -137,10 +143,12 @@ module.exports = internal.CoursePolicies = class {
       
       "expected of student": [],
       "expected of instructor": [],
+      "keypoints": [],
+      "assessment list": [],
       
       /*----------------------------------------------------------*/
       /* note: these are dummied and will ultimately be db-driven */
-      /*----------------------------------------------------------*/
+      /*----------------------------------------------------------
       "keypoints": [
         {"point": "There is a password-protected final exam. The password will be distributed to mentors early in the semester" },
         {"point": "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams" },
@@ -148,13 +156,8 @@ module.exports = internal.CoursePolicies = class {
         {"point": "All programming assignments can be resubmitted. Instructors may apply a limit and/or resubmission requirements at their discretion - refer to the AP course policies." },
         {"point": "Details for policies can be found in the Advanced Placement Course Policy document." },
         {"point": "There are weekly due dates for assignments, with penalties for late assignments." }
-      ],
-      
-      "assessment list": [
-        {"assessment": "midterm"},
-        {"assessment": "final"}
       ]
-      /*---------------- end of dummied data -------------------------*/
+      ---------------- end of dummied data -------------------------*/
     };
     
     let data2 = {};
@@ -183,6 +186,14 @@ module.exports = internal.CoursePolicies = class {
 
     for (let i = 0; i < expectationList.instructor.length; i++) {
       data["expected of instructor"].push({"expectation": expectationList.instructor[i]}); 
+    }
+    
+    for (let i = 0; i < courseData.keypoints.length; i++) {
+      data["keypoints"].push({"point": courseData.keypoints[i]});
+    }
+
+    for (let i = 0; i < courseData.assessments.length; i++) {
+      data["assessment list"].push({"assessment": courseData.assessments[i]});
     }
 
     const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);    
@@ -388,6 +399,41 @@ module.exports = internal.CoursePolicies = class {
         'where target = "instructor" ',        
     };
     
+    queryResults = await this._dbManager.dbQueries(queryList); 
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'retrieved general info';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _getCourseInfo() {
+    let result = this._dbManager.queryFailureResult(); 
+    let queryList, queryResults;
+    
+    queryList = {
+      "course":      
+        'select coursename, ap ' +
+        'from course',
+        
+      "keypoints": 
+        'select a.coursename, b.keypointtext ' +
+        'from course as a, keypoint as b, coursekeypoint as c ' +
+        'where a.courseid = c.courseid ' +
+          'and b.keypointid = c.keypointid ',
+          
+      "assessment":
+        'select a.coursename, b.assessmentname ' +
+        'from course as a, assessment as b ' +
+        'where a.courseid = b.courseid '
+    };
+
     queryResults = await this._dbManager.dbQueries(queryList); 
     
     if (!queryResults.success) {

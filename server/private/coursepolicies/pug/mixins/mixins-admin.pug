@@ -1,26 +1,21 @@
 mixin adminContainer()
-  .row(class="py-2")
-    .col-sm
-      fieldset(class="border configure-fieldset required pb-2")
-        legend(class="w-auto") editing
-        .container-fluid
-        .row
-          .col-sm-2
-            ul(class="nav nav-pills flex-column")
-              li(class="nav-item")
-                a(id="navEdit0" class="nav-link btn-secondary" aria-current="page" href="#") Active
-              li(class="nav-item")
-                a(id="navEdit1" class="nav-link btn-secondary" href="#") first link
-              li(class="nav-item")
-                a(id="navEdit2" class="nav-link btn-secondary" href="#") second link
-              li(class="nav-item")
-                a(id="navEdit3" class="nav-link btn-secondary disabled" href="#" tabindex="-1" aria-disabled="true") disabled
+  .row(class="py-2 mb-2")
+    .col-sm-2
+      ul(class="nav nav-pills flex-column")
+        li(class="nav-item")
+          a(id="navEditExpectations" class="nav-link btn-secondary" aria-current="page" href="#") expectations
+        li(class="nav-item")
+          a(id="navEditCourses" class="nav-link btn-secondary" href="#") courses
+        li(class="nav-item")
+          a(id="navEditContacts" class="nav-link btn-secondary" href="#") contacts
+        li(class="nav-item")
+          a(id="navEditOther" class="nav-link btn-secondary" href="#" tabindex="-1" aria-disabled="true") other
 
-          .col-sm(class="admin-outer-container")
-            .editcontent0(class="admin-container navEdit0 hide-me") edit container 0
-            .editcontent1(class="admin-container navEdit1 hide-me") edit container 1
-            .editcontent2(class="admin-container navEdit2 hide-me") edit container 2
-            .editcontent3(class="admin-container navEdit3 hide-me") edit container 3
+    .col-sm(class="admin-outer-container")
+      .editcontent0(class="admin-container navEditExpectations hide-me") edit expectations
+      .editcontent1(class="admin-container navEditCourses hide-me") edit courses
+      .editcontent2(class="admin-container navEditContacts hide-me") edit contacts
+      .editcontent3(class="admin-container navEditOther hide-me") edit other
       
   .row(class="py-2")
     .col-sm

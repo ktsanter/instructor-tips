@@ -9,8 +9,7 @@ class CoursePolicies {
     this.settings = {
       hideClass: 'hide-me',
       
-      currentInfo: null,
-      generalInfo: null,
+      currentCourseInfo: null,
 
       selectedCourse: null
     }
@@ -21,11 +20,8 @@ class CoursePolicies {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------  
-  update(updatedCourseInfo, updatedGeneralInfo) {
-    console.log('CoursePolicies.update', updatedCourseInfo, updatedGeneralInfo);
-    
-    this.settings.currentInfo = updatedCourseInfo;
-    this.settings.generalInfo = updatedGeneralInfo;
+  update(updatedCourseInfo) {
+    this.settings.currentCourseInfo = this._collateCourseInfo(updatedCourseInfo);
     
     this._updateUI();
   }
@@ -40,6 +36,12 @@ class CoursePolicies {
     this.settings.elemAddCourseIcon = this.config.container.getElementsByClassName('add-course')[0];
     this.settings.elemEditCourseIcon = this.config.container.getElementsByClassName('edit-course-name')[0];
     this.settings.elemDeleteCourseIcon = this.config.container.getElementsByClassName('delete-course')[0];
+
+    this.settings.elemAssessmentsOuter = this.config.container.getElementsByClassName('assessments-outer')[0];
+    this.settings.elemAssessments = this.config.container.getElementsByClassName('assessment-container')[0];
+    
+    this.settings.elemKeypointsOuter = this.config.container.getElementsByClassName('keypoints-outer')[0];
+    this.settings.elemKeypoints = this.config.container.getElementsByClassName('keypoints-container')[0];
     
     let adminElements = this.config.container.getElementsByClassName('admin-only');
     for (let i = 0; i < adminElements.length; i++) {
@@ -58,11 +60,42 @@ class CoursePolicies {
     this._loadCourseList();
   }
   
+  _collateCourseInfo(courseInfo) {
+    let objCourseInfo = {};
+    let keypointList = courseInfo.keypoints;
+    let assessmentList = courseInfo.assessment;
+    
+    for (let i = 0; i < courseInfo.course.length; i++) {
+      let singleCourse = {...courseInfo.course[i]};
+      let key = singleCourse.coursename;
+      delete singleCourse.coursename;
+      
+      singleCourse.keypoints = [];
+      for (let j = 0; j < keypointList.length; j++) {
+        const keypoint = keypointList[j];
+        if (keypoint.coursename == key) singleCourse.keypoints.push(keypoint.keypointtext);
+      }
+      
+      singleCourse.assessments = []
+      for (let j = 0; j < assessmentList.length; j++) {
+        const assessment = assessmentList[j];
+        if (assessment.coursename == key) singleCourse.assessments.push(assessment.assessmentname);
+      }
+      
+      objCourseInfo[key] = singleCourse;
+    }
+    
+    return objCourseInfo;
+  }
+  
   _loadCourseList() {
     let courseList = [];
-    for (let key in this.settings.currentInfo) {
+    for (let key in this.settings.currentCourseInfo) {
       courseList.push(key);
     }
+    courseList = courseList.sort(function(a,b) {
+      return a.toLowerCase().localeCompare(b.toLowerCase());
+    });
     
     UtilityKTS.removeChildren(this.settings.elemCourseList);
     
@@ -72,7 +105,7 @@ class CoursePolicies {
       let elemItem = CreateElement.createOption(null, 'select-course-option', i, courseName);
       this.settings.elemCourseList.appendChild(elemItem);
       
-      let singleCourseInfo = {"name": courseName, ...this.settings.currentInfo[courseName]};
+      let singleCourseInfo = {"name": courseName, ...this.settings.currentCourseInfo[courseName]};
       
       elemItem.setAttribute("courseInfo", JSON.stringify(singleCourseInfo));
       if (this.settings.selectedCourse && courseName == this.settings.selectedCourse.name) {
@@ -86,17 +119,68 @@ class CoursePolicies {
   
   _loadSelectedCourse() {
     let courseInfo = this.settings.selectedCourse;
-    console.log('CoursePolicies._loadSelectedCourse', courseInfo);
-
-    UtilityKTS.setClass(this.settings.elemEditCourseIcon, 'disabled', true);
-    UtilityKTS.setClass(this.settings.elemDeleteCourseIcon, 'disabled', true);
-    UtilityKTS.setClass(this.settings.elemMentorWelcome, 'disabled', true);
-
-    if (!this.settings.selectedCourse) return;
+    console.log('_loadSelectedCourse', courseInfo);
     
-    UtilityKTS.setClass(this.settings.elemEditCourseIcon, 'disabled', false);
-    UtilityKTS.setClass(this.settings.elemDeleteCourseIcon, 'disabled', false);
-    UtilityKTS.setClass(this.settings.elemMentorWelcome, 'disabled', false);
+    this._showHideContent(false);
+    UtilityKTS.removeChildren(this.settings.elemAssessments);
+    
+    if (!this.settings.selectedCourse) return;
+
+    this._loadKeypoints(this.settings.elemKeypointsOuter, this.settings.elemKeypoints, courseInfo.keypoints);  
+    this._loadAssessments(this.settings.elemAssessmentsOuter, this.settings.elemAssessments, courseInfo.assessments);  
+    
+    this._showHideContent(true);
+  }
+  
+  _showHideContent(show) {
+    UtilityKTS.setClass(this.settings.elemEditCourseIcon, 'disabled', !show);
+    UtilityKTS.setClass(this.settings.elemDeleteCourseIcon, 'disabled', !show);
+    UtilityKTS.setClass(this.settings.elemMentorWelcome, 'disabled', !show);
+    
+    UtilityKTS.setClass(this.settings.elemAssessmentsOuter, this.settings.hideClass, !show);
+    UtilityKTS.setClass(this.settings.elemKeypointsOuter, this.settings.hideClass, !show);
+  }
+  
+  _loadKeypoints(outerContainer, container, keypointList) {
+    UtilityKTS.removeChildren(container);
+    let elemTemplate = outerContainer.getElementsByClassName('template')[0];
+    
+    if (keypointList.length == 0) {
+      let elem = elemTemplate.cloneNode(true);
+      container.appendChild(elem);
+      UtilityKTS.setClass(elem, 'template', false);
+      UtilityKTS.setClass(elem, this.settings.hideClass, false);
+      elem.innerHTML = '<em>none</em>';
+    }
+    
+    for (let i = 0; i < keypointList.length; i++) {
+      let elem = elemTemplate.cloneNode(true);
+      container.appendChild(elem);
+      UtilityKTS.setClass(elem, 'template', false);
+      UtilityKTS.setClass(elem, this.settings.hideClass, false);
+      elem.innerHTML = keypointList[i];
+    }
+  }
+  
+  _loadAssessments(outerContainer, container, assessmentList) {
+    UtilityKTS.removeChildren(container);
+    let elemTemplate = outerContainer.getElementsByClassName('template')[0];
+    
+    if (assessmentList.length == 0) {
+      let elem = elemTemplate.cloneNode(true);
+      container.appendChild(elem);
+      UtilityKTS.setClass(elem, 'template', false);
+      UtilityKTS.setClass(elem, this.settings.hideClass, false);
+      elem.innerHTML = '<em>none</em>';
+    }
+    
+    for (let i = 0; i < assessmentList.length; i++) {
+      let elem = elemTemplate.cloneNode(true);
+      container.appendChild(elem);
+      UtilityKTS.setClass(elem, 'template', false);
+      UtilityKTS.setClass(elem, this.settings.hideClass, false);
+      elem.innerHTML = assessmentList[i];
+    }
   }
   
   async _addCourse() {
@@ -112,8 +196,6 @@ class CoursePolicies {
   }
   
   _downloadMentorWelcomeLetter(courseInfo) {
-    console.log('CoursePolicies._downloadMentorWelcomeLetter', courseInfo);
-    
     let params = {
       "courseInfo": courseInfo,
     }

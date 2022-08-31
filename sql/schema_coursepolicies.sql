@@ -38,7 +38,6 @@ create table resourcelink
   constraint unique(templateitem)  
 );
 
-
 create table expectation
 (
   expectationid     int unsigned not null AUTO_INCREMENT,
@@ -48,6 +47,49 @@ create table expectation
   
   primary key (expectationid),
   constraint unique(target, expectationtext)  
+);
+
+create table course
+(
+  courseid          int unsigned not null AUTO_INCREMENT,
+  coursename        varchar(100) not null,
+  ap                int unsigned not null,
+  
+  primary key (courseid),
+  constraint unique(coursename)  
+);
+
+create table assessment
+(
+  assessmentid      int unsigned not null AUTO_INCREMENT,
+  courseid          int unsigned not null,
+  assessmentname    varchar(100) not null,
+  
+  primary key (assessmentid),
+  constraint unique(courseid, assessmentname),
+  constraint foreign key (courseid) references course (courseid) on delete cascade
+);
+
+create table keypoint
+(
+  keypointid        int unsigned not null AUTO_INCREMENT,
+  keypointtext      varchar(300) not null,
+  category          varchar(30) not null,
+  
+  primary key (keypointid),
+  constraint unique(keypointtext  )  
+);
+
+create table coursekeypoint
+(
+  coursekeypointid   int unsigned not null AUTO_INCREMENT,
+  courseid          int unsigned not null,
+  keypointid          int unsigned not null,
+  
+  primary key (coursekeypointid),
+  constraint unique(courseid, keypointid),
+  constraint foreign key (courseid) references course (courseid) on delete cascade,
+  constraint foreign key (keypointid) references keypoint (keypointid) on delete cascade
 );
 
 #--------------------------------------------------------------------------
@@ -102,3 +144,60 @@ values
   ("instructor", "none", "Help explain difficult concepts and provide additional support material."),
   ("instructor", "none", "Make weekly posts in the Teacher Feed, with tips, resources, and support."),
   ("instructor", "none", "Be an active member of the class discussions.");
+
+insert into course(coursename, ap)
+values
+  ("AP Computer Science Principles", 1),
+  ("AP Computer Science A", 1),
+  ("Accounting 1A", 0),
+  ("Accounting 1B", 0),
+  ("Basic Web Design: HTML & CSS", 0);
+  
+insert into assessment(courseid, assessmentname)
+values
+  (1, "Final Exam"),
+  (2, "Final Exam"),
+  (3, "Midterm"),
+  (3, "Final Exam"),
+  (5, "7.02 Semester Exam");
+  
+insert into keypoint(category, keypointtext)
+values
+  ("exam", "There is a password-protected final exam. The password will be distributed to mentors early in the semester"),
+  ("proctoring", "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams"),
+  ("retake", "There are no retakes for assessments except in the case of technical difficulties (at the instructor's discretion) - refer to the AP course policies"),
+  ("resubmit", "All programming assignments can be resubmitted. Instructors may apply a limit and/or resubmission requirements at their discretion - refer to the AP course policies."),
+  ("ap", "Details for policies can be found in the Advanced Placement Course Policy document."),
+  ("ap", "There are weekly due dates for assignments, with penalties for late assignments.");
+  
+insert into coursekeypoint(courseid, keypointid) 
+values
+  (1, 1),
+  (1, 2),
+  (1, 3),
+  (1, 4),
+  (1, 5),
+  (1, 6),
+  
+  (2, 1),
+  (2, 2),
+  (2, 3),
+  (2, 4),
+  (2, 5),
+  (2, 6),
+  
+  (3, 1),
+  (3, 2),
+  (3, 3),
+  (3, 4),
+  
+  (4, 1),
+  (4, 2),
+  (4, 3),
+  (4, 4),
+  
+  (5, 1),
+  (5, 2),
+  (5, 3),
+  (5, 4);
+  

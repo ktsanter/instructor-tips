@@ -12,3 +12,26 @@ mixin courseContainer()
 
     .col-sm
       button(class="btn-mentor-welcome btn btn-secondary disabled") mentor letter
+      
+  .row(class="keypoints-outer mt-4 hide-me")
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") key points
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm 
+              li(class="keypoint-item template keypoint-template hide-me")
+              ul(class="keypoints-container")
+
+  .row(class="assessments-outer mt-4 hide-me")
+    .col-sm-4
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") assessments with passwords
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm 
+              .assessment-item(class="template assessment-template hide-me")
+              .assessment-container
+

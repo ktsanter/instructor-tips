@@ -54,7 +54,7 @@ const app = function () {
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
-    page.navbar.getElementsByClassName(settings.navItemClass)[2].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
 
     page.notice.setNotice('');
   }
@@ -174,7 +174,7 @@ const app = function () {
   function _showCourse() {
     UtilityKTS.setClass(page.navCourse, 'disable-container', true);
     
-    settings.coursePolicies.update(settings.courseInfo, settings.generalInfo);    
+    settings.coursePolicies.update(settings.courseInfo);    
     
     UtilityKTS.setClass(page.navCourse, 'disable-container', false);
   }
@@ -254,6 +254,7 @@ const app = function () {
     
     if (settings.currentNavOption == 'navGeneral') _showGeneral();
     if (settings.currentNavOption == 'navCourse') _showCourse();
+    if (settings.currentNavOption == 'navAdmin') _showAdmin();
     
     return true;
   }
@@ -403,110 +404,26 @@ const app = function () {
     return adminAllowed;
   }  
  
-  async function _getGeneralInfoFromDB() {
-    console.log('_getGeneralInfoFromDB, dummied');
-    let generalInfo = {
-      "expectedOfStudent": [
-        {
-          "text": "log in at least every weekday", 
-          "context": "any"
-        },
-        {
-          "text": "be familiar with Michigan Virtual's AP Course Policy, especially concerning due dates and late penalties", 
-          "context": "AP"
-        },
-        {
-          "text": "effectively manage your time. While the course is self-paced, I strongly suggest you follow the pacing guide very closely.", 
-          "context": "non-AP"
-        },
-        {
-          "text": "effectively manage your time - there are firm due dates for assignments and late work will be penalized", 
-          "context": "AP"
-        },
-        {
-          "text": "be familiar with and follow our Academic Integrity Policy", 
-          "context": "any"
-        },
-        {
-          "text": "check your SLP messages and Teacher Feed", 
-          "context": "any"
-        },
-        {
-          "text": "be respectful and considerate when communicating and working with classmates.",
-          "context": "any"
-        }
-      ],
-      
-      "expectedOfInstructor": [
-        {
-          "text": "always treat students with respect and friendliness, doing my best to encourage their learning and growth", 
-          "context": "any"
-        },
-        {
-          "text": "respond to any communication within 24 hours (not counting weekends and holidays)", 
-          "context": "any"
-        },
-        {
-          "text": "grade all assignments, providing solid feedback, within 72 hours (not counting weekends and holidays)", 
-          "context": "any"
-        },
-        {
-          "text": "provide progress reports at least monthly", 
-          "context": "any"
-        },
-        {
-          "text": "help explain difficult concepts and provide additional support material", 
-          "context": "any"
-        },
-        {
-          "text": "make weekly posts in the Teacher Feed with tips, resources, and motivational support", 
-          "context": "any"
-        },
-        {
-          "text": "be an active member of the class discussions",
-          "context": "any"
-        }
-      ]
-    };
-    
-    return generalInfo;
-    /*
+  async function _getGeneralInfoFromDB() {    
     let generalInfo = null;
     
     let dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'general-info', page.notice);
-    console.log(dbResult);
     if (dbResult.success) {
       generalInfo = dbResult.data;
     }
     
     return generalInfo;
-    */
   }  
  
   async function _getCourseInfoFromDB() {
-    console.log('_getCourseIfnoFromDB, dummied');
-    
-    let courseInfo = {
-      "AP Computer Science Principles": {"ap": true},
-      "AP Computer Science A": {"ap": true},
-      "Accounting 1A": {"ap": false},
-      "Accounting 1B": {"ap": false},
-      "Basic Web Design: HTML & CSS": {"ap": false}
-    };
-    
-    return courseInfo;
-    
-    /*
     let courseInfo = null;
     
     let dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'course-info', page.notice);
-    console.log(dbResult);
     if (dbResult.success) {
       courseInfo = dbResult.data;
     }
     
     return courseInfo;
-    */
   }  
 
   //---------------------------------------
