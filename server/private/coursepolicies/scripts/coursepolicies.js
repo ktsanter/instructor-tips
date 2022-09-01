@@ -54,7 +54,7 @@ const app = function () {
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
-    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[2].click();
 
     page.notice.setNotice('');
   }
@@ -106,8 +106,10 @@ const app = function () {
     if (!adminAllowed) return;
 
     settings.admin = new Admin({
+      "notice": page.notice,
       "container": page.navAdmin,
-      "toggleCallback": _toggleAdmin
+      "toggleCallback": _toggleAdmin,
+      "callbackRefreshData": _refreshData
     });
   }
 
@@ -182,7 +184,7 @@ const app = function () {
   function _showAdmin() {
     UtilityKTS.setClass(page.navAdmin, 'disable-container', true);
     
-    settings.admin.update();    
+    settings.admin.update(settings.generalInfo, settings.courseInfo);    
     
     UtilityKTS.setClass(page.navAdmin, 'disable-container', false);
     
@@ -241,6 +243,7 @@ const app = function () {
   }
   
   async function _getCurrentInfo() {
+    console.log('_getCurrentInfo');
     settings.generalInfo = null;
     settings.courseInfo = null;
     
@@ -392,6 +395,10 @@ const app = function () {
     _setAdminMenu();
   }
   
+  async function _refreshData() {
+    console.log('_refreshData');
+    await _getCurrentInfo();
+  }  
 
   //---------------------------------------
   // DB interface

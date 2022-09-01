@@ -46,8 +46,8 @@ module.exports = internal.CoursePolicies = class {
   async doInsert(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      //dbResult = await this._replaceStudentProperty(params, postData, userInfo);
+    if (params.queryName == 'contact') {
+      dbResult = await this._insertContact(params, postData, userInfo);
   
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -59,8 +59,8 @@ module.exports = internal.CoursePolicies = class {
   async doUpdate(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      //dbResult = await this._updateStudentNote(params, postData, userInfo);
+    if (params.queryName == 'contact') {
+      dbResult = await this._updateContact(params, postData, userInfo);
 
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -72,8 +72,8 @@ module.exports = internal.CoursePolicies = class {
   async doDelete(params, postData, userInfo, funcCheckPrivilege) {
     var dbResult = this._dbManager.queryFailureResult();
     
-    if (params.queryName == 'dummy') {
-      //dbResult = await this._deleteAssignmentInfo(params, postData, userInfo);
+    if (params.queryName == 'contact') {
+      dbResult = await this._deleteContact(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -443,6 +443,114 @@ module.exports = internal.CoursePolicies = class {
     
     result.success = true;
     result.details = 'retrieved general info';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _insertContact(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "contact":      
+        'insert into contact (' +
+          'contentdescriptor, firstname, lastname, phone, email, templatebase ' +
+        ') values (' +
+          '"' + postData.contentDescriptor + '", ' +
+          '"[tbd]", ' +
+          '"[tbd]", ' +
+          '"[tbd]", ' +
+          '"[tbd]", ' +
+          '"[tbd]" ' +
+        ')'
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'inserted contact';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _updateContact(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "contactid":      
+        'select contactid ' +
+        'from contact ' +
+        'where contentdescriptor = "' + postData.original.contentdescriptor + '" '
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success || queryResults.data.contactid.length == 0) {
+      result.details = 'cannot find contentdescriptor';
+      return result;
+    }
+    
+    const contactId = queryResults.data.contactid[0].contactid;
+    
+    queryList = {
+      "update":
+        'update contact ' +
+        'set ' + 
+          'contentdescriptor = "' + postData.updated.contentdescriptor + '", ' +
+          'firstname = "' + postData.updated.firstname + '", ' +
+          'lastname = "' + postData.updated.lastname + '", ' +
+          'phone = "' + postData.updated.phone + '", ' +
+          'email = "' + postData.updated.email + '", ' +
+          'templatebase = "' + postData.updated.templatebase + '" ' +
+        'where contactid = ' + contactId
+    }
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'updated contact';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _deleteContact(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "contact":      
+        'delete from contact ' +
+        'where contentdescriptor = "' + postData.contentDescriptor + '" '
+    };
+
+    console.log(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
+    console.log(queryResults);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'inserted contact';
     result.data = queryResults.data;
     
     return result;

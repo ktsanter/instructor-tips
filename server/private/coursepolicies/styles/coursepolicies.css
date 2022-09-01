@@ -109,8 +109,12 @@ body {
 }
 
 .contents .contents-navAdmin .nav-link.btn-secondary.active {
-  background-color: var(--bgPrimary);
-  color: white;
+  color: var(--bgPrimary);
+  border: 2px solid var(--bgPrimary);
+}
+
+.contents .contents-navAdmin .nav-link.btn-secondary:focus {
+  box-shadow: none;
 }
 
 .contents .contents-navAdmin .nav-link.btn-secondary.disabled {
@@ -119,6 +123,15 @@ body {
 
 .contents .contents-navAdmin button.btn-secondary {
   min-width: 8.0em;
+}
+
+.contents .contents-navAdmin i.edit-control {
+  color: var(--bgPrimary);
+  font-size: 150%;
+}
+
+.contents .contents-navAdmin i.edit-control.disabled {
+  color: var(--bgShaded);
 }
 
 /*------------------------------------------------------------------
