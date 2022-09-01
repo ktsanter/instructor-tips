@@ -5,15 +5,50 @@ mixin adminContainer()
         li(class="nav-item")
           a(id="navEditExpectations" class="nav-link btn-secondary" aria-current="page" href="#") expectations
         li(class="nav-item")
-          a(id="navEditCourses" class="nav-link btn-secondary" href="#") courses
+          a(id="navEditKeypoints" class="nav-link btn-secondary" href="#") keypoints
         li(class="nav-item")
           a(id="navEditContacts" class="nav-link btn-secondary" href="#") contacts
         li(class="nav-item")
-          a(id="navEditOther" class="nav-link btn-secondary" href="#" tabindex="-1" aria-disabled="true") other
+          a(id="navEditCourses" class="nav-link btn-secondary" href="#") courses
 
     .col-sm(class="admin-outer-container")
-      .editcontent0(class="admin-container navEditExpectations hide-me") edit expectations
-      .editcontent1(class="admin-container navEditCourses hide-me") edit courses
+      .editcontent(class="admin-container navEditExpectations hide-me")
+        .row
+          .col-sm
+            i(class="edit-control edit-control-expectation far fa-plus-square me-2 add" title="add expectation")
+            i(class="edit-control edit-control-expectation fas fa-sync me-2 reload" title="reload expectations")
+            i(class="edit-control edit-control-expectation far fa-save me-2 save" title="save expectations")
+
+        .row
+          .col-sm        
+            .expectation-container
+            
+            .item-template(class="expectation-item hide-me")
+              .row
+                .col-sm-2
+                  .form-floating
+                    select(class="form-select select-target" id="selectTargetXXX" aria-label="select target")
+                      option student
+                      option instructor
+                    label(for="selectTargetXXX") target
+                
+                .col-sm-2
+                  .form-floating
+                    select(class="form-select select-restriction" id="selectRestriction" aria-label="select restriction")
+                      option none
+                      option ap
+                      option non-ap
+                    label(for="selectRestriction") restriction
+            
+                .col-sm
+                  .form-floating
+                    input(type="text" class="form-control expectation-text" id="txtExpectation")
+                    label(for="txtExpectation") expectation
+                    
+                .col-sm-1
+                  i(class="edit-control edit-control-expectation far fa-trash-alt pt-3 delete" title="delete expectation")
+
+      .editcontent(class="admin-container navEditKeypoints hide-me") edit keypoints
       
       .editcontent(class="admin-container navEditContacts hide-me")
         .row
@@ -53,15 +88,4 @@ mixin adminContainer()
             input(type="text" class="form-control template-base" id="txtTemplateBase")
             label(for="txtTemplatebase") template base
       
-      .editcontent3(class="admin-container navEditOther hide-me") edit other
-      
-  .row(class="py-2")
-    .col-sm
-      fieldset(class="border configure-fieldset required pb-2")
-        legend(class="w-auto") cosmetic
-        
-        .container-fluid
-          .row(class="mb-1")
-            .col-sm
-              button(class="btnToggleAdmin btn btn-secondary" title="toggle admin menu option") toggle admin
-
+      .editcontent(class="admin-container navEditCourses hide-me") edit courses

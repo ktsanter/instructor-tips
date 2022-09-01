@@ -49,6 +49,9 @@ module.exports = internal.CoursePolicies = class {
     if (params.queryName == 'contact') {
       dbResult = await this._insertContact(params, postData, userInfo);
   
+    } else if (params.queryName == 'expectation') {
+      dbResult = await this._insertExpectation(params, postData, userInfo);
+  
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -62,7 +65,10 @@ module.exports = internal.CoursePolicies = class {
     if (params.queryName == 'contact') {
       dbResult = await this._updateContact(params, postData, userInfo);
 
-    } else {
+    } else if (params.queryName == 'expectation') {
+      dbResult = await this._updateExpectations(params, postData, userInfo);
+
+    }else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
     
@@ -74,6 +80,9 @@ module.exports = internal.CoursePolicies = class {
     
     if (params.queryName == 'contact') {
       dbResult = await this._deleteContact(params, postData, userInfo);
+    
+    } else if (params.queryName == 'expectation') {
+      dbResult = await this._deleteExpectation(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -145,19 +154,6 @@ module.exports = internal.CoursePolicies = class {
       "expected of instructor": [],
       "keypoints": [],
       "assessment list": [],
-      
-      /*----------------------------------------------------------*/
-      /* note: these are dummied and will ultimately be db-driven */
-      /*----------------------------------------------------------
-      "keypoints": [
-        {"point": "There is a password-protected final exam. The password will be distributed to mentors early in the semester" },
-        {"point": "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams" },
-        {"point": "There are no retakes for assessments except in the case of technical difficulties (at the instructor's discretion) - refer to the AP course policies" },
-        {"point": "All programming assignments can be resubmitted. Instructors may apply a limit and/or resubmission requirements at their discretion - refer to the AP course policies." },
-        {"point": "Details for policies can be found in the Advanced Placement Course Policy document." },
-        {"point": "There are weekly due dates for assignments, with penalties for late assignments." }
-      ]
-      ---------------- end of dummied data -------------------------*/
     };
     
     let data2 = {};
@@ -389,12 +385,12 @@ module.exports = internal.CoursePolicies = class {
         'from resourcelink',
         
       "expectationsStudent":
-        'select expectationtext, restriction ' +
+        'select expectationid, expectationtext, restriction ' +
         'from expectation ' +
         'where target = "student" ',
         
       "expectationsInstructor":
-        'select expectationtext, restriction ' +
+        'select expectationid, expectationtext, restriction ' +
         'from expectation ' +
         'where target = "instructor" ',        
     };
@@ -443,6 +439,94 @@ module.exports = internal.CoursePolicies = class {
     
     result.success = true;
     result.details = 'retrieved general info';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _insertExpectation(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "expectation":      
+        'insert into expectation (' +
+          'target, restriction, expectationtext ' +
+        ') values (' +
+          '"' + postData.target + '", ' +
+          '"' + postData.restriction + '", ' +
+          '"' + postData.expectationtext + '" ' +
+        ')'
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'inserted expectation';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _updateExpectations(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    let expectationInfo = postData;
+
+    queryList = {};
+    for (let i = 0; i < expectationInfo.length; i++) {
+      const expectation = expectationInfo[i];
+      queryList['expectation' + i] =
+        'update expectation ' +
+        'set ' + 
+          'target = "' + expectation.target + '", ' +
+          'restriction = "' + expectation.restriction + '", ' +
+          'expectationtext = "' + expectation.expectationtext + '" ' +
+        'where expectationid = ' + expectation.expectationid
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'updated expectations';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _deleteExpectation(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "expectation":      
+        'delete from expectation ' +
+        'where expectationid = ' + postData.expectationid + ' '
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'deleted expectation';
     result.data = queryResults.data;
     
     return result;
@@ -540,9 +624,7 @@ module.exports = internal.CoursePolicies = class {
         'where contentdescriptor = "' + postData.contentDescriptor + '" '
     };
 
-    console.log(queryList);
     queryResults = await this._dbManager.dbQueries(queryList);
-    console.log(queryResults);
 
     if (!queryResults.success) {
       result.details = queryResults.details;
@@ -550,7 +632,7 @@ module.exports = internal.CoursePolicies = class {
     }  
     
     result.success = true;
-    result.details = 'inserted contact';
+    result.details = 'deleted contact';
     result.data = queryResults.data;
     
     return result;

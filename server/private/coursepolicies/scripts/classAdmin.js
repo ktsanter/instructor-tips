@@ -12,7 +12,7 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditContacts'  // default selection
+      selectedNavId: 'navEditExpectations'  // default selection
     }
     
     this._initUI();
@@ -35,10 +35,11 @@ class Admin {
   // private methods
   //--------------------------------------------------------------   
   _initUI() {
-    this.config.container.getElementsByClassName('btnToggleAdmin')[0].addEventListener('click', (e) => { this.config.toggleCallback(e); });
     this.config.contentContainers = this.config.container.getElementsByClassName('admin-container');
     this._setNavbarHandlers();
     this._setEditControlHandlers();
+    
+    this.config.expectationContainer = this.config.container.getElementsByClassName('navEditExpectations')[0];
     
     this.config.contactSelect = this.config.container.getElementsByClassName('select-contact')[0];
     this.config.contactEditContainer = this.config.container.getElementsByClassName('contact-edit-container')[0];
@@ -95,9 +96,9 @@ class Admin {
     me._showEditContainer()
     var dispatchMap = {
       "navEditExpectations": function() { me._showEditExpectations()},
-      "navEditCourses": function() { me._showEditCourses()},
+      "navEditKeypoints": function() { me._showEditKeypoints()},
       "navEditContacts": function() { me._showEditContacts()},
-      "navEditOther": function() { me._showEditOther()},
+      "navEditCourses": function() { me._showEditCourses()}
     }
     dispatchMap[dispatchTargetId]();    
   }
@@ -120,12 +121,139 @@ class Admin {
   }
   
   //--------------------------------------------------------------
-  // edit expecations
+  // edit expectations
   //--------------------------------------------------------------   
   _showEditExpectations() {
     console.log('_showEditExpectations');
+    let expectationList = this._collateExpectations();
+    this._loadExpectationList(expectationList);
   }
 
+  _collateExpectations() {
+    let expStudent = this.settings.info.general.expectationsStudent;
+    let expInstructor = this.settings.info.general.expectationsInstructor;
+    let expectationList = [];
+
+    for (let i = 0; i < expStudent.length; i++) {
+      expectationList.push({"target": "student", ...expStudent[i]});
+    }
+    for (let i = 0; i < expInstructor.length; i++) {
+      expectationList.push({"target": "instructor", ...expInstructor[i]});
+    }
+    
+    expectationList = expectationList.sort( function(a, b) {
+      let res = -1 * a.target.localeCompare(b.target);
+
+      if (res == 0) {
+        res = a.expectationtext.toLowerCase().localeCompare(b.expectationtext.toLowerCase());
+      }
+      return res;
+    });
+    
+    return expectationList;
+  }
+  
+  _loadExpectationList(expectationList) {
+    let container = this.config.expectationContainer.getElementsByClassName('expectation-container')[0];
+    UtilityKTS.removeChildren(container);
+    
+    let elemTemplate = this.config.expectationContainer.getElementsByClassName('item-template')[0];
+    for (let i = 0; i < expectationList.length; i++) {
+      let exp = expectationList[i];
+      let elemItem = elemTemplate.cloneNode(true);
+      container.appendChild(elemItem);
+      UtilityKTS.setClass(elemItem, this.settings.hideClass, false);
+      UtilityKTS.setClass(elemItem, 'item-template', false);
+      
+      let elemTarget = elemItem.getElementsByClassName('select-target')[0];
+      this._selectByText(elemTarget, exp.target);
+      
+      let elemRestriction = elemItem.getElementsByClassName('select-restriction')[0]
+      this._selectByText(elemRestriction, exp.restriction);
+      
+      elemItem.getElementsByClassName('expectation-text')[0].value = exp.expectationtext;
+      
+      elemItem.setAttribute("expectation-info", JSON.stringify(exp));
+      
+      elemItem.getElementsByClassName('edit-control')[0].addEventListener('click', (e) => { this._handleEditControl(e); });
+    }
+  }
+  
+  async _addExpectation() {
+    const msg = "Please enter the text for the new expectation";
+    const expectationText = prompt(msg);
+    
+    if (!expectationText || expectationText.length == 0) return;
+
+    const success = await this._addExpectationToDB(expectationText);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+  }
+  
+  async _reloadExpectations() {
+    const msg = 'Any changes will be lost. Continue?';
+    if (!confirm(msg)) return;
+    
+    this._showEditExpectations();
+  }
+
+  async _saveExpectations() {
+    console.log('_saveExpectations');
+    let container = this.config.expectationContainer.getElementsByClassName('expectation-container')[0];
+    let expectationList = [];
+    
+    let expectationItems = container.getElementsByClassName('expectation-item');
+    for (let i = 0; i < expectationItems.length; i++) {
+      let exp = expectationItems[i];
+      let expectationId = JSON.parse(exp.getAttribute('expectation-info')).expectationid;
+
+      let elemTarget = exp.getElementsByClassName('select-target')[0];
+      let target = elemTarget[elemTarget.selectedIndex].text;
+
+      let elemRestriction = exp.getElementsByClassName('select-restriction')[0];
+      let restriction = elemRestriction[elemRestriction.selectedIndex].text;
+
+      let expectationText = exp.getElementsByClassName('expectation-text')[0].value;
+      
+      expectationList.push({
+        "expectationid": expectationId,
+        "target": target,
+        "restriction": restriction,
+        "expectationtext": expectationText
+      });
+    }
+    
+    const success = await this._saveExpectationsToDB(expectationList);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+  }
+
+  async _deleteExpectation(expectationInfo) {
+    console.log('_deleteExpectation', expectationInfo);
+    const msg = 'This expectation \n' +
+                '-----------------------------\n' +
+                '  target: ' + expectationInfo.target + '\n' +
+                '  restriction: ' +expectationInfo.restriction + '\n' +
+                '  ' + expectationInfo.expectationtext + '\n' +
+                '-----------------------------\n' +
+                'will be deleted. Are you sure?';
+    if (!confirm(msg)) return;
+    
+    const success = await this._deleteExpectationFromDB(expectationInfo.expectationid);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+  }
+
+  //--------------------------------------------------------------
+  // edit keypoints
+  //--------------------------------------------------------------   
+  _showEditKeypoints() {
+    console.log('_showEditKeypoints');
+  }
+  
   //--------------------------------------------------------------
   // edit courses
   //--------------------------------------------------------------   
@@ -232,15 +360,6 @@ class Admin {
     if (!success) return;
     
     await this.config.callbackRefreshData();
-    //this._forceSelection(this.config.contactSelect, contentDescriptor);
-    
-  }
-  
-  //--------------------------------------------------------------
-  // edit other
-  //--------------------------------------------------------------   
-  _showEditOther() {
-    console.log('_showEditOther');
   }
   
   //--------------------------------------------------------------
@@ -272,6 +391,15 @@ class Admin {
     }
   }
 
+  _selectByText(elemSelect, optionText) {
+    let selectedIndex = -1;
+    const options = elemSelect.getElementsByTagName('OPTION');
+    for (let i = 0; i < options.length && selectedIndex < 0; i++) {
+      if (options[i].text == optionText) selectedIndex = i;
+    }
+    elemSelect.selectedIndex = selectedIndex;
+  }
+    
   _forceSelection(elemSelect, optionText) {
     let selectedIndex = -1;
     const options = elemSelect.getElementsByTagName('OPTION');
@@ -303,7 +431,6 @@ class Admin {
     if (e.target.classList.contains('disabled')) return;
     
     if (e.target.classList.contains('edit-control-contact')) {
-      console.log('edit-control-contact');
       if (e.target.classList.contains('reload')) {
         this._reloadContact();
       } else if (e.target.classList.contains('save')) {
@@ -313,9 +440,29 @@ class Admin {
       } else if (e.target.classList.contains('delete')) {
         this._deleteContact();
       }
+      
+    } else if (e.target.classList.contains('edit-control-expectation')) {
+      if (e.target.classList.contains('reload')) {
+        this._reloadExpectations();
+      } else if (e.target.classList.contains('save')) {
+        this._saveExpectations();
+      } else if (e.target.classList.contains('add')) {
+        this._addExpectation();
+      } else if (e.target.classList.contains('delete')) {
+        this._deleteExpectation(this._findExpectationInfo(e.target));
+      }
     }
   }
 
+  _findExpectationInfo(elem) {
+    let node = elem;
+    while (!node.classList.contains('expectation-item')) {
+      node = node.parentNode;
+    }
+
+    return JSON.parse(node.getAttribute('expectation-info'));
+  }
+  
   _handleContactSelect(e) {
     const optionSelected = e.target[e.target.selectedIndex];
     const contactInfo = JSON.parse(optionSelected.getAttribute('contactinfo'));
@@ -325,6 +472,36 @@ class Admin {
   //--------------------------------------------------------------
   // database
   //--------------------------------------------------------------
+  async _addExpectationToDB(expectationText) {
+    let params = {
+      "target": "student",
+      "restriction": "none",
+      "expectationtext": expectationText
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/insert', 'expectation', params, this.config.notice);
+    console.log(dbResult);
+    
+    return dbResult.success;
+  }
+ 
+  async _saveExpectationsToDB(expectationList) {
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/update', 'expectation', expectationList, this.config.notice);
+    
+    return dbResult.success;
+  }
+ 
+  async _deleteExpectationFromDB(expectationId) {
+    let params = {
+      "expectationid": expectationId
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/delete', 'expectation', params, this.config.notice);
+    console.log(dbResult);
+    
+    return dbResult.success;
+  }
+
   async _addContactToDB(contentDescriptor) {
     let params = {
       "contentDescriptor": contentDescriptor
@@ -361,4 +538,5 @@ class Admin {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
+  
 }
