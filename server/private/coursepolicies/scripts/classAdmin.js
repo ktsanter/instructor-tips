@@ -12,7 +12,7 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditExpectations'  // default selection
+      selectedNavId: 'navEditKeypoints'  // default selection
     }
     
     this._initUI();
@@ -41,6 +41,8 @@ class Admin {
     
     this.config.expectationContainer = this.config.container.getElementsByClassName('navEditExpectations')[0];
     
+    this.config.keypointContainer = this.config.container.getElementsByClassName('navEditKeypoints')[0];
+
     this.config.contactSelect = this.config.container.getElementsByClassName('select-contact')[0];
     this.config.contactEditContainer = this.config.container.getElementsByClassName('contact-edit-container')[0];
     this.config.contactSelect.addEventListener('change', (e) => { this._handleContactSelect(e); });
@@ -124,7 +126,6 @@ class Admin {
   // edit expectations
   //--------------------------------------------------------------   
   _showEditExpectations() {
-    console.log('_showEditExpectations');
     let expectationList = this._collateExpectations();
     this._loadExpectationList(expectationList);
   }
@@ -252,7 +253,116 @@ class Admin {
   //--------------------------------------------------------------   
   _showEditKeypoints() {
     console.log('_showEditKeypoints');
+    let keypointList = this._collateKeypoints();
+    this._loadKeypointList(keypointList);
   }
+  
+  _collateKeypoints() {
+    let keypointList = this.settings.info.general.keypoints;
+    
+    keypointList = keypointList.sort(
+      function(a,b) {
+        let res = a.category.localeCompare(b.category);
+        
+        if (res == 0) {
+          res = a.keypointtext.toLowerCase().localeCompare(b.keypointtext.toLowerCase());
+        }
+        
+        return res;
+      }
+    );
+    
+    return keypointList;
+  }
+  
+  _loadKeypointList(keypointList) {
+    let container = this.config.keypointContainer.getElementsByClassName('keypoint-container')[0];
+    UtilityKTS.removeChildren(container);
+    
+    let elemTemplate = this.config.keypointContainer.getElementsByClassName('item-template')[0];
+    for (let i = 0; i < keypointList.length; i++) {
+      let keypoint = keypointList[i];
+      let elemItem = elemTemplate.cloneNode(true);
+      container.appendChild(elemItem);
+      UtilityKTS.setClass(elemItem, this.settings.hideClass, false);
+      UtilityKTS.setClass(elemItem, 'item-template', false);
+      
+      let elemCategory = elemItem.getElementsByClassName('select-category')[0];
+      this._selectByText(elemCategory, keypoint.category);
+      
+      elemItem.getElementsByClassName('keypoint-text')[0].value = keypoint.keypointtext;
+      
+      elemItem.setAttribute("keypoint-info", JSON.stringify(keypoint));
+      
+      elemItem.getElementsByClassName('edit-control')[0].addEventListener('click', (e) => { this._handleEditControl(e); });
+    }    
+  }
+  
+  async _addKeypoint() {
+    const msg = "Please enter the text for the new keypoint";
+    const keypointText = prompt(msg);
+    
+    if (!keypointText || keypointText.length == 0) return;
+
+    const success = await this._addKeypointToDB(keypointText);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+  }
+  
+  async _reloadKeypoints() {
+    const msg = 'Any changes will be lost. Continue?';
+    if (!confirm(msg)) return;
+    
+    this._showEditKeypoints();
+  }
+
+  async _saveKeypoints() {
+    console.log('_saveKeypoints');
+    
+    let container = this.config.keypointContainer.getElementsByClassName('keypoint-container')[0];
+    let keypointList = [];
+    
+    let keypointItems = container.getElementsByClassName('keypoint-item');
+    for (let i = 0; i < keypointItems.length; i++) {
+      let keypoint = keypointItems[i];
+      let keypointId = JSON.parse(keypoint.getAttribute('keypoint-info')).keypointid;
+
+      let elemCategory = keypoint.getElementsByClassName('select-category')[0];
+      let category = elemCategory[elemCategory.selectedIndex].text;
+
+      let keypointText = keypoint.getElementsByClassName('keypoint-text')[0].value;
+      
+      keypointList.push({
+        "keypointid": keypointId,
+        "category": category,
+        "keypointtext": keypointText
+      });
+    }
+    
+    const success = await this._saveKeypointsToDB(keypointList);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+  }
+
+  async _deleteKeypoint(keypointInfo) {
+    console.log('_deleteKeypoint', keypointInfo);
+    
+    const msg = 'This keypoint \n' +
+                '-----------------------------\n' +
+                '  category: ' + keypointInfo.category + '\n' +
+                '  ' + keypointInfo.keypointtext + '\n' +
+                '-----------------------------\n' +
+                'will be deleted. Are you sure?';
+    if (!confirm(msg)) return;
+    
+    const success = await this._deleteKeypointFromDB(keypointInfo.keypointid);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+  }
+  
   
   //--------------------------------------------------------------
   // edit courses
@@ -441,6 +551,17 @@ class Admin {
         this._deleteContact();
       }
       
+    } else if (e.target.classList.contains('edit-control-keypoint')) {
+      if (e.target.classList.contains('reload')) {
+        this._reloadKeypoints();
+      } else if (e.target.classList.contains('save')) {
+        this._saveKeypoints();
+      } else if (e.target.classList.contains('add')) {
+        this._addKeypoint();
+      } else if (e.target.classList.contains('delete')) {
+        this._deleteKeypoint(this._findNodeInfo(e.target, 'keypoint-item', 'keypoint-info'));
+      }
+      
     } else if (e.target.classList.contains('edit-control-expectation')) {
       if (e.target.classList.contains('reload')) {
         this._reloadExpectations();
@@ -449,18 +570,18 @@ class Admin {
       } else if (e.target.classList.contains('add')) {
         this._addExpectation();
       } else if (e.target.classList.contains('delete')) {
-        this._deleteExpectation(this._findExpectationInfo(e.target));
+        this._deleteExpectation(this._findNodeInfo(e.target, 'expectation-item', 'expectation-info'));
       }
     }
   }
 
-  _findExpectationInfo(elem) {
+  _findNodeInfo(elem, itemClass, infoClass) {
     let node = elem;
-    while (!node.classList.contains('expectation-item')) {
+    while (!node.classList.contains(itemClass)) {
       node = node.parentNode;
     }
 
-    return JSON.parse(node.getAttribute('expectation-info'));
+    return JSON.parse(node.getAttribute(infoClass));
   }
   
   _handleContactSelect(e) {
@@ -472,6 +593,8 @@ class Admin {
   //--------------------------------------------------------------
   // database
   //--------------------------------------------------------------
+  
+  //--- expectations
   async _addExpectationToDB(expectationText) {
     let params = {
       "target": "student",
@@ -480,7 +603,6 @@ class Admin {
     };
     
     let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/insert', 'expectation', params, this.config.notice);
-    console.log(dbResult);
     
     return dbResult.success;
   }
@@ -497,18 +619,45 @@ class Admin {
     };
     
     let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/delete', 'expectation', params, this.config.notice);
-    console.log(dbResult);
     
     return dbResult.success;
   }
 
+  //--- keypoints
+  async _addKeypointToDB(keypointText) {
+    let params = {
+      "category": "other",
+      "keypointtext": keypointText
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/insert', 'keypoint', params, this.config.notice);
+    
+    return dbResult.success;
+  }
+ 
+  async _saveKeypointsToDB(keypointList) {
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/update', 'keypoint', keypointList, this.config.notice);
+    
+    return dbResult.success;
+  }
+ 
+  async _deleteKeypointFromDB(keypointId) {
+    let params = {
+      "keypointid": keypointId
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/delete', 'keypoint', params, this.config.notice);
+    
+    return dbResult.success;
+  }
+
+   //--- contacts
   async _addContactToDB(contentDescriptor) {
     let params = {
       "contentDescriptor": contentDescriptor
     };
     
     let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/insert', 'contact', params, this.config.notice);
-    console.log(dbResult);
     
     return dbResult.success;
   }
@@ -530,7 +679,6 @@ class Admin {
     };
     
     let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/delete', 'contact', params, this.config.notice);
-    console.log(dbResult);
     
     return dbResult.success;
   }

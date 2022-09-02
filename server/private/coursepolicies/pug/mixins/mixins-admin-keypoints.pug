@@ -1,0 +1,32 @@
+mixin adminKeypoints()
+  .row
+    .col-sm
+      i(class="edit-control edit-control-keypoint far fa-plus-square me-2 add" title="add keypoint")
+      i(class="edit-control edit-control-keypoint fas fa-sync me-2 reload" title="reload keypoints")
+      i(class="edit-control edit-control-keypoint far fa-save me-2 save" title="save keypoint")
+
+  .row
+    .col-sm        
+      .keypoint-container
+      
+      .item-template(class="keypoint-item hide-me")
+        .row
+          .col-sm-2
+            .form-floating
+              select(class="form-select select-category" id="selectCategoryXXX" aria-label="select category")
+                option exam
+                option proctoring
+                option retake
+                option resubmit
+                option ap
+                option other
+              label(for="selectCategoryXXX") category
+          
+          .col-sm
+            .form-floating
+              input(type="text" class="form-control keypoint-text" id="txtKeypoint")
+              label(for="txtKeypoint") keypoint
+              
+          .col-sm-1
+            i(class="edit-control edit-control-keypoint far fa-trash-alt pt-3 delete" title="delete keypoint")
+

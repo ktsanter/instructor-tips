@@ -1,0 +1,37 @@
+mixin adminContacts()
+  .row
+    .col-sm
+      .form-floating
+        select(class="form-select select-contact" id="selectContact" aria-label="select contact")
+        label(for="selectContact") contact
+  
+    .col-sm-2
+      i(class="edit-control edit-control-contact far fa-plus-square me-2 add" title="add contact")
+      i(class="edit-control edit-control-contact edit-control-contact-conditional fas fa-sync me-2 disabled reload" title="reload contact")
+      i(class="edit-control edit-control-contact edit-control-contact-conditional far fa-save me-2 disabled save" title="save contact")
+      i(class="edit-control edit-control-contact edit-control-contact-conditional far fa-trash-alt me-2 disabled delete" title="delete contact")
+    
+  .contact-edit-container(class="mt-2")
+    .form-floating
+      input(type="text" class="form-control content-descriptor" id="txtContentDescriptor")
+      label(for="txtContentDescriptor") content descriptor
+
+    .form-floating
+      input(type="text" class="form-control first-name" id="txtFirstName")
+      label(for="txtFirstName") first name
+
+    .form-floating
+      input(type="text" class="form-control last-name" id="txtLastName")
+      label(for="txtLastName") last name
+
+    .form-floating
+      input(type="text" class="form-control phone" id="txtPhone")
+      label(for="txtPhone") phone
+
+    .form-floating
+      input(type="text" class="form-control email" id="txtEmail")
+      label(for="txtEmail") email
+
+    .form-floating
+      input(type="text" class="form-control template-base" id="txtTemplateBase")
+      label(for="txtTemplatebase") template base

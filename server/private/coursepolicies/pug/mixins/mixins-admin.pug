@@ -1,4 +1,9 @@
 mixin adminContainer()
+  include ./mixins-admin-expectations.pug
+  include ./mixins-admin-keypoints.pug
+  include ./mixins-admin-contacts.pug
+  include ./mixins-admin-courses.pug
+
   .row(class="py-2 mb-2")
     .col-sm-2
       ul(class="nav nav-pills flex-column")
@@ -13,79 +18,13 @@ mixin adminContainer()
 
     .col-sm(class="admin-outer-container")
       .editcontent(class="admin-container navEditExpectations hide-me")
-        .row
-          .col-sm
-            i(class="edit-control edit-control-expectation far fa-plus-square me-2 add" title="add expectation")
-            i(class="edit-control edit-control-expectation fas fa-sync me-2 reload" title="reload expectations")
-            i(class="edit-control edit-control-expectation far fa-save me-2 save" title="save expectations")
+        +adminExpectations()
 
-        .row
-          .col-sm        
-            .expectation-container
-            
-            .item-template(class="expectation-item hide-me")
-              .row
-                .col-sm-2
-                  .form-floating
-                    select(class="form-select select-target" id="selectTargetXXX" aria-label="select target")
-                      option student
-                      option instructor
-                    label(for="selectTargetXXX") target
-                
-                .col-sm-2
-                  .form-floating
-                    select(class="form-select select-restriction" id="selectRestriction" aria-label="select restriction")
-                      option none
-                      option ap
-                      option non-ap
-                    label(for="selectRestriction") restriction
-            
-                .col-sm
-                  .form-floating
-                    input(type="text" class="form-control expectation-text" id="txtExpectation")
-                    label(for="txtExpectation") expectation
-                    
-                .col-sm-1
-                  i(class="edit-control edit-control-expectation far fa-trash-alt pt-3 delete" title="delete expectation")
-
-      .editcontent(class="admin-container navEditKeypoints hide-me") edit keypoints
+      .editcontent(class="admin-container navEditKeypoints hide-me") 
+        +adminKeypoints()      
       
       .editcontent(class="admin-container navEditContacts hide-me")
-        .row
-          .col-sm
-            .form-floating
-              select(class="form-select select-contact" id="selectContact" aria-label="select contact")
-              label(for="selectContact") contact
-        
-          .col-sm-2
-            i(class="edit-control edit-control-contact far fa-plus-square me-2 add" title="add contact")
-            i(class="edit-control edit-control-contact edit-control-contact-conditional fas fa-sync me-2 disabled reload" title="reload contact")
-            i(class="edit-control edit-control-contact edit-control-contact-conditional far fa-save me-2 disabled save" title="save contact")
-            i(class="edit-control edit-control-contact edit-control-contact-conditional far fa-trash-alt me-2 disabled delete" title="delete contact")
-          
-        .contact-edit-container(class="mt-2")
-          .form-floating
-            input(type="text" class="form-control content-descriptor" id="txtContentDescriptor")
-            label(for="txtContentDescriptor") content descriptor
-      
-          .form-floating
-            input(type="text" class="form-control first-name" id="txtFirstName")
-            label(for="txtFirstName") first name
+        +adminContacts()
 
-          .form-floating
-            input(type="text" class="form-control last-name" id="txtLastName")
-            label(for="txtLastName") last name
-
-          .form-floating
-            input(type="text" class="form-control phone" id="txtPhone")
-            label(for="txtPhone") phone
-
-          .form-floating
-            input(type="text" class="form-control email" id="txtEmail")
-            label(for="txtEmail") email
-
-          .form-floating
-            input(type="text" class="form-control template-base" id="txtTemplateBase")
-            label(for="txtTemplatebase") template base
-      
-      .editcontent(class="admin-container navEditCourses hide-me") edit courses
+      .editcontent(class="admin-container navEditCourses hide-me")
+        +adminCourses()

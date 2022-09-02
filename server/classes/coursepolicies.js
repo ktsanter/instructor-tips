@@ -52,6 +52,9 @@ module.exports = internal.CoursePolicies = class {
     } else if (params.queryName == 'expectation') {
       dbResult = await this._insertExpectation(params, postData, userInfo);
   
+    } else if (params.queryName == 'keypoint') {
+      dbResult = await this._insertKeypoint(params, postData, userInfo);
+  
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -68,7 +71,10 @@ module.exports = internal.CoursePolicies = class {
     } else if (params.queryName == 'expectation') {
       dbResult = await this._updateExpectations(params, postData, userInfo);
 
-    }else {
+    } else if (params.queryName == 'keypoint') {
+      dbResult = await this._updateKeypoints(params, postData, userInfo);
+
+    } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
     
@@ -83,6 +89,9 @@ module.exports = internal.CoursePolicies = class {
     
     } else if (params.queryName == 'expectation') {
       dbResult = await this._deleteExpectation(params, postData, userInfo);
+    
+    } else if (params.queryName == 'keypoint') {
+      dbResult = await this._deleteKeypoint(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -376,14 +385,6 @@ module.exports = internal.CoursePolicies = class {
     let queryList, queryResults;
     
     queryList = {
-      "contact":      
-        'select contentdescriptor, firstname, lastname, phone, email, templatebase ' +
-        'from contact',
-        
-      "resourcelink": 
-        'select templateitem, restriction, linktext, linkurl ' +
-        'from resourcelink',
-        
       "expectationsStudent":
         'select expectationid, expectationtext, restriction ' +
         'from expectation ' +
@@ -393,6 +394,18 @@ module.exports = internal.CoursePolicies = class {
         'select expectationid, expectationtext, restriction ' +
         'from expectation ' +
         'where target = "instructor" ',        
+
+      "keypoints":
+        'select keypointid, category, keypointtext ' +
+        'from keypoint ',        
+
+      "contact":      
+        'select contentdescriptor, firstname, lastname, phone, email, templatebase ' +
+        'from contact',
+        
+      "resourcelink": 
+        'select templateitem, restriction, linktext, linkurl ' +
+        'from resourcelink',
     };
     
     queryResults = await this._dbManager.dbQueries(queryList); 
@@ -467,9 +480,7 @@ module.exports = internal.CoursePolicies = class {
       return result;
     }  
     
-    result.success = true;
     result.details = 'inserted expectation';
-    result.data = queryResults.data;
     
     return result;
   }
@@ -527,6 +538,92 @@ module.exports = internal.CoursePolicies = class {
     
     result.success = true;
     result.details = 'deleted expectation';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _insertKeypoint(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "keypoint":      
+        'insert into keypoint (' +
+          'category, keypointtext ' +
+        ') values (' +
+          '"' + postData.category + '", ' +
+          '"' + postData.keypointtext + '" ' +
+        ')'
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'inserted keypoint';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _updateKeypoints(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    let keypointInfo = postData;
+
+    queryList = {};
+    for (let i = 0; i < keypointInfo.length; i++) {
+      const keypoint = keypointInfo[i];
+      queryList['keypoint' + i] =
+        'update keypoint ' +
+        'set ' + 
+          'category = "' + keypoint.category + '", ' +
+          'keypointtext = "' + keypoint.keypointtext + '" ' +
+        'where keypointid = ' + keypoint.keypointid
+    }
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'updated keypoints';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+
+  async _deleteKeypoint(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "keypoint":      
+        'delete from keypoint ' +
+        'where keypointid = ' + postData.keypointid + ' '
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'deleted keypoint';
     result.data = queryResults.data;
     
     return result;
