@@ -12,18 +12,19 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditCourses'  // default selection
+      selectedNavId: 'navEditCourses',  // default selection
+      
+      selectedCourseId: null
     }
     
     this._initUI();
-    console.log('save selected course info for refresh')
+    console.log('add category and sorting to keypoints for course editing')
   }
   
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------  
   update(generalInfo, courseInfo) {
-    console.log('Admin.update');
     this.settings.info = {
       "general": generalInfo,
       "course": courseInfo
@@ -343,7 +344,6 @@ class Admin {
     await this.config.callbackRefreshData();
   }
   
-  
   //--------------------------------------------------------------
   // edit courses
   //--------------------------------------------------------------   
@@ -353,7 +353,6 @@ class Admin {
   }
   
   _collateCourseList() {
-    console.log('_collateCourseList');
     let courseList = this.settings.info.course.course.sort( function(a, b) {
         return a.coursename.toLowerCase().localeCompare(b.coursename.toLowerCase());
     });
@@ -389,13 +388,16 @@ class Admin {
       elemSelect.appendChild(elemOption);
       
       elemOption.setAttribute('course-info', JSON.stringify(courseInfo));
+      if (courseInfo.courseid == this.settings.selectedCourseId) selectedIndex = i;
     }
     
     elemSelect.selectedIndex = selectedIndex;
+
+    let courseEditContainer = this.config.courseContainer.getElementsByClassName('course-edit-container')[0];
+    UtilityKTS.setClass(courseEditContainer, this.settings.hideClass, selectedIndex < 0);
   }
   
   _loadCourse(courseInfo) {
-    console.log('_loadCourse', courseInfo);
     let elemCourseName = this.config.courseContainer.getElementsByClassName('course-name')[0];
     elemCourseName.value = courseInfo.coursename;
     
@@ -430,10 +432,14 @@ class Admin {
       UtilityKTS.setClass(elemExclude, this.settings.hideClass, keypointIncluded);
 
       elemItem.getElementsByClassName('keypoint-text')[0].value = keypoint.keypointtext;
-      /*
+
       elemItem.setAttribute("keypoint-info", JSON.stringify(keypoint));
-      */
     }            
+    
+    this.settings.selectedCourseId = courseInfo.courseid;
+    let courseEditContainer = this.config.courseContainer.getElementsByClassName('course-edit-container')[0];
+    courseEditContainer.setAttribute('course-info', JSON.stringify(courseInfo));
+    UtilityKTS.setClass(courseEditContainer, this.settings.hideClass, false);
   }
   
   _setFromCourseKeypoints(keypointList) {
@@ -446,6 +452,88 @@ class Admin {
     return keypointSet;
   }
   
+  _includeCourseKeypoint(elemControl, include) {
+    const controlContainer = elemControl.parentNode;
+
+    const elemInclude = controlContainer.getElementsByClassName('include')[0];
+    const elemExclude = controlContainer.getElementsByClassName('exclude')[0];
+    
+    UtilityKTS.setClass(elemInclude, this.settings.hideClass, !include);
+    UtilityKTS.setClass(elemExclude, this.settings.hideClass, include);    
+  }
+  
+  async _reloadCourse() {
+    const msg = 'Any changes will be lost. Continue?';
+    if (!confirm(msg)) return;
+    
+    const container = this.config.courseContainer.getElementsByClassName('course-edit-container')[0];
+    const infoOriginal = JSON.parse(container.getAttribute('course-info'));
+    this._loadCourse(infoOriginal);
+  }
+  
+  async _addCourse() {
+    const msg = "Please enter the name of the new coures";
+    const courseName = prompt(msg);
+    
+    if (!courseName || courseName.length == 0) return;
+
+    const success = await this._addCourseToDB(courseName);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+    this._forceSelection(this.config.courseContainer.getElementsByClassName('select-course')[0], courseName);
+  }  
+
+  async _saveCourse() {
+    if (!this.settings.selectedCourseId) return;
+    
+    const container = this.config.courseContainer.getElementsByClassName('course-edit-container')[0];
+    let courseInfo = {};
+    courseInfo.courseid = JSON.parse(container.getAttribute('course-info')).courseid;
+    courseInfo.coursename = this._getValueFromContainer(container, 'course-name');
+    courseInfo.assessments = this._getValueFromContainer(container, 'course-assessments');
+    courseInfo.ap = this._getValueFromContainer(container, 'course-isap');
+    
+    const keypointContainer = container.getElementsByClassName('keypoint-container')[0];
+    const keypointElements = keypointContainer.getElementsByClassName('keypoint-item');
+    let includedKeypoints = [];
+    for (let i = 0; i < keypointElements.length; i++) {
+      const keypoint = keypointElements[i];
+      const keypointId = JSON.parse(keypoint.getAttribute('keypoint-info')).keypointid;
+      
+      const elemIncluded = keypoint.getElementsByClassName('include')[0];
+      if (!elemIncluded.classList.contains(this.settings.hideClass)) includedKeypoints.push(keypointId);
+    }
+    courseInfo.keypointlist = includedKeypoints;
+    
+    const success = await this._saveCourseToDB(courseInfo);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+    this._forceSelection(this.config.courseContainer.getElementsByClassName('select-course')[0], courseInfo.coursename);
+    this._blipNotice('course info saved');
+  }
+  
+  async _deleteCourse() {
+    if (!this.settings.selectedCourseId) return;
+    
+    const courseEditContainer = this.config.courseContainer.getElementsByClassName('course-edit-container')[0];
+    const courseInfo = JSON.parse(courseEditContainer.getAttribute('course-info'));
+    
+    const msg = 'This course \n' +
+                '-----------------------------\n' +
+                '  ' + courseInfo.coursename + '\n' +
+                '-----------------------------\n' +
+                'will be deleted. Are you sure?';
+    if (!confirm(msg)) return;
+    
+    const success = await this._deleteCourseFromDB(courseInfo.courseid);
+    if (!success) return;
+    
+    this.settings.selectedCourseId = null;
+    await this.config.callbackRefreshData();
+  }
+    
   //--------------------------------------------------------------
   // edit contacts
   //--------------------------------------------------------------     
@@ -516,6 +604,7 @@ class Admin {
     
     await this.config.callbackRefreshData();
     this._forceSelection(this.config.contactSelect, infoNew.contentdescriptor);
+    this._blipNotice('contact info saved');
   }
   
   async _addContact() {
@@ -565,7 +654,20 @@ class Admin {
   }
   
   _getValueFromContainer(container, classList) {
-    return container.getElementsByClassName(classList)[0].value;
+    let val = null;
+    const elem = container.getElementsByClassName(classList)[0];
+    if (elem.tagName == 'INPUT') {
+      const elemType = elem.getAttribute('type');
+      if (elemType == 'text') {
+        val = elem.value;
+      } else if (elemType == 'checkbox') {
+        val = elem.checked;
+      }
+    }
+    
+    if (!val) console.log('unhandled element in _getValueFromContainer', elem);
+    
+    return val;
   }
   
   _enableEditControls(container, classList, enable) {
@@ -650,23 +752,17 @@ class Admin {
       
     } else if (e.target.classList.contains('edit-control-course')) {
       if (e.target.classList.contains('reload')) {
-        console.log('reload course');
-        //this._reloadKeypoints();
+        this._reloadCourse();
       } else if (e.target.classList.contains('save')) {
-        console.log('save course');
-        //this._saveKeypoints();
+        this._saveCourse();
       } else if (e.target.classList.contains('add')) {
-        console.log('add course');
-        //this._addKeypoint();
+        this._addCourse();
       } else if (e.target.classList.contains('delete')) {
-        console.log('delete course');
-        //this._deleteKeypoint(this._findNodeInfo(e.target, 'keypoint-item', 'keypoint-info'));
+        this._deleteCourse();
       } else if (e.target.classList.contains('include')) {
-        console.log('keypoint check');
-        //this._addKeypoint();
+        this._includeCourseKeypoint(e.target, false);
       }  else if (e.target.classList.contains('exclude')) {
-        console.log('keypoint not check');
-        //this._addKeypoint();
+        this._includeCourseKeypoint(e.target, true);
       }
       
     }
@@ -674,11 +770,14 @@ class Admin {
 
   _findNodeInfo(elem, itemClass, infoClass) {
     let node = elem;
-    while (!node.classList.contains(itemClass)) {
+    while (!node.classList.contains(itemClass) && node.tagName != 'BODY') {
       node = node.parentNode;
     }
+    
+    let nodeInfo = null;
+    if (node.hasAttributes(infoClass)) nodeInfo = JSON.parse(node.getAttribute(infoClass));
 
-    return JSON.parse(node.getAttribute(infoClass));
+    return nodeInfo;
   }
 
   _handleCourseSelect(e) {
@@ -786,8 +885,41 @@ class Admin {
     return dbResult.success;
   }
  
+   //--- courses
+  async _addCourseToDB(courseName) {
+    let params = {
+      "coursename": courseName
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/insert', 'course', params, this.config.notice);
+    
+    return dbResult.success;
+  }
+ 
+  async _saveCourseToDB(courseInfo) {
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/update', 'course', courseInfo, this.config.notice);
+    
+    return dbResult.success;
+  }
+  
+  async _deleteCourseFromDB(courseId) {
+    let params = {
+      "courseid": courseId
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/delete', 'course', params, this.config.notice);
+    
+    return dbResult.success;
+  }
+
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  
+  _blipNotice(msg) {
+    this.config.notice.setNotice(msg);
+    const me = this;
+    setTimeout(function() {
+      me.config.notice.setNotice('');
+    }, 500);
+  }
 }

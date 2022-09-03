@@ -11,6 +11,10 @@ body {
   padding-top: 4.0em;
 }
 
+.aardvark-font {
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans";
+}
+
 .hide-me {
   display: none;
 }
@@ -77,6 +81,14 @@ body {
   cursor: default;
 }
 
+.contents .form-check-input {
+  font-size: 150%;
+}
+
+.contents .form-check-input:checked {
+  background-color: var(--bgPrimary);
+}
+
 /*------------------------------------------------------------------------------
  * contents - navGeneral
  *------------------------------------------------------------------------------*/
@@ -132,6 +144,10 @@ body {
 
 .contents .contents-navAdmin i.edit-control.disabled {
   color: var(--bgShaded);
+}
+
+.contents .contents-navAdmin input.form-control-plaintext {
+  background: transparent;
 }
 
 /*------------------------------------------------------------------

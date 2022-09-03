@@ -55,6 +55,9 @@ module.exports = internal.CoursePolicies = class {
     } else if (params.queryName == 'keypoint') {
       dbResult = await this._insertKeypoint(params, postData, userInfo);
   
+    } else if (params.queryName == 'course') {
+      dbResult = await this._insertCourse(params, postData, userInfo);
+  
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -74,6 +77,9 @@ module.exports = internal.CoursePolicies = class {
     } else if (params.queryName == 'keypoint') {
       dbResult = await this._updateKeypoints(params, postData, userInfo);
 
+    } else if (params.queryName == 'course') {
+      dbResult = await this._updateCourse(params, postData, userInfo);
+
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
     }
@@ -92,6 +98,9 @@ module.exports = internal.CoursePolicies = class {
     
     } else if (params.queryName == 'keypoint') {
       dbResult = await this._deleteKeypoint(params, postData, userInfo);
+    
+    } else if (params.queryName == 'course') {
+      dbResult = await this._deleteCourse(params, postData, userInfo);
     
     } else {
       dbResult.details = 'unrecognized parameter: ' + params.queryName;
@@ -725,6 +734,117 @@ module.exports = internal.CoursePolicies = class {
     
     result.success = true;
     result.details = 'deleted contact';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _insertCourse(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "course":      
+        'insert into course (' +
+          'coursename, ap, assessments ' +
+        ') values (' +
+          '"' + postData.coursename + '", ' +
+          0 + ', ' +
+          '"" ' +
+        ')'
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'inserted keypoint';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _updateCourse(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "course":
+        'update course ' +
+        'set ' +
+          'coursename = "' + postData.coursename + '", ' +
+          'ap = ' + postData.ap + ', ' +
+          'assessments = "' + postData.assessments + '" ' +
+        'where courseid = ' + postData.courseid,
+        
+      "deletekeypoints":
+        'delete from coursekeypoint ' +
+        'where courseid = ' + postData.courseid
+    }
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    queryList = {};
+    
+    const keypointList = postData.keypointlist; 
+    if (keypointList.length > 0) {
+      
+      for (let i = 0; i < keypointList.length; i++) {
+        queryList['keypoint' + i] = 
+          'insert into coursekeypoint ( ' +
+            'courseid, keypointid ' +
+          ') values (' +
+            postData.courseid + ', ' +
+            keypointList[i] +
+          ')';
+      }
+      
+      queryResults = await this._dbManager.dbQueries(queryList);
+      
+      if (!queryResults.success) {
+        result.details = queryResults.details;
+        return result;
+      }  
+    }
+    
+    result.success = true;
+    result.details = 'updated course';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _deleteCourse(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "course":      
+        'delete from course ' +
+        'where courseid = ' + postData.courseid + ' '
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'deleted keypoint';
     result.data = queryResults.data;
     
     return result;

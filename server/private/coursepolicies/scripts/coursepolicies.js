@@ -243,7 +243,6 @@ const app = function () {
   }
   
   async function _getCurrentInfo() {
-    console.log('_getCurrentInfo');
     settings.generalInfo = null;
     settings.courseInfo = null;
     
@@ -396,7 +395,6 @@ const app = function () {
   }
   
   async function _refreshData() {
-    console.log('_refreshData');
     await _getCurrentInfo();
   }  
 
