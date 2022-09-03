@@ -428,19 +428,14 @@ module.exports = internal.CoursePolicies = class {
     
     queryList = {
       "course":      
-        'select coursename, ap ' +
+        'select courseid, coursename, ap, assessments ' +
         'from course',
         
       "keypoints": 
-        'select a.coursename, b.keypointtext ' +
+        'select a.coursename, b.keypointid, b.keypointtext ' +
         'from course as a, keypoint as b, coursekeypoint as c ' +
         'where a.courseid = c.courseid ' +
-          'and b.keypointid = c.keypointid ',
-          
-      "assessment":
-        'select a.coursename, b.assessmentname ' +
-        'from course as a, assessment as b ' +
-        'where a.courseid = b.courseid '
+          'and b.keypointid = c.keypointid '
     };
 
     queryResults = await this._dbManager.dbQueries(queryList); 
@@ -451,7 +446,7 @@ module.exports = internal.CoursePolicies = class {
     }  
     
     result.success = true;
-    result.details = 'retrieved general info';
+    result.details = 'retrieved course info';
     result.data = queryResults.data;
     
     return result;

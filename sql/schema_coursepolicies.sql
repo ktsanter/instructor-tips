@@ -54,20 +54,10 @@ create table course
   courseid          int unsigned not null AUTO_INCREMENT,
   coursename        varchar(100) not null,
   ap                int unsigned not null,
+  assessments       varchar(200) not null,
   
   primary key (courseid),
   constraint unique(coursename)  
-);
-
-create table assessment
-(
-  assessmentid      int unsigned not null AUTO_INCREMENT,
-  courseid          int unsigned not null,
-  assessmentname    varchar(100) not null,
-  
-  primary key (assessmentid),
-  constraint unique(courseid, assessmentname),
-  constraint foreign key (courseid) references course (courseid) on delete cascade
 );
 
 create table keypoint
@@ -145,21 +135,13 @@ values
   ("instructor", "none", "Make weekly posts in the Teacher Feed, with tips, resources, and support."),
   ("instructor", "none", "Be an active member of the class discussions.");
 
-insert into course(coursename, ap)
+insert into course(coursename, ap, assessments)
 values
-  ("AP Computer Science Principles", 1),
-  ("AP Computer Science A", 1),
-  ("Accounting 1A", 0),
-  ("Accounting 1B", 0),
-  ("Basic Web Design: HTML & CSS", 0);
-  
-insert into assessment(courseid, assessmentname)
-values
-  (1, "Final Exam"),
-  (2, "Final Exam"),
-  (3, "Midterm"),
-  (3, "Final Exam"),
-  (5, "7.02 Semester Exam");
+  ("AP Computer Science Principles", 1, '[final exam]'),
+  ("AP Computer Science A", 1, '[final exam]'),
+  ("Accounting 1A", 0, '[midterm], [final exam]'),
+  ("Accounting 1B", 0, ''),
+  ("Basic Web Design: HTML & CSS", 0, '[7.02 Semester Exam]');
   
 insert into keypoint(category, keypointtext)
 values

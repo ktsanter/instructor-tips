@@ -1,2 +1,48 @@
 mixin adminCourses()
-  div course info
+  .row
+    .col-sm
+      .form-floating
+        select(class="form-select select-course" id="selectCourse" aria-label="select course")
+        label(for="selectCategory") course
+
+    .col-sm-2
+      i(class="edit-control edit-control-course far fa-plus-square me-2 add" title="add course")
+      i(class="edit-control edit-control-course fas fa-sync me-2 reload" title="reload course")
+      i(class="edit-control edit-control-course far fa-save me-2 save" title="save course")
+      i(class="edit-control edit-control-course far fa-save me-2 delete" title="delete course")
+
+  .row(class="course-edit-container mt-3")
+    .container-fluid  
+      .row
+        .col-sm
+          .form-floating
+            input(type="text" class="form-control course-name" id="txtCourseName")
+            label(for="txtCourseName") course name
+            
+      .row(class="mt-2")
+        .col-sm
+          .form-check
+            input(type="checkbox" class="form-check-input course-isap" id="chkAP")
+            label(class="form-check-label" for="chkAP") AP course
+        
+      .row(class="mt-2")
+        .col-sm
+          .keypoint-container [keypoint list goes here]
+          
+          .item-template(class="keypoint-item hide-me")
+            .row
+              .col-sm-1
+                i(class="edit-control edit-control-course include far fa-check-square")
+                i(class="edit-control edit-control-course exclude far fa-square")
+              
+              .col-sm
+                input(type="text" class="form-control form-control-plaintext keypoint-text")
+          
+        
+      .row(class="mt-2")
+        .col-sm
+          .form-floating
+            input(type="text" class="form-control course-assessments" id="txtCourseAssessments")
+            label(for="txtCourseAssessments") assessments
+            
+    

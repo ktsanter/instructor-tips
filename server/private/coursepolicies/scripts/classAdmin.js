@@ -12,10 +12,11 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditKeypoints'  // default selection
+      selectedNavId: 'navEditCourses'  // default selection
     }
     
     this._initUI();
+    console.log('save selected course info for refresh')
   }
   
   //--------------------------------------------------------------
@@ -46,6 +47,9 @@ class Admin {
     this.config.contactSelect = this.config.container.getElementsByClassName('select-contact')[0];
     this.config.contactEditContainer = this.config.container.getElementsByClassName('contact-edit-container')[0];
     this.config.contactSelect.addEventListener('change', (e) => { this._handleContactSelect(e); });
+    
+    this.config.courseContainer = this.config.container.getElementsByClassName('navEditCourses')[0];
+    this._setCourseEditHandlers();
   }
 
   _setNavbarHandlers() {
@@ -64,32 +68,15 @@ class Admin {
       editControls[i].addEventListener('click', (e) => { this._handleEditControl(e); });
     }
   }
+  
+  _setCourseEditHandlers() {
+    this.config.courseContainer.getElementsByClassName('select-course')[0].addEventListener('change', (e) => { this._handleCourseSelect(e); });
+  }
 
   _updateUI() {
     this._dispatch(this, this.settings.selectedNavId);
   }
       
-  _setActiveNavbarItem(target, setOn) {
-    if (!target) return;
-    
-    let currentActive = null;
-    if (this.settings.selectedNavClass) currentActive = this.config.container.getElementsByClassName(this.settings.selectedNavClass)[0];
-    
-    let newActive = target;
-    if (newActive.tagName != 'A') newActive = target.firstChild;
-    
-    console.log(currentActive, newActive);
-
-    if (newActive.classList.contains('disabled')) return null;
-    
-    if (currentActive && currentActive.id == newActive.id) return null;
-    
-    if (currentActive) UtilityKTS.setClass(currentActive, 'active', false);
-    if (newActive) UtilityKTS.setClass(newActive, 'active', true);
-    
-    return newActive.id;
-  }
-  
   _dispatch(me, dispatchTargetId) {
     if (this.settings.selectedNavId) this._activateMenuOption(this.settings.selectedNavId, false);
     this.settings.selectedNavId = dispatchTargetId;
@@ -200,7 +187,6 @@ class Admin {
   }
 
   async _saveExpectations() {
-    console.log('_saveExpectations');
     let container = this.config.expectationContainer.getElementsByClassName('expectation-container')[0];
     let expectationList = [];
     
@@ -232,7 +218,6 @@ class Admin {
   }
 
   async _deleteExpectation(expectationInfo) {
-    console.log('_deleteExpectation', expectationInfo);
     const msg = 'This expectation \n' +
                 '-----------------------------\n' +
                 '  target: ' + expectationInfo.target + '\n' +
@@ -252,7 +237,6 @@ class Admin {
   // edit keypoints
   //--------------------------------------------------------------   
   _showEditKeypoints() {
-    console.log('_showEditKeypoints');
     let keypointList = this._collateKeypoints();
     this._loadKeypointList(keypointList);
   }
@@ -318,8 +302,6 @@ class Admin {
   }
 
   async _saveKeypoints() {
-    console.log('_saveKeypoints');
-    
     let container = this.config.keypointContainer.getElementsByClassName('keypoint-container')[0];
     let keypointList = [];
     
@@ -347,8 +329,6 @@ class Admin {
   }
 
   async _deleteKeypoint(keypointInfo) {
-    console.log('_deleteKeypoint', keypointInfo);
-    
     const msg = 'This keypoint \n' +
                 '-----------------------------\n' +
                 '  category: ' + keypointInfo.category + '\n' +
@@ -368,7 +348,102 @@ class Admin {
   // edit courses
   //--------------------------------------------------------------   
   _showEditCourses() {
-    console.log('_showEditCourses');
+    let courseList = this._collateCourseList();
+    this._loadCourseList(courseList);
+  }
+  
+  _collateCourseList() {
+    console.log('_collateCourseList');
+    let courseList = this.settings.info.course.course.sort( function(a, b) {
+        return a.coursename.toLowerCase().localeCompare(b.coursename.toLowerCase());
+    });
+
+    let keypointList = this.settings.info.course.keypoints;
+
+    for (let i = 0; i < courseList.length; i++) {
+      const courseInfo = courseList[i];
+      const courseName = courseInfo.coursename;
+
+      let courseKeypoints = [];
+      for (let j = 0; j < keypointList.length; j++) {
+        const keypointInfo = {...keypointList[j]};
+        if (courseName == keypointInfo.coursename) {
+          delete keypointInfo.coursename;
+          courseKeypoints.push(keypointInfo);
+        }
+      }
+      courseList[i].keypoints = courseKeypoints;
+    }
+
+    return courseList;
+  }
+  
+  _loadCourseList(courseList) {
+    let elemSelect = this.config.courseContainer.getElementsByClassName('select-course')[0];
+    UtilityKTS.removeChildren(elemSelect);
+    
+    let selectedIndex = -1;
+    for (let i = 0; i < courseList.length; i++) {
+      let courseInfo = courseList[i];
+      let elemOption = CreateElement.createOption(null, 'select-course-option', i, courseInfo.coursename);
+      elemSelect.appendChild(elemOption);
+      
+      elemOption.setAttribute('course-info', JSON.stringify(courseInfo));
+    }
+    
+    elemSelect.selectedIndex = selectedIndex;
+  }
+  
+  _loadCourse(courseInfo) {
+    console.log('_loadCourse', courseInfo);
+    let elemCourseName = this.config.courseContainer.getElementsByClassName('course-name')[0];
+    elemCourseName.value = courseInfo.coursename;
+    
+    let elemAP = this.config.courseContainer.getElementsByClassName('course-isap')[0];
+    elemAP.checked = (courseInfo.ap == 1);
+    
+    let elemAssessment = this.config.courseContainer.getElementsByClassName('course-assessments')[0];
+    elemAssessment.value = courseInfo.assessments;
+    
+    let container = this.config.courseContainer.getElementsByClassName('keypoint-container')[0];
+    UtilityKTS.removeChildren(container);
+
+    let elemTemplate = this.config.courseContainer.getElementsByClassName('item-template')[0];
+
+    let fullKeypointList = this.settings.info.general.keypoints;   
+    const courseKeypointIds = this._setFromCourseKeypoints(courseInfo.keypoints);
+    
+    for (let i = 0; i < fullKeypointList.length; i++) {
+      let keypoint = fullKeypointList[i];
+      let elemItem = elemTemplate.cloneNode(true);
+      container.appendChild(elemItem);
+      
+      UtilityKTS.setClass(elemItem, this.settings.hideClass, false);
+      UtilityKTS.setClass(elemItem, 'item-template', false);
+      
+      const keypointIncluded = courseKeypointIds.has(keypoint.keypointid);      
+      let elemInclude = elemItem.getElementsByClassName('include')[0];
+      let elemExclude = elemItem.getElementsByClassName('exclude')[0];
+      elemInclude.addEventListener('click', (e) => { this._handleEditControl(e); });
+      elemExclude.addEventListener('click', (e) => { this._handleEditControl(e); });
+      UtilityKTS.setClass(elemInclude, this.settings.hideClass, !keypointIncluded);
+      UtilityKTS.setClass(elemExclude, this.settings.hideClass, keypointIncluded);
+
+      elemItem.getElementsByClassName('keypoint-text')[0].value = keypoint.keypointtext;
+      /*
+      elemItem.setAttribute("keypoint-info", JSON.stringify(keypoint));
+      */
+    }            
+  }
+  
+  _setFromCourseKeypoints(keypointList) {
+    let keypointSet = new Set();
+    
+    for (let i = 0; i < keypointList.length; i++) {
+      keypointSet.add(keypointList[i].keypointid);
+    }
+    
+    return keypointSet;
   }
   
   //--------------------------------------------------------------
@@ -572,6 +647,28 @@ class Admin {
       } else if (e.target.classList.contains('delete')) {
         this._deleteExpectation(this._findNodeInfo(e.target, 'expectation-item', 'expectation-info'));
       }
+      
+    } else if (e.target.classList.contains('edit-control-course')) {
+      if (e.target.classList.contains('reload')) {
+        console.log('reload course');
+        //this._reloadKeypoints();
+      } else if (e.target.classList.contains('save')) {
+        console.log('save course');
+        //this._saveKeypoints();
+      } else if (e.target.classList.contains('add')) {
+        console.log('add course');
+        //this._addKeypoint();
+      } else if (e.target.classList.contains('delete')) {
+        console.log('delete course');
+        //this._deleteKeypoint(this._findNodeInfo(e.target, 'keypoint-item', 'keypoint-info'));
+      } else if (e.target.classList.contains('include')) {
+        console.log('keypoint check');
+        //this._addKeypoint();
+      }  else if (e.target.classList.contains('exclude')) {
+        console.log('keypoint not check');
+        //this._addKeypoint();
+      }
+      
     }
   }
 
@@ -582,6 +679,12 @@ class Admin {
     }
 
     return JSON.parse(node.getAttribute(infoClass));
+  }
+
+  _handleCourseSelect(e) {
+    const optionSelected = e.target[e.target.selectedIndex];
+    const courseInfo = JSON.parse(optionSelected.getAttribute('course-info'));
+    this._loadCourse(courseInfo);
   }
   
   _handleContactSelect(e) {

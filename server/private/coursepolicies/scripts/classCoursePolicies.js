@@ -43,15 +43,6 @@ class CoursePolicies {
     this.settings.elemKeypointsOuter = this.config.container.getElementsByClassName('keypoints-outer')[0];
     this.settings.elemKeypoints = this.config.container.getElementsByClassName('keypoints-container')[0];
     
-    let adminElements = this.config.container.getElementsByClassName('admin-only');
-    for (let i = 0; i < adminElements.length; i++) {
-      let elem = adminElements[i];
-      UtilityKTS.setClass(elem, this.settings.hideClass, !this.config.adminAllowed);
-      if (elem.classList.contains('admin-icon')) {
-        elem.addEventListener('click', (e) => { this._handleAdminIcon(e); });
-      }
-    }
-
     this.settings.elemMentorWelcome = this.config.container.getElementsByClassName('btn-mentor-welcome')[0];
     this.settings.elemMentorWelcome.addEventListener('click', (e) => { this._handleMentorWelcome(e); } );
   }
@@ -63,7 +54,6 @@ class CoursePolicies {
   _collateCourseInfo(courseInfo) {
     let objCourseInfo = {};
     let keypointList = courseInfo.keypoints;
-    let assessmentList = courseInfo.assessment;
     
     for (let i = 0; i < courseInfo.course.length; i++) {
       let singleCourse = {...courseInfo.course[i]};
@@ -74,12 +64,6 @@ class CoursePolicies {
       for (let j = 0; j < keypointList.length; j++) {
         const keypoint = keypointList[j];
         if (keypoint.coursename == key) singleCourse.keypoints.push(keypoint.keypointtext);
-      }
-      
-      singleCourse.assessments = []
-      for (let j = 0; j < assessmentList.length; j++) {
-        const assessment = assessmentList[j];
-        if (assessment.coursename == key) singleCourse.assessments.push(assessment.assessmentname);
       }
       
       objCourseInfo[key] = singleCourse;
@@ -119,7 +103,6 @@ class CoursePolicies {
   
   _loadSelectedCourse() {
     let courseInfo = this.settings.selectedCourse;
-    console.log('_loadSelectedCourse', courseInfo);
     
     this._showHideContent(false);
     UtilityKTS.removeChildren(this.settings.elemAssessments);
@@ -133,10 +116,6 @@ class CoursePolicies {
   }
   
   _showHideContent(show) {
-    UtilityKTS.setClass(this.settings.elemEditCourseIcon, 'disabled', !show);
-    UtilityKTS.setClass(this.settings.elemDeleteCourseIcon, 'disabled', !show);
-    UtilityKTS.setClass(this.settings.elemMentorWelcome, 'disabled', !show);
-    
     UtilityKTS.setClass(this.settings.elemAssessmentsOuter, this.settings.hideClass, !show);
     UtilityKTS.setClass(this.settings.elemKeypointsOuter, this.settings.hideClass, !show);
   }
@@ -162,10 +141,12 @@ class CoursePolicies {
     }
   }
   
-  _loadAssessments(outerContainer, container, assessmentList) {
+  _loadAssessments(outerContainer, container, unparsedAssessments) {
     UtilityKTS.removeChildren(container);
     let elemTemplate = outerContainer.getElementsByClassName('template')[0];
     
+    let assessmentList = this._parseAssessments(unparsedAssessments);
+
     if (assessmentList.length == 0) {
       let elem = elemTemplate.cloneNode(true);
       container.appendChild(elem);
@@ -173,7 +154,7 @@ class CoursePolicies {
       UtilityKTS.setClass(elem, this.settings.hideClass, false);
       elem.innerHTML = '<em>none</em>';
     }
-    
+
     for (let i = 0; i < assessmentList.length; i++) {
       let elem = elemTemplate.cloneNode(true);
       container.appendChild(elem);
@@ -183,16 +164,22 @@ class CoursePolicies {
     }
   }
   
-  async _addCourse() {
-    console.log('add course');
-  }
-  
-  async _editCourseName() {
-    console.log('edit course name', this.settings.selectedCourse.name);
-  }
-  
-  async _deleteCourse() {
-    console.log('delete course', this.settings.selectedCourse.name);
+  _parseAssessments(unparsedAssessments) {
+    let parsedAssessments = [];
+
+    let pattern = /\]\s*,\s*\[/g;
+    let preppedAssessments = unparsedAssessments.replace(pattern, '],[');
+    
+    let splitAssessments = preppedAssessments.split('],[');
+    
+    for (let i = 0; i < splitAssessments.length; i++) {
+      let assessment = splitAssessments[i];
+      assessment = assessment.replace('[', '');
+      assessment = assessment.replace(']', '');
+      if (assessment.length > 0) parsedAssessments.push(assessment);
+    }
+    
+    return parsedAssessments;
   }
   
   _downloadMentorWelcomeLetter(courseInfo) {
@@ -212,18 +199,6 @@ class CoursePolicies {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
-  async _handleAdminIcon(e) {
-    if (e.target.classList.contains('disabled')) return;
-    
-    if (e.target.classList.contains('add-course')) {
-      await this._addCourse();
-    } else if (e.target.classList.contains('edit-course-name')) {
-      await this._editCourseName();
-    } else if (e.target.classList.contains('delete-course')) {
-      this._deleteCourse();
-    }
-  }
-  
   _handleCourseSelection(e) {
     this.settings.selectedCourse = JSON.parse(e.target[e.target.selectedIndex].getAttribute("courseInfo"));
     this._loadSelectedCourse();
