@@ -118,6 +118,7 @@ class CoursePolicies {
   _showHideContent(show) {
     UtilityKTS.setClass(this.settings.elemAssessmentsOuter, this.settings.hideClass, !show);
     UtilityKTS.setClass(this.settings.elemKeypointsOuter, this.settings.hideClass, !show);
+    UtilityKTS.setClass(this.settings.elemMentorWelcome, 'disabled', !show);
   }
   
   _loadKeypoints(outerContainer, container, keypointList) {

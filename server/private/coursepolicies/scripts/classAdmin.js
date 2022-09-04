@@ -12,13 +12,14 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditCourses',  // default selection
+      selectedNavId: 'navEditExpectations',  // default selection
       
       selectedCourseId: null
     }
     
     this._initUI();
-    console.log('add category and sorting to keypoints for course editing')
+    console.log('TODO: add category and sorting to keypoints for course editing');
+    console.log('TODO: add editing for resource links');
   }
   
   //--------------------------------------------------------------

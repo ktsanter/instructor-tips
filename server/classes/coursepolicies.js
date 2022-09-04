@@ -163,6 +163,15 @@ module.exports = internal.CoursePolicies = class {
     const resourceLinkList = thisObj._makeResourceLinkList(generalData.resourcelink, isAPCourse);
     const expectationList = thisObj._makeExpectationList(generalData.expectationsStudent, generalData.expectationsInstructor, isAPCourse);
 
+//-- for test
+    const googleLink = {
+      _type: 'link',
+      text: 'Google',
+      target: 'https://www.google.com',
+      useLinkStyling: true
+    };
+//-------------------------
+
     const data = {
       "mentor welcome template": '',  // remove marker in header
       
@@ -172,10 +181,21 @@ module.exports = internal.CoursePolicies = class {
       "expected of instructor": [],
       "keypoints": [],
       "assessment list": [],
+            
+      "test": [
+        {"point": 'This is a link: {google}. Use it wisely.'},
+        {"point": 'this is a test {google}. Did it work?'},
+        {"point": 'This one has a link at the end too {google}'},
+        {"point": '{google} - link at the beginning'}
+      ],
+      "bullet": '●',
     };
     
-    let data2 = {};
-
+    let data2 = {
+      "google": googleLink,
+      "bullet": '●',
+    };
+    
     for (let key in contactList) {
       const item = contactList[key];
 
@@ -190,8 +210,12 @@ module.exports = internal.CoursePolicies = class {
     for (let key in resourceLinkList) {
       const item = resourceLinkList[key];
 
+/*
       data[key] = resourceLinkList[key].placeholder;
       data2[item.placeholderText] = item.replacementLink;
+*/
+      data[key] = item.replacementLink;
+      data2[key] = item.replacementLink;
     }
     
     for (let i = 0; i < expectationList.student.length; i++) {
@@ -206,9 +230,13 @@ module.exports = internal.CoursePolicies = class {
       data["keypoints"].push({"point": courseData.keypoints[i]});
     }
 
+/*
     for (let i = 0; i < courseData.assessments.length; i++) {
       data["assessment list"].push({"assessment": courseData.assessments[i]});
     }
+*/
+    data["assessment list"] = courseData.assessments;
+    console.log('need to parse assessment "list"');
 
     const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);    
     const handler = new this._easyTemplate.TemplateHandler(templateFile, data);
@@ -249,7 +277,8 @@ module.exports = internal.CoursePolicies = class {
           "templateEmailLink": {
             _type: 'link',
             text: contactItem.email,
-            target: 'mailto:' + contactItem.email
+            target: 'mailto:' + contactItem.email,
+            useLinkStyling: true
           }
         }
       }
@@ -290,7 +319,8 @@ module.exports = internal.CoursePolicies = class {
           "replacementLink": {
             _type: 'link',
             text: resourceItem.linktext,
-            target: resourceItem.linkurl
+            target: resourceItem.linkurl,
+            useLinkStyling: true
           }
         }
       }
