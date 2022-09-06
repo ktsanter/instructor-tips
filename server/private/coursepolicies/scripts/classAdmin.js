@@ -12,14 +12,16 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditExpectations',  // default selection
-      
+      selectedNavId: 'navEditResourceLinks',  // default selection
+
+      selectedResourcelinkId: null,
       selectedCourseId: null
     }
     
     this._initUI();
     console.log('TODO: add category and sorting to keypoints for course editing');
     console.log('TODO: add editing for resource links');
+    console.log('TODO: build out resource links: start/end, progress checks, etc.');
   }
   
   //--------------------------------------------------------------
@@ -49,6 +51,10 @@ class Admin {
     this.config.contactSelect = this.config.container.getElementsByClassName('select-contact')[0];
     this.config.contactEditContainer = this.config.container.getElementsByClassName('contact-edit-container')[0];
     this.config.contactSelect.addEventListener('change', (e) => { this._handleContactSelect(e); });
+    
+    this.config.resourcelinkSelect = this.config.container.getElementsByClassName('select-resourcelink')[0];
+    this.config.resourcelinkEditContainer = this.config.container.getElementsByClassName('resourcelink-edit-container')[0];
+    this.config.resourcelinkSelect.addEventListener('change', (e) => { this._handleResourcelinkSelect(e); });
     
     this.config.courseContainer = this.config.container.getElementsByClassName('navEditCourses')[0];
     this._setCourseEditHandlers();
@@ -88,6 +94,7 @@ class Admin {
     var dispatchMap = {
       "navEditExpectations": function() { me._showEditExpectations()},
       "navEditKeypoints": function() { me._showEditKeypoints()},
+      "navEditResourceLinks": function() { me._showEditResourceLinks()},
       "navEditContacts": function() { me._showEditContacts()},
       "navEditCourses": function() { me._showEditCourses()}
     }
@@ -342,6 +349,127 @@ class Admin {
     const success = await this._deleteKeypointFromDB(keypointInfo.keypointid);
     if (!success) return;
     
+    await this.config.callbackRefreshData();
+  }
+  
+  //--------------------------------------------------------------
+  // edit resource links
+  //--------------------------------------------------------------   
+  _showEditResourceLinks() {
+    const container = this.config.resourcelinkEditContainer;
+    
+    this._enableEditControls(this.config.container, 'edit-control-resourcelink-conditional', false);
+    this._clearFormValuesInContainer(container);
+
+    this._loadResourcelinkSelect();
+  }
+  
+  _loadResourcelinkSelect() {
+    let resourcelinkList = this.settings.info.general.resourcelink.sort( 
+      function(a, b) {
+        return a.templateitem.toLowerCase().localeCompare(b.templateitem.toLowerCase());
+      }
+    );
+    
+    UtilityKTS.removeChildren(this.config.resourcelinkSelect);
+    let selectedIndex = -1;
+    for (let i = 0; i < resourcelinkList.length; i++) {
+      let resourcelink = resourcelinkList[i];
+      let elemItem = CreateElement.createOption(null, 'select-resourcelink-option', i, resourcelink.templateitem);
+      this.config.resourcelinkSelect.appendChild(elemItem);
+      elemItem.setAttribute("resourcelink-info", JSON.stringify(resourcelink));
+      
+      if (resourcelink.resourcelinkid == this.settings.selectedResourcelinkId) selectedIndex = i;      
+    }
+    
+    this.config.resourcelinkSelect.selectedIndex = selectedIndex;
+    UtilityKTS.setClass(this.config.resourcelinkEditContainer, this.settings.hideClass, selectedIndex < 0);    
+    this._enableEditControls(this.config.container, 'edit-control-resourcelink-conditional', selectedIndex >= 0);
+  }
+    
+  _loadResourcelink(resourcelinkInfo) {
+    this._enableEditControls(this.config.container, 'edit-control-resourcelink-conditional', true);
+    const container = this.config.resourcelinkEditContainer;
+    const elemRestriction = container.getElementsByClassName('select-restriction')[0];
+    
+    this._clearFormValuesInContainer(container);
+    elemRestriction.selectedIndex = -1;
+    
+    this._setValueInContainer(container, 'templateitem', resourcelinkInfo.templateitem);
+    this._selectByText(elemRestriction, resourcelinkInfo.restriction);
+    this._setValueInContainer(container, 'linktext', resourcelinkInfo.linktext);
+    this._setValueInContainer(container, 'linkurl', resourcelinkInfo.linkurl);
+    
+    container.setAttribute('resourcelink-info', JSON.stringify(resourcelinkInfo));
+    this.settings.selectedResourcelinkId = resourcelinkInfo.resourcelinkid;
+    UtilityKTS.setClass(this.config.resourcelinkEditContainer, this.settings.hideClass, false);
+  }
+
+  async _reloadResourcelink() {
+    const msg = 'Any changes will be lost. Continue?';
+    if (!confirm(msg)) return;
+    
+    const container = this.config.resourcelinkEditContainer;
+    const infoOriginal = JSON.parse(container.getAttribute('resourcelink-info'));
+    console.log('infoOriginal', infoOriginal);
+    this._loadResourcelink(infoOriginal);
+  }
+    
+  async _saveResourcelink() {
+    console.log('_saveResourcelink');
+    return;
+    if (!this.settings.selectedResourcelinkId) return;
+    
+    const container = this.config.contactEditContainer;
+    const infoOriginal = JSON.parse(container.getAttribute('contactinfo-original'));
+    
+    const infoNew = {
+      "contentdescriptor": this._getValueFromContainer(container, 'content-descriptor'),
+      "firstname": this._getValueFromContainer(container, 'first-name'),
+      "lastname": this._getValueFromContainer(container, 'last-name'),
+      "phone": this._getValueFromContainer(container, 'phone'),
+      "email": this._getValueFromContainer(container, 'email'),
+      "templatebase": this._getValueFromContainer(container, 'template-base')
+    };
+
+    const success = await this._saveContactToDB(infoOriginal, infoNew);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+    this._forceSelection(this.config.contactSelect, infoNew.contentdescriptor);
+    this._blipNotice('contact info saved');
+  }
+  
+  async _addResourcelink() {
+    const msg = "Please enter the template tag for the new resource link";
+    const templateTag = prompt(msg);
+    
+    if (!templateTag || templateTag.length == 0) return;
+
+    const success = await this._addResourcelinkToDB(templateTag);
+    if (!success) return;
+    
+    await this.config.callbackRefreshData();
+    this._forceSelection(this.config.resourcelinkSelect, templateTag);
+  }
+  
+  async _deleteResourcelink() {
+    console.log('_deleteResourcelink');
+    if (!this.settings.selectedResourcelinkId) return;
+    
+    const container = this.config.resourcelinkEditContainer;
+    const resourcelinkInfo = JSON.parse(container.getAttribute('resourcelink-info'));
+    const templateTag = resourcelinkInfo.templateitem
+    
+    const msg = 'This resource link \n' +
+                templateTag + '\n ' +
+                'will be deleted. Are you sure?';
+    if (!confirm(msg)) return;
+
+    const success = await this._deleteResourcelinkFromDB(resourcelinkInfo.resourcelinkid);
+    if (!success) return;
+
+    this.settings.selectedResourcelinkId = null;
     await this.config.callbackRefreshData();
   }
   
@@ -751,6 +879,17 @@ class Admin {
         this._deleteExpectation(this._findNodeInfo(e.target, 'expectation-item', 'expectation-info'));
       }
       
+    } else if (e.target.classList.contains('edit-control-resourcelink')) {
+      if (e.target.classList.contains('reload')) {
+        this._reloadResourcelink();
+      } else if (e.target.classList.contains('save')) {
+        this._saveResourcelink();
+      } else if (e.target.classList.contains('add')) {
+        this._addResourcelink();
+      } else if (e.target.classList.contains('delete')) {
+        this._deleteResourcelink();
+      }
+      
     } else if (e.target.classList.contains('edit-control-course')) {
       if (e.target.classList.contains('reload')) {
         this._reloadCourse();
@@ -787,10 +926,16 @@ class Admin {
     this._loadCourse(courseInfo);
   }
   
+  _handleResourcelinkSelect(e) {
+    const optionSelected = e.target[e.target.selectedIndex];
+    const info = JSON.parse(optionSelected.getAttribute('resourcelink-info'));
+    this._loadResourcelink(info);
+  }
+
   _handleContactSelect(e) {
     const optionSelected = e.target[e.target.selectedIndex];
-    const contactInfo = JSON.parse(optionSelected.getAttribute('contactinfo'));
-    this._loadContact(contactInfo);
+    const info = JSON.parse(optionSelected.getAttribute('contactinfo'));
+    this._loadContact(info);
   }
 
   //--------------------------------------------------------------
@@ -854,6 +999,27 @@ class Admin {
     return dbResult.success;
   }
 
+   //--- resource links
+  async _addResourcelinkToDB(templateTag) {
+    let params = {
+      "templateitem": templateTag
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/insert', 'resourcelink', params, this.config.notice);
+    
+    return dbResult.success;
+  }
+   
+  async _deleteResourcelinkFromDB(resourcelinkId) {
+    let params = {
+      "resourcelinkid": resourcelinkId
+    };
+    
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/delete', 'resourcelink', params, this.config.notice);
+    
+    return dbResult.success;
+  }
+   
    //--- contacts
   async _addContactToDB(contentDescriptor) {
     let params = {
@@ -898,6 +1064,7 @@ class Admin {
   }
  
   async _saveCourseToDB(courseInfo) {
+    console.log('_saveCourseToDB', courseInfo);
     let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/update', 'course', courseInfo, this.config.notice);
     
     return dbResult.success;

@@ -55,6 +55,9 @@ module.exports = internal.CoursePolicies = class {
     } else if (params.queryName == 'keypoint') {
       dbResult = await this._insertKeypoint(params, postData, userInfo);
   
+    } else if (params.queryName == 'resourcelink') {
+      dbResult = await this._insertResourcelink(params, postData, userInfo);
+  
     } else if (params.queryName == 'course') {
       dbResult = await this._insertCourse(params, postData, userInfo);
   
@@ -98,6 +101,9 @@ module.exports = internal.CoursePolicies = class {
     
     } else if (params.queryName == 'keypoint') {
       dbResult = await this._deleteKeypoint(params, postData, userInfo);
+    
+    } else if (params.queryName == 'resourcelink') {
+      dbResult = await this._deleteResourcelink(params, postData, userInfo);
     
     } else if (params.queryName == 'course') {
       dbResult = await this._deleteCourse(params, postData, userInfo);
@@ -162,18 +168,13 @@ module.exports = internal.CoursePolicies = class {
     const contactList = thisObj._makeContactList(generalData.contact);
     const resourceLinkList = thisObj._makeResourceLinkList(generalData.resourcelink, isAPCourse);
     const expectationList = thisObj._makeExpectationList(generalData.expectationsStudent, generalData.expectationsInstructor, isAPCourse);
-
-//-- for test
-    const googleLink = {
-      _type: 'link',
-      text: 'Google',
-      target: 'https://www.google.com',
-      useLinkStyling: true
-    };
-//-------------------------
+    const assessmentsRaw = courseData.assessments;
+    const assessmentsClean = assessmentsRaw.replace(/'/g, '"');
+    const assessmentList = JSON.parse(courseData.assessments.replace(/'/g, '"'));    
 
     const data = {
       "mentor welcome template": '',  // remove marker in header
+      "bullet": '●',
       
       "coursename": courseData.name,
       
@@ -181,18 +182,9 @@ module.exports = internal.CoursePolicies = class {
       "expected of instructor": [],
       "keypoints": [],
       "assessment list": [],
-            
-      "test": [
-        {"point": 'This is a link: {google}. Use it wisely.'},
-        {"point": 'this is a test {google}. Did it work?'},
-        {"point": 'This one has a link at the end too {google}'},
-        {"point": '{google} - link at the beginning'}
-      ],
-      "bullet": '●',
     };
     
     let data2 = {
-      "google": googleLink,
       "bullet": '●',
     };
     
@@ -210,10 +202,6 @@ module.exports = internal.CoursePolicies = class {
     for (let key in resourceLinkList) {
       const item = resourceLinkList[key];
 
-/*
-      data[key] = resourceLinkList[key].placeholder;
-      data2[item.placeholderText] = item.replacementLink;
-*/
       data[key] = item.replacementLink;
       data2[key] = item.replacementLink;
     }
@@ -230,13 +218,9 @@ module.exports = internal.CoursePolicies = class {
       data["keypoints"].push({"point": courseData.keypoints[i]});
     }
 
-/*
-    for (let i = 0; i < courseData.assessments.length; i++) {
-      data["assessment list"].push({"assessment": courseData.assessments[i]});
+    for (let i = 0; i < assessmentList.length; i++) {
+      data["assessment list"].push({"assessment": assessmentList[i]});
     }
-*/
-    data["assessment list"] = courseData.assessments;
-    console.log('need to parse assessment "list"');
 
     const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);    
     const handler = new this._easyTemplate.TemplateHandler(templateFile, data);
@@ -288,14 +272,10 @@ module.exports = internal.CoursePolicies = class {
   }
   
   _makeResourceLinkList(dbResourceLinkData, isAPCourse) {
-    const xmlPre = '<w:r><w:rPr> <w:color w:val="1B70C6"/><w:u w:val="single"/></w:rPr><w:t>';
-    const xmlPost = '</w:t></w:r>';
-
     let resourceLinkList = {};
     
     for (let i = 0; i < dbResourceLinkData.length; i++) {
       const resourceItem = dbResourceLinkData[i];
-      const placeholderText = 'placeholder: ' + resourceItem.templateitem;
       const include = (
         resourceItem.restriction == 'none' ||
         (resourceItem.restriction == 'ap' && isAPCourse) ||
@@ -308,14 +288,6 @@ module.exports = internal.CoursePolicies = class {
           "linkText": resourceItem.linktext,
           "linkUrl": resourceItem.linkurl,
           
-          "placeholderText": placeholderText,
-
-          "placeholder": {
-            _type: 'rawXml',
-            xml: xmlPre + '{' + placeholderText + '}' + xmlPost,
-            replaceParagraph: false
-          },
-
           "replacementLink": {
             _type: 'link',
             text: resourceItem.linktext,
@@ -443,7 +415,7 @@ module.exports = internal.CoursePolicies = class {
         'from contact',
         
       "resourcelink": 
-        'select templateitem, restriction, linktext, linkurl ' +
+        'select resourcelinkid, templateitem, restriction, linktext, linkurl ' +
         'from resourcelink',
     };
     
@@ -663,6 +635,64 @@ module.exports = internal.CoursePolicies = class {
     return result;
   }
   
+  async _insertResourcelink(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "resourcelink":      
+        'insert into resourcelink (' +
+          'templateitem, restriction, linktext, linkurl ' +
+        ') values (' +
+          '"' + postData.templateitem + '", ' +
+          '"none", ' + 
+          '"[tbd]", ' +
+          '"[tbd]" ' +
+        ')'
+    };
+
+    queryResults = await this._dbManager.dbQueries(queryList);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'inserted resourcelink';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+  
+  async _deleteResourcelink(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "resourcelink":      
+        'delete from resourcelink ' +
+        'where resourcelinkid = ' + postData.resourcelinkid + ' '
+    };
+
+    console.log(queryList);
+    queryResults = await this._dbManager.dbQueries(queryList);
+    console.log(queryResults);
+
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+    
+    result.success = true;
+    result.details = 'deleted resource link';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+
   async _insertContact(params, postData, userInfo) {
     let result = this._dbManager.queryFailureResult(); 
     

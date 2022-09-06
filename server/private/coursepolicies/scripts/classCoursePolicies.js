@@ -166,21 +166,9 @@ class CoursePolicies {
   }
   
   _parseAssessments(unparsedAssessments) {
-    let parsedAssessments = [];
+    let s = unparsedAssessments.replaceAll("'", '"');
 
-    let pattern = /\]\s*,\s*\[/g;
-    let preppedAssessments = unparsedAssessments.replace(pattern, '],[');
-    
-    let splitAssessments = preppedAssessments.split('],[');
-    
-    for (let i = 0; i < splitAssessments.length; i++) {
-      let assessment = splitAssessments[i];
-      assessment = assessment.replace('[', '');
-      assessment = assessment.replace(']', '');
-      if (assessment.length > 0) parsedAssessments.push(assessment);
-    }
-    
-    return parsedAssessments;
+    return JSON.parse(s);
   }
   
   _downloadMentorWelcomeLetter(courseInfo) {

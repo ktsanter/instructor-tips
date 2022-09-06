@@ -113,14 +113,15 @@ values
   ("mentor page", "none", "Mentor Page", "https://michiganvirtual.org/professionals/mentors/" ),
   ("academic integrity policy", "none", "Academic Integrity Policy", "https://michiganvirtual.org/policies/academic-integrity-policy/" ),
   ("grading policy and expectations", "none", "Grading Policy and Expectations", "https://michiganvirtual.org/about/support/knowledge-base/michigan-virtual-grading-policy-and-expectations" ),
-  ("ap policy", "ap", "Advanced Placement Policy", "https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy" );
+  ("ap policy", "ap", "Advanced Placement Policy", "https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy" ),
+  ("pacing guide", "none", "pacing guide", "https://help.michiganvirtual.org/support/solutions/articles/65000178934-what-activities-assignments-should-i-complete-this-week-" );
   
 insert into expectation(target, restriction, expectationtext)
 values
   ("student", "none", "Log in at least every school day."),
   ("student", "ap", "Be familiar with Michigan Virtual's AP Course Policy, especially concerning due dates and late penalties."),
-  ("student", "non-ap", "Effectively manage time, using the pacing guide."),
-  ("student", "none", "Be familiar with our Academic Integrity Policy."),
+  ("student", "non-ap", "Effectively manage time, using the {pacing guide}."),
+  ("student", "none", "Be familiar with our {academic integrity policy}."),
   ("student", "none", "Check SLP messages and the Teacher Feed every day."),
   ("student", "none", "Be respectful and considerate when communicating and working with classmates.");
   
@@ -137,17 +138,17 @@ values
 
 insert into course(coursename, ap, assessments)
 values
-  ("AP Computer Science Principles", 1, '[final exam]'),
-  ("AP Computer Science A", 1, '[final exam]'),
-  ("Accounting 1A", 0, '[midterm], [final exam]'),
-  ("Accounting 1B", 0, ''),
-  ("Basic Web Design: HTML & CSS", 0, '[7.02 Semester Exam]');
+  ("AP Computer Science Principles", 1, '[\'final exam\']'),
+  ("AP Computer Science A", 1, '[\'final exam\']'),
+  ("Accounting 1A", 0, '[\'midterm\', \'final exam\']'),
+  ("Accounting 1B", 0, '[]'),
+  ("Basic Web Design: HTML & CSS", 0, '[\'7.02 Semester Exam\']');
   
 insert into keypoint(category, keypointtext)
 values
   ("exam", "There is a password-protected final exam. The password will be distributed to mentors early in the semester"),
   ("proctoring", "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams"),
-  ("retake", "There are no retakes for assessments except in the case of technical difficulties (at the instructor's discretion) - refer to the AP course policies"),
+  ("retake", "There are no retakes for assessments except in the case of technical difficulties (at the instructor's discretion) - refer to the {ap policy}."),
   ("resubmit", "All programming assignments can be resubmitted. Instructors may apply a limit and/or resubmission requirements at their discretion - refer to the AP course policies."),
   ("ap", "Details for policies can be found in the Advanced Placement Course Policy document."),
   ("ap", "There are weekly due dates for assignments, with penalties for late assignments.");

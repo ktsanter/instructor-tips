@@ -1,0 +1,40 @@
+mixin adminResourceLinks()
+  .row
+    .col-sm
+      .form-floating
+        select(class="form-select select-resourcelink" id="selectResourceLink" aria-label="select resourcelink")
+        label(for="selectResourceLink") resource link
+  
+    .col-sm-2
+      i(class="edit-control edit-control-resourcelink far fa-plus-square me-2 add" title="add resource link")
+      i(class="edit-control edit-control-resourcelink edit-control-resourcelink-conditional fas fa-sync me-2 disabled reload" title="reload resource link")
+      i(class="edit-control edit-control-resourcelink edit-control-resourcelink-conditional far fa-save me-2 disabled save" title="save resource link")
+      i(class="edit-control edit-control-resourcelink edit-control-resourcelink-conditional far fa-trash-alt me-2 disabled delete" title="delete resource link")
+    
+  .resourcelink-edit-container(class="mt-2")
+    .row
+      .col-sm
+        .form-floating
+          input(type="text" class="form-control templateitem" id="txtTemplateItem")
+          label(for="txtTemplateItem") template tag
+
+    .row
+      .col-sm-2
+        .form-floating
+          select(class="form-select select-restriction" id="selectRestriction" aria-label="select restriction")
+            option none
+            option ap
+            option non-ap
+          label(for="selectRestriction") restriction
+
+    .row
+      .col-sm
+        .form-floating
+          input(type="text" class="form-control linktext" id="txtLinkText")
+          label(for="txtLinkText") link text
+
+    .row
+      .col-sm
+        .form-floating
+          input(type="text" class="form-control linkurl" id="txtLinkURL")
+          label(for="txtLinkURL") link URL
