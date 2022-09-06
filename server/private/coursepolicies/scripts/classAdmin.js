@@ -12,7 +12,7 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditResourceLinks',  // default selection
+      selectedNavId: 'navEditExpectations',  // default selection
 
       selectedResourcelinkId: null,
       selectedCourseId: null
