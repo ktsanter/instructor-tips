@@ -80,6 +80,9 @@ module.exports = internal.CoursePolicies = class {
     } else if (params.queryName == 'keypoint') {
       dbResult = await this._updateKeypoints(params, postData, userInfo);
 
+    } else if (params.queryName == 'resourcelink') {
+      dbResult = await this._updateResourcelink(params, postData, userInfo);
+
     } else if (params.queryName == 'course') {
       dbResult = await this._updateCourse(params, postData, userInfo);
 
@@ -411,7 +414,7 @@ module.exports = internal.CoursePolicies = class {
         'from keypoint ',        
 
       "contact":      
-        'select contentdescriptor, firstname, lastname, phone, email, templatebase ' +
+        'select contactid, contentdescriptor, firstname, lastname, phone, email, templatebase ' +
         'from contact',
         
       "resourcelink": 
@@ -486,7 +489,9 @@ module.exports = internal.CoursePolicies = class {
       return result;
     }  
     
+    result.success = true;
     result.details = 'inserted expectation';
+    result.data = queryResults.data;
     
     return result;
   }
@@ -665,7 +670,37 @@ module.exports = internal.CoursePolicies = class {
     
     return result;
   }
-  
+
+  async _updateResourcelink(params, postData, userInfo) {
+    let result = this._dbManager.queryFailureResult(); 
+    
+    let queryList, queryResults;
+    
+    queryList = {
+      "resourcelink":
+        'update resourcelink ' +
+        'set ' +
+          'templateitem = "' + postData.templateitem + '", ' +
+          'restriction = "' + postData.restriction + '", ' +
+          'linktext = "' + postData.linktext + '", ' +
+          'linkurl = "' + postData.linkurl + '" ' +
+        'where resourcelinkid = ' + postData.resourcelinkid
+    }
+    
+    queryResults = await this._dbManager.dbQueries(queryList);
+    
+    if (!queryResults.success) {
+      result.details = queryResults.details;
+      return result;
+    }  
+        
+    result.success = true;
+    result.details = 'updated resourcelink';
+    result.data = queryResults.data;
+    
+    return result;
+  }
+    
   async _deleteResourcelink(params, postData, userInfo) {
     let result = this._dbManager.queryFailureResult(); 
     
@@ -677,9 +712,7 @@ module.exports = internal.CoursePolicies = class {
         'where resourcelinkid = ' + postData.resourcelinkid + ' '
     };
 
-    console.log(queryList);
     queryResults = await this._dbManager.dbQueries(queryList);
-    console.log(queryResults);
 
     if (!queryResults.success) {
       result.details = queryResults.details;

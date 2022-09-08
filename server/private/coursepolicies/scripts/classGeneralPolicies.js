@@ -27,16 +27,7 @@ class GeneralPolicies {
   //--------------------------------------------------------------   
   _initUI() {
     this.config.expectedOfStudent = this.config.container.getElementsByClassName('expected-of-student')[0];
-    this.config.expectedOfInstructor = this.config.container.getElementsByClassName('expected-of-instructor')[0];
-    
-    let adminElements = this.config.container.getElementsByClassName('admin-only');
-    for (let i = 0; i < adminElements.length; i++) {
-      let elem = adminElements[i];
-      UtilityKTS.setClass(elem, this.settings.hideClass, !this.config.adminAllowed);
-      if (elem.classList.contains('admin-icon')) {
-        elem.addEventListener('click', (e) => { this._handleAdminIcon(e); });
-      }
-    }
+    this.config.expectedOfInstructor = this.config.container.getElementsByClassName('expected-of-instructor')[0];    
   }
 
   _updateUI() {
@@ -45,19 +36,31 @@ class GeneralPolicies {
   }
   
   _renderExpectations(container, expectations) {
-    UtilityKTS.removeChildren(container);
+    const elemExpAll = container.getElementsByClassName('expected-all')[0];
+    const elemExpAP = container.getElementsByClassName('expected-ap')[0];
+    const elemExpNonAP = container.getElementsByClassName('expected-nonap')[0];
     
-    let elemList = CreateElement._createElement('ul', null, 'expectation-list');
-    container.appendChild(elemList);
+    UtilityKTS.removeChildren(elemExpAll);
+    UtilityKTS.removeChildren(elemExpAP);
+    UtilityKTS.removeChildren(elemExpNonAP);
     
+    let elemListAll = CreateElement._createElement('ul', null, 'expectation-list');
+    elemExpAll.appendChild(elemListAll);
+    let elemListAP = CreateElement._createElement('ul', null, 'expectation-list');
+    elemExpAP.appendChild(elemListAP);
+    let elemListNonAP = CreateElement._createElement('ul', null, 'expectation-list');
+    elemExpNonAP.appendChild(elemListNonAP);
+  
     for (let i = 0; i < expectations.length; i++) {
+      const exp = expectations[i];
       let elemItem = CreateElement._createElement('li', null, 'expectation-list-item');
-      elemList.appendChild(elemItem);
       
-      if (expectations[i].restriction == 'ap') {
-        elemItem.appendChild(CreateElement.createIcon(null, 'fas fa-info-circle expectation-info me-1', 'AP only'))
-      } else if (expectations[i].restriction == 'non-ap') {
-        elemItem.appendChild(CreateElement.createIcon(null, 'fas fa-info-circle expectation-info me-1', 'non-AP only'))
+      if (exp.restriction == 'none') {
+        elemListAll.appendChild(elemItem);
+      } else if (exp.restriction == 'ap') {
+        elemListAP.appendChild(elemItem);
+      } else {
+        elemListNonAP.appendChild(elemItem);
       }
 
       elemItem.appendChild(CreateElement.createSpan(null, 'expectation-text', expectations[i].expectationtext));
@@ -71,17 +74,6 @@ class GeneralPolicies {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
-  _handleAdminIcon(e) {
-    let msg = 'unrecognized target';
-    
-    if (e.target.classList.contains('edit-student-expectations')) {
-      msg = 'edit student expectations';
-    } else if (e.target.classList.contains('edit-instructor-expectations')) {
-      msg = 'edit instructor expectations';
-    }
-    
-    console.log('_handleAdminIcon', msg);;
-  }
   
   //--------------------------------------------------------------
   // utility

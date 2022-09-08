@@ -12,15 +12,14 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditExpectations',  // default selection
+      selectedNavId: 'navEditCourses',  // default selection
 
       selectedResourcelinkId: null,
+      selectedContactId: null,
       selectedCourseId: null
     }
     
     this._initUI();
-    console.log('TODO: add category and sorting to keypoints for course editing');
-    console.log('TODO: add editing for resource links');
     console.log('TODO: build out resource links: start/end, progress checks, etc.');
   }
   
@@ -385,6 +384,8 @@ class Admin {
     this.config.resourcelinkSelect.selectedIndex = selectedIndex;
     UtilityKTS.setClass(this.config.resourcelinkEditContainer, this.settings.hideClass, selectedIndex < 0);    
     this._enableEditControls(this.config.container, 'edit-control-resourcelink-conditional', selectedIndex >= 0);
+    
+    if (selectedIndex >= 0) this._triggerChange(this.config.resourcelinkSelect);
   }
     
   _loadResourcelink(resourcelinkInfo) {
@@ -411,33 +412,26 @@ class Admin {
     
     const container = this.config.resourcelinkEditContainer;
     const infoOriginal = JSON.parse(container.getAttribute('resourcelink-info'));
-    console.log('infoOriginal', infoOriginal);
     this._loadResourcelink(infoOriginal);
   }
     
   async _saveResourcelink() {
-    console.log('_saveResourcelink');
-    return;
     if (!this.settings.selectedResourcelinkId) return;
     
-    const container = this.config.contactEditContainer;
-    const infoOriginal = JSON.parse(container.getAttribute('contactinfo-original'));
-    
-    const infoNew = {
-      "contentdescriptor": this._getValueFromContainer(container, 'content-descriptor'),
-      "firstname": this._getValueFromContainer(container, 'first-name'),
-      "lastname": this._getValueFromContainer(container, 'last-name'),
-      "phone": this._getValueFromContainer(container, 'phone'),
-      "email": this._getValueFromContainer(container, 'email'),
-      "templatebase": this._getValueFromContainer(container, 'template-base')
-    };
+    const container = this.config.resourcelinkEditContainer;
 
-    const success = await this._saveContactToDB(infoOriginal, infoNew);
+    let resourcelinkInfo = {};
+    resourcelinkInfo.resourcelinkid = JSON.parse(container.getAttribute('resourcelink-info')).resourcelinkid;
+    resourcelinkInfo.templateitem = this._getValueFromContainer(container, 'templateitem');
+    resourcelinkInfo.restriction = this._getValueFromContainer(container, 'select-restriction');
+    resourcelinkInfo.linktext = this._getValueFromContainer(container, 'linktext');
+    resourcelinkInfo.linkurl = this._getValueFromContainer(container, 'linkurl');
+    
+    const success = await this._saveResourcelinkToDB(resourcelinkInfo);
     if (!success) return;
     
     await this.config.callbackRefreshData();
-    this._forceSelection(this.config.contactSelect, infoNew.contentdescriptor);
-    this._blipNotice('contact info saved');
+    this._blipNotice('resource link info saved');
   }
   
   async _addResourcelink() {
@@ -454,7 +448,6 @@ class Admin {
   }
   
   async _deleteResourcelink() {
-    console.log('_deleteResourcelink');
     if (!this.settings.selectedResourcelinkId) return;
     
     const container = this.config.resourcelinkEditContainer;
@@ -524,9 +517,13 @@ class Admin {
 
     let courseEditContainer = this.config.courseContainer.getElementsByClassName('course-edit-container')[0];
     UtilityKTS.setClass(courseEditContainer, this.settings.hideClass, selectedIndex < 0);
+    this._enableEditControls(this.config.container, 'edit-control-course-conditional', selectedIndex >= 0);    
+
+    if (selectedIndex >= 0) this._triggerChange(elemSelect);
   }
   
   _loadCourse(courseInfo) {
+    this._enableEditControls(this.config.container, 'edit-control-course-conditional', true);    
     let elemCourseName = this.config.courseContainer.getElementsByClassName('course-name')[0];
     elemCourseName.value = courseInfo.coursename;
     
@@ -542,6 +539,13 @@ class Admin {
     let elemTemplate = this.config.courseContainer.getElementsByClassName('item-template')[0];
 
     let fullKeypointList = this.settings.info.general.keypoints;   
+    fullKeypointList = fullKeypointList.sort(function(a, b) {
+      let res = a.category.localeCompare(b.category);
+      if (res == 0) {
+        res = a.keypointtext.toLowerCase().localeCompare(b.keypointtext.toLowerCase());
+      }
+      return res;
+    });
     const courseKeypointIds = this._setFromCourseKeypoints(courseInfo.keypoints);
     
     for (let i = 0; i < fullKeypointList.length; i++) {
@@ -560,6 +564,7 @@ class Admin {
       UtilityKTS.setClass(elemInclude, this.settings.hideClass, !keypointIncluded);
       UtilityKTS.setClass(elemExclude, this.settings.hideClass, keypointIncluded);
 
+      elemItem.getElementsByClassName('keypoint-category')[0].value = keypoint.category;
       elemItem.getElementsByClassName('keypoint-text')[0].value = keypoint.keypointtext;
 
       elemItem.setAttribute("keypoint-info", JSON.stringify(keypoint));
@@ -682,13 +687,21 @@ class Admin {
     );
     
     UtilityKTS.removeChildren(this.config.contactSelect);
+    let selectedIndex = -1;
     for (let i = 0; i < contactList.length; i++) {
       let contact = contactList[i];
       let elemItem = CreateElement.createOption(null, 'select-contact-option', i, contact.contentdescriptor);
       this.config.contactSelect.appendChild(elemItem);
       elemItem.setAttribute("contactinfo", JSON.stringify(contact));
+      
+      if (contact.contactid == this.settings.selectedContactId) selectedIndex = i;
     }
-    this.config.contactSelect.selectedIndex = -1;
+    
+    this.config.contactSelect.selectedIndex = selectedIndex;
+    UtilityKTS.setClass(this.config.contactEditContainer, this.settings.hideClass, selectedIndex < 0);
+    this._enableEditControls(this.config.container, 'edit-control-contact-conditional', selectedIndex >= 0);
+    
+    if (selectedIndex >= 0) this._triggerChange(this.config.contactSelect);
   }
     
   _loadContact(contactInfo) {
@@ -704,6 +717,8 @@ class Admin {
     this._setValueInContainer(container, 'template-base', contactInfo.templatebase);
     
     container.setAttribute('contactinfo-original', JSON.stringify(contactInfo));
+    this.settings.selectedContactId = contactInfo.contactid;
+    UtilityKTS.setClass(this.config.contactEditContainer, this.settings.hideClass, false);
   }
   
   async _reloadContact() {
@@ -792,6 +807,9 @@ class Admin {
       } else if (elemType == 'checkbox') {
         val = elem.checked;
       }
+      
+    } else if (elem.tagName == 'SELECT') {
+      val = elem[elem.selectedIndex].value;
     }
     
     if (!val) console.log('unhandled element in _getValueFromContainer', elem);
@@ -1010,6 +1028,12 @@ class Admin {
     return dbResult.success;
   }
    
+  async _saveResourcelinkToDB(resourcelinkInfo) {
+    let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/update', 'resourcelink', resourcelinkInfo, this.config.notice);
+    
+    return dbResult.success;
+  }
+  
   async _deleteResourcelinkFromDB(resourcelinkId) {
     let params = {
       "resourcelinkid": resourcelinkId
@@ -1064,7 +1088,6 @@ class Admin {
   }
  
   async _saveCourseToDB(courseInfo) {
-    console.log('_saveCourseToDB', courseInfo);
     let dbResult = await SQLDBInterface.doPostQuery('coursepolicies/update', 'course', courseInfo, this.config.notice);
     
     return dbResult.success;
@@ -1090,4 +1113,9 @@ class Admin {
       me.config.notice.setNotice('');
     }, 500);
   }
+  
+  _triggerChange(element) {
+    let changeEvent = new Event('change');
+    element.dispatchEvent(changeEvent);
+  }  
 }

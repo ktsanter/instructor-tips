@@ -7,9 +7,9 @@ mixin adminCourses()
 
     .col-sm-2
       i(class="edit-control edit-control-course far fa-plus-square me-2 add" title="add course")
-      i(class="edit-control edit-control-course fas fa-sync me-2 reload" title="reload course")
-      i(class="edit-control edit-control-course far fa-save me-2 save" title="save course")
-      i(class="edit-control edit-control-course far fa-trash-alt me-2 delete" title="delete course")
+      i(class="edit-control edit-control-course edit-control-course-conditional fas fa-sync me-2 reload" title="reload course")
+      i(class="edit-control edit-control-course edit-control-course-conditional far fa-save me-2 save" title="save course")
+      i(class="edit-control edit-control-course edit-control-course-conditional far fa-trash-alt me-2 delete" title="delete course")
 
   .row(class="course-edit-container mt-3")
     .container-fluid  
@@ -35,6 +35,9 @@ mixin adminCourses()
                 i(class="edit-control edit-control-course include far fa-check-square")
                 i(class="edit-control edit-control-course exclude far fa-square")
               
+              .col-sm-2
+                input(type="text" class="form-control form-control-plaintext p-0 aardvark-font keypoint-category" readonly)
+
               .col-sm
                 input(type="text" class="form-control form-control-plaintext p-0 aardvark-font keypoint-text" readonly)
           

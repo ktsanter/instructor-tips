@@ -1,24 +1,45 @@
 mixin generalContainer()
   .row(class="py-2")
-    .col-sm
-      fieldset(class="border configure-fieldset required pb-2")
-        legend(class="w-auto") expected of student
-        
+    .col-sm(class="expected-of-student")
+      fieldset(class="border configure-fieldset required")
+        legend(class="w-auto") expected of student (all courses)
         .container-fluid
-          .row(class="mb-1")
+          .row
             .col-sm
-              i(class="hide-me admin-only admin-icon edit-student-expectations fas fa-edit" title="edit student expectations")
-                  
-              .expected-of-student
+              .expected-all
 
-    .col-sm
-      fieldset(class="border configure-fieldset required pb-2")
-        legend(class="w-auto") expected of instructor
-        
+      fieldset(class="border configure-fieldset required mt-3")
+        legend(class="w-auto") expected of student (AP only)
         .container-fluid
-          .row(class="mb-1")
+          .row
             .col-sm
-              i(class="hide-me admin-only admin-icon edit-instructor-expectations fas fa-edit" title="edit instructor expectations")
+              .expected-ap
 
-              .expected-of-instructor
-              
+      fieldset(class="border configure-fieldset required mt-3")
+        legend(class="w-auto") expected of student (non-AP only)
+        .container-fluid
+          .row
+            .col-sm
+              .expected-nonap
+
+    .col-sm(class="expected-of-instructor")
+      fieldset(class="border configure-fieldset required")
+        legend(class="w-auto") expected of instructor (all courses)
+        .container-fluid
+          .row
+            .col-sm
+              .expected-all
+
+      fieldset(class="border configure-fieldset required mt-3")
+        legend(class="w-auto") expected of instructor (AP only)
+        .container-fluid
+          .row
+            .col-sm
+              .expected-ap
+
+      fieldset(class="border configure-fieldset required mt-3")
+        legend(class="w-auto") expected of instructor (non-AP only)
+        .container-fluid
+          .row
+            .col-sm
+              .expected-nonap

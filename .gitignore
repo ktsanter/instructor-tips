@@ -4,6 +4,7 @@ server/node_modules/
 server/*.bat
 server/log
 server/temp/*.*
+server/private/temp/*.*
 sql/*.bat
 
 # Honor .ignore
