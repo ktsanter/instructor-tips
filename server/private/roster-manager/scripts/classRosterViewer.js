@@ -180,7 +180,11 @@ class RosterViewer {
       row.appendChild(cell);
       cell.innerHTML = studentName;
       cell.title = studentName;
-      if (rosterItem.preferredname != '') cell.title = studentName + ' (' + rosterItem.preferredname + ')';
+      if (rosterItem.preferredname != '') {
+        cell.title = studentName + ' (' + rosterItem.preferredname + ')';
+        cell.innerHTML = studentName + ' (' + rosterItem.preferredname + ')';
+      }
+      
       cell.setAttribute('filter-value', studentName);
       cell.addEventListener('click', (e) => { this._handleRosterSelect(e); });
       if (rosterItem.notes.length > 0) { 
