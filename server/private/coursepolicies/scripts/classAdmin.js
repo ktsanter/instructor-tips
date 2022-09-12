@@ -12,7 +12,7 @@ class Admin {
       
       selectedNavId: null,
       info: null,
-      selectedNavId: 'navEditCourses',  // default selection
+      selectedNavId: 'navEditExpectations',  // default selection
 
       selectedResourcelinkId: null,
       selectedContactId: null,
@@ -140,6 +140,9 @@ class Admin {
     expectationList = expectationList.sort( function(a, b) {
       let res = -1 * a.target.localeCompare(b.target);
 
+      if (res == 0) {
+        res = a.restriction.localeCompare(b.restriction);
+      }
       if (res == 0) {
         res = a.expectationtext.toLowerCase().localeCompare(b.expectationtext.toLowerCase());
       }

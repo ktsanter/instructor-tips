@@ -41,12 +41,17 @@ const app = function () {
   function _handleAnchor(e) {
     var linkto = e.target.getAttribute('linkto');
     var containers = page.body.getElementsByClassName('container');
-    
-    for (var i = 0; i < containers.length; i++) {
-      if (containers[i].id == linkto) {
-        containers[i].style.display = 'block';
-      } else {
-        containers[i].style.display = 'none';
+
+    if (linkto.indexOf('https://') == 0) {
+      window.open(linkto, '_blank');
+ 
+    } else {
+      for (var i = 0; i < containers.length; i++) {
+        if (containers[i].id == linkto) {
+          containers[i].style.display = 'block';
+        } else {
+          containers[i].style.display = 'none';
+        }
       }
     }
   }
