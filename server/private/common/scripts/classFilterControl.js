@@ -37,6 +37,9 @@ class FilterControl {
   }
 
   update(valueSet) {
+    if (valueSet.has(true)) valueSet.add(false);
+    if (valueSet.has(false)) valueSet.add(true);
+    
     this.config.valueSet = valueSet;
     
     UtilityKTS.removeChildren(this.container);
