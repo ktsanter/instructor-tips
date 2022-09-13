@@ -24,6 +24,8 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {
+    console.log('TODO: filter keypoints in course editing based on AP flag');
+    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     

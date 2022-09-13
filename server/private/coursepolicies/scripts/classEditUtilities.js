@@ -38,13 +38,16 @@ class EditUtilities {
         val = elem.value;
       } else if (elemType == 'checkbox') {
         val = elem.checked;
+        console.log('checkbox val', val);
       }
       
     } else if (elem.tagName == 'SELECT') {
       val = elem[elem.selectedIndex].value;
     }
     
-    if (!val) console.log('unhandled element in _getValueFromContainer', elem);
+    if (val == null) {
+      console.log('unhandled element in _getValueFromContainer', elem);
+    }
     
     return val;
   }
@@ -76,16 +79,27 @@ class EditUtilities {
     elemSelect.dispatchEvent(new Event('change'));
   }
     
-  static _findNodeInfo(elem, itemClass, infoClass) {
+  static _findNodeInfo(elem, itemClass, infoAttributeName) {
     let node = elem;
     while (!node.classList.contains(itemClass) && node.tagName != 'BODY') {
       node = node.parentNode;
     }
     
     let nodeInfo = null;
-    if (node.hasAttributes(infoClass)) nodeInfo = JSON.parse(node.getAttribute(infoClass));
+    if (node.hasAttributes(infoAttributeName)) nodeInfo = JSON.parse(node.getAttribute(infoAttributeName));
 
     return nodeInfo;
+  }
+
+  static _findNodeInfoContainer(elem, itemClass, infoAttributeName) {
+    let node = elem;
+    while (!node.classList.contains(itemClass) && node.tagName != 'BODY') {
+      node = node.parentNode;
+    }
+    
+    if (!node.hasAttributes(infoAttributeName)) node = null;
+
+    return node;
   }
 
   static _blipNotice(elemNotice, msg) {

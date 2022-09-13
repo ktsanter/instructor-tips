@@ -53,7 +53,13 @@ class CoursePolicies {
   
   _collateCourseInfo(courseInfo) {
     let objCourseInfo = {};
-    let keypointList = courseInfo.keypoints;
+    let keypointList = courseInfo.keypoints.sort(function(a, b) {
+      let res = a.coursename.toLowerCase().localeCompare(b.coursename.toLowerCase());
+      if (res == 0) {
+        res = a.ordering - b.ordering;
+      }
+      return res;
+    });
     
     for (let i = 0; i < courseInfo.course.length; i++) {
       let singleCourse = {...courseInfo.course[i]};

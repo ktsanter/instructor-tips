@@ -21,7 +21,6 @@ class Admin {
     this.editCourses = new EditCourses(this.config);
 
     this._initUI();
-    console.log('TODO: build out resource links: start/end, progress checks, etc.');
   }
   
   //--------------------------------------------------------------

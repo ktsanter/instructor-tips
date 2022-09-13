@@ -25,15 +25,16 @@ mixin adminCourses()
             input(type="checkbox" class="form-check-input course-isap" id="chkAP")
             label(class="form-check-label pt-1" for="chkAP") AP course
         
-      .row(class="mt-4")
+      .row(class="selected-keypoint-row mt-4")
         .col-sm(class="ps-4")
-          .keypoint-container
+          .keypoint-container-selected
           
           .item-template(class="keypoint-item hide-me")
             .row
               .col-sm-1(class="p-1")
-                i(class="edit-control edit-control-course include far fa-check-square")
-                i(class="edit-control edit-control-course exclude far fa-square")
+                i(class="edit-control edit-control-course deselect fas fa-times me-2" title="remove from keypoints for course")
+                i(class="edit-control edit-control-course moveup fas fa-long-arrow-alt-up" title="move up in order")
+                i(class="edit-control edit-control-course select fas fa-plus" title="add to keypoints for course")
               
               .col-sm-2
                 input(type="text" class="form-control form-control-plaintext p-0 aardvark-font keypoint-category" readonly)
@@ -41,6 +42,9 @@ mixin adminCourses()
               .col-sm
                 input(type="text" class="form-control form-control-plaintext p-0 aardvark-font keypoint-text" readonly)
           
+      .row(class="mt-4")
+        .col-sm(class="ps-4")
+          .keypoint-container-unselected
         
       .row(class="mt-3")
         .col-sm

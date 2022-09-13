@@ -74,8 +74,9 @@ create table keypoint
 create table coursekeypoint
 (
   coursekeypointid   int unsigned not null AUTO_INCREMENT,
-  courseid          int unsigned not null,
-  keypointid          int unsigned not null,
+  courseid           int unsigned not null,
+  keypointid         int unsigned not null,
+  ordering           int unsigned not null,
   
   primary key (coursekeypointid),
   constraint unique(courseid, keypointid),
@@ -115,22 +116,25 @@ values
   ("academic integrity policy", "none", "Academic Integrity Policy", "https://michiganvirtual.org/policies/academic-integrity-policy/" ),
   ("grading policy and expectations", "none", "Grading Policy and Expectations", "https://michiganvirtual.org/about/support/knowledge-base/michigan-virtual-grading-policy-and-expectations" ),
   ("ap policy", "ap", "Advanced Placement Policy", "https://michiganvirtual.org/about/support/knowledge-base/advanced-placement-course-policy" ),
-  ("pacing guide", "none", "pacing guide", "https://help.michiganvirtual.org/support/solutions/articles/65000178934-what-activities-assignments-should-i-complete-this-week-" );
+  ("pacing guide", "none", "pacing guide", "https://help.michiganvirtual.org/support/solutions/articles/65000178934-what-activities-assignments-should-i-complete-this-week-" ),
+  ("pacing guide (ap csa1)", "ap", "pacing guide", "https://docs.google.com/document/d/1Bi1bLxwn4lAZ5Bw2FCV1qgD1gKm6HSZFFaOCcJ1hrSo/edit?usp=sharing" ),
+  ("pacing guide (ap csp1)", "ap", "pacing guide", "https://docs.google.com/document/d/1xa87kkoSw293ZBeWL7bYnwsQhtzmz9WVlXFKFdxyRII/edit?usp=sharing" );
   
 insert into expectation(target, restriction, ordering, expectationtext)
 values
   ("student", "none", 1, "Log in at least every school day."),
-  ("student", "ap", 2, "Be familiar with Michigan Virtual's {ap policy}, especially concerning due dates and late penalties."),
-  ("student", "non-ap", 3, "Effectively manage time, using the {pacing guide (non-ap)}."),
-  ("student", "none", 4, "Be familiar with our {academic integrity policy}."),
-  ("student", "none", 5, "Check SLP messages and the Teacher Feed every day."),
-  ("student", "none", 6, "Be respectful and considerate when communicating and working with classmates.");
+  ("student", "ap", 2, "Be familiar with Michigan Virtual's {ap policy}, especially regarding due dates and late penalties."),
+  ("student", "none", 3, "Be familiar with our {grading policy and expectations}."),
+  ("student", "non-ap", 4, "Effectively manage time, using the {pacing guide}."),
+  ("student", "none", 5, "Be familiar with our {academic integrity policy}."),
+  ("student", "none", 6, "Check SLP messages and the Teacher Feed every day."),
+  ("student", "none", 7, "Be respectful and considerate when communicating and working with classmates.");
   
   
 insert into expectation(target, restriction, ordering, expectationtext)
 values
   ("instructor", "none", 1, "Always treat students with respect and friendliness, doing my best to encourage their learning and growth."),
-  ("instructor", "none", 2, "Respond to any communication 24 hours (not counting weekends and holidays)."),
+  ("instructor", "none", 2, "Respond to any communication within 24 hours (not counting weekends and holidays)."),
   ("instructor", "non-ap", 3, "Grade all assignments, providing solid feedback, within 72 hours (not counting weekends and holidays)."),
   ("instructor", "ap", 4, "Grade all assignments, providing solid feedback, within 96 hours (not counting weekends and holidays)."),
   ("instructor", "none", 5, "Provide progress reports at least monthly."),
@@ -148,16 +152,16 @@ values
   
 insert into keypoint(category, keypointtext)
 values
-  ("exam", "The midterm and final exam require passwords.  These will be distributed to mentors ealy in the term"),
+  ("exam", "The midterm and final exam require passwords.  These will be distributed to mentors early in the term"),
   ("exam", "There are no exams requiring passwords for this course."),
   ("exam", "There is a password-protected final exam. The password will be distributed to mentors early in the semester"),
   ("proctoring", "Proctoring (if feasible) is required for the final exam, and strongly encouraged for the other tests and exams"),
-  ("retake", "There are no retakes for assessments except in the case of technical difficulties (at the instructor's discretion) - refer to the {ap policy}."),
+  ("retake", "There are no retakes for assessments except in the case of technical difficulties, at the instructor's discretion."),
   ("retake", "All quizzes (but not tests or exams) allow up to 3 retakes"),
-  ("resubmit", "All programming assignments can be resubmitted. Instructors may apply a limit and/or resubmission requirements at their discretion - refer to the AP course policies."),
+  ("resubmit", "All programming assignments can be resubmitted. Instructors may apply a limit and/or resubmission requirements at their discretion."),
   ("resubmit", "Assignments may be resubmitted only at the instructor's discretion."),
   ("ap", "Details for policies can be found in the {ap policy}."),
-  ("ap", "There are weekly due dates for assignments, with penalties for late assignments.  Please help your student use the {pacing guide (ap csa)} effectively."),
-  ("ap", "There are weekly due dates for assignments, with penalties for late assignments.  Please help your student use the {pacing guide (ap csp)} effectively.");
+  ("ap", "There are weekly due dates for assignments, with penalties for late assignments.  Please help your student use the {pacing guide (ap csa1)} effectively."),
+  ("ap", "There are weekly due dates for assignments, with penalties for late assignments.  Please help your student use the {pacing guide (ap csp1)} effectively.");
 
   

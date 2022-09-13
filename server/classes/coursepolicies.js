@@ -446,7 +446,7 @@ module.exports = internal.CoursePolicies = class {
         'from course',
         
       "keypoints": 
-        'select a.coursename, b.keypointid, b.keypointtext ' +
+        'select a.coursename, b.keypointid, b.keypointtext, c.ordering ' +
         'from course as a, keypoint as b, coursekeypoint as c ' +
         'where a.courseid = c.courseid ' +
           'and b.keypointid = c.keypointid '
@@ -894,14 +894,14 @@ module.exports = internal.CoursePolicies = class {
     
     const keypointList = postData.keypointlist; 
     if (keypointList.length > 0) {
-      
       for (let i = 0; i < keypointList.length; i++) {
         queryList['keypoint' + i] = 
           'insert into coursekeypoint ( ' +
-            'courseid, keypointid ' +
+            'courseid, keypointid, ordering ' +
           ') values (' +
             postData.courseid + ', ' +
-            keypointList[i] +
+            keypointList[i].keypointid + ', ' +
+            keypointList[i].ordering + ' ' +
           ')';
       }
       

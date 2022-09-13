@@ -98,13 +98,13 @@ class EditCourses {
 
     let courseEditContainer = this.config.courseContainer.getElementsByClassName('course-edit-container')[0];
     UtilityKTS.setClass(courseEditContainer, this.settings.hideClass, selectedIndex < 0);
-    this._enableEditControls(this.config.container, 'edit-control-course-conditional', selectedIndex >= 0);    
+    EditUtilities._enableEditControls(this.config.container, 'edit-control-course-conditional', selectedIndex >= 0);    
 
-    if (selectedIndex >= 0) this._triggerChange(elemSelect);
+    if (selectedIndex >= 0) EditUtilities._triggerChange(elemSelect);
   }
   
   _loadCourse(courseInfo) {
-    this._enableEditControls(this.config.container, 'edit-control-course-conditional', true);    
+    EditUtilities._enableEditControls(this.config.container, 'edit-control-course-conditional', true);    
     let elemCourseName = this.config.courseContainer.getElementsByClassName('course-name')[0];
     elemCourseName.value = courseInfo.coursename;
     
@@ -114,42 +114,7 @@ class EditCourses {
     let elemAssessment = this.config.courseContainer.getElementsByClassName('course-assessments')[0];
     elemAssessment.value = courseInfo.assessments;
     
-    let container = this.config.courseContainer.getElementsByClassName('keypoint-container')[0];
-    UtilityKTS.removeChildren(container);
-
-    let elemTemplate = this.config.courseContainer.getElementsByClassName('item-template')[0];
-
-    let fullKeypointList = this.settings.info.general.keypoints;   
-    fullKeypointList = fullKeypointList.sort(function(a, b) {
-      let res = a.category.localeCompare(b.category);
-      if (res == 0) {
-        res = a.keypointtext.toLowerCase().localeCompare(b.keypointtext.toLowerCase());
-      }
-      return res;
-    });
-    const courseKeypointIds = this._setFromCourseKeypoints(courseInfo.keypoints);
-    
-    for (let i = 0; i < fullKeypointList.length; i++) {
-      let keypoint = fullKeypointList[i];
-      let elemItem = elemTemplate.cloneNode(true);
-      container.appendChild(elemItem);
-      
-      UtilityKTS.setClass(elemItem, this.settings.hideClass, false);
-      UtilityKTS.setClass(elemItem, 'item-template', false);
-      
-      const keypointIncluded = courseKeypointIds.has(keypoint.keypointid);      
-      let elemInclude = elemItem.getElementsByClassName('include')[0];
-      let elemExclude = elemItem.getElementsByClassName('exclude')[0];
-      elemInclude.addEventListener('click', (e) => { this._handleEditControl(e); });
-      elemExclude.addEventListener('click', (e) => { this._handleEditControl(e); });
-      UtilityKTS.setClass(elemInclude, this.settings.hideClass, !keypointIncluded);
-      UtilityKTS.setClass(elemExclude, this.settings.hideClass, keypointIncluded);
-
-      elemItem.getElementsByClassName('keypoint-category')[0].value = keypoint.category;
-      elemItem.getElementsByClassName('keypoint-text')[0].value = keypoint.keypointtext;
-
-      elemItem.setAttribute("keypoint-info", JSON.stringify(keypoint));
-    }            
+    this._renderKeypoints(courseInfo, this.settings.info.general.keypoints);    
     
     this.settings.selectedCourseId = courseInfo.courseid;
     let courseEditContainer = this.config.courseContainer.getElementsByClassName('course-edit-container')[0];
@@ -157,24 +122,139 @@ class EditCourses {
     UtilityKTS.setClass(courseEditContainer, this.settings.hideClass, false);
   }
   
-  _setFromCourseKeypoints(keypointList) {
+  _renderKeypoints(courseInfo, fullKeypointList) {
+    let containerSelected = this.config.courseContainer.getElementsByClassName('keypoint-container-selected')[0];
+    let containerUnSelected = this.config.courseContainer.getElementsByClassName('keypoint-container-unselected')[0];
+    UtilityKTS.removeChildren(containerSelected);
+    UtilityKTS.removeChildren(containerUnSelected);
+  
+    const partitionedKeypoints = this._partitionKeypoints(fullKeypointList, courseInfo.keypoints);
+    
+    let elemTemplate = this.config.courseContainer.getElementsByClassName('item-template keypoint-item')[0];
+    
+    for (let i = 0; i < partitionedKeypoints.selected.length; i++) {
+      const kp = partitionedKeypoints.selected[i];
+      let elemItem = elemTemplate.cloneNode(true);
+      containerSelected.appendChild(elemItem);
+      
+      UtilityKTS.setClass(elemItem, this.settings.hideClass, false);
+      UtilityKTS.setClass(elemItem, 'item-template', false);
+      
+      elemItem.getElementsByClassName('keypoint-category')[0].value = kp.category;
+      elemItem.getElementsByClassName('keypoint-text')[0].value = kp.keypointtext;
+      
+      this._addKeypointEventHandlers(elemItem);
+      this._setKeypointIcons(elemItem, true, i != 0, false);
+            
+      elemItem.setAttribute('keypoint-info', JSON.stringify(kp));
+    }
+
+    for (let i = 0; i < partitionedKeypoints.unselected.length; i++) {
+      const kp = partitionedKeypoints.unselected[i];
+      let elemItem = elemTemplate.cloneNode(true);
+      containerUnSelected.appendChild(elemItem);
+      
+      UtilityKTS.setClass(elemItem, this.settings.hideClass, false);
+      UtilityKTS.setClass(elemItem, 'item-template', false);
+      
+      elemItem.getElementsByClassName('keypoint-category')[0].value = kp.category;
+      elemItem.getElementsByClassName('keypoint-text')[0].value = kp.keypointtext;
+      
+      this._addKeypointEventHandlers(elemItem);
+      this._setKeypointIcons(elemItem, false, false, true);
+      
+      elemItem.setAttribute('keypoint-info', JSON.stringify(kp));
+    }
+  }
+  
+  _partitionKeypoints(fullKeypointList, courseKeypoints) {
+    let selectedKeypoints = [];
+    let unselectedKeypoints = [];
+
+    const selectedKeypointIds = this._makeSetFromCourseKeypoints(courseKeypoints);
+
+    for (let i = 0; i < fullKeypointList.length; i++) {
+      let kp = fullKeypointList[i];
+      if (selectedKeypointIds.has(kp.keypointid)) {
+        let ordering = -1;
+        for (let j = 0; j < courseKeypoints.length && ordering < 0; j++) {
+          if (courseKeypoints[j].keypointid == kp.keypointid) ordering = courseKeypoints[j].ordering;
+        }
+        const fullItem = {...kp, "ordering": ordering};
+        selectedKeypoints.push(fullItem);
+        
+      } else {
+        unselectedKeypoints.push(kp);
+      }
+    }
+    
+    selectedKeypoints = selectedKeypoints.sort(function(a, b) {
+      let res = a.ordering - b.ordering;
+      if (res == 0) {
+        res = a.keypointtext.toLowerCase().localeCompare(b.keypointtext.toLowerCase());
+      }
+      
+      return res;
+    });
+    
+    return {
+      "selected": selectedKeypoints,
+      "unselected": unselectedKeypoints
+    };
+  }
+  
+  _makeSetFromCourseKeypoints(keypointList) {
     let keypointSet = new Set();
     
     for (let i = 0; i < keypointList.length; i++) {
       keypointSet.add(keypointList[i].keypointid);
     }
-    
+
     return keypointSet;
   }
   
-  _includeCourseKeypoint(elemControl, include) {
-    const controlContainer = elemControl.parentNode;
+  _addKeypointEventHandlers(elem) {
+    const handler = (e) => { this._handleKeypointAction(e); };
+    elem.getElementsByClassName('deselect')[0].addEventListener('click', handler);
+    elem.getElementsByClassName('moveup')[0].addEventListener('click', handler);
+    elem.getElementsByClassName('select')[0].addEventListener('click', handler);
+  }
+  
+  _setKeypointIcons(elem, showDeselect, showMoveup, showSelect) {
+    UtilityKTS.setClass(elem.getElementsByClassName('deselect')[0], this.settings.hideClass, !showDeselect);
+    UtilityKTS.setClass(elem.getElementsByClassName('moveup')[0], this.settings.hideClass, !showMoveup);
+    UtilityKTS.setClass(elem.getElementsByClassName('select')[0], this.settings.hideClass, !showSelect);
+  }
+  
+  _moveKeypointUp(target) {
+    const infoContainer = EditUtilities._findNodeInfoContainer(target, 'keypoint-item', 'keypoint-info');
+    const prev = infoContainer.previousSibling;
 
-    const elemInclude = controlContainer.getElementsByClassName('include')[0];
-    const elemExclude = controlContainer.getElementsByClassName('exclude')[0];
+    prev.parentNode.insertBefore(infoContainer, prev);
     
-    UtilityKTS.setClass(elemInclude, this.settings.hideClass, !include);
-    UtilityKTS.setClass(elemExclude, this.settings.hideClass, include);    
+    const elemList = infoContainer.parentNode.getElementsByClassName('keypoint-item');
+    for (let i = 0; i < elemList.length; i++) {
+      this._setKeypointIcons(elemList[i], true, i != 0, false);
+      UtilityKTS.setClass(elemList[i].getElementsByClassName('moveup')[0], this.settings.hideClass, i == 0);
+    }
+  }
+  
+  _selectKeypoint(target) {
+    const infoContainer = EditUtilities._findNodeInfoContainer(target, 'keypoint-item', 'keypoint-info');
+    const containerSelected = this.config.courseContainer.getElementsByClassName('keypoint-container-selected')[0];
+
+    containerSelected.appendChild(infoContainer);
+    const numSelected = containerSelected.getElementsByClassName('keypoint-item').length;
+
+    this._setKeypointIcons(infoContainer, true, numSelected > 1, false);    
+  }
+  
+  _deselectKeypoint(target) {
+    const infoContainer = EditUtilities._findNodeInfoContainer(target, 'keypoint-item', 'keypoint-info');
+    const containerUnSelected = this.config.courseContainer.getElementsByClassName('keypoint-container-unselected')[0];
+    
+    containerUnSelected.appendChild(infoContainer);
+    this._setKeypointIcons(infoContainer, false, false, true);
   }
   
   async _reloadCourse() {
@@ -209,15 +289,14 @@ class EditCourses {
     courseInfo.assessments = EditUtilities._getValueFromContainer(container, 'course-assessments');
     courseInfo.ap = EditUtilities._getValueFromContainer(container, 'course-isap');
     
-    const keypointContainer = container.getElementsByClassName('keypoint-container')[0];
+    const keypointContainer = container.getElementsByClassName('keypoint-container-selected')[0];
     const keypointElements = keypointContainer.getElementsByClassName('keypoint-item');
     let includedKeypoints = [];
     for (let i = 0; i < keypointElements.length; i++) {
-      const keypoint = keypointElements[i];
-      const keypointId = JSON.parse(keypoint.getAttribute('keypoint-info')).keypointid;
+      const elem = keypointElements[i];
+      const keypointId = JSON.parse(elem.getAttribute('keypoint-info')).keypointid;
       
-      const elemIncluded = keypoint.getElementsByClassName('include')[0];
-      if (!elemIncluded.classList.contains(this.settings.hideClass)) includedKeypoints.push(keypointId);
+      includedKeypoints.push({"keypointid": keypointId, "ordering": i});
     }
     courseInfo.keypointlist = includedKeypoints;
     
@@ -248,71 +327,7 @@ class EditCourses {
     this.settings.selectedCourseId = null;
     await this.config.callbackRefreshData();
   }
-      
-  //--------------------------------------------------------------
-  // edit utilities
-  //--------------------------------------------------------------   
-  _clearFormValuesInContainer(container) {
-    const elementList = container.getElementsByClassName('form-control');
-    for (let i = 0; i < elementList.length; i++) {
-      const elem = elementList[i];
-      if (elem.tagName == 'INPUT') {
-        if (elem.type == 'text') elem.value = '';
-      }
-    }
-  }
-  
-  _setValueInContainer(container, classList, value) {
-    container.getElementsByClassName(classList)[0].value = value;
-  }
-  
-  _getValueFromContainer(container, classList) {
-    let val = null;
-    const elem = container.getElementsByClassName(classList)[0];
-    if (elem.tagName == 'INPUT') {
-      const elemType = elem.getAttribute('type');
-      if (elemType == 'text') {
-        val = elem.value;
-      } else if (elemType == 'checkbox') {
-        val = elem.checked;
-      }
-      
-    } else if (elem.tagName == 'SELECT') {
-      val = elem[elem.selectedIndex].value;
-    }
-    
-    if (!val) console.log('unhandled element in _getValueFromContainer', elem);
-    
-    return val;
-  }
-  
-  _enableEditControls(container, classList, enable) {
-    const editControls = container.getElementsByClassName(classList);
-
-    for (let i = 0; i < editControls.length; i++) {
-      UtilityKTS.setClass(editControls[i], 'disabled', !enable);
-    }
-  }
-
-  _selectByText(elemSelect, optionText) {
-    let selectedIndex = -1;
-    const options = elemSelect.getElementsByTagName('OPTION');
-    for (let i = 0; i < options.length && selectedIndex < 0; i++) {
-      if (options[i].text == optionText) selectedIndex = i;
-    }
-    elemSelect.selectedIndex = selectedIndex;
-  }
-    
-  _forceSelection(elemSelect, optionText) {
-    let selectedIndex = -1;
-    const options = elemSelect.getElementsByTagName('OPTION');
-    for (let i = 0; i < options.length && selectedIndex < 0; i++) {
-      if (options[i].text == optionText) selectedIndex = i;
-    }
-    elemSelect.selectedIndex = selectedIndex;
-    elemSelect.dispatchEvent(new Event('change'));
-  }
-    
+          
   //--------------------------------------------------------------
   // callbacks
   //--------------------------------------------------------------   
@@ -320,47 +335,19 @@ class EditCourses {
   //--------------------------------------------------------------
   // handlers
   //--------------------------------------------------------------   
-  _handleNavbarClick(me, e) {
-    let target = e.target;
-    if (target.tagName != 'A') target = e.target.firstChild;
-    if (target.classList.contains('disabled')) return;
-
-    if (this.settings.selectedNavId && this.settings.selectedNavId == target.id) return;
-    
-    this._dispatch(me, target.id);
-  }
-  
   _handleEditControl(e) {
-    console.log('Admin._handleEditControl');
     if (e.target.classList.contains('disabled')) return;
+    if (!e.target.classList.contains('edit-control-course')) return;
     
-    if (e.target.classList.contains('edit-control-course')) {
-      if (e.target.classList.contains('reload')) {
-        this._reloadCourse();
-      } else if (e.target.classList.contains('save')) {
-        this._saveCourse();
-      } else if (e.target.classList.contains('add')) {
-        this._addCourse();
-      } else if (e.target.classList.contains('delete')) {
-        this._deleteCourse();
-      } else if (e.target.classList.contains('include')) {
-        this._includeCourseKeypoint(e.target, false);
-      }  else if (e.target.classList.contains('exclude')) {
-        this._includeCourseKeypoint(e.target, true);
-      }   
-    }
-  }
-
-  _findNodeInfo(elem, itemClass, infoClass) {
-    let node = elem;
-    while (!node.classList.contains(itemClass) && node.tagName != 'BODY') {
-      node = node.parentNode;
-    }
-    
-    let nodeInfo = null;
-    if (node.hasAttributes(infoClass)) nodeInfo = JSON.parse(node.getAttribute(infoClass));
-
-    return nodeInfo;
+    if (e.target.classList.contains('reload')) {
+      this._reloadCourse();
+    } else if (e.target.classList.contains('save')) {
+      this._saveCourse();
+    } else if (e.target.classList.contains('add')) {
+      this._addCourse();
+    } else if (e.target.classList.contains('delete')) {
+      this._deleteCourse();
+    }   
   }
 
   _handleCourseSelect(e) {
@@ -369,11 +356,21 @@ class EditCourses {
     this._loadCourse(courseInfo);
   }
   
+  _handleKeypointAction(e) {
+    if (e.target.classList.contains('disabled')) return;
+    
+    if (e.target.classList.contains('moveup')) {
+      this._moveKeypointUp(e.target);
+    } else if (e.target.classList.contains('select')) {
+      this._selectKeypoint(e.target);
+    } else if (e.target.classList.contains('deselect')) {
+      this._deselectKeypoint(e.target);
+    }
+  }
+  
   //--------------------------------------------------------------
   // database
   //--------------------------------------------------------------
-     
-   //--- courses
   async _addCourseToDB(courseName) {
     let params = {
       "coursename": courseName
@@ -403,16 +400,13 @@ class EditCourses {
   //--------------------------------------------------------------
   // utility
   //--------------------------------------------------------------
-  _blipNotice(msg) {
-    this.config.notice.setNotice(msg);
-    const me = this;
-    setTimeout(function() {
-      me.config.notice.setNotice('');
-    }, 500);
+  _setDifference(setA, setB) {
+    const diff = new Set(setA);
+
+    for (const elem of setB) {
+      diff.delete(elem);
+    }
+
+    return diff;
   }
-  
-  _triggerChange(element) {
-    let changeEvent = new Event('change');
-    element.dispatchEvent(changeEvent);
-  }  
 }

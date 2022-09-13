@@ -152,6 +152,10 @@ body {
   background: transparent;
 }
 
+.contents .contents-navAdmin .selected-keypoint-row {
+  border: 1px solid rgb(206, 212, 218);
+}
+
 /*------------------------------------------------------------------
  * standard error and notice
  *------------------------------------------------------------------*/
