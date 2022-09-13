@@ -400,12 +400,12 @@ module.exports = internal.CoursePolicies = class {
     
     queryList = {
       "expectationsStudent":
-        'select expectationid, expectationtext, restriction ' +
+        'select expectationid, expectationtext, restriction, ordering ' +
         'from expectation ' +
         'where target = "student" ',
         
       "expectationsInstructor":
-        'select expectationid, expectationtext, restriction ' +
+        'select expectationid, expectationtext, restriction, ordering ' +
         'from expectation ' +
         'where target = "instructor" ',        
 
@@ -474,10 +474,11 @@ module.exports = internal.CoursePolicies = class {
     queryList = {
       "expectation":      
         'insert into expectation (' +
-          'target, restriction, expectationtext ' +
+          'target, restriction, ordering, expectationtext ' +
         ') values (' +
           '"' + postData.target + '", ' +
           '"' + postData.restriction + '", ' +
+          0 + ', ' +
           '"' + postData.expectationtext + '" ' +
         ')'
     };
@@ -511,6 +512,7 @@ module.exports = internal.CoursePolicies = class {
         'set ' + 
           'target = "' + expectation.target + '", ' +
           'restriction = "' + expectation.restriction + '", ' +
+          'ordering = ' + expectation.ordering + ', ' +
           'expectationtext = "' + expectation.expectationtext + '" ' +
         'where expectationid = ' + expectation.expectationid
     }

@@ -140,10 +140,12 @@ body {
 .contents .contents-navAdmin i.edit-control {
   color: var(--bgPrimary);
   font-size: 150%;
+  cursor: pointer;
 }
 
 .contents .contents-navAdmin i.edit-control.disabled {
   color: var(--bgShaded);
+  cursor: normal;
 }
 
 .contents .contents-navAdmin input.form-control-plaintext {

@@ -26,6 +26,11 @@ mixin adminExpectations()
                 option non-ap
               label(for="selectRestriction") restriction
       
+          .col-sm-1
+            .form-floating
+              input(type="number" class="form-control expectation-ordering" id="txtOrdering", min="1" max="100")
+              label(for="txtOrdering") ordering
+              
           .col-sm
             .form-floating
               input(type="text" class="form-control expectation-text" id="txtExpectation")

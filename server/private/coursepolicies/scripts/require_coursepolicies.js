@@ -10,9 +10,15 @@ define(function (require) {
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
-   require('classGeneralPolicies');
-   require('classCoursePolicies');
-   require('classAdmin');
+  require('classGeneralPolicies');
+  require('classCoursePolicies');
+  require('classAdmin');
+  require('classEditExpectations');
+  require('classEditKeypoints');
+  require('classEditResourceLinks');
+  require('classEditContacts');
+  require('classEditCourses');
+  require('classEditUtilities');
   require('coursepolicies');
 
   document.addEventListener('DOMContentLoaded', app.init(libsodiumWrappers));

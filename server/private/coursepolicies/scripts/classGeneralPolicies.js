@@ -51,6 +51,14 @@ class GeneralPolicies {
     let elemListNonAP = CreateElement._createElement('ul', null, 'expectation-list');
     elemExpNonAP.appendChild(elemListNonAP);
   
+    expectations = expectations.sort(function(a, b) {
+      let res = a.ordering - b.ordering;
+      if (res == 0) {
+        res = a.expectationtext.toLowerCase().localeCompare(b.expectationtext.toLowerCase());
+      }
+      return res;
+    });
+    
     for (let i = 0; i < expectations.length; i++) {
       const exp = expectations[i];
       let elemItem = CreateElement._createElement('li', null, 'expectation-list-item');
