@@ -56,7 +56,7 @@ const app = function () {
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
 
     page.notice.setNotice('');
   }
@@ -178,7 +178,7 @@ const app = function () {
   function _showCourse() {
     UtilityKTS.setClass(page.navCourse, 'disable-container', true);
     
-    settings.coursePolicies.update(settings.courseInfo);    
+    settings.coursePolicies.update(settings.generalInfo, settings.courseInfo);    
     
     UtilityKTS.setClass(page.navCourse, 'disable-container', false);
   }

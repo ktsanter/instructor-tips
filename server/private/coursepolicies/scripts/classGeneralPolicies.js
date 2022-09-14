@@ -71,9 +71,39 @@ class GeneralPolicies {
         elemListNonAP.appendChild(elemItem);
       }
 
-      elemItem.appendChild(CreateElement.createSpan(null, 'expectation-text', expectations[i].expectationtext));
+      const formattedText = this._formatExpectationText(expectations[i]);
+      elemItem.appendChild(CreateElement.createSpan(null, 'expectation-text', formattedText));
     }
   }
+  
+  _formatExpectationText(expectation) {
+    let txt = expectation.expectationtext;
+    
+    const regexItem = /[^{}]+(?=\})/g;
+    const matches = expectation.expectationtext.match(regexItem);
+    if (matches != null) {
+      for (let i = 0; i < matches.length; i++) {
+        const replacement = this._findResourceLink(matches[i])
+        if (replacement != null) {
+          const htmlReplacement = '<a href="' + replacement.linkurl + '" target="_blank">' + replacement.linktext + '</a>';
+          txt = txt.replaceAll('{' + matches[i] + '}', htmlReplacement);
+        }
+      }
+    }
+    
+    return txt;
+  }
+  
+  _findResourceLink(templateitem) {
+    let replacement = null;
+    
+    let resourceLinks = this.settings.currentInfo.resourcelink;
+    for (let i = 0; i < resourceLinks.length && replacement == null; i++) {
+      if (resourceLinks[i].templateitem == templateitem) replacement = resourceLinks[i];
+    }
+    
+    return replacement;
+  }    
     
   //--------------------------------------------------------------
   // callbacks

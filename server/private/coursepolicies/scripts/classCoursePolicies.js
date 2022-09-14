@@ -20,8 +20,9 @@ class CoursePolicies {
   //--------------------------------------------------------------
   // public methods
   //--------------------------------------------------------------  
-  update(updatedCourseInfo) {
+  update(updatedGeneralInfo, updatedCourseInfo) {
     this.settings.currentCourseInfo = this._collateCourseInfo(updatedCourseInfo);
+    this.settings.generalInfo = updatedGeneralInfo;
     
     this._updateUI();
   }
@@ -144,9 +145,38 @@ class CoursePolicies {
       container.appendChild(elem);
       UtilityKTS.setClass(elem, 'template', false);
       UtilityKTS.setClass(elem, this.settings.hideClass, false);
-      elem.innerHTML = keypointList[i];
+      elem.innerHTML = this._formatKeypointText(keypointList[i]);
     }
   }
+  
+  _formatKeypointText(keypointText) {
+    let txt = keypointText;
+    
+    const regexItem = /[^{}]+(?=\})/g;
+    const matches = txt.match(regexItem);
+    if (matches != null) {
+      for (let i = 0; i < matches.length; i++) {
+        const replacement = this._findResourceLink(matches[i])
+        if (replacement != null) {
+          const htmlReplacement = '<a href="' + replacement.linkurl + '" target="_blank">' + replacement.linktext + '</a>';
+          txt = txt.replaceAll('{' + matches[i] + '}', htmlReplacement);
+        }
+      }
+    }
+    
+    return txt;
+  }
+  
+  _findResourceLink(templateitem) {
+    let replacement = null;
+    
+    let resourceLinks = this.settings.generalInfo.resourcelink;
+    for (let i = 0; i < resourceLinks.length && replacement == null; i++) {
+      if (resourceLinks[i].templateitem == templateitem) replacement = resourceLinks[i];
+    }
+    
+    return replacement;
+  }      
   
   _loadAssessments(outerContainer, container, unparsedAssessments) {
     UtilityKTS.removeChildren(container);
