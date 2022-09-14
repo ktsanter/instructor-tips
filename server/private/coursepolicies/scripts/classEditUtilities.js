@@ -38,7 +38,6 @@ class EditUtilities {
         val = elem.value;
       } else if (elemType == 'checkbox') {
         val = elem.checked;
-        console.log('checkbox val', val);
       }
       
     } else if (elem.tagName == 'SELECT') {

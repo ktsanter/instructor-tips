@@ -24,8 +24,6 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {
-    console.log('TODO: filter keypoints in course editing based on AP flag');
-    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
@@ -56,7 +54,7 @@ const app = function () {
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
     
-    page.navbar.getElementsByClassName(settings.navItemClass)[1].click();
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
 
     page.notice.setNotice('');
   }
