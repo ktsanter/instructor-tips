@@ -5,6 +5,8 @@
   --bgPrimary: rgba(66, 98, 150, 1.0);
   --bgShaded:rgba(66, 98, 150, 0.5);
   --borderPrimary: #ced4da;
+  --mvDarkTeal: #115e6e;
+  --highlightColor: #ffff00;
 }
 
 body {}
@@ -17,9 +19,16 @@ body {}
   display: none;
 }
 
+.highlight {
+  background-color: var(--highlightColor);
+}
+
 /*------------------------------------------------------------------------------
- * xxxx
+ * sections
  *------------------------------------------------------------------------------*/
-.row {
-  border: 1px solid red;
+.welcome-section {}
+
+.welcome-section .section-title-text {
+  color: white;
+  background-color: var(--mvDarkTeal);
 }

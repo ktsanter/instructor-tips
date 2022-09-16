@@ -1,3 +1,14 @@
+- var strParams = JSON.stringify(params);
+- var courseName = params.courseData.name
+- var isAPCourse = params.courseData.ap
+- var resourceLinks = params.resourceLinks;
+- var customerCare = resourceLinks["customer care"]
+- var mentorPage = resourceLinks["mentor page"]
+- var academicIntegrity = resourceLinks["academic integrity policy"]
+- var gradingPolicy = resourceLinks["grading policy and expectations"]
+- var apPolicy = null;
+- if (isAPCourse) apPolicy = resourceLinks["ap policy"]
+
 include ../../../common/pug/fontawesome-mixins.pug
 include ../../../common/pug/bootstrap-mixins.pug
 include ../../../common/pug/jquery-mixins.pug
@@ -19,22 +30,75 @@ html(lang="en")
     
   body(class="colorscheme")
     .banner
-      |Welcome as a mentor to XXXX
+      |Welcome as a mentor to #{courseName}
       
-    .instructor-info instructor info
+    .instructor-info(class="welcome-section mt-2") instructor info
     
-    .greeting greeting
+    .student-list-section(class="welcome-section mt-2")
+      |These students are currently enrolled in my section:
+      br
+      |[put student list here]
+
+    .greeting(class="welcome-section mt-2")
+      |I’m eager to work with you as you support students in my
+      | class.  Your role is crucial to their success, and I want
+      | to aid you in any way possible.  There is a lot of
+      | information available within the course and I encourage
+      | you and your students to review it when you have the
+      | chance.  Of particular interest are the 
+      em Start Here 
+      | and
+      em Getting Help 
+      | options, as well as the 
+      em Instructor Info 
+      | widget.
     
-    .keypoints keypoints
+    .keypoints(class="welcome-section mt-2") 
+      .section-title 
+        span(class="section-title-text") key points for mentors
     
-    .expectations-student expect of student
+    .expectations-student(class="welcome-section mt-2") 
+      .section-title 
+        span(class="section-title-text") what I expect of students
     
-    .expectations-instructor expect of instructor
+    .expectations-instructor(class="welcome-section mt-2") 
+      .section-title 
+        span(class="section-title-text") what students can expect from me
     
-    .mentor-support mentor support
+    .assessments-and-proctoring(class="welcome-section mt-2")
+      .section-title 
+        span(class="section-title-text") tests, exams, and proctoring
+      
+    .mentor-support(class="welcome-section mt-2") 
+      .section-title 
+        span(class="section-title-text") mentor support
     
-    .special-populations special populations
+    .special-populations(class="welcome-section mt-2") 
+      .section-title 
+        span(class="section-title-text") special populations
     
-    .closing closing
+    .helpful-links(class="welcome-section mt-2")
+      .section-title 
+        span(class="section-title-text") helpful links
+
+      a(href=customerCare.linkUrl, target="_blank")=customerCare.linkText
+      br
+      a(href=mentorPage.linkUrl, target="_blank")=mentorPage.linkText
+      br
+      a(href=academicIntegrity.linkUrl, target="_blank")=academicIntegrity.linkText
+      br
+      a(href=gradingPolicy.linkUrl, target="_blank")=gradingPolicy.linkText
+      if isAPCourse
+        br
+        a(href=apPolicy.linkUrl, target="_blank")=apPolicy.linkText
+      
+    .closing(class="welcome-section mt-2") 
+      |Please contact me whenever you have questions or concerns.
+      | I look forward to working with you this term!
+      br
+      | Sincerely,
+      br
     
-    .signature signature
+    .signature
+      span(class="highlight") [instructor name]
+

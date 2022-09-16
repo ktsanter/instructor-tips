@@ -268,7 +268,18 @@ module.exports = internal.CoursePolicies = class {
   }
   
   _makeOutputHTMLDoc(thisObj, generalData, courseData, pugFileName) {
-    return thisObj._pug.renderFile(pugFileName, {});
+    const isAPCourse = courseData.ap;
+    const contactList = thisObj._makeContactList(generalData.contact);
+    const resourceLinks = thisObj._makeResourceLinkList(generalData.resourcelink, isAPCourse);
+
+    const params = {
+      "courseData": courseData,
+      "generalData": generalData,
+      "resourceLinks": resourceLinks
+    }
+    console.log('_makeOutputHTMLDoc', params);
+    
+    return thisObj._pug.renderFile(pugFileName, {"params": params});
   }
   
   _makeContactList(dbContactData) {
