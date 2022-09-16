@@ -17,6 +17,7 @@ module.exports = internal.CoursePolicies = class {
     this._fileservices = params.fileservices;
     this._path = params.path;
     this._mentorWelcomeTemplate = params.mentorWelcomeTemplate;
+    this._pug = params.pug;
 
     this._tempPrefix = 'mwelcome-';
   }
@@ -143,27 +144,43 @@ module.exports = internal.CoursePolicies = class {
         return;
       }
       
-      let courseInfo = JSON.parse(fields['export-data']).courseInfo;
+      const parsedParams = JSON.parse(fields['export-data']);
+      const courseInfo = parsedParams.courseInfo;
+      courseInfo.format = parsedParams.format;
+      courseInfo.includeStudentSection = parsedParams.includeStudentSection;
+      const templateDoc = thisObj._mentorWelcomeTemplate[parsedParams.format];
       
-      let outputDoc = await thisObj._makeOutputDoc(thisObj, generalInfo, courseInfo);
+      let outputDoc = await thisObj._makeOutputDoc(thisObj, generalInfo, courseInfo, templateDoc);
       if (!outputDoc) {
         res.send('failed to make welcome template output doc');
         return;
       }
       
-      await thisObj._downloadOutputDoc(thisObj, res, outputDoc, courseInfo.name);
+      const fileTypeLookup = {
+        "pretty": 'docx',
+        "yamm": 'docx',
+        "html": 'html'
+      };
+      let outputFileType = fileTypeLookup[courseInfo.format];
+      
+      await thisObj._downloadOutputDoc(thisObj, res, outputDoc, courseInfo.name, outputFileType);
     });
   }
     
 //---------------------------------------------------------------
 // private methods
 //---------------------------------------------------------------  
-  async _makeOutputDoc(thisObj, generalData, courseData) {
+  async _makeOutputDoc(thisObj, generalData, courseData, templateDoc) {
     let result = null;
     
-    if (!this._fileservices.existsSync(this._mentorWelcomeTemplate)) {
-      const msg = 'CoursePolicies.exportMentorWelcomeTemplate, cannot read template file: ' + this._mentorWelcomeTemplate;
+    if (!this._fileservices.existsSync(templateDoc)) {
+      const msg = 'CoursePolicies.exportMentorWelcomeTemplate, cannot read template file: ' + templateDoc;
       console.log(msg);
+      return result;
+    }
+    
+    if (courseData.format == 'html') {
+      result = this._makeOutputHTMLDoc(thisObj, generalData, courseData, templateDoc)
       return result;
     }
     
@@ -173,7 +190,7 @@ module.exports = internal.CoursePolicies = class {
     const expectationList = thisObj._makeExpectationList(generalData.expectationsStudent, generalData.expectationsInstructor, isAPCourse);
     const assessmentsRaw = courseData.assessments;
     const assessmentsClean = assessmentsRaw.replace(/'/g, '"');
-    const assessmentList = JSON.parse(courseData.assessments.replace(/'/g, '"'));    
+    const assessmentList = JSON.parse(courseData.assessments.replace(/'/g, '"'));   
 
     const data = {
       "mentor welcome template": '',  // remove marker in header
@@ -224,8 +241,19 @@ module.exports = internal.CoursePolicies = class {
     for (let i = 0; i < assessmentList.length; i++) {
       data["assessment list"].push({"assessment": assessmentList[i]});
     }
+    
+    if (courseData.includeStudentSection) {
+      let replaceText = '\nThese students are currently enrolled in my section:';
+      
+      const studentListReplacement = {
+        "pretty": replaceText + '\n[put student list here]',
+        "yamm": replaceText + '\n<<students>>'
+      };
 
-    const templateFile = this._fileservices.readFileSync(this._mentorWelcomeTemplate);    
+      data["student list section"] = studentListReplacement[courseData.format];
+    }
+
+    const templateFile = this._fileservices.readFileSync(templateDoc);    
     const handler = new this._easyTemplate.TemplateHandler(templateFile, data);
     result = await handler.process(templateFile, data);
 
@@ -237,6 +265,10 @@ module.exports = internal.CoursePolicies = class {
     result = await handler.process(intermediateFile, data2);
 
     return result;
+  }
+  
+  _makeOutputHTMLDoc(thisObj, generalData, courseData, pugFileName) {
+    return thisObj._pug.renderFile(pugFileName, {});
   }
   
   _makeContactList(dbContactData) {
@@ -335,14 +367,21 @@ module.exports = internal.CoursePolicies = class {
     return expectationList;
   }
 
-  async _downloadOutputDoc(thisObj, res, outputDoc, courseName) {
+  async _downloadOutputDoc(thisObj, res, outputDoc, courseName, fileType) {
     let outputFileName = thisObj._tempFileManager.tmpNameSync({tmpdir: thisObj._tempDir, prefix: thisObj._tempPrefix});
     await thisObj._fileservices.writeFileSync(outputFileName, outputDoc);
     
-    let downloadFileName = courseName + ' [mentor welcome template].docx';
+    let downloadFileName = courseName + ' [mentor welcome template].' + fileType;
 
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    if (fileType == 'docx') {
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    
+    } else if (fileType == 'html') {
+      res.setHeader('Content-Type', 'text/html');
+    }
+
     res.setHeader("Content-Disposition", "attachment; filename=" + downloadFileName);
+    
     res.sendFile(outputFileName); 
   }
   
@@ -988,4 +1027,12 @@ module.exports = internal.CoursePolicies = class {
     
     return dateStamp;
   }    
+  
+  _getFormattedDate(date) {
+    let year = date.getFullYear();
+    let month = (1 + date.getMonth()).toString().padStart(2, '0');
+    let day = date.getDate().toString().padStart(2, '0');
+  
+    return month + '/' + day + '/' + year;
+  }  
 }

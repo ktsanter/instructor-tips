@@ -376,7 +376,12 @@ const coursePolicies = new coursePoliciesClass({
   "tempDir": __dirname + '/private/temp',
   "fileservices": fileservices,
   "path": path,
-  "mentorWelcomeTemplate": path.join(__dirname, '/private/coursepolicies/docs/mentor-welcome-template.docx')
+  "pug": pug,  
+  "mentorWelcomeTemplate": {
+    "pretty": path.join(__dirname, '/private/coursepolicies/docs/mentor-welcome-template-pretty.docx'),
+    "yamm": path.join(__dirname, '/private/coursepolicies/docs/mentor-welcome-template.docx'),
+    "html": path.join(__dirname, '/private/coursepolicies/pug/output/mentor-welcome-template.pug'),
+  }
 });
 
 //------------------------------------------

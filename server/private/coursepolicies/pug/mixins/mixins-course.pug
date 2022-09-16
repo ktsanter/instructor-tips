@@ -6,7 +6,6 @@ mixin courseContainer()
         label(for="selectCourse") course
 
     .col-sm
-      button(class="btn-mentor-welcome btn btn-secondary disabled") mentor letter
       
   .row(class="keypoints-outer mt-4 hide-me")
     .col-sm
@@ -30,3 +29,30 @@ mixin courseContainer()
               .assessment-item(class="template assessment-template hide-me")
               .assessment-container
 
+  .row(class="welcome-outer mt-4 hide-me")
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") mentor welcome letter
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              div format
+              
+              .form-check(class="ms-4")
+                input(type="radio" class="form-check-input output-format" name="outputFormat" value="pretty" id="outputFormatted" checked)
+                label(class="form-check-label" for="outputFormatted") "pretty", suitable for PDF
+
+              .form-check(class="ms-4")
+                input(type="radio" class="form-check-input output-format" name="outputFormat" value="yamm" id="outputYAMM")
+                label(class="form-check-label" for="outputYAMM") Yet Another Mail Merge (YAMM)
+
+              .form-check(class="ms-4")
+                input(type="radio" class="form-check-input output-format" name="outputFormat" value="html" id="outputHTML")
+                label(class="form-check-label" for="outputHTML") HTML
+
+              .form-check(class="mt-2")
+                input(type="checkbox" class="form-check-input include-student-section" id="chkIncludeStudentSection" checked)
+                label(class="form-check-label" for="chkIncludeStudentSection") include student list section
+              
+              button(class="btn-mentor-welcome welcome btn btn-secondary mt-3") download
+  

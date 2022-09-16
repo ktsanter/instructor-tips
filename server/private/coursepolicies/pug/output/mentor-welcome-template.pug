@@ -1,0 +1,40 @@
+include ../../../common/pug/fontawesome-mixins.pug
+include ../../../common/pug/bootstrap-mixins.pug
+include ../../../common/pug/jquery-mixins.pug
+
+doctype html
+html(lang="en")
+  head
+    title mentor welcome template
+    meta(charset="utf-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+
+    +fontawesome
+    +bootstrapstyle
+    
+    style
+      include ../../styles/mentor-welcome-template.css
+    
+    +addJQuery()
+    
+  body(class="colorscheme")
+    .banner
+      |Welcome as a mentor to XXXX
+      
+    .instructor-info instructor info
+    
+    .greeting greeting
+    
+    .keypoints keypoints
+    
+    .expectations-student expect of student
+    
+    .expectations-instructor expect of instructor
+    
+    .mentor-support mentor support
+    
+    .special-populations special populations
+    
+    .closing closing
+    
+    .signature signature

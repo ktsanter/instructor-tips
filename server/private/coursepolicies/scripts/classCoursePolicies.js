@@ -44,7 +44,8 @@ class CoursePolicies {
     this.settings.elemKeypointsOuter = this.config.container.getElementsByClassName('keypoints-outer')[0];
     this.settings.elemKeypoints = this.config.container.getElementsByClassName('keypoints-container')[0];
     
-    this.settings.elemMentorWelcome = this.config.container.getElementsByClassName('btn-mentor-welcome')[0];
+    this.settings.elemMentorWelcomeOuter = this.config.container.getElementsByClassName('welcome-outer')[0];
+    this.settings.elemMentorWelcome = this.settings.elemMentorWelcomeOuter.getElementsByClassName('btn-mentor-welcome')[0];
     this.settings.elemMentorWelcome.addEventListener('click', (e) => { this._handleMentorWelcome(e); } );
   }
 
@@ -125,7 +126,7 @@ class CoursePolicies {
   _showHideContent(show) {
     UtilityKTS.setClass(this.settings.elemAssessmentsOuter, this.settings.hideClass, !show);
     UtilityKTS.setClass(this.settings.elemKeypointsOuter, this.settings.hideClass, !show);
-    UtilityKTS.setClass(this.settings.elemMentorWelcome, 'disabled', !show);
+    UtilityKTS.setClass(this.settings.elemMentorWelcomeOuter, this.settings.hideClass, !show);
   }
   
   _loadKeypoints(outerContainer, container, keypointList) {
@@ -208,10 +209,15 @@ class CoursePolicies {
   }
   
   _downloadMentorWelcomeLetter(courseInfo) {
+    const format = document.querySelector('input[name="outputFormat"]:checked').value;
+    const includeStudentSection = this.settings.elemMentorWelcomeOuter.getElementsByClassName('include-student-section')[0].checked;
+
     let params = {
       "courseInfo": courseInfo,
+      "format": format,
+      "includeStudentSection": includeStudentSection
     }
-    
+
     let exportForm = document.getElementsByClassName('export-form')[0];
     exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(params);
     exportForm.submit();

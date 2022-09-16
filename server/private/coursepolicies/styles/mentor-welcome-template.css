@@ -1,0 +1,25 @@
+/*------------------------------------------------------------------------------
+ * mentor welcome letter template
+ *------------------------------------------------------------------------------*/
+.colorscheme {
+  --bgPrimary: rgba(66, 98, 150, 1.0);
+  --bgShaded:rgba(66, 98, 150, 0.5);
+  --borderPrimary: #ced4da;
+}
+
+body {}
+
+.aardvark-font {
+  font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans";
+}
+
+.hide-me {
+  display: none;
+}
+
+/*------------------------------------------------------------------------------
+ * xxxx
+ *------------------------------------------------------------------------------*/
+.row {
+  border: 1px solid red;
+}

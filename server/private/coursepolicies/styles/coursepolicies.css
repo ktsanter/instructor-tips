@@ -109,6 +109,14 @@ body {
   font-size: 150%;
 }
 
+.contents .contents-navCourse .form-check-input {
+  font-size: 100%;
+}
+
+.contents .contents-navCourse .icon-mentor-welcome {
+  font-size: 150%;
+  color: var(--bgPrimary);
+}
 
 /*------------------------------------------------------------------------------
  * contents - navAdmin
