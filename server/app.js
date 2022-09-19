@@ -378,8 +378,7 @@ const coursePolicies = new coursePoliciesClass({
   "path": path,
   "pug": pug,  
   "mentorWelcomeTemplate": {
-    "pretty": path.join(__dirname, '/private/coursepolicies/docs/mentor-welcome-template-pretty.docx'),
-    "yamm": path.join(__dirname, '/private/coursepolicies/docs/mentor-welcome-template.docx'),
+    "msword": path.join(__dirname, '/private/coursepolicies/docs/mentor-welcome-template.docx'),
     "html": path.join(__dirname, '/private/coursepolicies/pug/output/mentor-welcome-template.pug'),
   }
 });

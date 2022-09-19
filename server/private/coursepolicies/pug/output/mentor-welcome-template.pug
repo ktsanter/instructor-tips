@@ -1,6 +1,14 @@
 - var strParams = JSON.stringify(params);
 - var courseName = params.courseData.name
 - var isAPCourse = params.courseData.ap
+
+- var mvLogo = "https://res.cloudinary.com/ktsanter/image/upload/v1663545499/MVU/mv-logo.png"
+
+- var keypointList = params.keypointList;
+- var expectationsStudentList = params.expectationsStudent
+- var expectationsInstructorList = params.expectationsInstructor
+- var assessmentList = params.assessmentList;
+
 - var resourceLinks = params.resourceLinks;
 - var customerCare = resourceLinks["customer care"]
 - var mentorPage = resourceLinks["mentor page"]
@@ -9,11 +17,22 @@
 - var apPolicy = null;
 - if (isAPCourse) apPolicy = resourceLinks["ap policy"]
 
+- var contactMentorSupport = params.contactList["mentorSupport"];
+- var contactSpecialPopulations = params.contactList["specialPopulationsSupport"];
+
+- var mvDeepTeal = "#115e6e";
+- var highlightColor = "#FFFF00";
+- var styleSectionTitle = "color: white; background-color: " + mvDeepTeal + "; padding: 0 0.3em;"
+- var styleHighlight = "background-color: " + highlightColor;
+- var styleSection = "margin-top: 1.3em;"
+- var tblpad = "padding: 0 0.3em;"
+
 include ../../../common/pug/fontawesome-mixins.pug
 include ../../../common/pug/bootstrap-mixins.pug
 include ../../../common/pug/jquery-mixins.pug
 
 doctype html
+
 html(lang="en")
   head
     title mentor welcome template
@@ -23,23 +42,64 @@ html(lang="en")
     +fontawesome
     +bootstrapstyle
     
-    style
-      include ../../styles/mentor-welcome-template.css
+    // note: external CSS doesn't seem to work when copy/pasting results to Gmail
+    //style
+      //include ../../styles/mentor-welcome-template.css
     
     +addJQuery()
     
-  body(class="colorscheme")
+  body(class="colorscheme" style="margin-left: 0.6em")
+    //-------------------------
+    // banner
+    //-------------------------
     .banner
-      |Welcome as a mentor to #{courseName}
+      table(style="border: 1px solid #ccc")
+        thead
+        tbody
+          tr
+            td
+              img(src=mvLogo)
+              
+            td(style="font-size: 120%; color: white; background-color: #115e6e; width: 100%; padding-left: 0.3em")
+              |Welcome as a mentor to 
+              em #{courseName}
       
-    .instructor-info(class="welcome-section mt-2") instructor info
+    //-------------------------
+    // instructor-info
+    //-------------------------
+    .instructor-info(style=styleSection) 
+      table(style="border: 1px solid #ccc")
+        thead
+        tbody
+          tr
+            td(style=tblpad)
+              span(style=styleHighlight) [instructor image]
+              
+            td(style=tblpad)
+              table
+                thead
+                tbody
+                  tr
+                    td(colspan="2" style=tblpad) 
+                      strong(style=styleHighlight) [instructor name]
+                  tr
+                    td(style=tblpad) phone
+                    td(style=tblpad)
+                      span(style=styleHighlight) [phone]
+                  tr
+                    td(style=tblpad) email
+                    td(style=tblpad) 
+                      span SLP or 
+                      span(style=styleHighlight) [xxxxxx@michiganvirtual.org]
+                  tr
+                    td(style=tblpad) Zoom
+                    td(style=tblpad)
+                      span(style=styleHighlight) [link to schedule]
     
-    .student-list-section(class="welcome-section mt-2")
-      |These students are currently enrolled in my section:
-      br
-      |[put student list here]
-
-    .greeting(class="welcome-section mt-2")
+    //-------------------------
+    // greeting
+    //-------------------------
+    .greeting(style=styleSection)
       |I’m eager to work with you as you support students in my
       | class.  Your role is crucial to their success, and I want
       | to aid you in any way possible.  There is a lot of
@@ -53,33 +113,107 @@ html(lang="en")
       em Instructor Info 
       | widget.
     
-    .keypoints(class="welcome-section mt-2") 
+    //-------------------------
+    // student-list-section
+    //-------------------------
+    .student-list-section(style=styleSection)
+      |These students are currently enrolled in my section:
+      br
+      span(style=styleHighlight) [put student list here]
+
+    //-------------------------
+    // keypoints
+    //-------------------------
+    .keypoints(style=styleSection) 
       .section-title 
-        span(class="section-title-text") key points for mentors
+        span(style=styleSectionTitle) key points for mentors
+        for val in keypointList
+          div(style="margin-left: 0.3em") • &nbsp;
+            |!{val}
     
-    .expectations-student(class="welcome-section mt-2") 
-      .section-title 
-        span(class="section-title-text") what I expect of students
+    //-------------------------
+    // expectations
+    //-------------------------
+    .expectations(style=styleSection)
+      table
+        thead
+        tbody
+          tr
+            td 
+              span(style=styleSectionTitle) what I expect of students
+            td
+              span(style=styleSectionTitle) what students can expect from me
+          tr
+            td(style="vertical-align: top")
+              for val in expectationsStudentList
+                div(style="margin-left: 0.3em") • &nbsp;
+                  |!{val}
+            td(style="vertical-align: top")
+              for val in expectationsInstructorList
+                div(style="margin-left: 0.3em") • &nbsp;
+                  |!{val}
     
-    .expectations-instructor(class="welcome-section mt-2") 
+    //-------------------------
+    // assessments-and-proctoring
+    //-------------------------
+    .assessments-and-proctoring(style=styleSection)
       .section-title 
-        span(class="section-title-text") what students can expect from me
-    
-    .assessments-and-proctoring(class="welcome-section mt-2")
-      .section-title 
-        span(class="section-title-text") tests, exams, and proctoring
+        span(style=styleSectionTitle) tests, exams, and proctoring
+        div
+          |Proctoring of quizzes, tests, and exams is expected whenever feasible. 
+          
+          if assessmentList.length == 0
+            | There are no password-protected exams in this course
+            
+          else
+            | We ask that you do not share assessment passwords with students.  
+            | Instead, please enter the password yourself.
+            table(style="margin-left: 1.0em; border: 1px solid black")
+              thead
+                tr
+                  th(style="border: 1px solid #666; padding: 0.2em; background-color: #ddd") assessment
+                  th(style="border: 1px solid #666; padding: 0.2em; background-color: #ddd") password
+              tbody
+                each val in assessmentList
+                  tr
+                    td(style="border: 1px solid #666; padding: 0.2em")=val
+                    td(style="border: 1px solid #666; padding: 0.2em")
+                      span(style=styleHighlight) password
       
-    .mentor-support(class="welcome-section mt-2") 
+    //-------------------------
+    // mentor-support
+    //-------------------------
+    .mentor-support(style=styleSection)
       .section-title 
-        span(class="section-title-text") mentor support
+        span(style=styleSectionTitle) mentor support
+        div
+          |Michigan Virtual offers many resources to help mentors.  
+          | A visit to our Mentor Page is well worth your time – it’s full of handy resources.  
+          | #{contactMentorSupport.first} #{contactMentorSupport.last} is our Mentor Support Manager,
+          | and you can reach out any time at 
+          | #{contactMentorSupport.phone} or 
+          a(href="mailto:" + contactMentorSupport.email)=contactMentorSupport.email
     
-    .special-populations(class="welcome-section mt-2") 
+    //-------------------------
+    // special-populations
+    //-------------------------
+    .special-populations(style=styleSection)
       .section-title 
-        span(class="section-title-text") special populations
+        span(style=styleSectionTitle) special populations
+        div
+          |I am committed to supporting the accommodations outlined in IEPs or 504 plans. 
+          | Please contact me if you have questions about them. 
+          | You can also reach out to #{contactSpecialPopulations.first} #{contactSpecialPopulations.last}, 
+          | our Special Populations Coordinator, at 
+          | #{contactSpecialPopulations.phone} or 
+          a(href="mailto:" + contactSpecialPopulations.email)=contactSpecialPopulations.email
     
-    .helpful-links(class="welcome-section mt-2")
+    //-------------------------
+    // helpful-links
+    //-------------------------
+    .helpful-links(style=styleSection)
       .section-title 
-        span(class="section-title-text") helpful links
+        span(style=styleSectionTitle) helpful links
 
       a(href=customerCare.linkUrl, target="_blank")=customerCare.linkText
       br
@@ -92,13 +226,19 @@ html(lang="en")
         br
         a(href=apPolicy.linkUrl, target="_blank")=apPolicy.linkText
       
-    .closing(class="welcome-section mt-2") 
+    //-------------------------
+    // closing
+    //-------------------------
+    .closing(style=styleSection) 
       |Please contact me whenever you have questions or concerns.
       | I look forward to working with you this term!
       br
       | Sincerely,
       br
     
+    //-------------------------
+    // signature
+    //-------------------------
     .signature
-      span(class="highlight") [instructor name]
+      span(style=styleHighlight) [instructor name]
 

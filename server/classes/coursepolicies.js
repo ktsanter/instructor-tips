@@ -147,7 +147,6 @@ module.exports = internal.CoursePolicies = class {
       const parsedParams = JSON.parse(fields['export-data']);
       const courseInfo = parsedParams.courseInfo;
       courseInfo.format = parsedParams.format;
-      courseInfo.includeStudentSection = parsedParams.includeStudentSection;
       const templateDoc = thisObj._mentorWelcomeTemplate[parsedParams.format];
       
       let outputDoc = await thisObj._makeOutputDoc(thisObj, generalInfo, courseInfo, templateDoc);
@@ -157,8 +156,7 @@ module.exports = internal.CoursePolicies = class {
       }
       
       const fileTypeLookup = {
-        "pretty": 'docx',
-        "yamm": 'docx',
+        "msword": 'docx',
         "html": 'html'
       };
       let outputFileType = fileTypeLookup[courseInfo.format];
@@ -241,17 +239,6 @@ module.exports = internal.CoursePolicies = class {
     for (let i = 0; i < assessmentList.length; i++) {
       data["assessment list"].push({"assessment": assessmentList[i]});
     }
-    
-    if (courseData.includeStudentSection) {
-      let replaceText = '\nThese students are currently enrolled in my section:';
-      
-      const studentListReplacement = {
-        "pretty": replaceText + '\n[put student list here]',
-        "yamm": replaceText + '\n<<students>>'
-      };
-
-      data["student list section"] = studentListReplacement[courseData.format];
-    }
 
     const templateFile = this._fileservices.readFileSync(templateDoc);    
     const handler = new this._easyTemplate.TemplateHandler(templateFile, data);
@@ -268,18 +255,79 @@ module.exports = internal.CoursePolicies = class {
   }
   
   _makeOutputHTMLDoc(thisObj, generalData, courseData, pugFileName) {
-    const isAPCourse = courseData.ap;
+    const isAPCourse = (courseData.ap == 1);
     const contactList = thisObj._makeContactList(generalData.contact);
     const resourceLinks = thisObj._makeResourceLinkList(generalData.resourcelink, isAPCourse);
+
+    const keypointList = thisObj._replacePlaceholders(courseData.keypoints, resourceLinks);
+    
+    let exp = generalData.expectationsStudent.filter(function(a) {
+      const result = 
+        (a.restriction == 'none') ||
+        (a.restriction == 'ap' && isAPCourse) ||
+        (a.restriction == 'non-ap' && !isAPCourse);       
+      return result;
+    }).sort(function (a,b) {
+      return a.ordering - b.ordering;
+    }).map(function(a) {
+      return a.expectationtext;
+    });
+    const expectationsStudent = thisObj._replacePlaceholders(exp, resourceLinks);
+
+    exp = generalData.expectationsInstructor.filter(function(a) {
+      const result = 
+        (a.restriction == 'none') ||
+        (a.restriction == 'ap' && isAPCourse) ||
+        (a.restriction == 'non-ap' && !isAPCourse);       
+      return result;
+    }).sort(function (a,b) {
+      return a.ordering - b.ordering;
+    }).map(function(a) {
+      return a.expectationtext;
+    });
+    const expectationsInstructor = thisObj._replacePlaceholders(exp, resourceLinks);
+
+    const assessmentsRaw = courseData.assessments;
+    const assessmentsClean = assessmentsRaw.replace(/'/g, '"');
+    const assessmentList = JSON.parse(courseData.assessments.replace(/'/g, '"'));   
 
     const params = {
       "courseData": courseData,
       "generalData": generalData,
-      "resourceLinks": resourceLinks
+      "keypointList": keypointList,
+      "expectationsStudent": expectationsStudent,
+      "expectationsInstructor": expectationsInstructor,
+      "resourceLinks": resourceLinks,
+      "contactList": contactList,
+      "assessmentList": assessmentList
     }
-    console.log('_makeOutputHTMLDoc', params);
-    
+        
     return thisObj._pug.renderFile(pugFileName, {"params": params});
+  }
+  
+  _replacePlaceholders(itemList, resourceList) {
+    let replacedList = [];
+    
+    for (let i = 0; i < itemList.length; i++) {
+      let item = itemList[i];
+      const matches = item.match(/{(.*?)}/g);
+
+      let replaced = item;
+      if (matches != null) {
+        for (let j = 0; j < matches.length; j++) {
+          const placeholder = matches[j].slice(1, -1);
+          const replacement = resourceList[placeholder];
+          if (replacement != null) {
+            const rtext = '<a href="' + replacement.linkUrl + ' target="_blank">' + replacement.linkText + '</a>';
+            replaced = item.replace(matches[j], rtext);
+          }
+        }
+      }
+      
+      replacedList.push(replaced);
+    }
+    
+    return replacedList;
   }
   
   _makeContactList(dbContactData) {

@@ -25,7 +25,6 @@ const app = function () {
 	//----------------------------------------
 	async function init (sodium) {
     console.log('TODO: develop keypoints for use of notes on assessments');
-    console.log('TODO: add HTML as output format');
     
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];

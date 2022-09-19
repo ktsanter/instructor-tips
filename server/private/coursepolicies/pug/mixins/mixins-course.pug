@@ -39,20 +39,12 @@ mixin courseContainer()
               div format
               
               .form-check(class="ms-4")
-                input(type="radio" class="form-check-input output-format" name="outputFormat" value="pretty" id="outputFormatted" checked)
-                label(class="form-check-label" for="outputFormatted") "pretty", suitable for PDF
-
-              .form-check(class="ms-4")
-                input(type="radio" class="form-check-input output-format" name="outputFormat" value="yamm" id="outputYAMM")
-                label(class="form-check-label" for="outputYAMM") Yet Another Mail Merge (YAMM)
+                input(type="radio" class="form-check-input output-format" name="outputFormat" value="msword" id="outputWord" checked)
+                label(class="form-check-label" for="outputWord") MS Word (suitable for PDF)
 
               .form-check(class="ms-4")
                 input(type="radio" class="form-check-input output-format" name="outputFormat" value="html" id="outputHTML")
-                label(class="form-check-label" for="outputHTML") HTML
+                label(class="form-check-label" for="outputHTML") HTML (suitable for copy/paste to Gmail)
 
-              .form-check(class="mt-2")
-                input(type="checkbox" class="form-check-input include-student-section" id="chkIncludeStudentSection" checked)
-                label(class="form-check-label" for="chkIncludeStudentSection") include student list section
-              
               button(class="btn-mentor-welcome welcome btn btn-secondary mt-3") download
   

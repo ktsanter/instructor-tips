@@ -19,16 +19,22 @@ body {}
   display: none;
 }
 
+/*
 .highlight {
   background-color: var(--highlightColor);
 }
+*/
 
 /*------------------------------------------------------------------------------
  * sections
  *------------------------------------------------------------------------------*/
+/*
 .welcome-section {}
+*/
 
+/*
 .welcome-section .section-title-text {
   color: white;
   background-color: var(--mvDarkTeal);
 }
+*/

@@ -34,10 +34,6 @@ class CoursePolicies {
     this.settings.elemCourseList = this.config.container.getElementsByClassName('select-course')[0];
     this.settings.elemCourseList.addEventListener('change', (e) => { this._handleCourseSelection(e); });
     
-    this.settings.elemAddCourseIcon = this.config.container.getElementsByClassName('add-course')[0];
-    this.settings.elemEditCourseIcon = this.config.container.getElementsByClassName('edit-course-name')[0];
-    this.settings.elemDeleteCourseIcon = this.config.container.getElementsByClassName('delete-course')[0];
-
     this.settings.elemAssessmentsOuter = this.config.container.getElementsByClassName('assessments-outer')[0];
     this.settings.elemAssessments = this.config.container.getElementsByClassName('assessment-container')[0];
     
@@ -210,12 +206,10 @@ class CoursePolicies {
   
   _downloadMentorWelcomeLetter(courseInfo) {
     const format = document.querySelector('input[name="outputFormat"]:checked').value;
-    const includeStudentSection = this.settings.elemMentorWelcomeOuter.getElementsByClassName('include-student-section')[0].checked;
 
     let params = {
       "courseInfo": courseInfo,
-      "format": format,
-      "includeStudentSection": includeStudentSection
+      "format": format
     }
 
     let exportForm = document.getElementsByClassName('export-form')[0];
