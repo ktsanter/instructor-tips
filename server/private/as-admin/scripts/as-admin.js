@@ -208,6 +208,10 @@ const app = function () {
   }
       
   async function _showMailer() {
+    UtilityKTS.setClass(page.navMailer, 'hide-me', true);
+    page.notice.setNotice('mailer features disabled');
+    
+    /*
     page.notice.setNotice('loading...', true);
     
     var gmailAuthorized = false;
@@ -225,6 +229,7 @@ const app = function () {
       page.checkMailerDebug.checked = result.data.debugstate;
     }
     _updateMailerDebugUI(debugState);
+    */
   }
   
   async function _showCron() {

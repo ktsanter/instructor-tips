@@ -9,6 +9,9 @@ const internal = {};
 
 module.exports = internal.GMailer = class {
   constructor(params) {
+    console.log('GMailer stubbed');
+    return;
+    /*
     this.fsp = require('fs').promises;    
     this.google = params.google;
     this.mimetext = require('mimetext');  // https://www.npmjs.com/package/mimetext
@@ -33,13 +36,16 @@ module.exports = internal.GMailer = class {
     this.sender = 'ksanter@mivu.org';
     
     this._testAuth();
+    */
   }
   
   async _testAuth() {
+    /*
     var authTestResult = await this.checkGmailAuthorization();
     if (!authTestResult.success || !authTestResult.data.authorized) {
       console.log('** Gmail authorization failed: ' + authTestResult.details);
     }
+    */
   }
   
 //---------------------------------------------------------------
@@ -57,8 +63,15 @@ module.exports = internal.GMailer = class {
   }
   
   async checkGmailAuthorization() {
-    var result = this._failResult();
+    console.log('GMailer.checkGmailAuthorization stubbed');
     
+    var result = this._failResult();
+    result.success = true;
+    result.details = 'stubbed';
+    result.data = {authorized: false};
+    return result;
+    
+    /*
     var credentialsResult = await this._getCredentials(); 
     if (!credentialsResult.success) {
       result.details = credentialsResult.err;
@@ -85,11 +98,18 @@ module.exports = internal.GMailer = class {
     result.data = {authorized: true}
       
     return result;
+    */
   }
   
   async beginGmailAuthorization() {
-    var result = this._failResult();
+    console.log('GMailer.beginGmailAuthorization stubbed');
     
+    var result = this._failResult();
+    result.success = true;
+    result.details = 'stubbed';
+    return result;
+    
+  /*
     var credentialsResult = await this._getCredentials(); 
     if (!credentialsResult.success) {
       result.details = credentialsResult.err;
@@ -111,9 +131,18 @@ module.exports = internal.GMailer = class {
     result.details = 'authorization URL generated';
     
     return result;
+    */
   }
   
   async finishGmailAuthorization(confirmCode) {
+    console.log('GMailer.finishGmailAuthorization stubbed');
+    
+    var result = this._failResult();
+    result.success = true;
+    result.details = 'stubbed';
+    return result;
+    
+/*    
     var result = this._failResult();
     
     var getTokenResult = await this._getTokenFromConfirmCode(confirmCode);
@@ -134,18 +163,19 @@ module.exports = internal.GMailer = class {
     result.details = 'confirm complete';
     
     return result;
+    */
   }
   
   async sendTestMail(params) {
-    return this._sendMessage(params);
+    //return this._sendMessage(params);
   }
   
   async sendMessage(params) {
-    return this._sendMessage(params);
+    //return this._sendMessage(params);
   }
   
   async sendDummy(params) {
-    return this._sendMessageDebug(params);
+    //return this._sendMessageDebug(params);
   }
   
   /*
@@ -161,6 +191,7 @@ module.exports = internal.GMailer = class {
     return {success: false, data: null, details: msg};
   }
 
+/*
   async _getCredentials() {
     var result = {sucess: false, credentials: null, err: 'failed to get credentials'};
 
@@ -273,4 +304,5 @@ module.exports = internal.GMailer = class {
     console.log(params);
     return {success: true, details: 'debug mode is on', data: null};
   }
+  */
 }

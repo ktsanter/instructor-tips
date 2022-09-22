@@ -27,16 +27,25 @@ module.exports = internal.ASAdmin = class {
       result = this.gMailer.setDebugMode(params.debugon);
       
     } else if (task == 'check-gmail-auth') {
-      var result = await this.gMailer.checkGmailAuthorization();
+      //var result = await this.gMailer.checkGmailAuthorization();
+      result.success = true;
+      result.details = 'stubbed';
+      result.data.authorized = false;
       
     } else if (task == 'begin-gmail-auth') {
-      var result = await this.gMailer.beginGmailAuthorization();
+      //var result = await this.gMailer.beginGmailAuthorization();
+      result.success = true;
+      result.details = 'stubbed';
       
     } else if (task == 'finish-gmail-auth') {
-      var result = await this.gMailer.finishGmailAuthorization(params.confirmcode);
+      //var result = await this.gMailer.finishGmailAuthorization(params.confirmcode);
+      result.success = true;
+      result.details = 'stubbed';
       
     } else if (task == 'send-test-mail') {
-      var result = await this.gMailer.sendTestMail(params);
+      //var result = await this.gMailer.sendTestMail(params);
+      result.success = true;
+      result.details = 'stubbed';
       
     } else if (task == 'cron-status') {
       var result = await this._getCronStatus(params);

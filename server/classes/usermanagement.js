@@ -140,7 +140,12 @@ module.exports = internal.UserManagement = class {
   }
   
   async resetRequest(postData) {
-    var result = this._dbManager.queryFailureResult();    
+    var result = this._dbManager.queryFailureResult(); 
+    console.log('UserManagement.resetRequest disabled');
+    result.success = true;
+    result.details = 'stubbed';
+    return result;
+    
     var userName = postData.userName;
     
     var query = 

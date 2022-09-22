@@ -317,7 +317,7 @@ const app = function () {
       
     } else {
       container.appendChild(CreateElement.createLink(null, 'newaccount', 'Create a new account?', null, settings.urlCreateAccount)); 
-      container.appendChild(CreateElement.createLink(null, 'resetaccount', 'Forgot your password?', null, settings.urlResetAccount)); 
+      //container.appendChild(CreateElement.createLink(null, 'resetaccount', 'Forgot your password?', null, settings.urlResetAccount)); 
     }
     
     return container;

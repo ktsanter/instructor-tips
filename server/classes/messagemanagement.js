@@ -144,6 +144,9 @@ module.exports = internal.MessageManagement = class {
   }
   
   async sendAccountResetNotification(userId, identifier, expiration) {
+    console.log('MessageManagement.sendAccountResetNotification stubbed');
+    return true;
+    
     var query, queryResults;
     var expirationStamp = this._formatDateStamp(expiration).slice(0, -4);
     
@@ -191,7 +194,7 @@ module.exports = internal.MessageManagement = class {
         message: rendered
       });
       if (!mailResult.success) {
-        console.log('MessageManagement._prepAndSendMessage: failed to send email to ' + emailTo);
+        console.log('MessageManagement._prepAndSendMessage: failed to send email to ' + params.emailTo);
         return false;
       }
     }
@@ -301,6 +304,9 @@ module.exports = internal.MessageManagement = class {
   }
 
   async _prepAndSendMessageWithoutWrapper(params) {
+    console.log('MessageManagement._prepAndSendMessageWithoutWrapper stubbed');
+    return true;
+    
     var rendered = this._pug.renderFile(params.pugFile, {params: params.pugParams});
 
     if (this.DEBUG) {
