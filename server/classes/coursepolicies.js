@@ -944,7 +944,7 @@ module.exports = internal.CoursePolicies = class {
         ') values (' +
           '"' + postData.coursename + '", ' +
           0 + ', ' +
-          '"" ' +
+          '"[]" ' +
         ')'
     };
 
