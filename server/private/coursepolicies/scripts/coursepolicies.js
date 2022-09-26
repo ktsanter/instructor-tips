@@ -11,6 +11,7 @@ const app = function () {
 
     helpURL: '/coursepolicies/help',
     logoutURL: '/usermanagement/logout/coursepolicies',
+    whoteacheswhatURL: '/whoteacheswhat',
     
     dirtyBit: {},
     
@@ -179,6 +180,10 @@ const app = function () {
     }
   }
     
+  function _doWhoTeachesWhat() {
+    window.open(settings.whoteacheswhatURL, '_blank');
+  }
+    
   function _doHelp() {
     window.open(settings.helpURL, '_blank');
   }
@@ -281,6 +286,7 @@ const app = function () {
     var dispatchMap = {
       "navCourse": function() { _showContents('navCourse');},
       "navAdmin": function() { _showContents('navAdmin'); },
+      "navWhoTeachesWhat": function() { _doWhoTeachesWhat(); },
       "navHelp": _doHelp,
       "navProfile": function() { _showContents('navProfile'); },
       "navProfilePic": function() { _showContents('navProfile'); },
