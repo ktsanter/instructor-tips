@@ -40,6 +40,13 @@ class CoursePolicies {
     this.settings.elemKeypointsOuter = this.config.container.getElementsByClassName('keypoints-outer')[0];
     this.settings.elemKeypoints = this.config.container.getElementsByClassName('keypoints-container')[0];
     
+    this.settings.elemExpectationsOuter = this.config.container.getElementsByClassName('expectations-outer')[0];
+    this.settings.elemStudentExpectations = this.config.container.getElementsByClassName('expectation-student-container')[0];
+    this.settings.elemInstructorExpectations = this.config.container.getElementsByClassName('expectation-instructor-container')[0];
+    
+    this.settings.elemKeypointsOuter = this.config.container.getElementsByClassName('keypoints-outer')[0];
+    this.settings.elemKeypoints = this.config.container.getElementsByClassName('keypoints-container')[0];
+    
     this.settings.elemMentorWelcomeOuter = this.config.container.getElementsByClassName('welcome-outer')[0];
     this.settings.elemMentorWelcome = this.settings.elemMentorWelcomeOuter.getElementsByClassName('btn-mentor-welcome')[0];
     this.settings.elemMentorWelcome.addEventListener('click', (e) => { this._handleMentorWelcome(e); } );
@@ -98,6 +105,7 @@ class CoursePolicies {
       elemItem.setAttribute("courseInfo", JSON.stringify(singleCourseInfo));
       if (this.settings.selectedCourse && courseName == this.settings.selectedCourse.name) {
         indexToSelect = i;
+        this.settings.selectedCourse = singleCourseInfo;
       }
     }
         
@@ -115,6 +123,7 @@ class CoursePolicies {
 
     this._loadKeypoints(this.settings.elemKeypointsOuter, this.settings.elemKeypoints, courseInfo.keypoints);  
     this._loadAssessments(this.settings.elemAssessmentsOuter, this.settings.elemAssessments, courseInfo.assessments);  
+    this._loadExpectations(this.settings.elemExpectationsOuter, this.settings.elemStudentExpectations, this.settings.elemInstructorExpectations);
     
     this._showHideContent(true);
   }
@@ -122,6 +131,7 @@ class CoursePolicies {
   _showHideContent(show) {
     UtilityKTS.setClass(this.settings.elemAssessmentsOuter, this.settings.hideClass, !show);
     UtilityKTS.setClass(this.settings.elemKeypointsOuter, this.settings.hideClass, !show);
+    UtilityKTS.setClass(this.settings.elemExpectationsOuter, this.settings.hideClass, !show);
     UtilityKTS.setClass(this.settings.elemMentorWelcomeOuter, this.settings.hideClass, !show);
   }
   
@@ -142,38 +152,9 @@ class CoursePolicies {
       container.appendChild(elem);
       UtilityKTS.setClass(elem, 'template', false);
       UtilityKTS.setClass(elem, this.settings.hideClass, false);
-      elem.innerHTML = this._formatKeypointText(keypointList[i]);
+      elem.innerHTML = this._formatInfoItem(keypointList[i]);
     }
   }
-  
-  _formatKeypointText(keypointText) {
-    let txt = keypointText;
-    
-    const regexItem = /[^{}]+(?=\})/g;
-    const matches = txt.match(regexItem);
-    if (matches != null) {
-      for (let i = 0; i < matches.length; i++) {
-        const replacement = this._findResourceLink(matches[i])
-        if (replacement != null) {
-          const htmlReplacement = '<a href="' + replacement.linkurl + '" target="_blank">' + replacement.linktext + '</a>';
-          txt = txt.replaceAll('{' + matches[i] + '}', htmlReplacement);
-        }
-      }
-    }
-    
-    return txt;
-  }
-  
-  _findResourceLink(templateitem) {
-    let replacement = null;
-    
-    let resourceLinks = this.settings.generalInfo.resourcelink;
-    for (let i = 0; i < resourceLinks.length && replacement == null; i++) {
-      if (resourceLinks[i].templateitem == templateitem) replacement = resourceLinks[i];
-    }
-    
-    return replacement;
-  }      
   
   _loadAssessments(outerContainer, container, unparsedAssessments) {
     UtilityKTS.removeChildren(container);
@@ -204,6 +185,59 @@ class CoursePolicies {
     return JSON.parse(s);
   }
   
+  _loadExpectations(outerContainer, studentContainer, instructorContainer) {
+    const courseInfo = this.settings.selectedCourse;
+    const generalInfo = this.settings.generalInfo;
+    const isAPCourse = (courseInfo.ap == 1);
+    
+    let expStudent = [];
+    for (let i = 0; i < generalInfo.expectationsStudent.length; i++) {
+      const item = generalInfo.expectationsStudent[i];
+      const include = (
+        (item.restriction == 'none') ||
+        (isAPCourse && item.restriction == 'ap') ||
+        (!isAPCourse && item.restriction == 'non-ap')
+      );
+      if (include) expStudent.push(item);
+    }
+    expStudent = expStudent.sort(function(a, b) {
+      return a.ordering - b.ordering;
+    });
+    
+    let expInstructor = [];
+    for (let i = 0; i < generalInfo.expectationsInstructor.length; i++) {
+      const item = generalInfo.expectationsInstructor[i];
+      const include = (
+        (item.restriction == 'none') ||
+        (isAPCourse && item.restriction == 'ap') ||
+        (!isAPCourse && item.restriction == 'non-ap')
+      );
+      if (include) expInstructor.push(item);
+    }
+    expInstructor = expInstructor.sort(function(a, b) {
+      return a.ordering - b.ordering;
+    });
+
+    UtilityKTS.removeChildren(studentContainer);
+    const elemTemplate = outerContainer.getElementsByClassName('template')[0];
+    for (let i = 0; i < expStudent.length; i++) {
+      let elem = elemTemplate.cloneNode(true);
+      studentContainer.appendChild(elem);
+      UtilityKTS.setClass(elem, 'template', false);
+      UtilityKTS.setClass(elem, this.settings.hideClass, false);
+      elem.innerHTML = this._formatInfoItem(expStudent[i].expectationtext);
+    }
+    
+    UtilityKTS.removeChildren(instructorContainer);
+    for (let i = 0; i < expInstructor.length; i++) {
+      let elem = elemTemplate.cloneNode(true);
+      instructorContainer.appendChild(elem);
+      UtilityKTS.setClass(elem, 'template', false);
+      UtilityKTS.setClass(elem, this.settings.hideClass, false);
+      elem.innerHTML = this._formatInfoItem(expInstructor[i].expectationtext);
+    }
+  }
+  
   _downloadMentorWelcomeLetter(courseInfo) {
     const format = document.querySelector('input[name="outputFormat"]:checked').value;
 
@@ -216,6 +250,35 @@ class CoursePolicies {
     exportForm.getElementsByClassName('export-data')[0].value = JSON.stringify(params);
     exportForm.submit();
   }
+  
+  _formatInfoItem(itemText) {
+    let txt = itemText;
+    
+    const regexItem = /[^{}]+(?=\})/g;
+    const matches = txt.match(regexItem);
+    if (matches != null) {
+      for (let i = 0; i < matches.length; i++) {
+        const replacement = this._findResourceLink(matches[i])
+        if (replacement != null) {
+          const htmlReplacement = '<a href="' + replacement.linkurl + '" target="_blank">' + replacement.linktext + '</a>';
+          txt = txt.replaceAll('{' + matches[i] + '}', htmlReplacement);
+        }
+      }
+    }
+    
+    return txt;
+  }
+  
+  _findResourceLink(templateitem) {
+    let replacement = null;
+    
+    let resourceLinks = this.settings.generalInfo.resourcelink;
+    for (let i = 0; i < resourceLinks.length && replacement == null; i++) {
+      if (resourceLinks[i].templateitem == templateitem) replacement = resourceLinks[i];
+    }
+    
+    return replacement;
+  }      
   
   //--------------------------------------------------------------
   // callbacks

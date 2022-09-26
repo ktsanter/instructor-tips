@@ -33,7 +33,6 @@ html(lang="en")
     +makeNavbar("Course Policies", 
       {
         items: [
-          {id: "navGeneral", type: "link", label: "general"},
           {id: "navCourse", type: "link", label: "course"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
@@ -54,9 +53,6 @@ html(lang="en")
     .contents
       .error-container
       
-      .container-fluid(class="contents-container contents-navGeneral hide-me disable-container")
-        +generalContainer
-                
       .container-fluid(class="contents-container contents-navCourse hide-me disable-container")
         +courseContainer
                 

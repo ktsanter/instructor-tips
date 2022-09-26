@@ -29,6 +29,26 @@ mixin courseContainer()
               .assessment-item(class="template assessment-template hide-me")
               .assessment-container
 
+  .row(class="expectations-outer mt-4 hide-me")
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") expected of students
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm
+              li(class="expectation-student-item template expectation-template hide-me")
+              ul(class="expectation-student-container")
+
+    .col-sm
+      fieldset(class="border configure-fieldset required pb-2")
+        legend(class="w-auto") expected of instructor
+        
+        .container-fluid
+          .row(class="mb-1")
+            .col-sm 
+              ul(class="expectation-instructor-container")
+
   .row(class="welcome-outer mt-4 hide-me")
       fieldset(class="border configure-fieldset required pb-2")
         legend(class="w-auto") mentor welcome letter

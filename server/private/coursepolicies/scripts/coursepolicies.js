@@ -24,8 +24,6 @@ const app = function () {
 	// get things going
 	//----------------------------------------
 	async function init (sodium) {
-    console.log('TODO: develop keypoints for use of notes on assessments');
-    
 		page.body = document.getElementsByTagName('body')[0]; 
     page.errorContainer = page.body.getElementsByClassName('error-container')[0];
     
@@ -46,7 +44,6 @@ const app = function () {
     
     _renderContents();
     
-    await _initializeGeneralPolicies();
     await _initializeCoursePolicies();
     await _initializeAdmin();
     
@@ -85,15 +82,6 @@ const app = function () {
     await settings.profile.init();
   }
   
-  async function _initializeGeneralPolicies() {
-    let adminAllowed = await _checkAdminAllowed();
-    
-    settings.generalPolicies = new GeneralPolicies({
-      "container": page.navGeneral,
-      "adminAllowed": adminAllowed
-    });
-  }
-
   async function _initializeCoursePolicies() {
     let adminAllowed = await _checkAdminAllowed();
     
@@ -130,15 +118,10 @@ const app = function () {
 	// page rendering
 	//-----------------------------------------------------------------------------
   function _renderContents() {
-    _renderGeneral();
     _renderCourse();
     _renderAdmin();
   }
   
-  function _renderGeneral() {
-    page.navGeneral = page.contents.getElementsByClassName('contents-navGeneral')[0];
-  }
-    
   function _renderCourse() {
     page.navCourse = page.contents.getElementsByClassName('contents-navCourse')[0];
   }
@@ -159,20 +142,11 @@ const app = function () {
       UtilityKTS.setClass(containers[i], settings.hideClass, hide);
     }
     
-    if (contentsId == 'navGeneral') _showGeneral();
     if (contentsId == 'navCourse') _showCourse();
     if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
     _setNavOptions();
-  }
-  
-  function _showGeneral() {
-    UtilityKTS.setClass(page.navGeneral, 'disable-container', true);
-
-    settings.generalPolicies.update(settings.generalInfo);    
-    
-    UtilityKTS.setClass(page.navGeneral, 'disable-container', false);
   }
   
   function _showCourse() {
@@ -233,7 +207,7 @@ const app = function () {
   }
       
   function _setMainNavbarEnable(enable) {
-    var menuIds = ['navGeneral', 'navCourse', 'navAdmin'];
+    var menuIds = ['navCourse', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
       UtilityKTS.setClass(elem, 'disabled', !enable);
@@ -256,7 +230,6 @@ const app = function () {
     if (!result) return false;
     settings.courseInfo = result;
     
-    if (settings.currentNavOption == 'navGeneral') _showGeneral();
     if (settings.currentNavOption == 'navCourse') _showCourse();
     if (settings.currentNavOption == 'navAdmin') _showAdmin();
     
@@ -306,7 +279,6 @@ const app = function () {
     _emphasizeMenuOption(dispatchTarget, true);
     
     var dispatchMap = {
-      "navGeneral": function() { _showContents('navGeneral');},
       "navCourse": function() { _showContents('navCourse');},
       "navAdmin": function() { _showContents('navAdmin'); },
       "navHelp": _doHelp,
@@ -320,7 +292,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navGeneral', 'navCourse', 'navAdmin']);
+    var mainOptions = new Set(['navCourse', 'navAdmin']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);

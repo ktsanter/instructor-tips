@@ -162,7 +162,6 @@ class EditKeypoints {
   // handlers
   //--------------------------------------------------------------   
   _handleEditControl(e) {
-    console.log('EditKeypoints', e.target);
     if (e.target.classList.contains('disabled')) return;
     if (!e.target.classList.contains('edit-control-keypoint')) return;
 

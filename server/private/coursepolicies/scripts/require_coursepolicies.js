@@ -10,7 +10,6 @@ define(function (require) {
   require('libsodium');
   const libsodiumWrappers = require('libsodium-wrappers');
    
-  require('classGeneralPolicies');
   require('classCoursePolicies');
   require('classAdmin');
   require('classEditExpectations');
