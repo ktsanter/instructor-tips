@@ -27,12 +27,40 @@ class CoursePolicies {
     this._updateUI();
   }
   
+  showSingleCourse(courseName) {
+    UtilityKTS.setClass(this.settings.elemCourseSelectContainer, this.settings.hideClass, true);
+    UtilityKTS.setClass(this.settings.singleCourseContainer, this.settings.hideClass, false);
+    
+    this._loadCourseList();
+   
+    let courseInfo = null;
+    const courseOptions = this.settings.elemCourseList.getElementsByTagName('option');
+
+    for (let i = 0; i < courseOptions.length && courseInfo == null; i++) {
+      const optInfo = JSON.parse(courseOptions[i].getAttribute('courseinfo'));
+      if (courseName == optInfo.name) courseInfo = optInfo;
+    }
+    
+    if (courseInfo == null) {
+      this.config.notice.setNotice('cannot find info for "' + courseName + '"');
+      return;
+    }
+ 
+    this.settings.selectedCourse = courseInfo;
+    this.settings.singleCourseName.value = courseName;
+    this._loadSelectedCourse();
+  }
+  
   //--------------------------------------------------------------
   // private methods
   //--------------------------------------------------------------   
   _initUI() {
+    this.settings.elemCourseSelectContainer = this.config.container.getElementsByClassName('course-select-container')[0];
     this.settings.elemCourseList = this.config.container.getElementsByClassName('select-course')[0];
     this.settings.elemCourseList.addEventListener('change', (e) => { this._handleCourseSelection(e); });
+    
+    this.settings.singleCourseContainer = this.config.container.getElementsByClassName('single-coursename-container')[0];
+    this.settings.singleCourseName = this.settings.singleCourseContainer.getElementsByClassName('single-coursename')[0];
     
     this.settings.elemAssessmentsOuter = this.config.container.getElementsByClassName('assessments-outer')[0];
     this.settings.elemAssessments = this.config.container.getElementsByClassName('assessment-container')[0];

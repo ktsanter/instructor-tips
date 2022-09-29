@@ -11,6 +11,10 @@ body {
   padding-top: 4.0em;
 }
 
+body.no-padding {
+  padding-top: 0;
+}
+
 .aardvark-font {
   font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans";
 }
@@ -22,6 +26,10 @@ body {
 /*------------------------------------------------------------------------------
  * navbar
  *------------------------------------------------------------------------------*/
+ .navbar {
+   display: none;  /* by default, changed to initial if full tool rather than single course */
+ }
+ 
 .navbar-brand {
   border: 1px solid white;
   border-radius: 5px;
@@ -90,19 +98,6 @@ body {
 }
 
 /*------------------------------------------------------------------------------
- * contents - navGeneral
- *------------------------------------------------------------------------------*/
-.contents .contents-navGeneral {}
-
-.contents .contents-navGeneral .expectation-info {
-  color: var(--bgPrimary);
-}
-
-.contents .contents-navGeneral .admin-icon {
-  float: right;
-}
-
-/*------------------------------------------------------------------------------
  * contents - navCourse
  *------------------------------------------------------------------------------*/
 .contents .contents-navCourse .admin-icon {
@@ -116,6 +111,10 @@ body {
 .contents .contents-navCourse .icon-mentor-welcome {
   font-size: 150%;
   color: var(--bgPrimary);
+}
+
+.contents .contents-navCourse .single-coursename {
+  background-color: transparent;
 }
 
 /*------------------------------------------------------------------------------

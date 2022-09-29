@@ -1,3 +1,5 @@
+- var singleCourseName = params.courseName;
+
 include ../../common/pug/fontawesome-mixins.pug
 include ../../common/pug/bootstrap-mixins.pug
 include ../../common/pug/navbar-mixins.pug
@@ -53,10 +55,11 @@ html(lang="en")
     )
     
     .contents
+      .single-course(class="hide-me")=singleCourseName
       .error-container
       
       .container-fluid(class="contents-container contents-navCourse hide-me disable-container")
-        +courseContainer
+        +courseContainer(singleCourseName)
                 
       .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
         +adminContainer()     

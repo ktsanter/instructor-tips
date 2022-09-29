@@ -1,5 +1,5 @@
 mixin courseContainer()
-  .row
+  .row(class="course-select-container")
     .col-sm
       .form-floating
         select(class="form-select select-course" id="selectCourse" aria-label="select course")
@@ -7,6 +7,14 @@ mixin courseContainer()
 
     .col-sm
       
+  .row(class="single-coursename-container hide-me")
+    .col-sm
+      .form-floating
+        input(type="text" class="form-control single-coursename" id="txtSingleCourseName" disabled)
+        label(for="txtSingleCourseName") course
+        
+    .col-sm
+
   .row(class="keypoints-outer mt-4 hide-me")
     .col-sm
       fieldset(class="border configure-fieldset required pb-2")

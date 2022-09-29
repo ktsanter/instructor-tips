@@ -40,7 +40,6 @@ const app = function () {
     
     await _initializeProfile(sodium);
 
-    UtilityKTS.setClass(page.navbar, 'hide-me', false);
     _attachNavbarHandlers();
     
     _renderContents();
@@ -53,10 +52,16 @@ const app = function () {
 
     _setMainUIEnable(true);
     _setMainNavbarEnable(true);
-    
-    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
 
     page.notice.setNotice('');
+    
+    page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
+    const singleCourseName = page.body.getElementsByClassName('single-course')[0].innerHTML.replaceAll('-', ' ');
+    if (singleCourseName != null && singleCourseName != undefined && singleCourseName.length > 0) {
+      _showSingleCourse(singleCourseName);
+    } else {
+      page.navbar.style.display = 'initial';
+    }
   }
   
   async function _setAdminMenu() {
@@ -88,7 +93,8 @@ const app = function () {
     
     settings.coursePolicies = new CoursePolicies({
       "container": page.navCourse,
-      "adminAllowed": adminAllowed
+      "adminAllowed": adminAllowed,
+      "notice": page.notice
     });
   }
   
@@ -158,13 +164,17 @@ const app = function () {
     UtilityKTS.setClass(page.navCourse, 'disable-container', false);
   }
 
+  function _showSingleCourse(courseName) {
+    UtilityKTS.setClass(page.body, 'no-padding', true);
+    settings.coursePolicies.showSingleCourse(courseName);
+  }
+  
   function _showAdmin() {
     UtilityKTS.setClass(page.navAdmin, 'disable-container', true);
     
     settings.admin.update(settings.generalInfo, settings.courseInfo);    
     
-    UtilityKTS.setClass(page.navAdmin, 'disable-container', false);
-    
+    UtilityKTS.setClass(page.navAdmin, 'disable-container', false);    
   }
   
   function _setNavOptions() {

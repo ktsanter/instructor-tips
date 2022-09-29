@@ -1302,6 +1302,17 @@ app.get('/coursepolicies', function (req, res) {
   routeIfLoggedIn(req, res, 'coursepolicies');
 })
 
+app.get('/coursepolicies/:coursename', function (req, res) {
+  const appInfo = appLookup['coursepolicies'];
+  
+  var pugFileName = path.join(__dirname, 'private', appInfo.routePug);
+  const params = {
+    "courseName": req.params.coursename
+  }
+
+  renderAndSendPugIfExists(res, req.params.app, pugFileName, {"params": params});
+})
+
 app.get('/coursepolicies/help', function (req, res) {
   var pugFileName = path.join(__dirname, 'private', 'coursepolicies/pug/help.pug');
   renderAndSendPugIfExists(res, req.params.app, pugFileName, {params: {}});
