@@ -17,6 +17,8 @@ const app = function () {
     
     generalInfo: null,
     courseInfo: null,
+    
+    singleCourseName: null,
 
     adminDisable: false
   };
@@ -30,15 +32,18 @@ const app = function () {
     
     page.notice = new StandardNotice(page.errorContainer, page.errorContainer);
     page.notice.setNotice('loading...', true);
-    
-    await _setAdminMenu();
+
+    settings.singleCourseName = page.body.getElementsByClassName('single-course')[0].innerHTML.replaceAll('-', ' ');
+    if (settings.singleCourseName === undefined || settings.singleCourseName.length == 0) settings.singleCourseName = null;
+
+    if (settings.singleCourseName == null) await _setAdminMenu();
 
     page.navbar = page.body.getElementsByClassName('navbar')[0];
     _setMainNavbarEnable(false);
     
     page.contents = page.body.getElementsByClassName('contents')[0];    
     
-    await _initializeProfile(sodium);
+    if (settings.singleCourseName == null) await _initializeProfile(sodium);
 
     _attachNavbarHandlers();
     
@@ -56,9 +61,9 @@ const app = function () {
     page.notice.setNotice('');
     
     page.navbar.getElementsByClassName(settings.navItemClass)[0].click();
-    const singleCourseName = page.body.getElementsByClassName('single-course')[0].innerHTML.replaceAll('-', ' ');
-    if (singleCourseName != null && singleCourseName != undefined && singleCourseName.length > 0) {
-      _showSingleCourse(singleCourseName);
+
+    if (settings.singleCourseName != null) {
+      _showSingleCourse(settings.singleCourseName);
     } else {
       page.navbar.style.display = 'initial';
     }
@@ -89,7 +94,8 @@ const app = function () {
   }
   
   async function _initializeCoursePolicies() {
-    let adminAllowed = await _checkAdminAllowed();
+    let adminAllowed = false;
+    if (settings.singleCourseName == null) adminAllowed = await _checkAdminAllowed();
     
     settings.coursePolicies = new CoursePolicies({
       "container": page.navCourse,
@@ -99,7 +105,8 @@ const app = function () {
   }
   
   async function _initializeAdmin() {
-    let adminAllowed = await _checkAdminAllowed();
+    let adminAllowed = false;
+    if (settings.singleCourseName == null) adminAllowed = await _checkAdminAllowed();
     if (!adminAllowed) return;
 
     settings.admin = new Admin({
@@ -402,7 +409,7 @@ const app = function () {
   async function _getGeneralInfoFromDB() {    
     let generalInfo = null;
     
-    let dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'general-info', page.notice);
+    let dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'general-info/u', page.notice);
     if (dbResult.success) {
       generalInfo = dbResult.data;
     }
@@ -413,7 +420,7 @@ const app = function () {
   async function _getCourseInfoFromDB() {
     let courseInfo = null;
     
-    let dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'course-info', page.notice);
+    let dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'course-info/u', page.notice);
     if (dbResult.success) {
       courseInfo = dbResult.data;
     }

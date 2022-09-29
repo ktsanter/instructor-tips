@@ -1424,6 +1424,14 @@ app.get('/subpage/:app/:helptype', function (req, res) {
 })
 
 //------------------------------------------------------
+// unprotected queries
+//------------------------------------------------------
+app.get('/:app/query/:queryName/u', async function (req, res) {
+  var dbManager = dbManagerLookup[req.params.app];
+  res.send(await dbManager.doQuery(req.params, req.body, null, null));
+})
+
+//------------------------------------------------------
 // protected queries
 //------------------------------------------------------
 app.get('/:app/query/:queryName', async function (req, res) {
