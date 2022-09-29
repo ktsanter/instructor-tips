@@ -258,24 +258,6 @@ const app = function () {
     return true;
   }
    
-  async function _doFileUpload(uploadType, file, semester) {
-    page.notice.setNotice('loading...', true);
-    _clearAdminResults();
-    
-    var url = '/usermanagement/routeToApp/whoteacheswhat/upload/' + uploadType;
-    if (semester) url += '/' + semester;    
-    var result = await settings.reportPoster.post(url, file);
-    
-    _renderAdminResults('upload-result' + semester, result.details);
-    
-    page.notice.setNotice('');
-    if (!result.success) {
-      return;
-    }
-
-    await _getCurrentInfo();
-  }
-  
   function _clearAdminResults() {
     _renderAdminResults('upload-resultS1', '');
     _renderAdminResults('upload-resultS2', '');
@@ -343,31 +325,6 @@ const app = function () {
     _setDirtyBit(false);
   }
 
-  async function _handleFileUpload(e) {
-    if (e.target.files.length == 0) return;
-    
-    let term = null;
-    if (e.target.id.indexOf('S1') > 0) term = 'S1';
-    if (e.target.id.indexOf('S2') > 0) term = 'S2';
-    if (!term) return;
-    
-    _setAdminEnable(false);
-    
-    var classToParamMap = {
-      'uploadfile-assignment': 'assignment'
-    };
-
-    var param = null;
-    for (var key in classToParamMap) {
-      if (e.target.classList.contains(key)) param = classToParamMap[key];
-    }
-    
-    await _doFileUpload(param, e.target.files[0], term);
-    e.target.value = null;
-    
-    _setAdminEnable(true);
-  }
-  
   async function _handleDeleteAssignments(e) {
     _clearAdminResults();
     

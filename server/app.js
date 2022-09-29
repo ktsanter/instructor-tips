@@ -1323,6 +1323,10 @@ app.post('/usermanagement/routeToApp/coursepolicies/welcomeletter', function (re
   coursePolicies.exportMentorWelcomeTemplate(req, res, userInfo); 
 })
 
+app.post('/coursepolicies/coursepolicies/welcomeletter', function (req, res) {
+  coursePolicies.exportMentorWelcomeTemplate(req, res, null); 
+})
+
 app.get('/walkthrough-analyzer', function (req, res) {
   routeIfLoggedIn(req, res, 'walkthrough-analyzer');
 })
