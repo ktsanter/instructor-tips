@@ -113,8 +113,14 @@ body.no-padding {
   color: var(--bgPrimary);
 }
 
-.contents .contents-navCourse .single-coursename {
+.contents .contents-navCourse .single-coursename-container .single-coursename {
   background-color: transparent;
+}
+
+.contents .contents-navCourse .single-coursename-container .full-app {
+  color: var(--bgPrimary);
+  font-size: 140%;
+  cursor: pointer;
 }
 
 /*------------------------------------------------------------------------------

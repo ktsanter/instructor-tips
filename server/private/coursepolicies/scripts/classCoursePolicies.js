@@ -61,6 +61,7 @@ class CoursePolicies {
     
     this.settings.singleCourseContainer = this.config.container.getElementsByClassName('single-coursename-container')[0];
     this.settings.singleCourseName = this.settings.singleCourseContainer.getElementsByClassName('single-coursename')[0];
+    this.settings.singleCourseContainer.getElementsByClassName('full-app')[0].addEventListener('click', (e) => { this._openFullApp(e); });
     
     this.settings.elemAssessmentsOuter = this.config.container.getElementsByClassName('assessments-outer')[0];
     this.settings.elemAssessments = this.config.container.getElementsByClassName('assessment-container')[0];
@@ -322,6 +323,10 @@ class CoursePolicies {
   
   _handleMentorWelcome(e) {
     this._downloadMentorWelcomeLetter(this.settings.selectedCourse);
+  }
+  
+  _openFullApp(e) {
+    window.open(this.config.fullAppURL, '_blank');
   }
   
   //--------------------------------------------------------------

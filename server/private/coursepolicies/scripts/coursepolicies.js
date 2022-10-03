@@ -12,6 +12,7 @@ const app = function () {
     helpURL: '/coursepolicies/help',
     logoutURL: '/usermanagement/logout/coursepolicies',
     whoteacheswhatURL: '/whoteacheswhat',
+    fullAppURL: '/coursepolicies',
     
     dirtyBit: {},
     
@@ -100,7 +101,8 @@ const app = function () {
     settings.coursePolicies = new CoursePolicies({
       "container": page.navCourse,
       "adminAllowed": adminAllowed,
-      "notice": page.notice
+      "notice": page.notice,
+      "fullAppURL": settings.fullAppURL
     });
   }
   
