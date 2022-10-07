@@ -31,6 +31,9 @@ module.exports = internal.CoursePolicies = class {
     if (params.queryName == 'admin-allowed') {
       dbResult = await this._getAdminAllowed(params, postData, userInfo, funcCheckPrivilege);
       
+    } else if (params.queryName == 'lead-instructor-privilege') {
+      dbResult = await this._getLeadInstructorPrivilege(params, postData, userInfo, funcCheckPrivilege);
+            
     } else if (params.queryName == 'general-info') {
       dbResult = await this._getGeneralInfo();
             
@@ -488,6 +491,16 @@ module.exports = internal.CoursePolicies = class {
     result.success = true;
     result.details = 'query succeeded';
     result.data = {adminallowed: funcCheckPrivilege(userInfo, 'admin')};
+
+    return result;
+  }  
+    
+  async _getLeadInstructorPrivilege(params, postData, userInfo, funcCheckPrivilege) {
+    var result = this._dbManager.queryFailureResult(); 
+    
+    result.success = true;
+    result.details = 'query succeeded';
+    result.data = {leadpermission: funcCheckPrivilege(userInfo, 'lead')};
 
     return result;
   }  

@@ -7,6 +7,7 @@ include ../../common/pug/jquery-mixins.pug
 include ../../common/pug/profile-mixins.pug
 
 include ./mixins/mixins-general.pug
+include ./mixins/mixins-editing.pug
 include ./mixins/mixins-course.pug
 include ./mixins/mixins-admin.pug
 
@@ -36,6 +37,7 @@ html(lang="en")
       {
         items: [
           {id: "navCourse", type: "link", label: "course"},
+          {id: "navEdit", type: "link", label: "editing"},
           {id: "navAdmin", type: "link", label: "admin"},
           {type: "dropdown", label: "other", items: [
             {id: "navWhoTeachesWhat", type: "link", label: "who teaches what"},          
@@ -60,6 +62,9 @@ html(lang="en")
       
       .container-fluid(class="contents-container contents-navCourse hide-me disable-container")
         +courseContainer(singleCourseName)
+                
+      .container-fluid(class="contents-container contents-navEdit hide-me disable-container")
+        +editingContainer(singleCourseName)
                 
       .container-fluid(class="contents-container contents-navAdmin hide-me disable-container")
         +adminContainer()     

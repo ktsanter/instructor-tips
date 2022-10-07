@@ -124,50 +124,55 @@ body.no-padding {
 }
 
 /*------------------------------------------------------------------------------
- * contents - navAdmin
+ * contents - navEdit
  *------------------------------------------------------------------------------*/
-.contents .contents-navAdmin {}
+.contents .contents-navEdit {}
 
-.contents .contents-navAdmin .nav-link.btn-secondary {
+.contents .contents-navEdit .nav-link.btn-secondary {
   color: black;
   background-color: transparent;
 }
 
-.contents .contents-navAdmin .nav-link.btn-secondary.active {
+.contents .contents-navEdit .nav-link.btn-secondary.active {
   color: var(--bgPrimary);
   border: 2px solid var(--bgPrimary);
 }
 
-.contents .contents-navAdmin .nav-link.btn-secondary:focus {
+.contents .contents-navEdit .nav-link.btn-secondary:focus {
   box-shadow: none;
 }
 
-.contents .contents-navAdmin .nav-link.btn-secondary.disabled {
+.contents .contents-navEdit .nav-link.btn-secondary.disabled {
   color: var(--bgShaded);
 }
 
-.contents .contents-navAdmin button.btn-secondary {
+.contents .contents-navEdit button.btn-secondary {
   min-width: 8.0em;
 }
 
-.contents .contents-navAdmin i.edit-control {
+.contents .contents-navEdit i.edit-control {
   color: var(--bgPrimary);
   font-size: 150%;
   cursor: pointer;
 }
 
-.contents .contents-navAdmin i.edit-control.disabled {
+.contents .contents-navEdit i.edit-control.disabled {
   color: var(--bgShaded);
   cursor: normal;
 }
 
-.contents .contents-navAdmin input.form-control-plaintext {
+.contents .contents-navEdit input.form-control-plaintext {
   background: transparent;
 }
 
-.contents .contents-navAdmin .selected-keypoint-row {
+.contents .contents-navEdit .selected-keypoint-row {
   border: 1px solid rgb(206, 212, 218);
 }
+
+/*------------------------------------------------------------------------------
+ * contents - navAdmin
+ *------------------------------------------------------------------------------*/
+.contents .contents-navAdmin {}
 
 /*------------------------------------------------------------------
  * standard error and notice

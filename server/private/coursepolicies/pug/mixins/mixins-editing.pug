@@ -1,0 +1,36 @@
+mixin editingContainer()
+  include ./mixins-editing-expectations.pug
+  include ./mixins-editing-keypoints.pug
+  include ./mixins-editing-resourcelinks.pug
+  include ./mixins-editing-contacts.pug
+  include ./mixins-editing-courses.pug
+
+  .row(class="py-2 mb-2")
+    .col-sm-2
+      ul(class="nav nav-pills flex-column")
+        li(class="nav-item")
+          a(id="navEditExpectations" class="nav-link btn-secondary" aria-current="page" href="#") expectations
+        li(class="nav-item")
+          a(id="navEditKeypoints" class="nav-link btn-secondary" href="#") keypoints
+        li(class="nav-item")
+          a(id="navEditResourceLinks" class="nav-link btn-secondary" href="#") resourcelinks
+        li(class="nav-item")
+          a(id="navEditContacts" class="nav-link btn-secondary" href="#") contacts
+        li(class="nav-item")
+          a(id="navEditCourses" class="nav-link btn-secondary" href="#") courses
+
+    .col-sm(class="editing-outer-container")
+      .editcontent(class="editing-container navEditExpectations hide-me")
+        +editingExpectations()
+
+      .editcontent(class="editing-container navEditKeypoints hide-me") 
+        +editingKeypoints()      
+      
+      .editcontent(class="editing-container navEditContacts hide-me")
+        +editingContacts()
+
+      .editcontent(class="editing-container navEditResourceLinks hide-me")
+        +editingResourceLinks()
+
+      .editcontent(class="editing-container navEditCourses hide-me")
+        +editingCourses()

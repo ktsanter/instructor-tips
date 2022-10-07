@@ -21,7 +21,8 @@ const app = function () {
     
     singleCourseName: null,
 
-    adminDisable: false
+    adminDisable: false,
+    leadPermissionDisable: false
   };
     
 	//---------------------------------------
@@ -38,6 +39,7 @@ const app = function () {
     if (settings.singleCourseName === undefined || settings.singleCourseName.length == 0) settings.singleCourseName = null;
 
     if (settings.singleCourseName == null) await _setAdminMenu();
+    await _setLeadMenuOptions();
 
     page.navbar = page.body.getElementsByClassName('navbar')[0];
     _setMainNavbarEnable(false);
@@ -51,6 +53,7 @@ const app = function () {
     _renderContents();
     
     await _initializeCoursePolicies();
+    await _initializeEdit();
     await _initializeAdmin();
     
     let success = await _getCurrentInfo();
@@ -76,6 +79,14 @@ const app = function () {
     var adminAllowed = await _checkAdminAllowed();
     
     _enableNavOption('navAdmin', adminAllowed, adminAllowed);
+  }
+  
+  async function _setLeadMenuOptions() {
+    _enableNavOption('navEdit', false, false);
+    
+    var leadPermission = await _checkLeadInstructorPrivilege();
+    
+    _enableNavOption('navEdit', leadPermission, leadPermission);
   }
   
   async function _initializeProfile(sodium) {
@@ -106,6 +117,18 @@ const app = function () {
     });
   }
   
+  async function _initializeEdit() {
+    let leadPermission = false;
+    if (settings.singleCourseName == null) leadPermission = await _checkLeadInstructorPrivilege();
+    if (!leadPermission) return;
+
+    settings.editing = new Edit({
+      "notice": page.notice,
+      "container": page.navEdit,
+      "callbackRefreshData": _refreshData
+    });
+  }
+
   async function _initializeAdmin() {
     let adminAllowed = false;
     if (settings.singleCourseName == null) adminAllowed = await _checkAdminAllowed();
@@ -113,9 +136,7 @@ const app = function () {
 
     settings.admin = new Admin({
       "notice": page.notice,
-      "container": page.navAdmin,
-      "toggleCallback": _toggleAdmin,
-      "callbackRefreshData": _refreshData
+      "container": page.navAdmin
     });
   }
 
@@ -135,6 +156,7 @@ const app = function () {
 	//-----------------------------------------------------------------------------
   function _renderContents() {
     _renderCourse();
+    _renderEdit();
     _renderAdmin();
   }
   
@@ -142,6 +164,10 @@ const app = function () {
     page.navCourse = page.contents.getElementsByClassName('contents-navCourse')[0];
   }
     
+  function _renderEdit() {
+    page.navEdit = page.contents.getElementsByClassName('contents-navEdit')[0];
+  }
+
   function _renderAdmin() {
     page.navAdmin = page.contents.getElementsByClassName('contents-navAdmin')[0];
   }
@@ -159,6 +185,7 @@ const app = function () {
     }
     
     if (contentsId == 'navCourse') _showCourse();
+    if (contentsId == 'navEdit') _showEdit();
     if (contentsId == 'navAdmin') _showAdmin();
     if (contentsId == 'navProfile') await settings.profile.reload();
       
@@ -176,6 +203,14 @@ const app = function () {
   function _showSingleCourse(courseName) {
     UtilityKTS.setClass(page.body, 'no-padding', true);
     settings.coursePolicies.showSingleCourse(courseName);
+  }
+  
+  function _showEdit() {
+    UtilityKTS.setClass(page.navEdit, 'disable-container', true);
+    
+    settings.editing.update(settings.generalInfo, settings.courseInfo);    
+    
+    UtilityKTS.setClass(page.navEdit, 'disable-container', false);    
   }
   
   function _showAdmin() {
@@ -221,7 +256,7 @@ const app = function () {
     for (var i = 0; i < containers.length; i++) {
       if (
         containers[i].classList.contains('contents-navStudent') ||
-        containers[i].classList.contains('contents-navConfigure') ||
+        containers[i].classList.contains('contents-navEdit') ||
         containers[i].classList.contains('contents-navAdmin')
       ) {
         UtilityKTS.setClass(containers[i], 'disable-container', !enable);
@@ -231,7 +266,7 @@ const app = function () {
   }
       
   function _setMainNavbarEnable(enable) {
-    var menuIds = ['navCourse', 'navAdmin'];
+    var menuIds = ['navCourse', 'navEdit', 'navAdmin'];
     for (var i = 0; i < menuIds.length; i++) {
       var elem = document.getElementById(menuIds[i]);
       UtilityKTS.setClass(elem, 'disabled', !enable);
@@ -255,7 +290,7 @@ const app = function () {
     settings.courseInfo = result;
     
     if (settings.currentNavOption == 'navCourse') _showCourse();
-    if (settings.currentNavOption == 'navAdmin') _showAdmin();
+    if (settings.currentNavOption == 'navEdit') _showEdit();
     
     return true;
   }
@@ -286,6 +321,7 @@ const app = function () {
     
     var dispatchMap = {
       "navCourse": function() { _showContents('navCourse');},
+      "navEdit": function() { _showContents('navEdit');},
       "navAdmin": function() { _showContents('navAdmin'); },
       "navWhoTeachesWhat": function() { _doWhoTeachesWhat(); },
       "navHelp": _doHelp,
@@ -299,7 +335,7 @@ const app = function () {
   }
   
   function _emphasizeMenuOption(menuOption, emphasize) {
-    var mainOptions = new Set(['navCourse', 'navAdmin']);
+    var mainOptions = new Set(['navCourse', 'navEdit', 'navAdmin']);
     if (mainOptions.has(menuOption)) {
       var elem = document.getElementById(menuOption);
       UtilityKTS.setClass(elem, 'menu-emphasize', emphasize);
@@ -345,11 +381,6 @@ const app = function () {
   //----------------------------------------
   // callbacks
   //----------------------------------------
-  function _toggleAdmin() {
-    settings.adminDisable = !settings.adminDisable;
-    _setAdminMenu();
-  }
-  
   async function _refreshData() {
     await _getCurrentInfo();
   }  
@@ -363,6 +394,14 @@ const app = function () {
     
     var adminAllowed = (dbResult.data.adminallowed && !settings.adminDisable);
     return adminAllowed;
+  }  
+ 
+  async function _checkLeadInstructorPrivilege() {
+    dbResult = await SQLDBInterface.doGetQuery('coursepolicies/query', 'lead-instructor-privilege', page.notice);
+    if (!dbResult.success) return false;
+    
+    var leadPermission = (dbResult.data.leadpermission && !settings.leadPermissionDisable);
+    return leadPermission;
   }  
  
   async function _getGeneralInfoFromDB() {    

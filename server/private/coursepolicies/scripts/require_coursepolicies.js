@@ -11,6 +11,7 @@ define(function (require) {
   const libsodiumWrappers = require('libsodium-wrappers');
    
   require('classCoursePolicies');
+  require('classEdit');
   require('classAdmin');
   require('classEditExpectations');
   require('classEditKeypoints');
